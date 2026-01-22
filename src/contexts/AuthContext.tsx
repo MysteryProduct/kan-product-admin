@@ -1,15 +1,12 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import AuthModel from '@/models/auth-model';
+import { UserType } from '@/types/user';
 
-interface User {
-  id: string;
-  username: string;
-  email: string;
-}
 
 interface AuthContextType {
-  user: User | null;
+  user: UserType | null;
   isLoading: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
@@ -19,7 +16,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // ตรวจสอบ localStorage เมื่อ mount component
@@ -39,13 +36,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (username: string, password: string) => {
     // Simulate API call
     if (username && password.length >= 6) {
-      const mockUser: User = {
-        id: '1',
-        username: username,
-        email: `${username}@example.com`,
-      };
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
+      const authModel = new AuthModel();
+      const response = await authModel.getLogin({ username, password });
+      setUser(response.data);
+      localStorage.setItem('user', JSON.stringify(response.data));
+      localStorage.setItem('token', response.access_token);
     } else {
       throw new Error('Invalid username or password');
     }

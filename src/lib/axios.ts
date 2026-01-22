@@ -17,10 +17,9 @@ axiosInstance.interceptors.request.use(
       const userStr = localStorage.getItem('user');
       if (userStr) {
         try {
-          const user = JSON.parse(userStr);
-          // เพิ่ม token ใน header (ปรับตามโครงสร้าง API ของคุณ)
-          if (user.token) {
-            config.headers.Authorization = `Bearer ${user.token}`;
+          const tokenData = localStorage.getItem('token');
+          if (tokenData) {
+            config.headers.Authorization = `Bearer ${tokenData}`;
           }
         } catch (error) {
           console.error('Error parsing user data:', error);
