@@ -3,7 +3,7 @@ pipeline {
     tools {
         nodejs 'NodeJS'
         //เพิ่ม SonarQube Scanner Tool definition ที่นี่
-        sonarScanner 'SonarQubeScanner' 
+        tool name: 'SonarQubeScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation' 
     }
     environment {
         SONAR_PROJECT_KEY = 'kan-product-admin'
