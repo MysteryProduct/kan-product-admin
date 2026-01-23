@@ -26,14 +26,17 @@ pipeline {
         }
         stage('SonarQube Analysis') {
             steps {
-                //ใช้ชื่อ Credentials ID สำหรับ Token ที่ถูกต้อง
-                withCredentials([string(credentialsId: 'kan-product-admin', variable: 'SONAR_TOKEN')]) {
-                    //ชื่อ 'SonarQube' ต้องตรงกับชื่อ Configuration ใน Manage Jenkins -> Configure System
+                script {
+                    // 1. ใช้ 'script' block เพื่อเรียกใช้ 'tool' step แบบ Scripted Pipeline
+                    // ชื่อ 'SonarQubeScanner' ต้องตรงกับชื่อใน Manage Jenkins -> Global Tool Config
+                    scannerHome = tool 'SonarQubeScanner' 
+                }
+                withCredentials([string(credentialsId: 'kan-product-admin-token-id', variable: 'SONAR_TOKEN')]) {
                     withSonarQubeEnv('SonarQube') {
+                        // 2. ใช้ Environment Variable ที่ได้จาก 'script' block
                         sh """
-                        # 5. เรียกใช้ 'sonar-scanner' โดยตรง ไม่ต้องระบุ Path แบบ Hardcode
-                        # Jenkins จะจัดการเพิ่ม Path จาก 'tool' ด้านบนให้เอง
-                        sonar-scanner \\
+                        # ใช้ตัวแปร ${scannerHome} เพื่อระบุ Path ที่ถูกต้อง
+                        ${scannerHome}/bin/sonar-scanner \\
                         -Dsonar.projectKey=\${SONAR_PROJECT_KEY} \\
                         -Dsonar.sources=. \\
                         -Dsonar.host.url=http://localhost:9000 \\
@@ -41,6 +44,21 @@ pipeline {
                         """
                     }
                 }
+                // //ใช้ชื่อ Credentials ID สำหรับ Token ที่ถูกต้อง
+                // withCredentials([string(credentialsId: 'kan-product-admin', variable: 'SONAR_TOKEN')]) {
+                //     //ชื่อ 'SonarQube' ต้องตรงกับชื่อ Configuration ใน Manage Jenkins -> Configure System
+                //     withSonarQubeEnv('SonarQube') {
+                //         sh """
+                //         # 5. เรียกใช้ 'sonar-scanner' โดยตรง ไม่ต้องระบุ Path แบบ Hardcode
+                //         # Jenkins จะจัดการเพิ่ม Path จาก 'tool' ด้านบนให้เอง
+                //         sonar-scanner \\
+                //         -Dsonar.projectKey=\${SONAR_PROJECT_KEY} \\
+                //         -Dsonar.sources=. \\
+                //         -Dsonar.host.url=http://localhost:9000 \\
+                //         -Dsonar.login=\${SONAR_TOKEN}
+                //         """
+                //     }
+                // }
             }
         }
     }
