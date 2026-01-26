@@ -1,25 +1,11 @@
 import axiosInstance from '@/lib/axios';
-
-// Interface สำหรับ Product
-export interface Product {
-  id: string | number;
-  name: string;
-  category: string;
-  price: number;
-  stock: number;
-  status: 'Active' | 'Inactive' | 'Out of Stock';
-  image?: string;
-  description?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+import { Product, ProductResponse, CreateProductDto, UpdateProductDto } from '@/types/product';
+import { PaginationMeta } from '@/types/pagination';
 
 // Interface สำหรับ API Response
-export interface ProductResponse {
+export interface ApiProductResponse {
   data: Product[];
-  total: number;
-  page: number;
-  limit: number;
+  meta: PaginationMeta;
 }
 
 export interface SingleProductResponse {
@@ -27,119 +13,128 @@ export interface SingleProductResponse {
   message?: string;
 }
 
-// Interface สำหรับการสร้าง/แก้ไข Product
-export interface CreateProductDto {
-  name: string;
-  category: string;
-  price: number;
-  stock: number;
-  status?: 'Active' | 'Inactive' | 'Out of Stock';
-  image?: string;
-  description?: string;
-}
-
-export interface UpdateProductDto {
-  name?: string;
-  category?: string;
-  price?: number;
-  stock?: number;
-  status?: 'Active' | 'Inactive' | 'Out of Stock';
-  image?: string;
-  description?: string;
-}
-
 // ===== Product API Service =====
 
-/**
- * ดึงข้อมูล Products ทั้งหมด
- */
-export const getProducts = async (
-  page: number = 1,
-  limit: number = 10,
-  search?: string,
-  category?: string
-): Promise<ProductResponse> => {
-  try {
-    const response = await axiosInstance.get<ProductResponse>('/products', {
-      params: {
-        page,
-        limit,
-        ...(search && { search }),
-        ...(category && { category }),
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    throw error;
+class ProductModel {
+  /**
+   * ดึงข้อมูล Products ทั้งหมด
+   */
+  async getProducts(
+    page: number = 1,
+    limit: number = 10,
+    search?: string
+  ): Promise<ApiProductResponse> {
+    try {
+      const response = await axiosInstance.get<ApiProductResponse>('/products', {
+        params: {
+          page,
+          limit,
+          ...(search && { search }),
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      throw error;
+    }
   }
-};
 
-/**
- * ดึงข้อมูล Product ตาม ID
- */
-export const getProductById = async (id: string | number): Promise<SingleProductResponse> => {
-  try {
-    const response = await axiosInstance.get<SingleProductResponse>(`/products/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching product ${id}:`, error);
-    throw error;
+  /**
+   * ดึงข้อมูล Product ตาม ID
+   */
+  async getProductById(id: number): Promise<Product> {
+    try {
+      const response = await axiosInstance.get<SingleProductResponse>(`/products/${id}`);
+      return response.data.data;
+    } catch (error) {
+      console.error(`Error fetching product ${id}:`, error);
+      throw error;
+    }
   }
-};
 
-/**
- * สร้าง Product ใหม่
- */
-export const createProduct = async (productData: CreateProductDto): Promise<SingleProductResponse> => {
-  try {
-    const response = await axiosInstance.post<SingleProductResponse>('/products', productData);
-    return response.data;
-  } catch (error) {
-    console.error('Error creating product:', error);
-    throw error;
-  }
-};
+  /**
+   * สร้าง Product ใหม่พร้อมไฟล์
+   */
+  async createProduct(productData: CreateProductDto): Promise<Product> {
+    try {
+      const formData = new FormData();
+      formData.append('product_name', productData.product_name);
+      formData.append('product_description', productData.product_description);
+      formData.append('price', productData.price.toString());
+      formData.append('category_id', productData.category_id.toString());
+      formData.append('color_id', productData.color_id.toString());
 
-/**
- * แก้ไข Product
- */
-export const updateProduct = async (
-  id: string | number,
-  productData: UpdateProductDto
-): Promise<SingleProductResponse> => {
-  try {
-    const response = await axiosInstance.put<SingleProductResponse>(`/products/${id}`, productData);
-    return response.data;
-  } catch (error) {
-    console.error(`Error updating product ${id}:`, error);
-    throw error;
-  }
-};
+      // เพิ่มไฟล์
+      if (productData.files) {
+        productData.files.forEach((file) => {
+          formData.append('files', file);
+        });
+      }
 
-/**
- * ลบ Product
- */
-export const deleteProduct = async (id: string | number): Promise<{ message: string }> => {
-  try {
-    const response = await axiosInstance.delete<{ message: string }>(`/products/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error deleting product ${id}:`, error);
-    throw error;
+      const response = await axiosInstance.post<SingleProductResponse>('/product', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data.data;
+    } catch (error) {
+      console.error('Error creating product:', error);
+      throw error;
+    }
   }
-};
 
-/**
- * Toggle Product Status
- */
-export const toggleProductStatus = async (id: string | number): Promise<SingleProductResponse> => {
-  try {
-    const response = await axiosInstance.patch<SingleProductResponse>(`/products/${id}/toggle-status`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error toggling product status ${id}:`, error);
-    throw error;
+  /**
+   * แก้ไข Product
+   */
+  async updateProduct(productData: UpdateProductDto): Promise<Product> {
+    try {
+      const formData = new FormData();
+      formData.append('product_name', productData.product_name);
+      formData.append('product_description', productData.product_description);
+      formData.append('price', productData.price.toString());
+      formData.append('category_id', productData.category_id.toString());
+      formData.append('color_id', productData.color_id.toString());
+
+      // เพิ่มไฟล์ใหม่
+      if (productData.files) {
+        productData.files.forEach((file) => {
+          formData.append('files', file);
+        });
+      }
+
+      // เพิ่ม IDs ของไฟล์เดิมที่ต้องการเก็บไว้
+      if (productData.existing_files) {
+        formData.append('existing_files', JSON.stringify(productData.existing_files));
+      }
+
+      const response = await axiosInstance.put<SingleProductResponse>(
+        `/products/${productData.product_id}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error(`Error updating product ${productData.product_id}:`, error);
+      throw error;
+    }
   }
-};
+
+  /**
+   * ลบ Product
+   */
+  async deleteProduct(id: number): Promise<void> {
+    try {
+      await axiosInstance.delete(`/products/${id}`);
+    } catch (error) {
+      console.error(`Error deleting product ${id}:`, error);
+      throw error;
+    }
+  }
+}
+
+export default ProductModel;
 

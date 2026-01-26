@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-
+import ProductForm from '../products/components/insert';
 interface Product {
   id: number;
   name: string;
@@ -108,6 +108,7 @@ export default function ProductsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -169,6 +170,9 @@ export default function ProductsPage() {
     }
   };
 
+  const handleRefreshColors = () => {
+    // Logic to refresh product list after adding a new product
+  };
   return (
     <div className="bg-gray-50 p-2 sm:p-4 md:p-6 lg:p-8">
       {/* Statistics Cards */}
@@ -177,17 +181,17 @@ export default function ProductsPage() {
           <div className="text-2xl sm:text-4xl font-bold text-blue-600 mb-1 sm:mb-2">{totalProducts}</div>
           <div className="text-xs sm:text-sm text-blue-700 font-medium">Total Products</div>
         </div>
-        
+
         <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
           <div className="text-2xl sm:text-4xl font-bold text-orange-600 mb-1 sm:mb-2">{pendingProducts}</div>
           <div className="text-xs sm:text-sm text-orange-700 font-medium">Pending Products</div>
         </div>
-        
+
         <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
           <div className="text-2xl sm:text-4xl font-bold text-green-600 mb-1 sm:mb-2">{inStockProducts}</div>
           <div className="text-xs sm:text-sm text-green-700 font-medium">In Stock</div>
         </div>
-        
+
         <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
           <div className="text-2xl sm:text-4xl font-bold text-red-600 mb-1 sm:mb-2">{outOfStockProducts}</div>
           <div className="text-xs sm:text-sm text-red-700 font-medium">Out of Stock</div>
@@ -198,27 +202,39 @@ export default function ProductsPage() {
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
         {/* Search Bar */}
         <div className="p-3 sm:p-4 md:p-6 border-b border-gray-100">
-          <div className="relative max-w-full sm:max-w-xs">
-            <input
-              type="text"
-              placeholder="Search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder:text-gray-400"
-            />
-            <svg
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="relative flex-1 max-w-full sm:max-w-xs">
+              <input
+                type="text"
+                placeholder="Search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder:text-gray-400"
               />
-            </svg>
+              <svg
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+
+            <button
+              onClick={() => setIsFormOpen(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium whitespace-nowrap"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              <span>เพิ่มข้อมูล</span>
+            </button>
           </div>
         </div>
 
@@ -347,11 +363,10 @@ export default function ProductsPage() {
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
-                className={`w-8 h-8 flex items-center justify-center rounded transition-colors ${
-                  currentPage === page
+                className={`w-8 h-8 flex items-center justify-center rounded transition-colors ${currentPage === page
                     ? 'bg-blue-500 text-white'
                     : 'hover:bg-gray-100 text-gray-700'
-                }`}
+                  }`}
               >
                 {page}
               </button>
@@ -377,6 +392,12 @@ export default function ProductsPage() {
           </div>
         </div>
       </div>
+      <ProductForm
+              isOpen={isFormOpen}
+              onClose={() => setIsFormOpen(false)}
+              onSuccess={handleRefreshColors}
+            />
+
     </div>
   );
 }

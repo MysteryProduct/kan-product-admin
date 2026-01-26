@@ -6,6 +6,7 @@ import ColorForm from '@/app/admin/colors/component/insert';
 import { PaginationMeta } from '@/types/pagination';
 import { Color } from '@/types/color';
 import UpdateColorForm from '@/app/admin/colors/component/update';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 export default function ColorsPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -15,6 +16,8 @@ export default function ColorsPage() {
   const [selectedColor, setSelectedColor] = useState<Color | null>(null);
   const [colors, setColors] = useState<Color[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [colorToDelete, setColorToDelete] = useState<Color | null>(null);
 
   useEffect(() => {
     const fetchColors = async () => {
@@ -142,14 +145,9 @@ export default function ColorsPage() {
                       </svg>
                     </button>
                     <button className="text-gray-400 hover:text-red-500 transition-colors"
-                      onClick={async () => {
-                        const colorModel = new ColorModel();
-                        try {
-                          await colorModel.deleteColor(color.color_id);
-                          handleRefreshColors();
-                        } catch (error) {
-                          console.error('Failed to delete color:', error);
-                        }
+                      onClick={() => {
+                        setColorToDelete(color);
+                        setIsDeleteDialogOpen(true);
                       }}
                     >
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -225,6 +223,25 @@ export default function ColorsPage() {
         onClose={() => setIsUpdateFormOpen(false)}
         onSuccess={handleRefreshColors}
         initialData={selectedColor || { color_id: 0, color_name: '', color_hex: '' }}
+      />
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onConfirm={async () => {
+          if (!colorToDelete) return;
+          
+          const colorModel = new ColorModel();
+          try {
+            await colorModel.deleteColor(colorToDelete.color_id);
+            handleRefreshColors();
+          } catch (error) {
+            console.error('Failed to delete color:', error);
+          }
+        }}
+        onCancel={() => {
+          setIsDeleteDialogOpen(false);
+          setColorToDelete(null);
+        }}
+        message={`คุณต้องการลบสี "${colorToDelete?.color_name}" ใช่หรือไม่?`}
       />
     </div>
   )
