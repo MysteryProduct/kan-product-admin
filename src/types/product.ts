@@ -14,11 +14,17 @@ export interface Product {
     product_name: string;
     product_description: string;
     price: number;
-    category_id: number;
-    color_id: number;
-    category_name?: string;
-    color_name?: string;
+    category : {
+        category_id: number;
+        category_name: string;
+    }
+    color : {
+        color_id: number;
+        color_name: string;
+    }
+    adddate: Date;
     files?: ProductFile[];
+    
 }
 
 export interface CreateProductDto {

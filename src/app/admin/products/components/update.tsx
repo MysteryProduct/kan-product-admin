@@ -7,12 +7,19 @@ import { Category } from '@/types/category';
 import { Color } from '@/types/color';
 import { Product, ProductFile } from '@/types/product';
 import CustomSelect from '@/components/CustomSelect';
+import { emojiCategories } from '@/lib/emojis';
+import { env } from 'process';
 
 interface UpdateProductFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
   initialData: Product;
+}
+
+interface ProductDescription {
+  icon: string;
+  text: string;
 }
 
 const MAX_FILES = 5;
@@ -28,8 +35,8 @@ export default function UpdateProductForm({
     product_name: initialData.product_name,
     product_description: initialData.product_description,
     price: initialData.price.toString(),
-    category_id: initialData.category_id.toString(),
-    color_id: initialData.color_id.toString(),
+    category_id: initialData.category.category_id.toString(),
+    color_id: initialData.color.color_id.toString(),
   });
 
   const [categories, setCategories] = useState<Category[]>([]);
@@ -38,21 +45,58 @@ export default function UpdateProductForm({
   const [newFiles, setNewFiles] = useState<ProductFile[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [selectedEmojiCategory, setSelectedEmojiCategory] = useState<string>(Object.keys(emojiCategories)[0]);
+  const [showDialog, setShowDialog] = useState(false);
+  const [dialogType, setDialogType] = useState<'success' | 'error'>('success');
+  const [dialogMessage, setDialogMessage] = useState('');
 
   useEffect(() => {
     if (isOpen) {
+      // แปลง product_description จาก JSON string เป็นข้อความปกติ
+      let descriptionText = initialData.product_description;
+      try {
+        const parsedDesc = JSON.parse(initialData.product_description);
+        if (Array.isArray(parsedDesc)) {
+          descriptionText = convertJSONToDescription(parsedDesc);
+        }
+      } catch {
+        // ถ้า parse ไม่ได้ แสดงว่าเป็น plain text อยู่แล้ว
+      }
+
       setFormData({
         product_name: initialData.product_name,
-        product_description: initialData.product_description,
+        product_description: descriptionText,
         price: initialData.price.toString(),
-        category_id: initialData.category_id.toString(),
-        color_id: initialData.color_id.toString(),
+        category_id: initialData.category.category_id.toString(),
+        color_id: initialData.color.color_id.toString(),
       });
       setExistingFiles(initialData.files || []);
       setNewFiles([]);
       fetchCategoriesAndColors();
     }
   }, [isOpen, initialData]);
+
+  // แปลงข้อความ (newline) เป็น JSON Array
+  const convertDescriptionToJSON = (text: string): ProductDescription[] => {
+    if (!text.trim()) return [];
+    return text
+      .split('\n')
+      .filter(line => line.trim() !== '')
+      .map(line => {
+        const match = line.match(/^([\p{Emoji}\p{Emoji_Component}]+)\s+(.+)$/u);
+        if (match) {
+          return { icon: match[1], text: match[2] };
+        }
+        return { icon: '', text: line };
+      });
+  };
+
+  // แปลง JSON Array กลับเป็นข้อความ (newline)
+  const convertJSONToDescription = (data: ProductDescription[]): string => {
+    if (!Array.isArray(data) || data.length === 0) return '';
+    return data.map(item => `${item.icon} ${item.text}`).join('\n');
+  };
 
   const fetchCategoriesAndColors = async () => {
     try {
@@ -69,6 +113,31 @@ export default function UpdateProductForm({
     } catch (err) {
       console.error('Failed to fetch categories and colors:', err);
     }
+  };
+
+  // แทรก emoji ลงใน textarea
+  const insertEmoji = (emoji: string) => {
+    const textarea = document.querySelector('textarea[name="product_description"]') as HTMLTextAreaElement;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = formData.product_description;
+    const before = text.substring(0, start);
+    const after = text.substring(end);
+
+    // ถ้าไม่ได้อยู่ต้นบรรทัด ให้ขึ้นบรรทัดใหม่
+    const needNewLine = before.length > 0 && !before.endsWith('\n');
+    const newText = before + (needNewLine ? '\n' : '') + emoji + ' ' + after;
+
+    setFormData({ ...formData, product_description: newText });
+
+    // ตั้งตำแหน่ง cursor หลัง emoji
+    setTimeout(() => {
+      const newPosition = start + (needNewLine ? 1 : 0) + emoji.length + 1;
+      textarea.focus();
+      textarea.setSelectionRange(newPosition, newPosition);
+    }, 0);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,10 +190,14 @@ export default function UpdateProductForm({
         .filter((f) => f.product_file_id)
         .map((f) => f.product_file_id!);
 
+      // แปลง description เป็น JSON Array
+      const descriptionJSON = convertDescriptionToJSON(formData.product_description);
+      const descriptionString = JSON.stringify(descriptionJSON);
+
       await productModel.updateProduct({
         product_id: initialData.product_id,
         product_name: formData.product_name,
-        product_description: formData.product_description,
+        product_description: descriptionString,
         price: parseFloat(formData.price),
         category_id: parseInt(formData.category_id),
         color_id: parseInt(formData.color_id),
@@ -137,12 +210,26 @@ export default function UpdateProductForm({
         if (f.preview) URL.revokeObjectURL(f.preview);
       });
 
-      setNewFiles([]);
-      onSuccess();
+      // แสดง dialog สำเร็จ
+      setDialogType('success');
+      setDialogMessage('อัปเดตข้อมูลสินค้าสำเร็จ!');
+      setShowDialog(true);
     } catch (err: any) {
-      setError(err.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+      // แสดง dialog ไม่สำเร็จ
+      setDialogType('error');
+      setDialogMessage(err.message || 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล');
+      setShowDialog(true);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDialogClose = () => {
+    setShowDialog(false);
+    if (dialogType === 'success') {
+      setNewFiles([]);
+      onSuccess();
+      onClose();
     }
   };
 
@@ -151,8 +238,9 @@ export default function UpdateProductForm({
   const totalFiles = existingFiles.length + newFiles.length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gray-300/40 bg-opacity-50" onClick={onClose} />
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-gray-300/40 bg-opacity-50" onClick={onClose} />
 
       <div className="relative bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
@@ -191,17 +279,70 @@ export default function UpdateProductForm({
 
           {/* คำอธิบาย */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              คำอธิบายสินค้า <span className="text-red-500">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                คำอธิบายสินค้า <span className="text-red-500">*</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 transition-colors"
+              >
+                <span className="text-base">😀</span>
+                {showEmojiPicker ? 'ซ่อน Emoji' : 'เลือก Emoji'}
+              </button>
+            </div>
+
+            {/* Emoji Picker Buttons */}
+            {showEmojiPicker && (
+              <div className="mb-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+                {/* หมวดหมู่ */}
+                <div className="flex flex-wrap gap-2 p-3 border-b border-blue-200">
+                  {Object.keys(emojiCategories).map((category) => (
+                    <button
+                      key={category}
+                      type="button"
+                      onClick={() => setSelectedEmojiCategory(category)}
+                      className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                        selectedEmojiCategory === category
+                          ? 'bg-blue-500 text-white shadow-md'
+                          : 'bg-white text-gray-700 hover:bg-blue-100'
+                      }`}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+                {/* Emoji ตามหมวดหมู่ */}
+                <div className="flex flex-wrap gap-2 p-3">
+                  {emojiCategories[selectedEmojiCategory as keyof typeof emojiCategories].map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => insertEmoji(emoji)}
+                      className="text-2xl hover:bg-white hover:scale-110 transition-all rounded px-2 py-1 hover:shadow-md"
+                      title={`แทรก ${emoji}`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <textarea
               required
-              rows={4}
+              rows={10}
+              name="product_description"
               value={formData.product_description}
               onChange={(e) => setFormData({ ...formData, product_description: e.target.value })}
-              className="w-full text-gray-800 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="กรอกคำอธิบายสินค้า"
+              className="w-full text-gray-800 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              placeholder="กรอกคำอธิบายสินค้า..."
             />
+            <p className="mt-2 text-xs text-gray-500">
+              💡 <strong>วิธีใช้:</strong> คลิกปุ่ม "เลือก Emoji" ด้านบนเพื่อเลือกไอคอน หรือพิมพ์เอง แต่ละบรรทัดเป็นรายการหนึ่ง<br />
+              <span className="text-gray-400">ตัวอย่าง: ✅ เก็บความเย็นได้นาน 12 ชั่วโมง</span>
+            </p>
           </div>
 
           {/* ราคา */}
@@ -262,13 +403,13 @@ export default function UpdateProductForm({
                     <div className="aspect-square rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
                       {file.product_file_category === 'image' ? (
                         <img
-                          src={file.product_file_name}
+                          src={process.env.NEXT_PUBLIC_API_URL + file.product_file_name}
                           alt={`Product file ${index + 1}`}
                           className="w-full h-full object-cover"
                         />
                       ) : (
                         <video
-                          src={file.product_file_name}
+                          src={process.env.NEXT_PUBLIC_API_URL + file.product_file_name}
                           className="w-full h-full object-cover"
                           controls
                         />
@@ -390,6 +531,64 @@ export default function UpdateProductForm({
           </div>
         </form>
       </div>
+
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 rounded-xl">
+          <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+            <p className="text-gray-700 font-medium">กำลังอัปเดตข้อมูล...</p>
+          </div>
+        </div>
+      )}
     </div>
+
+    {/* Dialog Modal */}
+    {showDialog && (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/50" onClick={handleDialogClose} />
+        <div className="relative bg-white rounded-xl shadow-2xl p-6 max-w-md w-full animate-fadeIn">
+          <div className="flex flex-col items-center gap-4">
+            {/* Icon */}
+            {dialogType === 'success' ? (
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            ) : (
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+            )}
+            
+            {/* Title */}
+            <h3 className={`text-xl font-semibold ${
+              dialogType === 'success' ? 'text-green-600' : 'text-red-600'
+            }`}>
+              {dialogType === 'success' ? 'สำเร็จ!' : 'เกิดข้อผิดพลาด'}
+            </h3>
+            
+            {/* Message */}
+            <p className="text-gray-700 text-center">{dialogMessage}</p>
+            
+            {/* Button */}
+            <button
+              onClick={handleDialogClose}
+              className={`w-full px-6 py-3 rounded-lg font-medium transition-colors ${
+                dialogType === 'success'
+                  ? 'bg-green-600 hover:bg-green-700 text-white'
+                  : 'bg-red-600 hover:bg-red-700 text-white'
+              }`}
+            >
+              ตกลง
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+  </>
   );
 }

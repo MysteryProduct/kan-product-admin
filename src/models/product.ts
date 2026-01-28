@@ -22,14 +22,18 @@ class ProductModel {
   async getProducts(
     page: number = 1,
     limit: number = 10,
-    search?: string
+    search?: string,
+    sortField?: 'adddate' | 'price' | null,
+    sortOrder?: 'asc' | 'desc'
   ): Promise<ApiProductResponse> {
     try {
-      const response = await axiosInstance.get<ApiProductResponse>('/products', {
+      const response = await axiosInstance.get<ApiProductResponse>('/product', {
         params: {
           page,
           limit,
           ...(search && { search }),
+          ...(sortField && { sortField }),
+          ...(sortOrder && { sortOrder }),
         },
       });
       return response.data;
@@ -44,7 +48,7 @@ class ProductModel {
    */
   async getProductById(id: number): Promise<Product> {
     try {
-      const response = await axiosInstance.get<SingleProductResponse>(`/products/${id}`);
+      const response = await axiosInstance.get<SingleProductResponse>(`/product/${id}`);
       return response.data.data;
     } catch (error) {
       console.error(`Error fetching product ${id}:`, error);
@@ -107,8 +111,8 @@ class ProductModel {
         formData.append('existing_files', JSON.stringify(productData.existing_files));
       }
 
-      const response = await axiosInstance.put<SingleProductResponse>(
-        `/products/${productData.product_id}`,
+      const response = await axiosInstance.patch<SingleProductResponse>(
+        `/product/${productData.product_id}`,
         formData,
         {
           headers: {
@@ -128,7 +132,7 @@ class ProductModel {
    */
   async deleteProduct(id: number): Promise<void> {
     try {
-      await axiosInstance.delete(`/products/${id}`);
+      await axiosInstance.delete(`/product/${id}`);
     } catch (error) {
       console.error(`Error deleting product ${id}:`, error);
       throw error;
