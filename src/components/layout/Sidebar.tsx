@@ -82,6 +82,7 @@ export default function Sidebar() {
       subItems: [
         { title: 'สีของสินค้า', href: '/admin/colors' },
         { title: 'ประเภทสินค้า', href: '/admin/categories' },
+        { title: 'หน่วยสินค้า', href: '/admin/product-unit' },
       ],
     },
   ];

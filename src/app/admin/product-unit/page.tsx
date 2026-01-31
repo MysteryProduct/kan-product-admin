@@ -1,67 +1,72 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { ApiProductUnitResponse, ProductUnit } from '@/types/product-unit';
+import { ProductUnitModel } from '@/models/product-unit';
 
-import { PaginationMeta } from '@/types/pagination';
-import { Category } from '@/types/category';
-import CategoryModel from '@/models/category';
-import CategoryForm from '../categories/components/insert';
-import UpdateCategoryForm from '../categories/components/update';
-import ConfirmDialog from '@/components/ConfirmDialog';
 import Pagination from '@/components/Pagination';
-export default function CategoryPage() {
-    const [categories, setCategories] = useState<Category[]>([]);
+import { PaginationMeta } from '@/types/pagination';
+import category from '@/models/category';
+
+
+const productUnitModel = new ProductUnitModel();
+const ProductUnitPage = () => {
+    const [productUnits, setProductUnits] = useState<ProductUnit[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [page, setPage] = useState<number>(1);
+    const [limit, setLimit] = useState<number>(10);
+    const [totalPages, setTotalPages] = useState<number>(1);
+    const [search, setSearch] = useState<string>('');
+    const [showForm, setShowForm] = useState<boolean>(false);
+    const [editingProductUnit, setEditingProductUnit] = useState<ProductUnit | null>(null);
+    const [showConfirmDialog, setShowConfirmDialog] = useState<boolean>(false);
+    const [deletingProductUnitId, setDeletingProductUnitId] = useState<number | null>(null);
     const [meta, setMeta] = useState<PaginationMeta | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQuery, setSearchQuery] = useState<string>('');
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
-    const [isUpdateFormOpen, setIsUpdateFormOpen] = useState<boolean>(false);
-    const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
-    const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
-
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const categoryModel = new CategoryModel();
-                const result = await categoryModel.getCategories(currentPage, 10, searchQuery);
-                setCategories(result.data);
-                setMeta(result.meta);
-            } catch (err: any) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchCategories();
-    }, [currentPage, searchQuery]);
-
-    const handleRefreshCategories = async (checkPageAfterDelete = false) => {
+    const fetchProductUnits = async () => {
         setLoading(true);
         try {
-            // คำนวณหน้าที่จะใช้ก่อนเรียก API
-            let targetPage = currentPage;
-            
-            // ถ้าเป็นการลบข้อมูลและไม่ใช่หน้าแรก และหน้าปัจจุบันมีเพียง 1 รายการ
-            // ให้ลดหน้าลงมา 1 หน้า
-            if (checkPageAfterDelete && currentPage > 1 && categories.length === 1) {
-                targetPage = currentPage - 1;
-                setCurrentPage(targetPage);
-            }
-            
-            const categoryModel = new CategoryModel();
-            const result = await categoryModel.getCategories(targetPage, 10, searchQuery);
-            
-            setCategories(result.data);
-            setMeta(result.meta);
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
+            const response: ApiProductUnitResponse = await productUnitModel.getProductUnits(
+                page,
+                limit,
+                search
+            );
+            setProductUnits(response.data);
+            setMeta(response.meta);
+        } catch (error) {
+            console.error('Error fetching product units:', error);
         }
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        fetchProductUnits();
+    }, [page, limit, search]);
+    const handleSearch = (value: string) => {
+        setSearch(value);
+        setPage(1); // Reset to first page on new search
     }
+    const handleEdit = (productUnit: ProductUnit) => {
+        setEditingProductUnit(productUnit);
+        setShowForm(true);
+    };
+    const handleDelete = (productUnitId: number) => {
+        setDeletingProductUnitId(productUnitId);
+        setShowConfirmDialog(true);
+    };
+    const confirmDelete = async () => {
+        if (deletingProductUnitId !== null) {
+            try {
+                await productUnitModel.deleteProductUnit(deletingProductUnitId);
+                fetchProductUnits();
+            } catch (error) {
+                console.error('Error deleting product unit:', error);
+            }
+            setShowConfirmDialog(false);
+            setDeletingProductUnitId(null);
+        }
+    };
     return (
         <div className="flex-1 bg-gray-50 p-2 sm:p-4 md:p-6 lg:p-8">
             {/* Statistics Cards */}
@@ -111,27 +116,27 @@ export default function CategoryPage() {
                     <table className="w-full">
                         <thead>
                             <tr className="bg-gray-50 border-b border-gray-100">
-                                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 hidden sm:table-cell">Category Id</th>
+                                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 hidden sm:table-cell">รหัสหน่วยสินค้า</th>
                                 <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700">
-                                    Category Name
+                                    ชื่อหน่วยสินค้า
                                 </th>
                                 <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 lg:w-50 md:w-40 ">Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {categories.map((category, index) => (
+                            {productUnits.map((productUnit, index) => (
                                 <tr
-                                    key={category.category_id}
+                                    key={productUnit.product_unit_id}
                                     className="bg-white border-b border-gray-50 hover:bg-gray-50 transition-colors"
                                 >
-                                    <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 hidden sm:table-cell">{category.category_id}</td>
-                                    <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-900">{category.category_name}</td>
+                                    <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 hidden sm:table-cell">{productUnit.product_unit_id}</td>
+                                    <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-900">{productUnit.product_unit_name}</td>
                                     <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4">
                                         <button
-                                            onClick={() => {
-                                                setSelectedCategory(category);
-                                                setIsUpdateFormOpen(true);
-                                            }}
+                                            // onClick={() => {
+                                            //     setSelectedCategory(category);
+                                            //     setIsUpdateFormOpen(true);
+                                            // }}
                                             className="text-gray-400 hover:text-blue-500 transition-colors mr-4"
                                         >
                                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -140,8 +145,8 @@ export default function CategoryPage() {
                                         </button>
                                         <button className="text-gray-400 hover:text-red-500 transition-colors"
                                             onClick={() => {
-                                                setCategoryToDelete(category);
-                                                setIsDeleteDialogOpen(true);
+                                                // setCategoryToDelete(category);
+                                                // setIsDeleteDialogOpen(true);
                                             }}
                                         >
                                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -167,43 +172,8 @@ export default function CategoryPage() {
                 />
             </div>
 
-            <CategoryForm
-                isOpen={isFormOpen}
-                onClose={() => setIsFormOpen(false)}
-                onSuccess={() => {
-                    setIsFormOpen(false);
-                    handleRefreshCategories();
-                }}
-            />
-            <UpdateCategoryForm
-                isOpen={isUpdateFormOpen}
-                onClose={() => setIsUpdateFormOpen(false)}
-                onSuccess={() => {
-                    setIsUpdateFormOpen(false);
-                    handleRefreshCategories();
-                }}
-                initialData={selectedCategory || { category_id: 0, category_name: '' }}
-            />
-            <ConfirmDialog
-                isOpen={isDeleteDialogOpen}
-                onConfirm={async () => {
-                    if (!categoryToDelete) return;
-                    
-                    const categoryModel = new CategoryModel();
-                    try {
-                        await categoryModel.deleteCategory(categoryToDelete.category_id);
-                        handleRefreshCategories(true);
-                    } catch (error) {
-                        console.error('Failed to delete category:', error);
-                    }
-                }}
-                onCancel={() => {
-                    setIsDeleteDialogOpen(false);
-                    setCategoryToDelete(null);
-                }}
-                message={`คุณต้องการลบประเภท "${categoryToDelete?.category_name}" ใช่หรือไม่?`}
-            />
-        </div>
-    );
-}
 
+        </div>
+    )
+};
+export default ProductUnitPage; 

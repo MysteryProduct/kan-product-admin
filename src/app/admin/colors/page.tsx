@@ -7,7 +7,7 @@ import { PaginationMeta } from '@/types/pagination';
 import { Color } from '@/types/color';
 import UpdateColorForm from '@/app/admin/colors/component/update';
 import ConfirmDialog from '@/components/ConfirmDialog';
-
+import Pagination from '@/components/Pagination';
 export default function ColorsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -166,49 +166,11 @@ export default function ColorsPage() {
         </div>
 
         {/* Pagination */}
-        <div className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 border-t border-gray-100">
-          <div className="flex items-center justify-center gap-1 sm:gap-2">
-
-            {/* ปุ่มย้อนกลับ: ปิดใช้งานถ้าอยู่หน้าแรก */}
-            <button
-              className="w-8 h-8 flex items-center justify-center rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-
-            {/* แสดงปุ่มตัวเลขหน้า */}
-            {meta && Array.from({ length: meta.last_page }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                // ใช้ meta.page แทน currentPage ในการตรวจสอบ active state
-                className={`w-8 h-8 flex items-center justify-center rounded transition-colors ${meta.page === page
-                  ? 'bg-blue-500 text-white'
-                  : 'hover:bg-gray-100 text-gray-700'
-                  }`}
-              >
-                {page}
-              </button>
-            ))}
-
-            {/* ส่วน ... และปุ่มหน้าสุดท้ายถูกลบออก เพราะเราสร้างปุ่มตามจำนวนหน้าจริงแล้ว */}
-
-            {/* ปุ่มถัดไป: ปิดใช้งานถ้าอยู่หน้าสุดท้าย */}
-            <button
-              className="w-8 h-8 flex items-center justify-center rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={meta ? currentPage === meta.last_page : true}
-            >
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        </div>
+        <Pagination
+          meta={meta}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {/* Color Form Modal */}

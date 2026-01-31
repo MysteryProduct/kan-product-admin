@@ -10,7 +10,7 @@ import { Product, ProductResponse } from '@/types/product';
 import { PaginationMeta } from '@/types/pagination';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import StockModel from '@/models/stocks';
-
+import Pagination from '@/components/Pagination';
 const productModel = new ProductModel();
 const stockModel = new StockModel();
 
@@ -84,10 +84,20 @@ export default function ProductsPage() {
   const totalProducts = products ? products.data.length : 0;
 
 
-  const handleRefreshProduct = async () => {
+  const handleRefreshProduct = async (checkPageAfterDelete = false) => {
     // รีเฟรชข้อมูลสินค้าเมื่อมีการเพิ่มสินค้าใหม่
     try {
-      let data = await productModel.getProducts(currentPage, 10, searchQuery, sortField, sortOrder, statusFilter === 'all' ? undefined : statusFilter);
+      // คำนวณหน้าที่จะใช้ก่อนเรียก API
+      let targetPage = currentPage;
+      
+      // ถ้าเป็นการลบข้อมูลและไม่ใช่หน้าแรก และหน้าปัจจุบันมีเพียง 1 รายการ
+      // ให้ลดหน้าลงมา 1 หน้า
+      if (checkPageAfterDelete && currentPage > 1 && products?.data.length === 1) {
+        targetPage = currentPage - 1;
+        setCurrentPage(targetPage);
+      }
+      
+      let data = await productModel.getProducts(targetPage, 10, searchQuery, sortField, sortOrder, statusFilter === 'all' ? undefined : statusFilter);
       let stockStatuses = await stockModel.getStockStatuses();
 
       setProducts(data);
@@ -218,7 +228,7 @@ export default function ProductsPage() {
               {products && products.data.length > 0 ? (
                 products.data.map((product, index) => (
                   <tr key={product.product_id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 hidden sm:table-cell">{index + 1}</td>
+                    <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 hidden sm:table-cell">{ (currentPage - 1) * 10 + (index + 1)}</td>
                     <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 flex items-center gap-3">
                       <span className="text-gray-900 font-medium">{product.product_name}</span>
                     </td>
@@ -280,49 +290,12 @@ export default function ProductsPage() {
 
 
         {/* Pagination */}
-        <div className="px-2 sm:px-4 md:px-6 py-3 sm:py-4 border-t border-gray-100">
-          <div className="flex items-center justify-center gap-1 sm:gap-2">
+        <Pagination
+          meta={meta}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+        />
 
-            {/* ปุ่มย้อนกลับ: ปิดใช้งานถ้าอยู่หน้าแรก */}
-            <button
-              className="w-8 h-8 flex items-center justify-center rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-
-            {/* แสดงปุ่มตัวเลขหน้า */}
-            {meta && Array.from({ length: meta.last_page }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                // ใช้ meta.page แทน currentPage ในการตรวจสอบ active state
-                className={`w-8 h-8 flex items-center justify-center rounded transition-colors ${meta.page === page
-                  ? 'bg-blue-500 text-white'
-                  : 'hover:bg-gray-100 text-gray-700'
-                  }`}
-              >
-                {page}
-              </button>
-            ))}
-
-            {/* ส่วน ... และปุ่มหน้าสุดท้ายถูกลบออก เพราะเราสร้างปุ่มตามจำนวนหน้าจริงแล้ว */}
-
-            {/* ปุ่มถัดไป: ปิดใช้งานถ้าอยู่หน้าสุดท้าย */}
-            <button
-              className="w-8 h-8 flex items-center justify-center rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={meta ? currentPage === meta.last_page : true}
-            >
-              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        </div>
       </div>
       <ProductForm
         isOpen={isFormOpen}
@@ -354,8 +327,8 @@ export default function ProductsPage() {
           if (productToDelete) {
             try {
               await productModel.deleteProduct(productToDelete.product_id);
-              // รีเฟรชข้อมูลสินค้า
-              handleRefreshProduct();
+              // รีเฟรชข้อมูลสินค้า และตรวจสอบว่าหน้านี้ยังมีข้อมูลหรือไม่
+              handleRefreshProduct(true);
             } catch (error) {
               console.error('Failed to delete product:', error);
             }
