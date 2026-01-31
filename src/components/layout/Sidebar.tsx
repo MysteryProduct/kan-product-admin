@@ -43,48 +43,46 @@ export default function Sidebar() {
       ),
       href: '/dashboard2',
     },
-    {
-      title: 'Frontend Pages',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      ),
-      subItems: [
-        { title: 'Pricing', href: '/pricing' },
-        { title: 'Account Settings', href: '/account' },
-        { title: 'FAQ', href: '/faq' },
-      ],
-    },
+    // {
+    //   title: 'Frontend Pages',
+    //   icon: (
+    //     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    //       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    //     </svg>
+    //   ),
+    //   subItems: [
+    //     { title: 'Pricing', href: '/pricing' },
+    //     { title: 'Account Settings', href: '/account' },
+    //     { title: 'FAQ', href: '/faq' },
+    //   ],
+    // },
   ];
 
   const appsItems: MenuItem[] = [
+
     {
-      title: 'Products',
+      title: 'จัดการสินค้า',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
         </svg>
       ),
-      href: '/admin/products',
+      subItems: [
+        { title: 'สินค้า', href: '/admin/products' },
+        { title: 'ใบสั่งซื้อ', href: '/admin/purchase-orders' },
+      ],
     },
     {
-      title: 'สีของสินค้า',
+      title: 'จัดการข้อมูลพื้นฐาน',
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
         </svg>
       ),
-      href: '/admin/colors',
-    },
-    {
-      title: 'ประเภทสินค้า',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-        </svg>
-      ),
-      href: '/admin/categories',
+      subItems: [
+        { title: 'สีของสินค้า', href: '/admin/colors' },
+        { title: 'ประเภทสินค้า', href: '/admin/categories' },
+      ],
     },
   ];
 
@@ -92,6 +90,7 @@ export default function Sidebar() {
     const hasSubItems = item.subItems && item.subItems.length > 0;
     const isExpanded = expandedItems.includes(item.title);
     const isActive = pathname === item.href;
+    const hasActiveSubItem = hasSubItems && item.subItems?.some(subItem => pathname === subItem.href);
 
     return (
       <div key={item.title}>
@@ -108,9 +107,8 @@ export default function Sidebar() {
               }
             }
           }}
-          className={`flex items-center justify-between px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors ${
-            isActive ? 'bg-blue-50 text-blue-600' : ''
-          } ${isSubItem ? 'pl-12 text-sm' : ''}`}
+          className={`flex items-center justify-between px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors ${isActive || hasActiveSubItem ? 'bg-blue-50 text-blue-600' : ''
+            } ${isSubItem ? 'pl-12 text-sm' : ''}`}
         >
           <div className="flex items-center gap-3">
             {item.icon}
@@ -137,21 +135,26 @@ export default function Sidebar() {
 
         {hasSubItems && isExpanded && (
           <div className="mt-1 space-y-1">
-            {item.subItems?.map((subItem) => (
-              <Link
-                key={subItem.title}
-                href={subItem.href}
-                onClick={() => {
-                  // ปิด sidebar บน mobile/tablet เมื่อคลิกเมนูย่อย
-                  if (window.innerWidth < 1024) {
-                    closeSidebar();
-                  }
-                }}
-                className="flex items-center px-4 py-2 pl-12 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
-              >
-                {subItem.title}
-              </Link>
-            ))}
+            {item.subItems?.map((subItem) => {
+              const isSubItemActive = pathname === subItem.href;
+              return (
+                <Link
+                  key={subItem.title}
+                  href={subItem.href}
+                  onClick={() => {
+                    // ปิด sidebar บน mobile/tablet เมื่อคลิกเมนูย่อย
+                    if (window.innerWidth < 1024) {
+                      closeSidebar();
+                    }
+                  }}
+                  className={`flex items-center px-4 py-2 pl-12 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors ${
+                    isSubItemActive ? 'bg-blue-50 text-blue-600 font-medium' : ''
+                  }`}
+                >
+                  {subItem.title}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
@@ -162,79 +165,78 @@ export default function Sidebar() {
     <>
       {/* Overlay for mobile */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"
           onClick={closeSidebar}
         />
       )}
-      
-      <aside className={`fixed lg:sticky top-0 left-0 h-screen bg-white flex-col overflow-y-auto z-50 transition-all duration-300 ease-in-out overflow-hidden ${
-        isOpen ? 'translate-x-0 w-64 border-r border-gray-200 flex' : '-translate-x-full lg:translate-x-0 w-0 lg:w-0 border-0 hidden lg:flex'
-      }`}>
+
+      <aside className={`fixed lg:sticky top-0 left-0 h-screen bg-white flex-col overflow-y-auto z-50 transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'translate-x-0 w-64 border-r border-gray-200 flex' : '-translate-x-full lg:translate-x-0 w-0 lg:w-0 border-0 hidden lg:flex'
+        }`}>
         {/* Logo */}
         <div className={`p-6 border-b border-gray-200 ${!isOpen && 'hidden lg:hidden'}`}>
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 flex-1">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
-              </svg>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 flex-1">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
+                </svg>
+              </div>
+              <span className="text-xl font-bold text-gray-900">Spike Admin</span>
             </div>
-            <span className="text-xl font-bold text-gray-900">Spike Admin</span>
-          </div>
-          <button 
-            onClick={closeSidebar}
-            className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
-            aria-label="Close sidebar"
-          >
-            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className={`flex-1 p-4 space-y-6 ${!isOpen && 'hidden lg:hidden'}`}>
-        {/* HOME Section */}
-        <div>
-          <h6 className="px-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            HOME
-          </h6>
-          <div className="space-y-1">
-            {menuItems.map((item) => renderMenuItem(item))}
+            <button
+              onClick={closeSidebar}
+              className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors lg:hidden"
+              aria-label="Close sidebar"
+            >
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
 
-        {/* APPS Section */}
-        <div>
-          <h6 className="px-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            APPS
-          </h6>
-          <div className="space-y-1">
-            {appsItems.map((item) => renderMenuItem(item))}
+        {/* Navigation */}
+        <nav className={`flex-1 p-4 space-y-6 ${!isOpen && 'hidden lg:hidden'}`}>
+          {/* HOME Section */}
+          <div>
+            <h6 className="px-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              HOME
+            </h6>
+            <div className="space-y-1">
+              {menuItems.map((item) => renderMenuItem(item))}
+            </div>
           </div>
-        </div>
-      </nav>
 
-      {/* User Profile */}
-      <div className={`p-4 border-t border-gray-200 ${!isOpen && 'hidden lg:hidden'}`}>
-        <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-            M
+          {/* APPS Section */}
+          <div>
+            <h6 className="px-4 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              APPS
+            </h6>
+            <div className="space-y-1">
+              {appsItems.map((item) => renderMenuItem(item))}
+            </div>
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-gray-900">Mike</p>
-            <p className="text-xs text-gray-500">Admin</p>
+        </nav>
+
+        {/* User Profile */}
+        <div className={`p-4 border-t border-gray-200 ${!isOpen && 'hidden lg:hidden'}`}>
+          <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+              M
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-gray-900">Mike</p>
+              <p className="text-xs text-gray-500">Admin</p>
+            </div>
+            <button className="text-blue-600 hover:text-blue-700">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
           </div>
-          <button className="text-blue-600 hover:text-blue-700">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-          </button>
         </div>
-      </div>
-    </aside>
+      </aside>
     </>
   );
 }

@@ -23,6 +23,7 @@ interface ProductDescription {
 }
 
 const MAX_FILES = 5;
+const MAX_FILE_SIZE = 30 * 1024 * 1024; // 30MB
 const ACCEPTED_FILE_TYPES = 'image/*,video/*';
 
 export default function UpdateProductForm({
@@ -146,6 +147,24 @@ export default function UpdateProductForm({
 
     if (totalFiles > MAX_FILES) {
       setError(`สามารถมีไฟล์ได้สูงสุด ${MAX_FILES} ไฟล์`);
+      return;
+    }
+
+    // ตรวจสอบประเภทไฟล์
+    const invalidFiles = selectedFiles.filter(
+      (file) => !file.type.startsWith('image/') && !file.type.startsWith('video/')
+    );
+
+    if (invalidFiles.length > 0) {
+      setError('รองรับเฉพาะไฟล์รูปภาพและวีดีโอเท่านั้น');
+      return;
+    }
+
+    // ตรวจสอบขนาดไฟล์
+    const oversizedFiles = selectedFiles.filter((file) => file.size > MAX_FILE_SIZE);
+
+    if (oversizedFiles.length > 0) {
+      setError('ไฟล์มีขนาดเกิน 30MB กรุณาเลือกไฟล์ที่มีขนาดเล็กกว่า');
       return;
     }
 

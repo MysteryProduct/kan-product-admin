@@ -1,4 +1,5 @@
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 // สร้าง axios instance พร้อม config
 const axiosInstance = axios.create({
@@ -12,18 +13,18 @@ const axiosInstance = axios.create({
 // Request Interceptor - เพิ่ม auth token ทุก request
 axiosInstance.interceptors.request.use(
   (config) => {
-    // ดึง token จาก localStorage (ถ้ามี)
+    // ดึง token จาก Cookies (ถ้ามี)
     if (typeof window !== 'undefined') {
-      const userStr = localStorage.getItem('user');
-      if (userStr) {
-        try {
-          const tokenData = localStorage.getItem('token');
-          if (tokenData) {
-            config.headers.Authorization = `Bearer ${tokenData}`;
-          }
-        } catch (error) {
-          console.error('Error parsing user data:', error);
+      try {
+        const token = Cookies.get('token');
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
         }
+      } catch (error) {
+        console.error('Error reading token from cookies:', error);
+        // ลบ cookies ที่เสียหาย
+        Cookies.remove('user');
+        Cookies.remove('token');
       }
     }
     return config;
@@ -49,7 +50,8 @@ axiosInstance.interceptors.response.use(
         case 401:
           // Unauthorized - ให้ redirect ไป login
           if (typeof window !== 'undefined') {
-            localStorage.removeItem('user');
+            Cookies.remove('user');
+            Cookies.remove('token');
             window.location.href = '/login';
           }
           break;

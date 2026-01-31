@@ -9,7 +9,10 @@ import ProductModel from '@/models/product';
 import { Product, ProductResponse } from '@/types/product';
 import { PaginationMeta } from '@/types/pagination';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import StockModel from '@/models/stocks';
+
 const productModel = new ProductModel();
+const stockModel = new StockModel();
 
 type SortField = 'adddate' | 'price' | null;
 type SortOrder = 'asc' | 'desc';
@@ -26,20 +29,26 @@ export default function ProductsPage() {
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [inStock, setInStock] = useState(0);
+  const [outStock, setOutStock] = useState(0);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'in_stock' | 'out_stock'>('all');
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        let data = await productModel.getProducts(currentPage, 10, searchQuery, sortField, sortOrder);
-
+        let data = await productModel.getProducts(currentPage, 10, searchQuery, sortField, sortOrder, statusFilter === 'all' ? undefined : statusFilter);
+        let stockStatuses = await stockModel.getStockStatuses();
         setProducts(data);
         setMeta(data.meta);
+        setInStock(stockStatuses.in_stock);
+        setOutStock(stockStatuses.out_stock);
       } catch (error) {
         console.error('Failed to fetch products:', error);
       }
     };
 
     fetchProducts();
-  }, [currentPage, searchQuery, sortField, sortOrder]);
+  }, [currentPage, searchQuery, sortField, sortOrder, statusFilter]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -78,10 +87,13 @@ export default function ProductsPage() {
   const handleRefreshProduct = async () => {
     // รีเฟรชข้อมูลสินค้าเมื่อมีการเพิ่มสินค้าใหม่
     try {
-      let data = await productModel.getProducts(currentPage, 10, searchQuery, sortField, sortOrder);
+      let data = await productModel.getProducts(currentPage, 10, searchQuery, sortField, sortOrder, statusFilter === 'all' ? undefined : statusFilter);
+      let stockStatuses = await stockModel.getStockStatuses();
 
       setProducts(data);
       setMeta(data.meta);
+      setInStock(stockStatuses.in_stock);
+      setOutStock(stockStatuses.out_stock);
     } catch (error) {
       console.error('Failed to fetch products:', error);
     }
@@ -89,27 +101,27 @@ export default function ProductsPage() {
   return (
     <div className="bg-gray-50 p-2 sm:p-4 md:p-6 lg:p-8">
       {/* Statistics Cards */}
-      {/* <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
           <div className="text-2xl sm:text-4xl font-bold text-blue-600 mb-1 sm:mb-2">{totalProducts}</div>
           <div className="text-xs sm:text-sm text-blue-700 font-medium">Total Products</div>
         </div>
 
-        <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
+        {/* <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
           <div className="text-2xl sm:text-4xl font-bold text-orange-600 mb-1 sm:mb-2">{pendingProducts}</div>
           <div className="text-xs sm:text-sm text-orange-700 font-medium">Pending Products</div>
-        </div>
+        </div> */}
 
         <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
-          <div className="text-2xl sm:text-4xl font-bold text-green-600 mb-1 sm:mb-2">{inStockProducts}</div>
+          <div className="text-2xl sm:text-4xl font-bold text-green-600 mb-1 sm:mb-2">{inStock}</div>
           <div className="text-xs sm:text-sm text-green-700 font-medium">In Stock</div>
         </div>
 
         <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
-          <div className="text-2xl sm:text-4xl font-bold text-red-600 mb-1 sm:mb-2">{outOfStockProducts}</div>
+          <div className="text-2xl sm:text-4xl font-bold text-red-600 mb-1 sm:mb-2">{outStock}</div>
           <div className="text-xs sm:text-sm text-red-700 font-medium">Out of Stock</div>
         </div>
-      </div> */}
+      </div>
 
       {/* Main Content Card */}
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
@@ -178,6 +190,27 @@ export default function ProductsPage() {
                     <SortIcon field="price" />
                   </button>
                 </th>
+                <th className='text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 hidden md:table-cell'>
+                  <div className="relative inline-flex items-center">
+                    <svg className="absolute left-2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value as 'all' | 'in_stock' | 'out_stock')}
+                      className="pl-8 pr-8 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white text-xs font-semibold cursor-pointer hover:border-blue-400 transition-colors appearance-none bg-no-repeat bg-right"
+                      style={{
+                        backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                        backgroundPosition: 'right 0.5rem center',
+                        backgroundSize: '1.5em 1.5em'
+                      }}
+                    >
+                      <option value="all">ทั้งหมด</option>
+                      <option value="in stock">✓ มีสินค้า</option>
+                      <option value="out stock">✗ สินค้าหมด</option>
+                    </select>
+                  </div>
+                </th>
                 <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700">การจัดการ</th>
               </tr>
             </thead>
@@ -200,6 +233,9 @@ export default function ProductsPage() {
                     </td>
                     <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 hidden md:table-cell">
                       {product.price}
+                    </td>
+                    <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 hidden md:table-cell">
+                      {product.stock.stock_status}
                     </td>
                     <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4">
                       <button

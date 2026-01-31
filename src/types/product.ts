@@ -10,7 +10,7 @@ export interface ProductFile {
 }
 
 export interface Product {
-    product_id: number;
+    product_id: string;
     product_name: string;
     product_description: string;
     price: number;
@@ -21,6 +21,11 @@ export interface Product {
     color : {
         color_id: number;
         color_name: string;
+    }
+    stock : {
+        stock_id: number;
+        stock_qty: number;
+        stock_status : string;
     }
     adddate: Date;
     files?: ProductFile[];

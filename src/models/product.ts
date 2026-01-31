@@ -24,7 +24,8 @@ class ProductModel {
     limit: number = 10,
     search?: string,
     sortField?: 'adddate' | 'price' | null,
-    sortOrder?: 'asc' | 'desc'
+    sortOrder?: 'asc' | 'desc',
+    stockStatus?: 'in_stock' | 'out_stock'
   ): Promise<ApiProductResponse> {
     try {
       const response = await axiosInstance.get<ApiProductResponse>('/product', {
@@ -34,6 +35,7 @@ class ProductModel {
           ...(search && { search }),
           ...(sortField && { sortField }),
           ...(sortOrder && { sortOrder }),
+          ...(stockStatus && { stockStatus }),
         },
       });
       return response.data;
@@ -130,7 +132,7 @@ class ProductModel {
   /**
    * ลบ Product
    */
-  async deleteProduct(id: number): Promise<void> {
+  async deleteProduct(id: string): Promise<void> {
     try {
       await axiosInstance.delete(`/product/${id}`);
     } catch (error) {
