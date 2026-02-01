@@ -5,66 +5,65 @@ import { ProductUnitModel } from '@/models/product-unit';
 
 import Pagination from '@/components/Pagination';
 import { PaginationMeta } from '@/types/pagination';
-import category from '@/models/category';
-
+import ProductUnitForm from './components/insert';
+import UpdateProductUnitForm from './components/update';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 const productUnitModel = new ProductUnitModel();
 const ProductUnitPage = () => {
     const [productUnits, setProductUnits] = useState<ProductUnit[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [page, setPage] = useState<number>(1);
     const [limit, setLimit] = useState<number>(10);
-    const [totalPages, setTotalPages] = useState<number>(1);
-    const [search, setSearch] = useState<string>('');
-    const [showForm, setShowForm] = useState<boolean>(false);
     const [editingProductUnit, setEditingProductUnit] = useState<ProductUnit | null>(null);
-    const [showConfirmDialog, setShowConfirmDialog] = useState<boolean>(false);
-    const [deletingProductUnitId, setDeletingProductUnitId] = useState<number | null>(null);
+    const [isEditFormOpen, setIsEditFormOpen] = useState<boolean>(false);
     const [meta, setMeta] = useState<PaginationMeta | null>(null);
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
+    const [productUnitToDelete, setProductUnitToDelete] = useState<ProductUnit | null>(null);
+
     const fetchProductUnits = async () => {
-        setLoading(true);
         try {
             const response: ApiProductUnitResponse = await productUnitModel.getProductUnits(
-                page,
+                currentPage,
                 limit,
-                search
+                searchQuery
             );
             setProductUnits(response.data);
             setMeta(response.meta);
         } catch (error) {
             console.error('Error fetching product units:', error);
         }
-        setLoading(false);
     };
 
     useEffect(() => {
         fetchProductUnits();
-    }, [page, limit, search]);
-    const handleSearch = (value: string) => {
-        setSearch(value);
-        setPage(1); // Reset to first page on new search
-    }
-    const handleEdit = (productUnit: ProductUnit) => {
-        setEditingProductUnit(productUnit);
-        setShowForm(true);
-    };
-    const handleDelete = (productUnitId: number) => {
-        setDeletingProductUnitId(productUnitId);
-        setShowConfirmDialog(true);
+    }, [currentPage,searchQuery]);
+
+
+    const fetchProductUnitsOnDelete = () => {
+        const pageToFetch = (productUnits.length === 1 && currentPage > 1)
+            ? currentPage - 1
+            : currentPage;
+
+        productUnitModel.getProductUnits(pageToFetch, limit, searchQuery).then((data) => {
+            setProductUnits(data.data);
+            setMeta(data.meta);
+            if (pageToFetch !== currentPage) {
+                setCurrentPage(pageToFetch);
+            }
+        });
     };
     const confirmDelete = async () => {
-        if (deletingProductUnitId !== null) {
+        if (productUnitToDelete !== null) {
             try {
-                await productUnitModel.deleteProductUnit(deletingProductUnitId);
-                fetchProductUnits();
+                await productUnitModel.deleteProductUnit(productUnitToDelete.product_unit_id);
+                fetchProductUnitsOnDelete();
             } catch (error) {
                 console.error('Error deleting product unit:', error);
             }
-            setShowConfirmDialog(false);
-            setDeletingProductUnitId(null);
+            setIsDeleteDialogOpen(false);
+            setProductUnitToDelete(null);
         }
     };
     return (
@@ -100,7 +99,7 @@ const ProductUnitPage = () => {
                         </div>
 
                         <button
-                            onClick={() => setIsFormOpen(true)}
+                            
                             className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium whitespace-nowrap"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,7 +123,7 @@ const ProductUnitPage = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {productUnits.map((productUnit, index) => (
+                            {productUnits && productUnits.length > 0 ? (productUnits.map((productUnit, index) => (
                                 <tr
                                     key={productUnit.product_unit_id}
                                     className="bg-white border-b border-gray-50 hover:bg-gray-50 transition-colors"
@@ -133,10 +132,10 @@ const ProductUnitPage = () => {
                                     <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-900">{productUnit.product_unit_name}</td>
                                     <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4">
                                         <button
-                                            // onClick={() => {
-                                            //     setSelectedCategory(category);
-                                            //     setIsUpdateFormOpen(true);
-                                            // }}
+                                            onClick={() => {
+                                                setEditingProductUnit(productUnit)
+                                                setIsEditFormOpen(true);
+                                            }}
                                             className="text-gray-400 hover:text-blue-500 transition-colors mr-4"
                                         >
                                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -145,8 +144,8 @@ const ProductUnitPage = () => {
                                         </button>
                                         <button className="text-gray-400 hover:text-red-500 transition-colors"
                                             onClick={() => {
-                                                // setCategoryToDelete(category);
-                                                // setIsDeleteDialogOpen(true);
+                                                setProductUnitToDelete(productUnit);
+                                                setIsDeleteDialogOpen(true);
                                             }}
                                         >
                                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -159,7 +158,14 @@ const ProductUnitPage = () => {
                                         </button>
                                     </td>
                                 </tr>
-                            ))}
+                            ))) : (
+                                <tr>
+                                    <td colSpan={3} className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-center text-sm text-gray-500">
+                                        ไม่พบข้อมูลหน่วยสินค้า
+                                    </td>
+                                </tr>
+                            )}
+            
                         </tbody>
                     </table>
                 </div>
@@ -172,7 +178,32 @@ const ProductUnitPage = () => {
                 />
             </div>
 
-
+            {/* Insert / Update Form Modal */}
+            <ProductUnitForm
+                isOpen={isFormOpen}
+                onClose={() => setIsFormOpen(false)}
+                onSuccess={() => fetchProductUnits()}
+            />
+            <UpdateProductUnitForm
+                isOpen={isEditFormOpen}
+                onClose={() => {
+                    setEditingProductUnit(null);
+                    setIsEditFormOpen(false);
+                }}
+                initialData={editingProductUnit || { product_unit_id: 0, product_unit_name: '' }}
+                onSuccess={() => {
+                    fetchProductUnits();
+                    setEditingProductUnit(null);
+                }}
+            />
+            {/* Confirm Delete Dialog */}
+            <ConfirmDialog
+                isOpen={isDeleteDialogOpen}
+                title="ยืนยันการลบหน่วยสินค้า"
+                message={`คุณแน่ใจหรือไม่ว่าต้องการลบหน่วยสินค้า "${productUnitToDelete?.product_unit_name}"? การลบนี้ไม่สามารถย้อนกลับได้.`}
+                onConfirm={confirmDelete}
+                onCancel={() => setIsDeleteDialogOpen(false)}
+            />
         </div>
     )
 };

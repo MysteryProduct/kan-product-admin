@@ -40,7 +40,7 @@ export class ProductUnitModel {
         productUnitName: string
     ): Promise<ProductUnit> => {
         try {
-            const response = await axiosInstance.put<ProductUnit>(`/product-unit/${productUnitId}`, {
+            const response = await axiosInstance.patch<ProductUnit>(`/product-unit/${productUnitId}`, {
                 product_unit_name: productUnitName,
             });
             return response.data;
