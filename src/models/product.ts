@@ -25,7 +25,7 @@ class ProductModel {
     search?: string,
     sortField?: 'adddate' | 'price' | null,
     sortOrder?: 'asc' | 'desc',
-    stockStatus?: 'in_stock' | 'out_stock'
+    stockStatus?: 'in stock' | 'out stock'
   ): Promise<ApiProductResponse> {
     try {
       const response = await axiosInstance.get<ApiProductResponse>('/product', {

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import ProductForm from '../products/components/insert';
 import UpdateProductForm from '../products/components/update';
 
@@ -11,6 +10,7 @@ import { PaginationMeta } from '@/types/pagination';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import StockModel from '@/models/stocks';
 import Pagination from '@/components/Pagination';
+import { DataTable, DataTableColumn } from '@/components/DataTable';
 const productModel = new ProductModel();
 const stockModel = new StockModel();
 
@@ -31,7 +31,7 @@ export default function ProductsPage() {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [inStock, setInStock] = useState(0);
   const [outStock, setOutStock] = useState(0);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'in_stock' | 'out_stock'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'in stock' | 'out stock'>('all');
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -61,24 +61,140 @@ export default function ProductsPage() {
     }
   };
 
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) {
-      return (
-        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-        </svg>
-      );
+  const handleDataTableFilterChange = (filters: Record<string, string | string[]>) => {
+    console.log('All filters:', filters);
+    
+    // Handle stock filter changes
+    if (filters.stock) {
+      const stockValue = filters.stock;
+      if (Array.isArray(stockValue)) {
+        if (stockValue.length === 0) {
+          setStatusFilter('all');
+        } else if (stockValue.includes('in stock') && !stockValue.includes('out stock') && !stockValue.includes('test')) {
+          setStatusFilter('in stock');
+        } else if (stockValue.includes('out stock') && !stockValue.includes('in stock') && !stockValue.includes('test')) {
+          setStatusFilter('out stock');
+        } else {
+          // Multiple selected, show all
+          setStatusFilter('all');
+        }
+      }
+    } else {
+      // No stock filter, reset to all
+      setStatusFilter('all');
     }
-    return sortOrder === 'asc' ? (
-      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-      </svg>
-    ) : (
-      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-      </svg>
-    );
+    
+    // You can also handle other filters here, for example:
+    // if (filters.color) {
+    //   console.log('Color filters:', filters.color);
+    // }
+    // if (filters.category) {
+    //   console.log('Category filters:', filters.category);
+    // }
+    
+    // Refresh products after filter change
+    setTimeout(() => handleRefreshProduct(), 0);
   };
+
+  // Define DataTable columns
+  const columns: DataTableColumn<Product>[] = [
+    {
+      key: 'product_name' as keyof Product,
+      label: 'ชื่อสินค้า',
+      filterable: true,
+      filterType: 'text',
+      filterValue: (row) => row.product_name,
+    },
+    {
+      key: 'category' as any as keyof Product,
+      label: 'ประเภทสินค้า',
+      filterable: true,
+      filterType: 'multi-select',
+      filterOptions: [
+        { label: 'แม่นือ', value: 'แม่นือ' },
+        { label: 'เม็ดแนว', value: 'เม็ดแนว' },
+      ],
+      filterValue: (row) => row.category?.category_name || '',
+      render: (value: any) => value?.category_name,
+    },
+    {
+      key: 'color' as any as keyof Product,
+      label: 'สีสินค้า',
+      filterable: true,
+      filterType: 'multi-select',
+      filterOptions: [
+        { label: 'สีขาว', value: 'สีขาว' },
+        { label: 'สีดำ', value: 'สีดำ' },
+        { label: 'สีแดง', value: 'สีแดง' },
+      ],
+      filterValue: (row) => row.color?.color_name || '',
+      render: (value: any) => value?.color_name,
+    },
+    {
+      key: 'adddate' as keyof Product,
+      label: 'วันที่เพิ่ม',
+      sortable: true,
+      render: (value) => new Date(value as string).toLocaleDateString(),
+    },
+    {
+      key: 'price' as keyof Product,
+      label: 'ราคา',
+      sortable: true,
+    },
+    {
+      key: 'stock' as any as keyof Product,
+      label: 'สถานะสินค้า',
+      filterable: true,
+      filterType: 'multi-select',
+      filterOptions: [
+        { label: 'มีสินค้า', value: 'in stock' },
+        { label: 'สินค้าหมด', value: 'out stock' },
+        { label: 'test', value: 'test' },
+
+      ],
+      filterValue: (row) => row.stock?.stock_status || '',
+      render: (value: any) => {
+        if (value?.stock_status === 'in stock') return 'มีสินค้า';
+        if (value?.stock_status === 'out stock') return 'สินค้าหมด';
+        if (value?.stock_status === 'test') return 'test';
+        return value?.stock_status;
+      },
+    },
+    {
+      key: 'product_id' as keyof Product,
+      label: 'การจัดการ',
+      render: (value, row: Product) => (
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              setSelectedProduct(row);
+              setIsUpdateFormOpen(true);
+            }}
+            className="text-gray-400 hover:text-blue-500 transition-colors"
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 12v3h3l8.293-8.293-3-3L5 12z" />
+            </svg>
+          </button>
+          <button 
+            className="text-gray-400 hover:text-red-500 transition-colors"
+            onClick={() => {
+              setProductToDelete(row);
+              setIsDeleteDialogOpen(true);
+            }}
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fillRule="evenodd"
+                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+      ),
+    },
+  ];
 
 
   const totalProducts = products ? products.data.length : 0;
@@ -174,119 +290,15 @@ export default function ProductsPage() {
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto -mx-2 sm:mx-0 p-3">
-          <table className="w-full ">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 hidden sm:table-cell">ลำดับ</th>
-                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700">ชื่อสินค้า</th>
-                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 hidden md:table-cell">ประเภทสินค้า</th>
-                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 hidden md:table-cell">สีสินค้า</th>
-                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 hidden md:table-cell">
-                  <button
-                    onClick={() => handleSort('adddate')}
-                    className="flex items-center gap-2 hover:text-blue-600 transition-colors"
-                  >
-                    วันที่เพิ่ม
-                    <SortIcon field="adddate" />
-                  </button>
-                </th>
-                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 hidden md:table-cell">
-                  <button
-                    onClick={() => handleSort('price')}
-                    className="flex items-center gap-2 hover:text-blue-600 transition-colors"
-                  >
-                    ราคา
-                    <SortIcon field="price" />
-                  </button>
-                </th>
-                <th className='text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 hidden md:table-cell'>
-                  <div className="relative inline-flex items-center">
-                    <svg className="absolute left-2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                    </svg>
-                    <select
-                      value={statusFilter}
-                      onChange={(e) => setStatusFilter(e.target.value as 'all' | 'in_stock' | 'out_stock')}
-                      className="pl-8 pr-8 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white text-xs font-semibold cursor-pointer hover:border-blue-400 transition-colors appearance-none bg-no-repeat bg-right"
-                      style={{
-                        backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                        backgroundPosition: 'right 0.5rem center',
-                        backgroundSize: '1.5em 1.5em'
-                      }}
-                    >
-                      <option value="all">ทั้งหมด</option>
-                      <option value="in stock">✓ มีสินค้า</option>
-                      <option value="out stock">✗ สินค้าหมด</option>
-                    </select>
-                  </div>
-                </th>
-                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700">การจัดการ</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products && products.data.length > 0 ? (
-                products.data.map((product, index) => (
-                  <tr key={product.product_id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 hidden sm:table-cell">{(currentPage - 1) * 10 + (index + 1)}</td>
-                    <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 flex items-center gap-3">
-                      <span className="text-gray-900 font-medium">{product.product_name}</span>
-                    </td>
-                    <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 hidden md:table-cell">
-                      {product.category.category_name}
-                    </td>
-                    <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 hidden md:table-cell">
-                      {product.color.color_name}
-                    </td>
-                    <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 hidden md:table-cell">
-                      {new Date(product.adddate).toLocaleDateString()}
-                    </td>
-                    <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 hidden md:table-cell">
-                      {product.price}
-                    </td>
-                    <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 hidden md:table-cell">
-                      {product.stock.stock_status}
-                    </td>
-                    <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4">
-                      <button
-                        onClick={() => {
-                          setSelectedProduct(product);
-                          setIsUpdateFormOpen(true);
-                        }}
-                        className="text-gray-400 hover:text-blue-500 transition-colors mr-4"
-                      >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 12v3h3l8.293-8.293-3-3L5 12z" />
-                        </svg>
-                      </button>
-                      <button className="text-gray-400 hover:text-red-500 transition-colors"
-                        onClick={() => {
-                          setProductToDelete(product);
-                          setIsDeleteDialogOpen(true);
-                        }}
-                      >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path
-                            fillRule="evenodd"
-                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
-                    ไม่พบสินค้าที่ค้นหา
-                  </td>
-                </tr>
-              )}
-
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          data={products?.data || []}
+          columns={columns}
+          keyField="product_id"
+          className="bg-white"
+          headerClassName="bg-gray-50 border-b border-gray-100"
+          rowClassName="border-b border-gray-100 hover:bg-gray-50"
+          onFilterChange={handleDataTableFilterChange}
+        />
 
 
         {/* Pagination */}
