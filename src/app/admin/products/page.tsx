@@ -89,14 +89,14 @@ export default function ProductsPage() {
     try {
       // คำนวณหน้าที่จะใช้ก่อนเรียก API
       let targetPage = currentPage;
-      
+
       // ถ้าเป็นการลบข้อมูลและไม่ใช่หน้าแรก และหน้าปัจจุบันมีเพียง 1 รายการ
       // ให้ลดหน้าลงมา 1 หน้า
       if (checkPageAfterDelete && currentPage > 1 && products?.data.length === 1) {
         targetPage = currentPage - 1;
         setCurrentPage(targetPage);
       }
-      
+
       let data = await productModel.getProducts(targetPage, 10, searchQuery, sortField, sortOrder, statusFilter === 'all' ? undefined : statusFilter);
       let stockStatuses = await stockModel.getStockStatuses();
 
@@ -228,7 +228,7 @@ export default function ProductsPage() {
               {products && products.data.length > 0 ? (
                 products.data.map((product, index) => (
                   <tr key={product.product_id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 hidden sm:table-cell">{ (currentPage - 1) * 10 + (index + 1)}</td>
+                    <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 hidden sm:table-cell">{(currentPage - 1) * 10 + (index + 1)}</td>
                     <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 flex items-center gap-3">
                       <span className="text-gray-900 font-medium">{product.product_name}</span>
                     </td>
@@ -290,11 +290,20 @@ export default function ProductsPage() {
 
 
         {/* Pagination */}
-        <Pagination
-          meta={meta}
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-        />
+        {meta && meta.last_page > 1 && (
+          <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, meta.total)} of {meta.total} results
+              </div>
+              <Pagination
+                currentPage={currentPage}
+                meta={meta}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          </div>
+        )}
 
       </div>
       <ProductForm

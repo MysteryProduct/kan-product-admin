@@ -38,7 +38,7 @@ const ProductUnitPage = () => {
 
     useEffect(() => {
         fetchProductUnits();
-    }, [currentPage,searchQuery]);
+    }, [currentPage, searchQuery]);
 
 
     const fetchProductUnitsOnDelete = () => {
@@ -99,7 +99,7 @@ const ProductUnitPage = () => {
                         </div>
 
                         <button
-                            
+
                             className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium whitespace-nowrap"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,17 +165,26 @@ const ProductUnitPage = () => {
                                     </td>
                                 </tr>
                             )}
-            
+
                         </tbody>
                     </table>
                 </div>
 
                 {/* Pagination */}
-                <Pagination
-                    meta={meta}
-                    currentPage={currentPage}
-                    onPageChange={setCurrentPage}
-                />
+                {meta && meta.last_page > 1 && (
+                    <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-100">
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-600">
+                                Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, meta.total)} of {meta.total} results
+                            </div>
+                            <Pagination
+                                currentPage={currentPage}
+                                meta={meta}
+                                onPageChange={setCurrentPage}
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Insert / Update Form Modal */}

@@ -164,13 +164,20 @@ export default function ColorsPage() {
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
-        <Pagination
-          meta={meta}
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-        />
+        {meta && meta.last_page > 1 && (
+          <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, meta.total)} of {meta.total} results
+              </div>
+              <Pagination
+                currentPage={currentPage}
+                meta={meta}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Color Form Modal */}
@@ -190,7 +197,7 @@ export default function ColorsPage() {
         isOpen={isDeleteDialogOpen}
         onConfirm={async () => {
           if (!colorToDelete) return;
-          
+
           const colorModel = new ColorModel();
           try {
             await colorModel.deleteColor(colorToDelete.color_id);

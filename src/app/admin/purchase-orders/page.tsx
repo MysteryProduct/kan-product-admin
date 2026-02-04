@@ -7,6 +7,7 @@ import { PaginationMeta } from '@/types/pagination';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import InsertPurchaseOrderForm from './components/insert';
 import UpdatePurchaseOrderForm from './components/update';
+import Pagination from '@/components/Pagination';
 
 const purchaseOrderModel = new PurchaseOrderModel();
 
@@ -292,41 +293,16 @@ export default function PurchaseOrdersPage() {
 
         {/* Pagination */}
         {meta && meta.last_page > 1 && (
-          <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-100">
-            <div className="flex items-center justify-center gap-2">
-              <button
-                className="w-8 h-8 flex items-center justify-center rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-                onClick={() => setCurrentPage(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
-                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-
-              {Array.from({ length: meta.last_page }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`w-8 h-8 flex items-center justify-center rounded transition-colors ${
-                    meta.page === page
-                      ? 'bg-blue-500 text-white'
-                      : 'hover:bg-gray-100 text-gray-700'
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
-
-              <button
-                className="w-8 h-8 flex items-center justify-center rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-                onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={currentPage === meta.last_page}
-              >
-                <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+          <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, meta.total)} of {meta.total} results
+              </div>
+              <Pagination
+                currentPage={currentPage}
+                meta={meta}
+                onPageChange={setCurrentPage}
+              />
             </div>
           </div>
         )}

@@ -43,17 +43,17 @@ export default function CategoryPage() {
         try {
             // คำนวณหน้าที่จะใช้ก่อนเรียก API
             let targetPage = currentPage;
-            
+
             // ถ้าเป็นการลบข้อมูลและไม่ใช่หน้าแรก และหน้าปัจจุบันมีเพียง 1 รายการ
             // ให้ลดหน้าลงมา 1 หน้า
             if (checkPageAfterDelete && currentPage > 1 && categories.length === 1) {
                 targetPage = currentPage - 1;
                 setCurrentPage(targetPage);
             }
-            
+
             const categoryModel = new CategoryModel();
             const result = await categoryModel.getCategories(targetPage, 10, searchQuery);
-            
+
             setCategories(result.data);
             setMeta(result.meta);
         } catch (err: any) {
@@ -160,11 +160,20 @@ export default function CategoryPage() {
                 </div>
 
                 {/* Pagination */}
-                <Pagination
-                    meta={meta}
-                    currentPage={currentPage}
-                    onPageChange={setCurrentPage}
-                />
+                {meta && meta.last_page > 1 && (
+                    <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-100">
+                        <div className="flex items-center justify-between">
+                            <div className="text-sm text-gray-600">
+                                Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, meta.total)} of {meta.total} results
+                            </div>
+                            <Pagination
+                                currentPage={currentPage}
+                                meta={meta}
+                                onPageChange={setCurrentPage}
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
 
             <CategoryForm
@@ -188,7 +197,7 @@ export default function CategoryPage() {
                 isOpen={isDeleteDialogOpen}
                 onConfirm={async () => {
                     if (!categoryToDelete) return;
-                    
+
                     const categoryModel = new CategoryModel();
                     try {
                         await categoryModel.deleteCategory(categoryToDelete.category_id);
