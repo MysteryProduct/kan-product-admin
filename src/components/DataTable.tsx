@@ -21,6 +21,7 @@ export interface DataTableProps<T> {
   pageSize?: number;
   onRowClick?: (row: T) => void;
   onFilterChange?: (filters: Record<string, string | string[]>) => void;
+  onSortChange?: (sort: { key: string; direction: 'ASC' | 'DESC' } | null) => void;
   className?: string;
   headerClassName?: string;
   rowClassName?: string;
@@ -28,7 +29,7 @@ export interface DataTableProps<T> {
 
 interface SortConfig<T> {
   key: keyof T;
-  direction: 'asc' | 'desc';
+  direction: 'ASC' | 'DESC';
 }
 
 interface FilterConfig<T> {
@@ -45,6 +46,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
       pageSize = 10,
       onRowClick,
       onFilterChange,
+      onSortChange,
       className = '',
       headerClassName = '',
       rowClassName = '',
@@ -70,29 +72,25 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
         });
       }
     };
-
-    // Get filterable and sortable columns
-    const filterableColumns = useMemo(
-      () => columns.filter((col) => col.filterable),
-      [columns]
-    );
-
-    const sortableColumns = useMemo(
-      () => columns.filter((col) => col.sortable),
-      [columns]
-    );
-
     // Handle sort
     const handleSort = (key: string) => {
       const columnKey = key as keyof any;
-      setSortConfig((prev) => {
-        if (prev?.key === columnKey) {
-          return prev.direction === 'asc'
-            ? { key: columnKey, direction: 'desc' }
-            : null;
-        }
-        return { key: columnKey, direction: 'asc' };
-      });
+      const nextSort =
+        sortConfig?.key === columnKey
+          ? sortConfig.direction === 'ASC'
+            ? { key: columnKey, direction: 'DESC' as const }
+            : null
+          : { key: columnKey, direction: 'ASC' as const };
+
+      setSortConfig(nextSort);
+
+      if (onSortChange) {
+        onSortChange(
+          nextSort
+            ? { key: String(nextSort.key), direction: nextSort.direction }
+            : null
+        );
+      }
     };
 
     const getFilterValue = (key: string) =>
@@ -111,9 +109,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
         if (Array.isArray(normalizedValue) ? normalizedValue.length > 0 : normalizedValue.trim()) {
           newFilters.push({ key: columnKey, value: normalizedValue });
         }
-        updatedFilters = newFilters;
-        console.log(newFilters);
-        
+        updatedFilters = newFilters;    
         return newFilters;
       });
       
@@ -131,56 +127,8 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
     // Apply filters and sorting
     const processedData = useMemo(() => {
       let result = [...data];
-
-      // Apply filters
-      result = result.filter((row) => {
-        return filterConfigs.every((filter) => {
-          const column = columns.find((col) => col.key === filter.key);
-          const rawValue = column?.filterValue
-            ? column.filterValue(row)
-            : String(row[filter.key]);
-          const value = rawValue.toLowerCase();
-
-          if (Array.isArray(filter.value)) {
-            return filter.value.includes(value);
-          }
-
-          if (column?.filterType === 'select') {
-            return value === filter.value;
-          }
-
-          return value.includes(filter.value);
-        });
-      });
-
-      // Apply sorting
-      if (sortConfig) {
-        result.sort((a, b) => {
-          const aValue = a[sortConfig.key];
-          const bValue = b[sortConfig.key];
-
-          if (aValue === null || aValue === undefined) return 1;
-          if (bValue === null || bValue === undefined) return -1;
-
-          let comparison = 0;
-
-          if (typeof aValue === 'string') {
-            comparison = aValue.localeCompare(String(bValue));
-          } else if (typeof aValue === 'number') {
-            comparison = Number(aValue) - Number(bValue);
-          } else if (aValue instanceof Date) {
-            comparison =
-              new Date(aValue).getTime() - new Date(bValue).getTime();
-          } else {
-            comparison = String(aValue).localeCompare(String(bValue));
-          }
-
-          return sortConfig.direction === 'asc' ? comparison : -comparison;
-        });
-      }
-
       return result;
-    }, [data, filterConfigs, sortConfig]);
+    }, [data]);
 
     return (
       <div
@@ -218,7 +166,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                             {col.sortable && (
                               <span className="inline-flex items-center text-slate-300 group-hover:text-white transition-colors">
                                 {sortConfig?.key === col.key ? (
-                                  sortConfig.direction === 'asc' ? (
+                                  sortConfig.direction === 'ASC' ? (
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                       <path d="M7 15l5-6 5 6" />
                                     </svg>

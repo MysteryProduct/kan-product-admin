@@ -15,7 +15,7 @@ const productModel = new ProductModel();
 const stockModel = new StockModel();
 
 type SortField = 'adddate' | 'price' | null;
-type SortOrder = 'asc' | 'desc';
+type SortOrder = 'ASC' | 'DESC';
 
 export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,19 +24,19 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<ProductResponse | null>(null);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [sortField, setSortField] = useState<SortField>(null);
-  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('ASC');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [inStock, setInStock] = useState(0);
   const [outStock, setOutStock] = useState(0);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'in stock' | 'out stock'>('all');
+  const [filters, setFilters] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        let data = await productModel.getProducts(currentPage, 10, searchQuery, sortField, sortOrder, statusFilter === 'all' ? undefined : statusFilter);
+        let data = await productModel.getProducts(currentPage, 10, searchQuery, sortField, sortOrder,filters);
         let stockStatuses = await stockModel.getStockStatuses();
         setProducts(data);
         setMeta(data.meta);
@@ -48,52 +48,42 @@ export default function ProductsPage() {
     };
 
     fetchProducts();
-  }, [currentPage, searchQuery, sortField, sortOrder, statusFilter]);
+  }, [currentPage, searchQuery, sortField, sortOrder]);
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      // Toggle sort order if clicking the same field
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      // Set new field and default to ascending
-      setSortField(field);
-      setSortOrder('asc');
+  const handleSortChange = (sort: { key: string; direction: 'ASC' | 'DESC' } | null) => {
+    if (!sort) {
+      setSortField(null);
+      setSortOrder('ASC');
+      return;
     }
+
+    const nextField = sort.key as SortField;
+    if (nextField !== 'adddate' && nextField !== 'price') {
+      setSortField(null);
+      setSortOrder('ASC');
+      return;
+    }
+
+    setSortField(nextField);
+    setSortOrder(sort.direction);
   };
 
   const handleDataTableFilterChange = (filters: Record<string, string | string[]>) => {
-    console.log('All filters:', filters);
-    
-    // Handle stock filter changes
-    if (filters.stock) {
-      const stockValue = filters.stock;
-      if (Array.isArray(stockValue)) {
-        if (stockValue.length === 0) {
-          setStatusFilter('all');
-        } else if (stockValue.includes('in stock') && !stockValue.includes('out stock') && !stockValue.includes('test')) {
-          setStatusFilter('in stock');
-        } else if (stockValue.includes('out stock') && !stockValue.includes('in stock') && !stockValue.includes('test')) {
-          setStatusFilter('out stock');
-        } else {
-          // Multiple selected, show all
-          setStatusFilter('all');
+    let updatedFilters: Record<string, string> = {};
+    for (const columnKey in filters) {
+      const value = filters[columnKey];
+      if (Array.isArray(value)) {
+        if (value.length > 0) {
+          updatedFilters[columnKey] = JSON.stringify(value);
+        }
+      } else {
+        if (value.trim()) {
+          updatedFilters[columnKey] = value;
         }
       }
-    } else {
-      // No stock filter, reset to all
-      setStatusFilter('all');
     }
-    
-    // You can also handle other filters here, for example:
-    // if (filters.color) {
-    //   console.log('Color filters:', filters.color);
-    // }
-    // if (filters.category) {
-    //   console.log('Category filters:', filters.category);
-    // }
-    
-    // Refresh products after filter change
-    setTimeout(() => handleRefreshProduct(), 0);
+    setFilters(updatedFilters);
+    setTimeout(() => handleRefreshProduct(updatedFilters), 0);
   };
 
   // Define DataTable columns
@@ -200,7 +190,7 @@ export default function ProductsPage() {
   const totalProducts = products ? products.data.length : 0;
 
 
-  const handleRefreshProduct = async (checkPageAfterDelete = false) => {
+  const handleRefreshProduct = async (filters: Record<string, string> = {}, checkPageAfterDelete = false) => {
     // รีเฟรชข้อมูลสินค้าเมื่อมีการเพิ่มสินค้าใหม่
     try {
       // คำนวณหน้าที่จะใช้ก่อนเรียก API
@@ -213,7 +203,7 @@ export default function ProductsPage() {
         setCurrentPage(targetPage);
       }
 
-      let data = await productModel.getProducts(targetPage, 10, searchQuery, sortField, sortOrder, statusFilter === 'all' ? undefined : statusFilter);
+      let data = await productModel.getProducts(targetPage, 10, searchQuery, sortField, sortOrder, filters);
       let stockStatuses = await stockModel.getStockStatuses();
 
       setProducts(data);
@@ -298,6 +288,7 @@ export default function ProductsPage() {
           headerClassName="bg-gray-50 border-b border-gray-100"
           rowClassName="border-b border-gray-100 hover:bg-gray-50"
           onFilterChange={handleDataTableFilterChange}
+          onSortChange={handleSortChange}
         />
 
 
@@ -349,7 +340,7 @@ export default function ProductsPage() {
             try {
               await productModel.deleteProduct(productToDelete.product_id);
               // รีเฟรชข้อมูลสินค้า และตรวจสอบว่าหน้านี้ยังมีข้อมูลหรือไม่
-              handleRefreshProduct(true);
+              handleRefreshProduct({}, true);
             } catch (error) {
               console.error('Failed to delete product:', error);
             }

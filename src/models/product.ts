@@ -24,8 +24,8 @@ class ProductModel {
     limit: number = 10,
     search?: string,
     sortField?: 'adddate' | 'price' | null,
-    sortOrder?: 'asc' | 'desc',
-    stockStatus?: 'in stock' | 'out stock'
+    sortOrder?: 'ASC' | 'DESC',
+    filters?: Record<string, string>,
   ): Promise<ApiProductResponse> {
     try {
       const response = await axiosInstance.get<ApiProductResponse>('/product', {
@@ -35,7 +35,7 @@ class ProductModel {
           ...(search && { search }),
           ...(sortField && { sortField }),
           ...(sortOrder && { sortOrder }),
-          ...(stockStatus && { stockStatus }),
+          ...(filters && { filters: JSON.stringify(filters) }),
         },
       });
       return response.data;
