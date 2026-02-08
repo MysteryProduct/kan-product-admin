@@ -61,6 +61,8 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
     const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
     const filterRefs = React.useRef<Record<string, HTMLElement | null>>({});
 
+    const tableScrollRef = React.useRef<HTMLDivElement | null>(null);
+
     // Handle filter dropdown positioning
     const updateDropdownPosition = (colKey: string | number) => {
       const element = filterRefs.current[String(colKey)];
@@ -72,6 +74,29 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
         });
       }
     };
+
+    React.useEffect(() => {
+      if (!showFilterKey) return;
+
+      const handleReposition = () => updateDropdownPosition(showFilterKey);
+
+      handleReposition();
+      window.addEventListener('resize', handleReposition);
+      window.addEventListener('scroll', handleReposition, true);
+
+      const scrollContainer = tableScrollRef.current;
+      if (scrollContainer) {
+        scrollContainer.addEventListener('scroll', handleReposition);
+      }
+
+      return () => {
+        window.removeEventListener('resize', handleReposition);
+        window.removeEventListener('scroll', handleReposition, true);
+        if (scrollContainer) {
+          scrollContainer.removeEventListener('scroll', handleReposition);
+        }
+      };
+    }, [showFilterKey]);
     // Handle sort
     const handleSort = (key: string) => {
       const columnKey = key as keyof any;
@@ -138,7 +163,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
       >
         {/* Table Container */}
         <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-lg bg-white">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" ref={tableScrollRef}>
             <table className="w-full">
               <thead>
                 <tr className={`bg-slate-900 border-b border-slate-700 ${headerClassName}`}>

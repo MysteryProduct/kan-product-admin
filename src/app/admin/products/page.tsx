@@ -91,9 +91,6 @@ export default function ProductsPage() {
     {
       key: 'product_name' as keyof Product,
       label: 'ชื่อสินค้า',
-      filterable: true,
-      filterType: 'text',
-      filterValue: (row) => row.product_name,
     },
     {
       key: 'category' as any as keyof Product,
