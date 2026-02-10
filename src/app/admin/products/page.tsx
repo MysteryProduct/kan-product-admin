@@ -9,7 +9,6 @@ import { Product, ProductResponse } from '@/types/product';
 import { PaginationMeta } from '@/types/pagination';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import StockModel from '@/models/stocks';
-import Pagination from '@/components/Pagination';
 import { DataTable, DataTableColumn } from '@/components/DataTable';
 const productModel = new ProductModel();
 const stockModel = new StockModel();
@@ -91,6 +90,7 @@ export default function ProductsPage() {
     {
       key: 'product_name' as keyof Product,
       label: 'ชื่อสินค้า',
+      width: '250px',
     },
     {
       key: 'category' as any as keyof Product,
@@ -281,29 +281,15 @@ export default function ProductsPage() {
           data={products?.data || []}
           columns={columns}
           keyField="product_id"
-          className="bg-white"
+          className="bg-white p-1"
           headerClassName="bg-gray-50 border-b border-gray-100"
           rowClassName="border-b border-gray-100 hover:bg-gray-50"
+          paginationMeta={meta}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
           onFilterChange={handleDataTableFilterChange}
           onSortChange={handleSortChange}
         />
-
-
-        {/* Pagination */}
-        {meta && meta.last_page > 1 && (
-          <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-100">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600">
-                Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, meta.total)} of {meta.total} results
-              </div>
-              <Pagination
-                currentPage={currentPage}
-                meta={meta}
-                onPageChange={setCurrentPage}
-              />
-            </div>
-          </div>
-        )}
 
       </div>
       <ProductForm
@@ -337,7 +323,7 @@ export default function ProductsPage() {
             try {
               await productModel.deleteProduct(productToDelete.product_id);
               // รีเฟรชข้อมูลสินค้า และตรวจสอบว่าหน้านี้ยังมีข้อมูลหรือไม่
-              handleRefreshProduct({}, true);
+              handleRefreshProduct(filters, true);
             } catch (error) {
               console.error('Failed to delete product:', error);
             }

@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import Pagination from '@/components/Pagination';
+import { PaginationMeta } from '@/types/pagination';
 
 export interface DataTableColumn<T> {
   key: keyof T;
@@ -22,9 +24,14 @@ export interface DataTableProps<T> {
   onRowClick?: (row: T) => void;
   onFilterChange?: (filters: Record<string, string | string[]>) => void;
   onSortChange?: (sort: { key: string; direction: 'ASC' | 'DESC' } | null) => void;
+  paginationMeta?: PaginationMeta | null;
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
+  showPaginationInfo?: boolean;
   className?: string;
   headerClassName?: string;
   rowClassName?: string;
+  footerClassName?: string;
 }
 
 interface SortConfig<T> {
@@ -47,9 +54,14 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
       onRowClick,
       onFilterChange,
       onSortChange,
+      paginationMeta = null,
+      currentPage,
+      onPageChange,
+      showPaginationInfo = true,
       className = '',
       headerClassName = '',
       rowClassName = '',
+      footerClassName = '',
     },
     ref
   ) => {
@@ -155,6 +167,19 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
       return result;
     }, [data]);
 
+    const canShowPagination =
+      Boolean(paginationMeta) &&
+      (paginationMeta?.last_page || 0) > 1 &&
+      typeof currentPage === 'number' &&
+      typeof onPageChange === 'function';
+
+    const paginationStart = canShowPagination
+      ? (currentPage as number) * pageSize - pageSize + 1
+      : 0;
+    const paginationEnd = canShowPagination
+      ? Math.min((currentPage as number) * pageSize, paginationMeta?.total || 0)
+      : 0;
+
     return (
       <div
         ref={ref}
@@ -162,17 +187,17 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
         onClick={() => setOpenFilterKey(null)}
       >
         {/* Table Container */}
-        <div className="border border-gray-200 rounded-2xl overflow-hidden shadow-lg bg-white">
+        <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-sm bg-white">
           <div className="overflow-x-auto" ref={tableScrollRef}>
-            <table className="w-full">
+            <table className="w-full text-sm">
               <thead>
-                <tr className={`bg-slate-900 border-b border-slate-700 ${headerClassName}`}>
+                <tr className={`bg-slate-900 border-b border-slate-800 ${headerClassName}`}>
                   {columns.map((col) => (
                     <th
                       key={String(col.key)}
                       data-filter-col={col.key}
-                      className="px-5 py-4 text-left"
-                      style={col.width ? { width: col.width } : undefined}
+                      className="px-6 py-4 text-left"
+                      style={col.width ? { minWidth: col.width } : undefined}
                     >
                       <div className="space-y-2.5">
                         {/* Label and Sort */}
@@ -185,7 +210,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                             className="flex items-center gap-2"
                             onClick={() => col.sortable && handleSort(String(col.key))}
                           >
-                            <span className="text-xs font-semibold text-white uppercase tracking-wider">
+                            <span className="text-[13px] font-semibold text-white uppercase tracking-widest">
                               {col.label}
                             </span>
                             {col.sortable && (
@@ -222,7 +247,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                                 });
                                 setOpenFilterKey(null);
                               }}
-                              className="inline-flex items-center justify-center w-7 h-7 rounded-md border border-slate-700 text-slate-300 hover:text-white hover:border-slate-600 transition-colors"
+                              className="inline-flex items-center justify-center w-7 h-7 rounded-md border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 hover:bg-slate-800 transition-colors"
                               aria-label="Toggle column filter"
                               ref={(el) => {
                                 if (el) filterRefs.current[String(col.key)] = el;
@@ -267,7 +292,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                             ) : (
                               <div className="relative">
                                 <div
-                                  className="fixed z-50 rounded-xl border border-slate-700 bg-slate-900 text-white shadow-2xl w-50"
+                                  className="fixed z-50 rounded-xl border border-slate-700 bg-slate-900 text-white shadow-2xl w-56"
                                   onClick={(e) => e.stopPropagation()}
                                   style={{
                                     top: `${dropdownPos.top}px`,
@@ -385,12 +410,12 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-slate-100">
                 {processedData.length > 0 ? (
                   processedData.map((row, idx) => (
                     <tr
                       key={String(row[keyField]) || idx}
-                      className={`transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 hover:shadow-md border-l-4 border-transparent hover:border-blue-400 ${
+                      className={`transition-colors duration-200 hover:bg-slate-50 border-l-4 border-transparent hover:border-blue-400 ${
                         onRowClick ? 'cursor-pointer' : ''
                       } ${rowClassName}`}
                       onClick={() => onRowClick?.(row)}
@@ -398,7 +423,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                       {columns.map((col) => (
                         <td
                           key={String(col.key)}
-                          className="px-6 py-4 text-sm font-medium text-gray-800"
+                          className="px-6 py-4 text-slate-800"
                           style={col.width ? { width: col.width } : undefined}
                         >
                           {col.render
@@ -437,6 +462,25 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
             </table>
           </div>
         </div>
+
+        {canShowPagination && (
+          <div className={`px-6 py-4 bg-gradient-to-r from-slate-50 to-blue-50 border-t border-slate-100 ${footerClassName}`}>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              {showPaginationInfo ? (
+                <div className="text-sm text-slate-600">
+                  Showing {paginationStart} to {paginationEnd} of {paginationMeta?.total} results
+                </div>
+              ) : (
+                <div />
+              )}
+              <Pagination
+                currentPage={currentPage as number}
+                meta={paginationMeta}
+                onPageChange={onPageChange as (page: number) => void}
+              />
+            </div>
+          </div>
+        )}
 
 
       </div>
