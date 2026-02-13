@@ -4,12 +4,15 @@ import { useState, useEffect } from 'react';
 import ProductModel from '@/models/product';
 import PurchaseOrderModel from '@/models/purchase-order';
 import { Product } from '@/types/product';
-
+import CustomSelect from '@/components/CustomSelect';
+import { ProductUnitModel } from '@/models/product-unit';
+import SupplierModel from '@/models/supplier';
 interface PurchaseOrderItemForm {
     id: string;
     product_id: string;
     purchase_order_list_qty: number;
     purchase_order_list_price: number;
+    product_unit_id: number;
 }
 
 interface InsertPurchaseOrderFormProps {
@@ -20,7 +23,8 @@ interface InsertPurchaseOrderFormProps {
 
 const productModel = new ProductModel();
 const purchaseOrderModel = new PurchaseOrderModel();
-
+const productUnitModel = new ProductUnitModel();
+const supplierModel = new SupplierModel();
 export default function InsertPurchaseOrderForm({
     isOpen,
     onClose,
@@ -29,31 +33,51 @@ export default function InsertPurchaseOrderForm({
     const [purchaseOrderName, setPurchaseOrderName] = useState('');
     const [purchaseOrderDetail, setPurchaseOrderDetail] = useState('');
     const [items, setItems] = useState<PurchaseOrderItemForm[]>([
-        { id: crypto.randomUUID(), product_id: '0', purchase_order_list_qty: 1, purchase_order_list_price: 0 }
+        { id: crypto.randomUUID(), product_id: '0', purchase_order_list_qty: 1, purchase_order_list_price: 0, product_unit_id: 0 }
     ]);
     const [products, setProducts] = useState<Product[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
+    const [productUnits, setProductUnits] = useState<any[]>([]);
+    const [suppliers, setSuppliers] = useState<any[]>([]);
+    const [supplierId, setSupplierId] = useState<string>('');
     useEffect(() => {
         if (isOpen) {
-            fetchProducts();
+            fetchProducts('');
+            fetchProductUnits('');
+            fetchSuppliers('');
         }
     }, [isOpen]);
 
-    const fetchProducts = async () => {
+    const fetchProducts = async (search: string) => {
         try {
-            const response = await productModel.getProducts(1, 1000);
+            const response = await productModel.getProducts(1, 100, search);
             setProducts(response.data);
         } catch (error) {
             console.error('Failed to fetch products:', error);
+        }
+    };
+    const fetchProductUnits = async (search: string) => {
+        try {
+            const response = await productUnitModel.getProductUnits(1, 100, search);
+            setProductUnits(response.data);
+        } catch (error) {
+            console.error('Failed to fetch product units:', error);
+        }
+    };
+    const fetchSuppliers = async (search: string) => {
+        try {
+            const response = await supplierModel.getSuppliers(1, 100, search);
+            setSuppliers(response.data);
+        } catch (error) {
+            console.error('Failed to fetch suppliers:', error);
         }
     };
 
     const addItem = () => {
         setItems([
             ...items,
-            { id: crypto.randomUUID(), product_id: '0', purchase_order_list_qty: 1, purchase_order_list_price: 0 }
+            { id: crypto.randomUUID(), product_id: '0', purchase_order_list_qty: 1, purchase_order_list_price: 0, product_unit_id: 0 }
         ]);
     };
 
@@ -100,6 +124,9 @@ export default function InsertPurchaseOrderForm({
         if (!purchaseOrderDetail.trim()) {
             newErrors.purchaseOrderDetail = 'กรุณากรอกรายละเอียด';
         }
+        if (!supplierId || supplierId === '') {
+            newErrors.supplier = 'กรุณาเลือกผู้จัดจำหน่าย';
+        }
 
         items.forEach((item, index) => {
             if (!item.product_id || item.product_id === '') {
@@ -110,6 +137,9 @@ export default function InsertPurchaseOrderForm({
             }
             if (item.purchase_order_list_price <= 0) {
                 newErrors[`item_${index}_price`] = 'ราคาต้องมากกว่า 0';
+            }
+            if (!item.product_unit_id || item.product_unit_id === 0) {
+                newErrors[`item_${index}_product_unit_id`] = 'กรุณาเลือกหน่วยสินค้า';
             }
         });
 
@@ -130,18 +160,21 @@ export default function InsertPurchaseOrderForm({
             await purchaseOrderModel.createPurchaseOrder({
                 purchase_order_name: purchaseOrderName,
                 purchase_order_detail: purchaseOrderDetail,
+                supplier_id: supplierId,
+                purchase_order_total : calculateGrandTotal(),
                 purchaseOrderLists: items.map(item => ({
                     product_id: item.product_id,
                     purchase_order_list_qty: item.purchase_order_list_qty,
                     purchase_order_list_price: item.purchase_order_list_price,
                     purchase_order_list_total: calculateItemTotal(item),
+                    product_unit_id: item.product_unit_id || 0,
                 })),
             });
 
             // Reset form
             setPurchaseOrderName('');
             setPurchaseOrderDetail('');
-            setItems([{ id: crypto.randomUUID(), product_id: '', purchase_order_list_qty: 1, purchase_order_list_price: 0 }]);
+            setItems([{ id: crypto.randomUUID(), product_id: '', purchase_order_list_qty: 1, purchase_order_list_price: 0, product_unit_id: 0 }]);
             setErrors({});
 
             onSuccess();
@@ -158,7 +191,7 @@ export default function InsertPurchaseOrderForm({
         if (!isSubmitting) {
             setPurchaseOrderName('');
             setPurchaseOrderDetail('');
-            setItems([{ id: crypto.randomUUID(), product_id: '', purchase_order_list_qty: 1, purchase_order_list_price: 0 }]);
+            setItems([{ id: crypto.randomUUID(), product_id: '', purchase_order_list_qty: 1, purchase_order_list_price: 0, product_unit_id: 0 }]);
             setErrors({});
             onClose();
         }
@@ -216,7 +249,7 @@ export default function InsertPurchaseOrderForm({
                                 type="text"
                                 value={purchaseOrderName}
                                 onChange={(e) => setPurchaseOrderName(e.target.value)}
-                                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-gray-800 ${errors.purchaseOrderName ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-blue-400'
+                                className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-gray-800 ${errors.purchaseOrderName ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-blue-400'
                                     }`}
                                 placeholder="ระบุชื่อใบสั่งซื้อ..."
                                 disabled={isSubmitting}
@@ -243,9 +276,32 @@ export default function InsertPurchaseOrderForm({
                             <input
                                 type="text"
                                 value={new Date().toLocaleDateString('th-TH')}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-800 shadow-sm"
+                                className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-800 shadow-sm"
                                 disabled
                             />
+                        </div>
+
+                        <div>
+                            <CustomSelect
+                                label="ผู้จัดจำหน่าย"
+                                required={true}
+                                value={supplierId}
+                                onChange={(value) => setSupplierId(value)}
+                                options={suppliers.map((sup) => ({
+                                    value: sup.supplier_id,
+                                    label: sup.supplier_name,
+                                }))}
+                                fetchData={fetchSuppliers}
+                                placeholder="เลือกผู้จัดจำหน่าย..."
+                            />
+                            {errors.supplier && (
+                                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                    </svg>
+                                    {errors.supplier}
+                                </p>
+                            )}
                         </div>
                     </div>
 
@@ -262,7 +318,7 @@ export default function InsertPurchaseOrderForm({
                             value={purchaseOrderDetail}
                             onChange={(e) => setPurchaseOrderDetail(e.target.value)}
                             rows={3}
-                            className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all resize-none text-gray-800 ${errors.purchaseOrderDetail ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-blue-400'
+                            className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all resize-none text-gray-800 ${errors.purchaseOrderDetail ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-blue-400'
                                 }`}
                             placeholder="ระบุรายละเอียดใบสั่งซื้อ..."
                             disabled={isSubmitting}
@@ -327,28 +383,22 @@ export default function InsertPurchaseOrderForm({
 
                                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                         <div className="md:col-span-2">
-                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                                สินค้า <span className="text-red-500">*</span>
-                                            </label>
-                                            <select
+                                            <CustomSelect
+                                                label="สินค้า"
+                                                required
                                                 value={item.product_id}
-                                                onChange={(e) => updateItem(item.id, 'product_id', e.target.value)}
-                                                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-gray-800 ${errors[`item_${index}_product`] ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-blue-400'
-                                                    }`}
-                                                disabled={isSubmitting}
-                                            >
-                                                <option value={0}>เลือกสินค้า</option>
-                                                {products.map((product) => (
-                                                    <option key={product.product_id} value={product.product_id}>
-                                                        {product.product_name} (฿{product.price})
-                                                    </option>
-                                                ))}
-                                            </select>
+                                                onChange={(value) => updateItem(item.id, 'product_id', value)}
+                                                options={products.map((cat) => ({
+                                                    value: cat.product_id,
+                                                    label: cat.product_name,
+                                                }))}
+                                                fetchData={fetchProducts}
+                                                placeholder="เลือกสินค้า..."
+                                            />
                                             {errors[`item_${index}_product`] && (
                                                 <p className="text-red-500 text-sm mt-1">{errors[`item_${index}_product`]}</p>
                                             )}
                                         </div>
-
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">
                                                 จำนวน <span className="text-red-500">*</span>
@@ -358,7 +408,7 @@ export default function InsertPurchaseOrderForm({
                                                 min="1"
                                                 value={item.purchase_order_list_qty}
                                                 onChange={(e) => updateItem(item.id, 'purchase_order_list_qty', Number(e.target.value))}
-                                                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-gray-800 ${errors[`item_${index}_qty`] ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-blue-400'
+                                                className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-gray-800 ${errors[`item_${index}_qty`] ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-blue-400'
                                                     }`}
                                                 disabled={isSubmitting}
                                             />
@@ -382,7 +432,7 @@ export default function InsertPurchaseOrderForm({
                                                 step="0.01"
                                                 value={item.purchase_order_list_price}
                                                 onChange={(e) => updateItem(item.id, 'purchase_order_list_price', Number(e.target.value))}
-                                                className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-gray-800 ${errors[`item_${index}_price`] ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-blue-400'
+                                                className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-gray-800 ${errors[`item_${index}_price`] ? 'border-red-500 bg-red-50' : 'border-gray-300 hover:border-blue-400'
                                                     }`}
                                                 disabled={isSubmitting}
                                             />
@@ -393,6 +443,23 @@ export default function InsertPurchaseOrderForm({
                                                     </svg>
                                                     {errors[`item_${index}_price`]}
                                                 </p>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <CustomSelect
+                                                label="หน่วยสินค้า"
+                                                required
+                                                value={item.product_unit_id}
+                                                onChange={(value) => updateItem(item.id, 'product_unit_id', value)}
+                                                options={productUnits.map((unit) => ({
+                                                    value: unit.product_unit_id,
+                                                    label: unit.product_unit_name,
+                                                }))}
+                                                fetchData={fetchProductUnits}
+                                                placeholder="เลือกหน่วยสินค้า..."
+                                            />
+                                            {errors[`item_${index}_product_unit_id`] && (
+                                                <p className="text-red-500 text-sm mt-1">{errors[`item_${index}_product_unit_id`]}</p>
                                             )}
                                         </div>
                                     </div>

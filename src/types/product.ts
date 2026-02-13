@@ -29,7 +29,6 @@ export interface Product {
     }
     adddate: Date;
     files?: ProductFile[];
-    
 }
 
 export interface CreateProductDto {
@@ -42,7 +41,7 @@ export interface CreateProductDto {
 }
 
 export interface UpdateProductDto {
-    product_id: number;
+    product_id: string;
     product_name: string;
     product_description: string;
     price: number;

@@ -6,16 +6,6 @@ import {
   UpdatePurchaseOrderDto,
 } from '@/types/purchase-order';
 
-export interface ApiPurchaseOrderResponse {
-  data: PurchaseOrder[];
-  meta: {
-    page: number;
-    limit: number;
-    total: number;
-    last_page: number;
-  };
-}
-
 export interface SinglePurchaseOrderResponse {
   data: PurchaseOrder;
   message?: string;
@@ -28,14 +18,20 @@ class PurchaseOrderModel {
   async getPurchaseOrders(
     page: number = 1,
     limit: number = 10,
-    search?: string
-  ): Promise<ApiPurchaseOrderResponse> {
+    search?: string,
+    sortField?: 'purchase_date' | 'purchase_order_total' | null,
+    sortOrder?: 'ASC' | 'DESC',
+    filters?: Record<string, string>,
+  ): Promise<PurchaseOrderResponse> {
     try {
-      const response = await axiosInstance.get<ApiPurchaseOrderResponse>('/purchase-order', {
+      const response = await axiosInstance.get<PurchaseOrderResponse>('/purchase-order', {
         params: {
           page,
           limit,
           ...(search && { search }),
+          ...(sortField && { sortField }),
+          ...(sortOrder && { sortOrder }),
+          ...(filters && { filters: JSON.stringify(filters) }),
         },
       });
       return response.data;
@@ -44,6 +40,7 @@ class PurchaseOrderModel {
       throw error;
     }
   }
+
 
   /**
    * ดึงข้อมูล Purchase Order ตาม ID
@@ -95,7 +92,7 @@ class PurchaseOrderModel {
   /**
    * ลบ Purchase Order
    */
-  async deletePurchaseOrder(id: number): Promise<void> {
+  async deletePurchaseOrder(id: string): Promise<void> {
     try {
       await axiosInstance.delete(`/purchase-order/${id}`);
     } catch (error) {

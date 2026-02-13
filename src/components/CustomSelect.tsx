@@ -15,6 +15,7 @@ interface CustomSelectProps {
   required?: boolean;
   label?: string;
   showColor?: boolean;
+  fetchData?: (query: string) => void;
 }
 
 export default function CustomSelect({
@@ -25,13 +26,14 @@ export default function CustomSelect({
   required = false,
   label,
   showColor = false,
+  fetchData,
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
   const selectedOption = options.find((opt) => opt.value.toString() === value.toString());
+
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -56,7 +58,15 @@ export default function CustomSelect({
     setIsOpen(false);
     setSearchQuery('');
   };
-
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    if (e.target.value.length >= 4) {
+      // Call fetchData function to get new options
+      if (typeof fetchData === 'function') {
+        fetchData(e.target.value);
+      }
+    }
+  }
   return (
     <div ref={dropdownRef} className="relative">
       {label && (
@@ -101,7 +111,7 @@ export default function CustomSelect({
               ref={inputRef}
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
               placeholder="ค้นหา..."
               className="w-full text-gray-500 px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
               autoFocus
@@ -116,11 +126,10 @@ export default function CustomSelect({
                   key={option.value}
                   type="button"
                   onClick={() => handleSelect(option.value)}
-                  className={`w-full px-4 py-2 text-left hover:bg-blue-50 flex items-center gap-2 ${
-                    option.value.toString() === value.toString()
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-900'
-                  }`}
+                  className={`w-full px-4 py-2 text-left hover:bg-blue-50 flex items-center gap-2 ${option.value.toString() === value.toString()
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-gray-900'
+                    }`}
                 >
                   {showColor && option.color && (
                     <span
@@ -156,7 +165,7 @@ export default function CustomSelect({
         type="hidden"
         value={value}
         required={required}
-        onChange={() => {}}
+        onChange={() => { }}
       />
     </div>
   );
