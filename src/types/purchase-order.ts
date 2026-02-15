@@ -12,6 +12,10 @@ export interface PurchaseOrderItem {
     product_name: string;
     price: number;
   };
+  productUnit?: {
+    product_unit_id: number;
+    product_unit_name: string;
+  };
 }
 
 export interface PurchaseOrder {

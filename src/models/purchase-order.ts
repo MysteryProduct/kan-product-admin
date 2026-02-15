@@ -78,7 +78,7 @@ class PurchaseOrderModel {
    */
   async updatePurchaseOrder(data: UpdatePurchaseOrderDto): Promise<PurchaseOrder> {
     try {
-      const response = await axiosInstance.put<SinglePurchaseOrderResponse>(
+      const response = await axiosInstance.patch<SinglePurchaseOrderResponse>(
         `/purchase-order/${data.purchase_order_id}`,
         data
       );

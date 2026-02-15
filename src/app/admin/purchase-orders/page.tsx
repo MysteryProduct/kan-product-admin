@@ -7,6 +7,7 @@ import { PaginationMeta } from '@/types/pagination';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import InsertPurchaseOrderForm from './components/insert';
 import UpdatePurchaseOrderForm from './components/update';
+import PurchaseOrderDetailModal from './components/detail';
 import { DataTable, DataTableColumn } from '@/components/DataTable';
 const purchaseOrderModel = new PurchaseOrderModel();
 
@@ -21,13 +22,19 @@ export default function PurchaseOrdersPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isInsertFormOpen, setIsInsertFormOpen] = useState(false);
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
+  const [isDetailFormOpen, setIsDetailFormOpen] = useState(false);
   const [purchaseOrderToUpdate, setPurchaseOrderToUpdate] = useState<PurchaseOrder | null>(null);
+  const [purchaseOrderToView, setPurchaseOrderToView] = useState<PurchaseOrder | null>(null);
   const [filters, setFilters] = useState<Record<string, string>>({});
 
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>('ASC');
-  const [selectedPurchaseOrder, setSelectedPurchaseOrder] = useState<PurchaseOrder | null>(null);
   const [purchaseOrderToDelete, setPurchaseOrderToDelete] = useState<PurchaseOrder | null>(null);
+
+  const isValidPurchaseOrder = (value: any): value is PurchaseOrder => {
+    return Boolean(value && typeof value === 'object' && value.purchase_order_id);
+  };
+
   useEffect(() => {
     fetchPurchaseOrders();
   }, [currentPage, searchQuery, sortField, sortOrder]);
@@ -129,6 +136,11 @@ export default function PurchaseOrdersPage() {
       label: 'ชื่อใบสั่งซื้อ',
     },
     {
+      key: 'supplier_name' as any as keyof PurchaseOrder['supplier'],
+      label: 'ชื่อผู้จัดจำหน่าย',
+      render: (value, row: PurchaseOrder) => row.supplier?.supplier_name || '',
+    },
+    {
       key: 'purchase_order_status' as any as keyof PurchaseOrder,
       label: 'สถานะใบสั่งซื้อ',
       filterable: true,
@@ -158,11 +170,33 @@ export default function PurchaseOrdersPage() {
       render: (value, row: PurchaseOrder) => (
         <div className="flex gap-2">
           <button
-            onClick={() => {
-              setSelectedPurchaseOrder(row);
-              setIsUpdateFormOpen(true);
+            onClick={async () => {
+              const purchaseOrderDetail = await purchaseOrderModel.getPurchaseOrderById(row.purchase_order_id);
+
+              if (isValidPurchaseOrder(purchaseOrderDetail)) {
+                setPurchaseOrderToView(purchaseOrderDetail);
+                setIsDetailFormOpen(true);
+              }
+            }}
+            className="text-gray-400 hover:text-green-500 transition-colors"
+            type="button"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </button>
+          <button
+            onClick={async () => {
+              const purchaseOrderDetail = await purchaseOrderModel.getPurchaseOrderById(row.purchase_order_id);
+              if (isValidPurchaseOrder(purchaseOrderDetail)) {
+                setPurchaseOrderToUpdate(purchaseOrderDetail);
+                setIsUpdateFormOpen(true);
+              }
+
             }}
             className="text-gray-400 hover:text-blue-500 transition-colors"
+            type="button"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 12v3h3l8.293-8.293-3-3L5 12z" />
@@ -174,6 +208,7 @@ export default function PurchaseOrdersPage() {
               setPurchaseOrderToDelete(row);
               setIsDeleteDialogOpen(true);
             }}
+            type="button"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path
@@ -331,6 +366,18 @@ export default function PurchaseOrdersPage() {
           }}
           onSuccess={fetchPurchaseOrders}
           initialData={purchaseOrderToUpdate}
+        />
+      )}
+
+      {/* Detail Modal */}
+      {purchaseOrderToView && (
+        <PurchaseOrderDetailModal
+          isOpen={isDetailFormOpen}
+          onClose={() => {
+            setIsDetailFormOpen(false);
+            setPurchaseOrderToView(null);
+          }}
+          purchaseOrder={purchaseOrderToView}
         />
       )}
 
