@@ -8,7 +8,13 @@ import CategoryForm from '../categories/components/insert';
 import UpdateCategoryForm from '../categories/components/update';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import Pagination from '@/components/Pagination';
+import { usePermissions } from '@/hooks/usePermissions';
 export default function CategoryPage() {
+    const { can } = usePermissions();
+    const canAddCategory = can('categories', 'add');
+    const canEditCategory = can('categories', 'edit');
+    const canDeleteCategory = can('categories', 'delete');
+
     const [categories, setCategories] = useState<Category[]>([]);
     const [meta, setMeta] = useState<PaginationMeta | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
@@ -94,15 +100,17 @@ export default function CategoryPage() {
                             </svg>
                         </div>
 
-                        <button
-                            onClick={() => setIsFormOpen(true)}
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium whitespace-nowrap"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                            <span>เพิ่มข้อมูล</span>
-                        </button>
+                        {canAddCategory && (
+                            <button
+                                onClick={() => setIsFormOpen(true)}
+                                className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium whitespace-nowrap"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                </svg>
+                                <span>เพิ่มข้อมูล</span>
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -127,31 +135,35 @@ export default function CategoryPage() {
                                     <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 hidden sm:table-cell">{category.category_id}</td>
                                     <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-900">{category.category_name}</td>
                                     <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4">
-                                        <button
-                                            onClick={() => {
-                                                setSelectedCategory(category);
-                                                setIsUpdateFormOpen(true);
-                                            }}
-                                            className="text-gray-400 hover:text-blue-500 transition-colors mr-4"
-                                        >
-                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 12v3h3l8.293-8.293-3-3L5 12z" />
-                                            </svg>
-                                        </button>
-                                        <button className="text-gray-400 hover:text-red-500 transition-colors"
-                                            onClick={() => {
-                                                setCategoryToDelete(category);
-                                                setIsDeleteDialogOpen(true);
-                                            }}
-                                        >
-                                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                                <path
-                                                    fillRule="evenodd"
-                                                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                                                    clipRule="evenodd"
-                                                />
-                                            </svg>
-                                        </button>
+                                        {canEditCategory && (
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedCategory(category);
+                                                    setIsUpdateFormOpen(true);
+                                                }}
+                                                className="text-gray-400 hover:text-blue-500 transition-colors mr-4"
+                                            >
+                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 12v3h3l8.293-8.293-3-3L5 12z" />
+                                                </svg>
+                                            </button>
+                                        )}
+                                        {canDeleteCategory && (
+                                            <button className="text-gray-400 hover:text-red-500 transition-colors"
+                                                onClick={() => {
+                                                    setCategoryToDelete(category);
+                                                    setIsDeleteDialogOpen(true);
+                                                }}
+                                            >
+                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                        clipRule="evenodd"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
@@ -176,25 +188,29 @@ export default function CategoryPage() {
                 )}
             </div>
 
-            <CategoryForm
-                isOpen={isFormOpen}
-                onClose={() => setIsFormOpen(false)}
-                onSuccess={() => {
-                    setIsFormOpen(false);
-                    handleRefreshCategories();
-                }}
-            />
-            <UpdateCategoryForm
-                isOpen={isUpdateFormOpen}
-                onClose={() => setIsUpdateFormOpen(false)}
-                onSuccess={() => {
-                    setIsUpdateFormOpen(false);
-                    handleRefreshCategories();
-                }}
-                initialData={selectedCategory || { category_id: 0, category_name: '' }}
-            />
+            {canAddCategory && (
+                <CategoryForm
+                    isOpen={isFormOpen}
+                    onClose={() => setIsFormOpen(false)}
+                    onSuccess={() => {
+                        setIsFormOpen(false);
+                        handleRefreshCategories();
+                    }}
+                />
+            )}
+            {canEditCategory && (
+                <UpdateCategoryForm
+                    isOpen={isUpdateFormOpen}
+                    onClose={() => setIsUpdateFormOpen(false)}
+                    onSuccess={() => {
+                        setIsUpdateFormOpen(false);
+                        handleRefreshCategories();
+                    }}
+                    initialData={selectedCategory || { category_id: 0, category_name: '' }}
+                />
+            )}
             <ConfirmDialog
-                isOpen={isDeleteDialogOpen}
+                isOpen={canDeleteCategory && isDeleteDialogOpen}
                 onConfirm={async () => {
                     if (!categoryToDelete) return;
 

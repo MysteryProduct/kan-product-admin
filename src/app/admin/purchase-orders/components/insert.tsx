@@ -7,6 +7,7 @@ import { Product } from '@/types/product';
 import CustomSelect from '@/components/CustomSelect';
 import { ProductUnitModel } from '@/models/product-unit';
 import SupplierModel from '@/models/supplier';
+import Cookies from 'js-cookie';
 interface PurchaseOrderItemForm {
     id: string;
     product_id: string;
@@ -157,10 +158,17 @@ export default function InsertPurchaseOrderForm({
         setIsSubmitting(true);
 
         try {
+            const user = Cookies.get('user') ? JSON.parse(Cookies.get('user') as string) : null;
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+            console.log(user);
+            
             await purchaseOrderModel.createPurchaseOrder({
                 purchase_order_name: purchaseOrderName,
                 purchase_order_detail: purchaseOrderDetail,
                 supplier_id: supplierId,
+                create_by: user.employee_id,
                 purchase_order_total : calculateGrandTotal(),
                 purchaseOrderLists: items.map(item => ({
                     product_id: item.product_id,

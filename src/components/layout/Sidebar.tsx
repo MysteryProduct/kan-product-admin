@@ -4,26 +4,27 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/contexts/SidebarContext';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface MenuItem {
   title: string;
   icon: React.ReactNode;
   href?: string;
   badge?: number;
-  subItems?: { title: string; href: string }[];
+  subItems?: { title: string; menu_name: string; href: string }[];
 }
 
 export default function Sidebar() {
   const { isOpen, closeSidebar } = useSidebar();
   const pathname = usePathname();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const { can } = usePermissions();
 
   const toggleExpand = (title: string) => {
     setExpandedItems(prev =>
       prev.includes(title) ? prev.filter(item => item !== title) : [...prev, title]
     );
   };
-
   const menuItems: MenuItem[] = [
     {
       title: 'Dashboard 1',
@@ -61,15 +62,14 @@ export default function Sidebar() {
   const appsItems: MenuItem[] = [
 
     {
-      title: 'จัดการสินค้า',
+      title: 'จัดซื้อ',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
         </svg>
       ),
       subItems: [
-        { title: 'สินค้า', href: '/admin/products' },
-        { title: 'ใบสั่งซื้อ', href: '/admin/purchase-orders' },
+        { title: 'ใบสั่งซื้อ', menu_name: 'purchase_orders', href: '/admin/purchase-orders' },
       ],
     },
     {
@@ -80,10 +80,12 @@ export default function Sidebar() {
         </svg>
       ),
       subItems: [
-        { title: 'สีของสินค้า', href: '/admin/colors' },
-        { title: 'ประเภทสินค้า', href: '/admin/categories' },
-        { title: 'หน่วยสินค้า', href: '/admin/product-unit' },
-        { title: 'ผู้จัดจำหน่าย', href: '/admin/suppliers' },
+        { title: 'สินค้า', menu_name: 'products', href: '/admin/products' },
+        { title: 'สีของสินค้า', menu_name: 'colors', href: '/admin/colors' },
+        { title: 'ประเภทสินค้า', menu_name: 'categories', href: '/admin/categories' },
+        { title: 'หน่วยสินค้า', menu_name: 'product_unit', href: '/admin/product-unit' },
+        { title: 'ผู้จัดจำหน่าย', menu_name: 'suppliers', href: '/admin/suppliers' },
+        { title: 'สิทธธิ์ผู้ใช้งาน', menu_name: 'license', href: '/admin/license' },
       ],
     },
   ];
@@ -139,6 +141,10 @@ export default function Sidebar() {
           <div className="mt-1 space-y-1">
             {item.subItems?.map((subItem) => {
               const isSubItemActive = pathname === subItem.href;
+              {/* ตรวจสอบสิทธิ์การเข้าถึงเมนูย่อย */ }
+              if (!can(subItem.menu_name, 'view')) {
+                return null; // ไม่แสดงเมนูย่อยถ้าไม่มีสิทธิ์ดู
+              }
               return (
                 <Link
                   key={subItem.title}
@@ -149,13 +155,13 @@ export default function Sidebar() {
                       closeSidebar();
                     }
                   }}
-                  className={`flex items-center px-4 py-2 pl-12 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors ${
-                    isSubItemActive ? 'bg-blue-50 text-blue-600 font-medium' : ''
-                  }`}
+                  className={`flex items-center px-4 py-2 pl-12 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors ${isSubItemActive ? 'bg-blue-50 text-blue-600 font-medium' : ''
+                    }`}
                 >
                   {subItem.title}
                 </Link>
-              );
+              )
+
             })}
           </div>
         )}

@@ -44,6 +44,7 @@ export interface CreatePurchaseOrderDto {
   purchase_order_name: string;
   purchase_order_detail: string;
   supplier_id: string;
+  create_by: string;
   purchase_order_total: number;
   purchaseOrderLists: {
     product_id: string;

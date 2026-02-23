@@ -5,6 +5,7 @@ import { UserType } from '@/types/user';
 interface AuthResponse {
     data : UserType;
     access_token: string;
+    permissions: string[]; // เพิ่ม permissions ใน response
 }  
 
 interface LoginDto {
@@ -14,7 +15,7 @@ interface LoginDto {
 export default class AuthModel {
     getLogin = async (loginDto: LoginDto): Promise<AuthResponse> => {
         try {
-            const response = await axiosInstance.post<AuthResponse>('/auth/login', loginDto);
+            const response = await axiosInstance.post<AuthResponse>('/auth/employee-login', loginDto);
             return response.data;
         } catch (error) {
             console.error('Error fetching users:', error);

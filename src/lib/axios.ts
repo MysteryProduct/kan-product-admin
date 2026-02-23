@@ -25,6 +25,7 @@ axiosInstance.interceptors.request.use(
         // ลบ cookies ที่เสียหาย
         Cookies.remove('user');
         Cookies.remove('token');
+        localStorage.removeItem('permissions');
       }
     }
     return config;
@@ -45,18 +46,23 @@ axiosInstance.interceptors.response.use(
     if (error.response) {
       // Server responded with error status
       const { status, data } = error.response;
-      
+
       switch (status) {
         case 401:
           // Unauthorized - ให้ redirect ไป login
           if (typeof window !== 'undefined') {
             Cookies.remove('user');
             Cookies.remove('token');
+            localStorage.removeItem('permissions');
             window.location.href = '/login';
           }
           break;
         case 403:
           console.error('Forbidden: You do not have permission');
+          Cookies.remove('user');
+          Cookies.remove('token');
+          localStorage.removeItem('permissions');
+          window.location.href = '/login';
           break;
         case 404:
           console.error('Not Found:', data.message || 'Resource not found');
@@ -67,7 +73,7 @@ axiosInstance.interceptors.response.use(
         default:
           console.error('API Error:', data.message || 'Unknown error');
       }
-      
+
       // Throw error with message
       throw new Error(data.message || `API Error: ${status}`);
     } else if (error.request) {

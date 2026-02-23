@@ -30,6 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('Failed to parse stored user:', error);
         Cookies.remove('user');
         Cookies.remove('token');
+        localStorage.removeItem('permissions');
       }
     }
     setIsLoading(false);
@@ -41,8 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const authModel = new AuthModel();
       const response = await authModel.getLogin({ username, password });
       setUser(response.data);
-      console.log('User logged in:', response.data);
-      
+
       // เก็บข้อมูลใน Cookies (expires ใน 7 วัน)
       // หมายเหตุ: httpOnly ไม่สามารถตั้งค่าได้จาก client-side (ต้องตั้งจาก server)
       const cookieOptions = {
@@ -50,9 +50,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         secure: process.env.NODE_ENV === 'production', // ใช้ secure ใน production (HTTPS)
         sameSite: 'strict' as const, // ป้องกัน CSRF attacks
       };
-      
+
       Cookies.set('user', JSON.stringify(response.data), cookieOptions);
       Cookies.set('token', response.access_token, cookieOptions);
+      
+      localStorage.setItem('permissions', JSON.stringify(response.permissions));
     } else {
       throw new Error('Invalid username or password');
     }
@@ -62,6 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     Cookies.remove('user');
     Cookies.remove('token');
+    localStorage.removeItem('permissions');
   };
 
   return (
