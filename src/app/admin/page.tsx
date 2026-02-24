@@ -9,7 +9,7 @@ import TopDeveloper from '@/components/dashboard/TopDeveloper';
 
 export default function Home() {
   return (
-    <div className="flex-1 bg-gray-50">
+    <div className="flex-1">
       {/* Main Content */}
       <main className="px-4 sm:px-6 py-4 sm:py-8">
         {/* Welcome Banner and Stats Row */}

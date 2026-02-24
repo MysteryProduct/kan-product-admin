@@ -25,17 +25,17 @@ export default function ProductSales() {
               </linearGradient>
             </defs>
           </svg>
-          <div className="absolute bottom-0 left-0 right-0 flex justify-between px-4 text-xs text-gray-500">
+          <div className="absolute bottom-0 left-0 right-0 flex justify-between px-4 text-xs text-gray-500 dark:text-gray-400">
             {['2016', '2017', '2018', '2019', '2020', '2021', '2022'].map((year) => (
               <span key={year}>{year}</span>
             ))}
           </div>
         </div>
         
-        <div className="flex items-center justify-between pt-3 sm:pt-4 border-t">
+        <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
           <div>
-            <p className="text-xl sm:text-2xl font-bold text-gray-900">36,436</p>
-            <p className="text-xs sm:text-sm text-gray-500">New Customer</p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">36,436</p>
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">New Customer</p>
           </div>
           <span className="text-green-600 font-semibold">+23%</span>
         </div>

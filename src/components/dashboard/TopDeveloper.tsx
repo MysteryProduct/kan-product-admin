@@ -14,22 +14,22 @@ export default function TopDeveloper() {
           </div>
         </div>
         
-        <h3 className="text-xl font-bold text-gray-900 mb-1">Adam Johnson</h3>
-        <p className="text-sm text-gray-500 mb-4">Top Developer</p>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-1">Adam Johnson</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Top Developer</p>
         
-        <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
           <div className="bg-green-500 h-2 rounded-full" style={{ width: '83%' }}></div>
         </div>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           <span className="font-semibold">83%</span> Goals Completed
         </p>
         
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg w-full">
+        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg w-full">
           <div className="flex items-center justify-center gap-2">
             <span className="text-2xl">💡</span>
             <div className="text-left">
-              <p className="text-sm font-semibold text-gray-900">New Goals</p>
-              <p className="text-xs text-gray-500">In DevOps</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">New Goals</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">In DevOps</p>
             </div>
           </div>
         </div>

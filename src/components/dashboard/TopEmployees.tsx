@@ -24,30 +24,30 @@ export default function TopEmployees() {
       <div className="overflow-x-auto -mx-4 sm:mx-0">
         <table className="w-full min-w-[640px]">
           <thead>
-            <tr className="border-b">
-              <th className="text-left py-2 sm:py-3 px-2 text-xs sm:text-sm font-semibold text-gray-700">Employee</th>
-              <th className="text-left py-2 sm:py-3 px-2 text-xs sm:text-sm font-semibold text-gray-700">Rate</th>
-              <th className="text-left py-2 sm:py-3 px-2 text-xs sm:text-sm font-semibold text-gray-700">Skill</th>
-              <th className="text-left py-2 sm:py-3 px-2 text-xs sm:text-sm font-semibold text-gray-700">Status</th>
+            <tr className="border-b border-gray-200 dark:border-gray-700">
+              <th className="text-left py-2 sm:py-3 px-2 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Employee</th>
+              <th className="text-left py-2 sm:py-3 px-2 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Rate</th>
+              <th className="text-left py-2 sm:py-3 px-2 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Skill</th>
+              <th className="text-left py-2 sm:py-3 px-2 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Status</th>
             </tr>
           </thead>
           <tbody>
             {employees.map((employee, index) => (
-              <tr key={index} className="border-b last:border-b-0 hover:bg-gray-50">
+              <tr key={index} className="border-b border-gray-200 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                 <td className="py-3 sm:py-4 px-2">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-semibold">
                       {employee.name.split(' ').map(n => n[0]).join('')}
                     </div>
                     <div>
-                      <p className="text-sm sm:text-base font-semibold text-gray-900">{employee.name}</p>
-                      <p className="text-xs sm:text-sm text-gray-500">{employee.role}</p>
+                      <p className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100">{employee.name}</p>
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{employee.role}</p>
                     </div>
                   </div>
                 </td>
-                <td className="py-3 sm:py-4 px-2 text-sm sm:text-base text-gray-700">{employee.rate}</td>
+                <td className="py-3 sm:py-4 px-2 text-sm sm:text-base text-gray-700 dark:text-gray-300">{employee.rate}</td>
                 <td className="py-3 sm:py-4 px-2">
-                  <span className="px-2 sm:px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs sm:text-sm font-medium">
+                  <span className="px-2 sm:px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs sm:text-sm font-medium">
                     {employee.skill}
                   </span>
                 </td>

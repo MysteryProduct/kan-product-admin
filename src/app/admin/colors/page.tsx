@@ -82,13 +82,13 @@ export default function ColorsPage() {
 
 
   return (
-    <div className="flex-1 bg-gray-50 p-2 sm:p-4 md:p-6 lg:p-8">
+    <div className="flex-1 bg-gray-50 dark:bg-gray-900 p-2 sm:p-4 md:p-6 lg:p-8">
       {/* Statistics Cards */}
 
       {/* Main Content Card */}
-      <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
         {/* Search Bar and Add Button */}
-        <div className="p-3 sm:p-4 md:p-6 border-b border-gray-100">
+        <div className="p-3 sm:p-4 md:p-6 border-b border-gray-100 dark:border-gray-700">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
             <div className="relative flex-1 max-w-full sm:max-w-xs">
               <input
@@ -96,10 +96,10 @@ export default function ColorsPage() {
                 placeholder="Search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder:text-gray-400"
+                className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-700"
               />
               <svg
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -135,25 +135,25 @@ export default function ColorsPage() {
             <div className="overflow-x-auto -mx-2 sm:mx-0 p-3">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 hidden sm:table-cell">Color Id</th>
-                    <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700">
+                <tr className="bg-gray-50 dark:bg-gray-700 border-b border-gray-100 dark:border-gray-600">
+                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 hidden sm:table-cell">Color Id</th>
+                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Color Name
                     </th>
-                    <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700">
+                    <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Color
                     </th>
-                    <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 lg:w-50 md:w-40 ">Action</th>
+                    <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 lg:w-50 md:w-40 ">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {colors.map((color, index) => (
                     <tr
                       key={color.color_id}
-                      className="bg-white border-b border-gray-50 hover:bg-gray-50 transition-colors"
+                      className="bg-white dark:bg-gray-800 border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                     >
-                      <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 hidden sm:table-cell">{color.color_id}</td>
-                      <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-900">{color.color_name}</td>
+                  <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 dark:text-gray-400 hidden sm:table-cell">{color.color_id}</td>
+                  <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-900 dark:text-gray-100">{color.color_name}</td>
                       <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4">
                         <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
                           <div
@@ -203,9 +203,9 @@ export default function ColorsPage() {
           </>
         )}
         {meta && meta.last_page > 1 && (
-          <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-100">
+          <div className="px-6 py-4 bg-gradient-to-r from-gray-50 dark:from-gray-800 to-blue-50 dark:to-gray-700 border-t border-gray-100 dark:border-gray-700">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
                 Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, meta.total)} of {meta.total} results
               </div>
               <Pagination

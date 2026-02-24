@@ -21,24 +21,24 @@ export default function ConfirmDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-gray-300/40 bg-opacity-50"
+        className="absolute inset-0 bg-gray-300/40 dark:bg-black/50 bg-opacity-50"
         onClick={onCancel}
       />
       
       {/* Modal */}
-      <div className="relative bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4 animate-in fade-in zoom-in duration-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4 animate-in fade-in zoom-in duration-200">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
           {title}
         </h3>
         
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
           {message}
         </p>
         
         <div className="flex gap-3 justify-end">
           <button
             onClick={onCancel}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
           >
             ยกเลิก
           </button>

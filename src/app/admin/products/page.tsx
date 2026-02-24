@@ -237,12 +237,12 @@ export default function ProductsPage() {
     }
   };
   return (
-    <div className="bg-gray-50 p-2 sm:p-4 md:p-6 lg:p-8">
+    <div className="bg-gray-50 dark:bg-gray-900 p-2 sm:p-4 md:p-6 lg:p-8">
       {/* Statistics Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
-          <div className="text-2xl sm:text-4xl font-bold text-blue-600 mb-1 sm:mb-2">{totalProducts}</div>
-          <div className="text-xs sm:text-sm text-blue-700 font-medium">Total Products</div>
+        <div className="bg-gradient-to-br from-blue-50 dark:from-blue-900 to-blue-100 dark:to-blue-800 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
+          <div className="text-2xl sm:text-4xl font-bold text-blue-600 dark:text-blue-300 mb-1 sm:mb-2">{totalProducts}</div>
+          <div className="text-xs sm:text-sm text-blue-700 dark:text-blue-300 font-medium">Total Products</div>
         </div>
 
         {/* <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
@@ -250,21 +250,21 @@ export default function ProductsPage() {
           <div className="text-xs sm:text-sm text-orange-700 font-medium">Pending Products</div>
         </div> */}
 
-        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
-          <div className="text-2xl sm:text-4xl font-bold text-green-600 mb-1 sm:mb-2">{inStock}</div>
-          <div className="text-xs sm:text-sm text-green-700 font-medium">In Stock</div>
+        <div className="bg-gradient-to-br from-green-50 dark:from-green-900 to-green-100 dark:to-green-800 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
+          <div className="text-2xl sm:text-4xl font-bold text-green-600 dark:text-green-300 mb-1 sm:mb-2">{inStock}</div>
+          <div className="text-xs sm:text-sm text-green-700 dark:text-green-300 font-medium">In Stock</div>
         </div>
 
-        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
-          <div className="text-2xl sm:text-4xl font-bold text-red-600 mb-1 sm:mb-2">{outStock}</div>
-          <div className="text-xs sm:text-sm text-red-700 font-medium">Out of Stock</div>
+        <div className="bg-gradient-to-br from-red-50 dark:from-red-900 to-red-100 dark:to-red-800 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
+          <div className="text-2xl sm:text-4xl font-bold text-red-600 dark:text-red-300 mb-1 sm:mb-2">{outStock}</div>
+          <div className="text-xs sm:text-sm text-red-700 dark:text-red-300 font-medium">Out of Stock</div>
         </div>
       </div>
 
       {/* Main Content Card */}
-      <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
         {/* Search Bar */}
-        <div className="p-3 sm:p-4 md:p-6 border-b border-gray-100">
+        <div className="p-3 sm:p-4 md:p-6 border-b border-gray-100 dark:border-gray-700">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
             <div className="relative flex-1 max-w-full sm:max-w-xs">
               <input
@@ -272,10 +272,10 @@ export default function ProductsPage() {
                 placeholder="Search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder:text-gray-400"
+                className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-700"
               />
               <svg
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -311,9 +311,9 @@ export default function ProductsPage() {
             data={products?.data || []}
             columns={columns}
             keyField="product_id"
-            className="bg-white p-1"
-            headerClassName="bg-gray-50 border-b border-gray-100"
-            rowClassName="border-b border-gray-100 hover:bg-gray-50"
+            className="bg-white dark:bg-gray-800 p-1"
+            headerClassName="bg-gray-50 dark:bg-gray-700 border-b border-gray-100 dark:border-gray-600"
+            rowClassName="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
             paginationMeta={meta}
             currentPage={currentPage}
             onPageChange={setCurrentPage}

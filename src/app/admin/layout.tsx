@@ -32,10 +32,10 @@ export default function DashboardLayout({
   // ถ้ากำลัง loading ให้แสดง loading screen
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
     );
@@ -48,10 +48,10 @@ export default function DashboardLayout({
 
   if (!isPermissionLoaded) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
         </div>
       </div>
     );
@@ -60,14 +60,14 @@ export default function DashboardLayout({
   if (!canViewPage) {
     return (
       <SidebarProvider>
-        <div className="flex h-screen overflow-hidden">
+        <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
           <Sidebar />
           <div className="flex flex-col flex-1 overflow-hidden">
             <Header />
-            <main className="overflow-auto flex-1 bg-gray-50 p-6">
-              <div className="max-w-xl bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">ไม่พบสิทธิ์การเข้าถึง</h2>
-                <p className="text-sm text-gray-600">คุณไม่มีสิทธิ์ดูหน้านี้ กรุณาติดต่อผู้ดูแลระบบ</p>
+            <main className="overflow-auto flex-1 bg-gray-50 dark:bg-gray-900 p-6">
+              <div className="max-w-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">ไม่พบสิทธิ์การเข้าถึง</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">คุณไม่มีสิทธิ์ดูหน้านี้ กรุณาติดต่อผู้ดูแลระบบ</p>
               </div>
             </main>
           </div>
@@ -79,11 +79,11 @@ export default function DashboardLayout({
   // ถ้า login แล้ว แสดงผล dashboard พร้อม header และ sidebar
   return (
     <SidebarProvider>
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
         <Sidebar />
         <div className="flex flex-col flex-1 overflow-hidden">
           <Header />
-          <main className="overflow-auto flex-1 bg-gray-50">
+          <main className="overflow-auto flex-1 bg-gray-50 dark:bg-gray-900">
             {children}
           </main>
         </div>

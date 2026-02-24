@@ -187,7 +187,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
         onClick={() => setOpenFilterKey(null)}
       >
         {/* Table Container */}
-        <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-sm bg-white">
+        <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm bg-white dark:bg-slate-900">
           <div className="overflow-x-auto" ref={tableScrollRef}>
             <table className="w-full text-sm">
               <thead>
@@ -410,12 +410,12 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
                 {processedData.length > 0 ? (
                   processedData.map((row, idx) => (
                     <tr
                       key={String(row[keyField]) || idx}
-                      className={`transition-colors duration-200 hover:bg-slate-50 border-l-4 border-transparent hover:border-blue-400 ${
+                      className={`transition-colors duration-200 hover:bg-slate-50 dark:hover:bg-slate-800/80 border-l-4 border-transparent hover:border-blue-400 dark:hover:border-blue-500 ${
                         onRowClick ? 'cursor-pointer' : ''
                       } ${rowClassName}`}
                       onClick={() => onRowClick?.(row)}
@@ -423,7 +423,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                       {columns.map((col) => (
                         <td
                           key={String(col.key)}
-                          className="px-6 py-4 text-slate-800"
+                          className="px-6 py-4 text-slate-800 dark:text-slate-100"
                           style={col.width ? { width: col.width } : undefined}
                         >
                           {col.render
@@ -437,9 +437,9 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                   <tr>
                     <td colSpan={columns.length} className="px-6 py-20 text-center">
                       <div className="flex flex-col items-center justify-center">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 flex items-center justify-center mb-4">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center mb-4">
                           <svg
-                            className="w-8 h-8 text-blue-400"
+                            className="w-8 h-8 text-blue-400 dark:text-blue-300"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -452,8 +452,8 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                             />
                           </svg>
                         </div>
-                        <p className="text-gray-600 font-semibold text-lg">No data found</p>
-                        <p className="text-gray-400 text-sm mt-1">Try adjusting your filters</p>
+                        <p className="text-gray-600 dark:text-slate-200 font-semibold text-lg">No data found</p>
+                        <p className="text-gray-400 dark:text-slate-400 text-sm mt-1">Try adjusting your filters</p>
                       </div>
                     </td>
                   </tr>
@@ -464,10 +464,10 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
         </div>
 
         {canShowPagination && (
-          <div className={`px-6 py-4 bg-gradient-to-r from-slate-50 to-blue-50 border-t border-slate-100 ${footerClassName}`}>
+          <div className={`px-6 py-4 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 border-t border-slate-100 dark:border-slate-700 ${footerClassName}`}>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               {showPaginationInfo ? (
-                <div className="text-sm text-slate-600">
+                <div className="text-sm text-slate-600 dark:text-slate-300">
                   Showing {paginationStart} to {paginationEnd} of {paginationMeta?.total} results
                 </div>
               ) : (

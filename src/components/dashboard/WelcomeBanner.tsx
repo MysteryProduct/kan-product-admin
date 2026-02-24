@@ -2,14 +2,14 @@ import React from 'react';
 
 export default function WelcomeBanner() {
   return (
-    <div className="relative bg-white rounded-2xl p-4 sm:p-6 md:p-8 overflow-hidden shadow-sm border border-gray-100">
+    <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-4 sm:p-6 md:p-8 overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700">
       <div className="flex items-center justify-between">
         {/* Left Content */}
         <div className="relative z-10 flex-1">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             Welcome Mike Nielsen
           </h1>
-          <p className="text-sm sm:text-base text-gray-600 mb-4 md:mb-6">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 md:mb-6">
             Check all the statastics
           </p>
           <button className="bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg text-sm sm:text-base font-semibold hover:bg-blue-700 transition shadow-sm">

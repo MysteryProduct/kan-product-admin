@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Supplier, SupplierWithPayment } from '@/types/supplier';
 import { PaginationMeta } from '@/types/pagination';
 import SupplierModel from '@/models/supplier';
@@ -7,10 +7,16 @@ import SupplierInsertForm from './components/insert';
 import SupplierUpdateForm from './components/update';
 import SupplierDetailModal from './components/detail';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import Pagination from '@/components/Pagination';
+import { DataTable, DataTableColumn } from '@/components/DataTable';
 import { usePermissions } from '@/hooks/usePermissions';
 import ActionResultDialog from '@/components/ActionResultDialog';
-import LoadingTableSkeleton from '@/components/LoadingTableSkeleton';
+
+type SupplierTableRow = SupplierWithPayment & {
+    rowNumber: number;
+};
+
+type SortField = 'supplier_name' | 'supplier_contact' | 'supplier_phone' | 'tax_id' | null;
+type SortOrder = 'ASC' | 'DESC';
 
 export default function SupplierPage() {
     const { can } = usePermissions();
@@ -24,6 +30,9 @@ export default function SupplierPage() {
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState<number>(1);
+    const [sortField, setSortField] = useState<SortField>(null);
+    const [sortOrder, setSortOrder] = useState<SortOrder>('ASC');
+    const [filters, setFilters] = useState<Record<string, string>>({});
     const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
     const [isUpdateFormOpen, setIsUpdateFormOpen] = useState<boolean>(false);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
@@ -42,13 +51,13 @@ export default function SupplierPage() {
 
     useEffect(() => {
         fetchSuppliers();
-    }, [currentPage, searchQuery]);
+    }, [currentPage, searchQuery, sortField, sortOrder]);
 
-    const fetchSuppliers = async () => {
+    const fetchSuppliers = async (page = currentPage, activeFilters = filters) => {
         setLoading(true);
         try {
             const supplierModel = new SupplierModel();
-            const result = await supplierModel.getSuppliers(currentPage, 10, searchQuery);
+            const result = await supplierModel.getSuppliers(page, 10, searchQuery, sortField, sortOrder, activeFilters);
             setSuppliers(result.data);
             setMeta(result.meta);
         } catch (err: any) {
@@ -66,12 +75,51 @@ export default function SupplierPage() {
                 targetPage = currentPage - 1;
                 setCurrentPage(targetPage);
             }
-            await fetchSuppliers();
+            await fetchSuppliers(targetPage);
         } catch (err: any) {
             setError(err.message);
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleSortChange = (sort: { key: string; direction: 'ASC' | 'DESC' } | null) => {
+        if (!sort) {
+            setSortField(null);
+            setSortOrder('ASC');
+            setCurrentPage(1);
+            return;
+        }
+
+        const nextField = sort.key as SortField;
+        if (!['supplier_name', 'supplier_contact', 'supplier_phone', 'tax_id'].includes(nextField || '')) {
+            setSortField(null);
+            setSortOrder('ASC');
+            setCurrentPage(1);
+            return;
+        }
+
+        setSortField(nextField);
+        setSortOrder(sort.direction);
+        setCurrentPage(1);
+    };
+
+    const handleDataTableFilterChange = (tableFilters: Record<string, string | string[]>) => {
+        const updatedFilters: Record<string, string> = {};
+
+        for (const columnKey in tableFilters) {
+            const value = tableFilters[columnKey];
+            if (Array.isArray(value)) {
+                if (value.length > 0) {
+                    updatedFilters[columnKey] = JSON.stringify(value);
+                }
+            } else if (value.trim()) {
+                updatedFilters[columnKey] = value;
+            }
+        }
+
+        setCurrentPage(1);
+        setFilters(updatedFilters);
     };
 
     const handleEdit = (supplier: SupplierWithPayment) => {
@@ -118,6 +166,148 @@ export default function SupplierPage() {
         setCurrentPage(page);
     };
 
+    const tableData = useMemo<SupplierTableRow[]>(() => {
+        return suppliers.map((supplier, index) => ({
+            ...supplier,
+            rowNumber: index + 1 + (currentPage - 1) * 10,
+        }));
+    }, [suppliers, currentPage]);
+
+    const columns = useMemo<DataTableColumn<SupplierTableRow>[]>(
+        () => [
+            {
+                key: 'rowNumber',
+                label: 'ลำดับ',
+                width: '110px',
+                render: (value) => (
+                    <div className="flex items-center">
+                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white font-semibold text-sm">
+                            {value as number}
+                        </div>
+                    </div>
+                ),
+            },
+            {
+                key: 'supplier_name',
+                label: 'ชื่อผู้จัดจำหน่าย',
+                filterable: true,
+                sortable: true,
+                render: (value) => (
+                    <div className="font-semibold text-gray-900 dark:text-gray-100 text-base">
+                        {value as string}
+                    </div>
+                ),
+            },
+            {
+                key: 'supplier_contact',
+                label: 'ติดต่อ',
+                filterable: true,
+                sortable: true,
+                render: (value) => (
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                            <svg className="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </div>
+                        <div className="font-medium text-gray-900 dark:text-gray-100">
+                            {value as string}
+                        </div>
+                    </div>
+                ),
+            },
+            {
+                key: 'supplier_phone',
+                label: 'โทรศัพท์',
+                filterable: true,
+                sortable: true,
+                render: (value) => (
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                            <svg className="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                        </div>
+                        <div className="font-medium text-gray-900 dark:text-gray-100">
+                            {value as string}
+                        </div>
+                    </div>
+                ),
+            },
+            {
+                key: 'supplier_address',
+                label: 'ที่อยู่',
+                width: '320px',
+                render: (value) => (
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-gradient-to-r from-purple-100 dark:from-purple-900 to-pink-100 dark:to-pink-900 rounded-lg flex items-center justify-center shadow-sm">
+                            <svg className="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 616 0z" />
+                            </svg>
+                        </div>
+                        <div className="text-gray-700 dark:text-gray-300 max-w-[250px] truncate" title={value as string}>
+                            {value as string}
+                        </div>
+                    </div>
+                ),
+            },
+            {
+                key: 'tax_id',
+                label: 'เลขประจำตัวผู้เสียภาษี',
+                filterable: true,
+                sortable: true,
+                render: (value) => (
+                    <div className="font-mono text-gray-700 dark:text-gray-300 bg-yellow-50 dark:bg-yellow-900/20 px-3 py-1 rounded-lg inline-block border border-yellow-200 dark:border-yellow-800">
+                        {value as string}
+                    </div>
+                ),
+            },
+            {
+                key: 'supplier_id',
+                label: 'การกระทำ',
+                width: '180px',
+                render: (_, row) => (
+                    <div className="flex items-center justify-center gap-2">
+                        <button
+                            onClick={() => handleViewDetail(row)}
+                            className="group/btn p-2 text-blue-600 hover:text-white hover:bg-blue-600 rounded-lg transition-all duration-200 hover:shadow-lg transform hover:scale-105"
+                            title="View Details"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                        {canEditSupplier && (
+                            <button
+                                onClick={() => handleEdit(row)}
+                                className="group/btn p-2 text-emerald-600 hover:text-white hover:bg-emerald-600 rounded-lg transition-all duration-200 hover:shadow-lg transform hover:scale-105"
+                                title="Edit"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
+                        )}
+                        {canDeleteSupplier && (
+                            <button
+                                onClick={() => handleDelete(row)}
+                                className="group/btn p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 hover:shadow-lg transform hover:scale-105"
+                                title="Delete"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        )}
+                    </div>
+                ),
+            },
+        ],
+        [canDeleteSupplier, canEditSupplier]
+    );
+
     if (loading) {
         return (
             <div className="flex-1 bg-gray-50 p-8">
@@ -139,7 +329,7 @@ export default function SupplierPage() {
     }
 
     return (
-        <div className="flex-1 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-2 sm:p-4 md:p-6 lg:p-8 min-h-screen">
+        <div className="flex-1 bg-gradient-to-br from-slate-50 dark:from-gray-900 via-blue-50 dark:via-gray-800 to-indigo-50 dark:to-gray-900 p-2 sm:p-4 md:p-6 lg:p-8 min-h-screen">
             {/* Header Section */}
             <div className="mb-8">
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
@@ -211,9 +401,9 @@ export default function SupplierPage() {
             </div>
 
             {/* Main Content Card */}
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden backdrop-blur-sm bg-opacity-95 border border-white border-opacity-20">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 border border-white dark:border-gray-700 border-opacity-20">
                 {/* Search Bar and Add Button */}
-                <div className="p-6 bg-gradient-to-r from-gray-50 to-blue-50 border-b border-gray-100">
+                <div className="p-6 bg-gradient-to-r from-gray-50 dark:from-gray-700 to-blue-50 dark:to-gray-700 border-b border-gray-100 dark:border-gray-600">
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                         <div className="relative flex-1 max-w-full sm:max-w-md">
                             <input
@@ -221,10 +411,10 @@ export default function SupplierPage() {
                                 placeholder="Search suppliers by name, contact, or phone..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full px-4 py-3 pl-11 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder:text-gray-400 bg-white shadow-sm transition-all duration-200"
+                                className="w-full px-4 py-3 pl-11 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-700 shadow-sm transition-all duration-200"
                             />
                             <svg
-                                className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"
+                                className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -249,12 +439,6 @@ export default function SupplierPage() {
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <button className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium border border-gray-200">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                                </svg>
-                                Filter
-                            </button>
                             {canAddSupplier && (
                                 <button
                                     onClick={() => setIsFormOpen(true)}
@@ -270,174 +454,19 @@ export default function SupplierPage() {
                     </div>
                 </div>
 
-                {/* Loading Skeleton or Table */}
-                {loading ? (
-                    <LoadingTableSkeleton rows={5} columns={7} />
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
-                        <thead className="text-sm text-gray-500 uppercase bg-gray-50 border-b border-gray-100">
-                            <tr>
-                                <th scope="col" className="px-6 py-4 font-semibold whitespace-nowrap">
-                                    <div className="flex items-center gap-2">
-                                        <span>ลำดับ</span>
-                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-                                        </svg>
-                                    </div>
-                                </th>
-                                <th scope="col" className="px-6 py-4 font-semibold whitespace-nowrap">
-                                    <div className="flex items-center gap-2">
-                                        <span>ชื่อผู้จัดจำหน่าย</span>
-                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-                                        </svg>
-                                    </div>
-                                </th>
-                                <th scope="col" className="px-6 py-4 font-semibold whitespace-nowrap">ติดต่อ</th>
-                                <th scope="col" className="px-6 py-4 font-semibold whitespace-nowrap">โทรศัพท์</th>
-                                <th scope="col" className="px-6 py-4 font-semibold whitespace-nowrap">ที่อยู่</th>
-                                <th scope="col" className="px-6 py-4 font-semibold whitespace-nowrap">เลขประจำตัวผู้เสียภาษี</th>
-                                <th scope="col" className="px-6 py-4 font-semibold whitespace-nowrap text-center">การกระทำ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {suppliers.map((supplier, index) => (
-                                <tr
-                                    key={supplier.supplier_id}
-                                    className={`group border-b border-gray-50 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'
-                                        }`}
-                                >
-                                    <td className="px-6 py-5">
-                                        <div className="flex items-center">
-                                            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white font-semibold text-sm mr-3">
-                                                {(index + 1) + (currentPage - 1) * 10}
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-5">
-                                        <div className="font-semibold text-gray-900 text-base">
-                                            {supplier.supplier_name}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-5">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                                                <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                                </svg>
-                                            </div>
-                                            <div>
-                                                <div className="font-medium text-gray-900">
-                                                    {supplier.supplier_contact}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-5">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                                                <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                                </svg>
-                                            </div>
-                                            <div>
-                                                <div className="font-medium text-gray-900">
-                                                    {supplier.supplier_phone}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-5">
-                                        <div className="relative group">
-                                            <div className="flex items-center gap-2 cursor-pointer">
-                                                <div className="w-8 h-8 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg flex items-center justify-center shadow-sm">
-                                                    <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 616 0z" />
-                                                    </svg>
-                                                </div>
-                                                <div className="text-gray-700 max-w-[250px] truncate">
-                                                    <span title={supplier.supplier_address}>{supplier.supplier_address}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    
-                                    <td className="px-6 py-5">
-                                        <div className="font-mono text-gray-700 bg-yellow-50 px-3 py-1 rounded-lg inline-block border border-yellow-200">
-                                            {supplier.tax_id}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-5">
-                                        <div className="flex items-center justify-center gap-2">
-                                            <button
-                                                onClick={() => handleViewDetail(supplier)}
-                                                className="group/btn p-2 text-blue-600 hover:text-white hover:bg-blue-600 rounded-lg transition-all duration-200 hover:shadow-lg transform hover:scale-105"
-                                                title="View Details"
-                                            >
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                </svg>
-                                            </button>
-                                            {canEditSupplier && (
-                                                <button
-                                                    onClick={() => handleEdit(supplier)}
-                                                    className="group/btn p-2 text-emerald-600 hover:text-white hover:bg-emerald-600 rounded-lg transition-all duration-200 hover:shadow-lg transform hover:scale-105"
-                                                    title="Edit"
-                                                >
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                    </svg>
-                                                </button>
-                                            )}
-                                            {canDeleteSupplier && (
-                                                <button
-                                                    onClick={() => handleDelete(supplier)}
-                                                    className="group/btn p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 hover:shadow-lg transform hover:scale-105"
-                                                    title="Delete"
-                                                >
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-
-                    {suppliers.length === 0 && (
-                        <div className="text-center py-16">
-                            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                </svg>
-                            </div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">No suppliers found</h3>
-                        </div>
-                    )}
-                    </div>
-                )}
-
-                {/* Pagination */}
-                {meta && meta.last_page > 1 && (
-                    <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-100">
-                        <div className="flex items-center justify-between">
-                            <div className="text-sm text-gray-600">
-                                Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, meta.total)} of {meta.total} results
-                            </div>
-                            <Pagination
-                                currentPage={currentPage}
-                                meta={meta}
-                                onPageChange={handlePageChange}
-                            />
-                        </div>
-                    </div>
-                )}
+                <DataTable
+                    data={tableData}
+                    columns={columns}
+                    keyField="supplier_id"
+                    className="bg-white dark:bg-gray-800 p-1"
+                    headerClassName="bg-gray-50 dark:bg-gray-700 border-b border-gray-100 dark:border-gray-600"
+                    rowClassName="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                    paginationMeta={meta}
+                    currentPage={currentPage}
+                    onPageChange={handlePageChange}
+                    onFilterChange={handleDataTableFilterChange}
+                    onSortChange={handleSortChange}
+                />
             </div>
 
             {/* Modals and Forms */}
