@@ -89,6 +89,32 @@ class PurchaseOrderModel {
     }
   }
 
+  async approvePurchaseOrder(id: string, update_by: string): Promise<PurchaseOrder> {
+    try {
+      const response = await axiosInstance.post<SinglePurchaseOrderResponse>(
+        `/purchase-order/${id}/approve`,
+        { status: 'active', update_by }
+      );
+      return response.data.data;
+    }
+    catch (error) {
+      console.error('Error approving purchase order:', error);
+      throw error;
+    }
+  }
+
+  async rejectPurchaseOrder(id: string): Promise<PurchaseOrder> {
+    try {
+      const response = await axiosInstance.post<SinglePurchaseOrderResponse>(
+        `/purchase-order/${id}/reject`,
+        { status: 'inactive' }
+      );
+      return response.data.data;
+    } catch (error) {
+      console.error('Error rejecting purchase order:', error);
+      throw error;
+    }
+  }
   /**
    * ลบ Purchase Order
    */

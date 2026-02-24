@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { ProductUnit } from '@/types/product-unit';
 import { ProductUnitModel } from '@/models/product-unit';
+import ActionResultDialog from '@/components/ActionResultDialog';
 
 const productUnitModel = new ProductUnitModel();
 
@@ -18,13 +19,21 @@ export default function UpdateProductUnitForm({ isOpen, onClose, initialData, on
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState(false);
+    const [resultDialog, setResultDialog] = useState<{
+        isOpen: boolean;
+        status: 'success' | 'error';
+        message: string;
+    }>({
+        isOpen: false,
+        status: 'success',
+        message: '',
+    });
     useEffect(() => {
         if (isOpen) {
             // Reset form when opened
             setFormData(initialData);
             setError(null);
-            setSuccess(false);
+            setResultDialog((prev) => ({ ...prev, isOpen: false }));
         }
     }, [isOpen, initialData]);
     
@@ -38,7 +47,6 @@ export default function UpdateProductUnitForm({ isOpen, onClose, initialData, on
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
-        setSuccess(false);
         setLoading(true);
         try {
             // Validate inputs
@@ -49,19 +57,32 @@ export default function UpdateProductUnitForm({ isOpen, onClose, initialData, on
             }
             if (initialData) {
                 await productUnitModel.updateProductUnit(initialData.product_unit_id, formData.product_unit_name);
-                setSuccess(true);
-                setLoading(false);
-                setTimeout(() => {
-                    onClose();
-                    setSuccess(false);
-                    onSuccess?.();
-                }, 1000);
+                setResultDialog({
+                    isOpen: true,
+                    status: 'success',
+                    message: 'แก้ไขข้อมูลหน่วยสินค้าสำเร็จ',
+                });
             }
-        } catch (err) {
-            setError('เกิดข้อผิดพลาดในการอัปเดตหน่วยสินค้า');
+        } catch (err: any) {
+            setResultDialog({
+                isOpen: true,
+                status: 'error',
+                message: err?.message || 'เกิดข้อผิดพลาดในการอัปเดตหน่วยสินค้า',
+            });
+        } finally {
             setLoading(false);
         }
     }
+
+    const handleResultDialogClose = () => {
+        const isSuccess = resultDialog.status === 'success';
+        setResultDialog((prev) => ({ ...prev, isOpen: false }));
+
+        if (isSuccess) {
+            onClose();
+            onSuccess?.();
+        }
+    };
     if (!isOpen) return null;
     return (
         <div className="fixed  inset-0 flex items-center justify-center bg-gray-400/40 bg-opacity-50 z-50">
@@ -82,12 +103,6 @@ export default function UpdateProductUnitForm({ isOpen, onClose, initialData, on
                             disabled={loading}
                         />
                     </div>
-                    {success && (
-                        <div className="p-4 bg-green-50 border border-green-200 rounded-lg mt-3 mb-2">
-                            <p className="text-sm text-green-800">แก้ไขข้อมูลหน่วยสินค้าสำเร็จ</p>
-                        </div>
-                    )}
-
                     {/* Error Message */}
                     {error && (
                         <div className="p-4 bg-red-50 border border-red-200 rounded-lg mt-3 mb-2">
@@ -113,6 +128,13 @@ export default function UpdateProductUnitForm({ isOpen, onClose, initialData, on
                     </div>
                 </form>
             </div>
+            <ActionResultDialog
+                isOpen={resultDialog.isOpen}
+                status={resultDialog.status}
+                action="update"
+                message={resultDialog.message}
+                onClose={handleResultDialogClose}
+            />
         </div>
     );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { CreateColorDto } from '@/types/color';
 import ColorModel from '@/models/color';
+import ActionResultDialog from '@/components/ActionResultDialog';
 
 interface ColorFormProps {
   isOpen: boolean;
@@ -17,7 +18,15 @@ export default function ColorForm({ isOpen, onClose, onSuccess }: ColorFormProps
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [resultDialog, setResultDialog] = useState<{
+    isOpen: boolean;
+    status: 'success' | 'error';
+    message: string;
+  }>({
+    isOpen: false,
+    status: 'success',
+    message: '',
+  });
 
   useEffect(() => {
     if (isOpen) {
@@ -27,7 +36,7 @@ export default function ColorForm({ isOpen, onClose, onSuccess }: ColorFormProps
         color_hex: '#000000',
       });
       setError(null);
-      setSuccess(false);
+      setResultDialog((prev) => ({ ...prev, isOpen: false }));
     }
   }, [isOpen]);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,7 +50,6 @@ export default function ColorForm({ isOpen, onClose, onSuccess }: ColorFormProps
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccess(false);
     setLoading(true);
 
     try {
@@ -65,7 +73,11 @@ export default function ColorForm({ isOpen, onClose, onSuccess }: ColorFormProps
 
       const colorModel = new ColorModel();
       await colorModel.createColor(colorData);
-      setSuccess(true);
+      setResultDialog({
+        isOpen: true,
+        status: 'success',
+        message: 'บันทึกข้อมูลสีสำเร็จ',
+      });
       
       // Reset form
       setFormData({
@@ -73,16 +85,25 @@ export default function ColorForm({ isOpen, onClose, onSuccess }: ColorFormProps
         color_hex: '#000000',
       });
 
-      // Close modal and refresh data after 1 second
-      setTimeout(() => {
-        onClose();
-        onSuccess?.();
-      }, 1000);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+      setResultDialog({
+        isOpen: true,
+        status: 'error',
+        message: err?.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล',
+      });
       console.error('Error creating color:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResultDialogClose = () => {
+    const isSuccess = resultDialog.status === 'success';
+    setResultDialog((prev) => ({ ...prev, isOpen: false }));
+
+    if (isSuccess) {
+      onClose();
+      onSuccess?.();
     }
   };
 
@@ -106,13 +127,6 @@ export default function ColorForm({ isOpen, onClose, onSuccess }: ColorFormProps
 
         {/* Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Success Message */}
-          {success && (
-            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm text-green-800">บันทึกข้อมูลสีสำเร็จ</p>
-            </div>
-          )}
-
           {/* Error Message */}
           {error && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -207,6 +221,13 @@ export default function ColorForm({ isOpen, onClose, onSuccess }: ColorFormProps
           </button>
         </div>
       </div>
+      <ActionResultDialog
+        isOpen={resultDialog.isOpen}
+        status={resultDialog.status}
+        action="insert"
+        message={resultDialog.message}
+        onClose={handleResultDialogClose}
+      />
     </div>
   );
 }

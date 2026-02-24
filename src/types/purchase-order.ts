@@ -31,8 +31,8 @@ export interface PurchaseOrder {
   purchaseOrderLists?: PurchaseOrderItem[];
   purchase_order_total: number;
   purchase_date: Date;
-  create_at: Date;
-  purchase_order_status: 'pending' | 'approved' | 'rejected';
+  create_at?: Date;
+  purchase_order_status: 'pending' | 'active' | 'inactive' | 'partial';
 }
 
 export interface PurchaseOrderResponse {
@@ -44,7 +44,7 @@ export interface CreatePurchaseOrderDto {
   purchase_order_name: string;
   purchase_order_detail: string;
   supplier_id: string;
-  create_by: string;
+  create_by?: string;
   purchase_order_total: number;
   purchaseOrderLists: {
     product_id: string;
@@ -57,4 +57,5 @@ export interface CreatePurchaseOrderDto {
 
 export interface UpdatePurchaseOrderDto extends CreatePurchaseOrderDto {
   purchase_order_id: string;
+  update_by: string;
 }

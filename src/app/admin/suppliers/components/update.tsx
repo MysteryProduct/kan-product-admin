@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import SupplierModel from '@/models/supplier';
 import { SupplierWithPayment, Payment, PaymentUpdate } from '@/types/supplier';
+import ActionResultDialog from '@/components/ActionResultDialog';
 
 interface UpdateSupplierModalProps {
     isOpen: boolean;
@@ -30,6 +31,15 @@ export default function UpdateSupplierModal({ isOpen, onClose, supplierId, onUpd
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [loading, setLoading] = useState(false);
+    const [resultDialog, setResultDialog] = useState<{
+        isOpen: boolean;
+        status: 'success' | 'error';
+        message: string;
+    }>({
+        isOpen: false,
+        status: 'success',
+        message: '',
+    });
 
     useEffect(() => {
         if (isOpen && supplierId) {
@@ -193,13 +203,32 @@ export default function UpdateSupplierModal({ isOpen, onClose, supplierId, onUpd
             });
 
             setErrors({});
-            onUpdate();
-            onClose();
+            setResultDialog({
+                isOpen: true,
+                status: 'success',
+                message: 'อัปเดตข้อมูลผู้จัดจำหน่ายสำเร็จ',
+            });
         } catch (error: any) {
             console.error('Error updating supplier:', error);
-            setErrors({ submit: 'Failed to update supplier. Please try again.' });
+            const message = error?.message || 'Failed to update supplier. Please try again.';
+            setErrors({ submit: message });
+            setResultDialog({
+                isOpen: true,
+                status: 'error',
+                message,
+            });
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleResultDialogClose = () => {
+        const isSuccess = resultDialog.status === 'success';
+        setResultDialog((prev) => ({ ...prev, isOpen: false }));
+
+        if (isSuccess) {
+            onUpdate();
+            onClose();
         }
     };
 
@@ -628,6 +657,13 @@ export default function UpdateSupplierModal({ isOpen, onClose, supplierId, onUpd
                     </>
                 )}
             </div>
+            <ActionResultDialog
+                isOpen={resultDialog.isOpen}
+                status={resultDialog.status}
+                action="update"
+                message={resultDialog.message}
+                onClose={handleResultDialogClose}
+            />
         </div>
     );
 }

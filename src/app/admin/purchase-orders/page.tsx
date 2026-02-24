@@ -10,6 +10,8 @@ import UpdatePurchaseOrderForm from './components/update';
 import PurchaseOrderDetailModal from './components/detail';
 import { DataTable, DataTableColumn } from '@/components/DataTable';
 import { usePermissions } from '@/hooks/usePermissions';
+import ActionResultDialog from '@/components/ActionResultDialog';
+import LoadingTableSkeleton from '@/components/LoadingTableSkeleton';
 const purchaseOrderModel = new PurchaseOrderModel();
 
 type SortField = 'purchase_date' | 'purchase_order_total' | null;
@@ -32,10 +34,20 @@ export default function PurchaseOrdersPage() {
   const [purchaseOrderToUpdate, setPurchaseOrderToUpdate] = useState<PurchaseOrder | null>(null);
   const [purchaseOrderToView, setPurchaseOrderToView] = useState<PurchaseOrder | null>(null);
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
 
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>('ASC');
   const [purchaseOrderToDelete, setPurchaseOrderToDelete] = useState<PurchaseOrder | null>(null);
+  const [resultDialog, setResultDialog] = useState<{
+    isOpen: boolean;
+    status: 'success' | 'error';
+    message: string;
+  }>({
+    isOpen: false,
+    status: 'success',
+    message: '',
+  });
 
   const isValidPurchaseOrder = (value: any): value is PurchaseOrder => {
     return Boolean(value && typeof value === 'object' && value.purchase_order_id);
@@ -47,11 +59,14 @@ export default function PurchaseOrdersPage() {
 
   const fetchPurchaseOrders = async () => {
     try {
+      setLoading(true);
       let purchase = await purchaseOrderModel.getPurchaseOrders(currentPage, 10, searchQuery, sortField, sortOrder, filters);
       setPurchaseOrders(purchase);
       setMeta(purchase.meta);
     } catch (error) {
       console.error('Failed to fetch purchase orders:', error);
+    } finally {
+      setLoading(false);
     }
   };
   const handleSortChange = (sort: { key: string; direction: 'ASC' | 'DESC' } | null) => {
@@ -95,8 +110,18 @@ export default function PurchaseOrdersPage() {
         handleRefreshProduct(filters, true);
         setIsDeleteDialogOpen(false);
         setPurchaseOrderToDelete(null);
+        setResultDialog({
+          isOpen: true,
+          status: 'success',
+          message: 'ลบใบสั่งซื้อสำเร็จ',
+        });
       } catch (error) {
         console.error('Failed to delete purchase order:', error);
+        setResultDialog({
+          isOpen: true,
+          status: 'error',
+          message: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการลบใบสั่งซื้อ',
+        });
       }
     }
   };
@@ -104,6 +129,7 @@ export default function PurchaseOrdersPage() {
   const handleRefreshProduct = async (filters: Record<string, string> = {}, checkPageAfterDelete = false) => {
     // รีเฟรชข้อมูลสินค้าเมื่อมีการเพิ่มสินค้าใหม่
     try {
+      setLoading(true);
       // คำนวณหน้าที่จะใช้ก่อนเรียก API
       let targetPage = currentPage;
 
@@ -119,6 +145,8 @@ export default function PurchaseOrdersPage() {
       setMeta(purchase.meta);
     } catch (error) {
       console.error('Failed to fetch purchase orders:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -335,20 +363,24 @@ export default function PurchaseOrdersPage() {
         </div>
       </div>
 
-      {/* Table */}
-      <DataTable
-        data={purchaseOrders?.data || []}
-        columns={columns}
-        keyField="purchase_order_id"
-        className="bg-white p-1"
-        headerClassName="bg-gray-50 border-b border-gray-100"
-        rowClassName="border-b border-gray-100 hover:bg-gray-50"
-        paginationMeta={meta}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
-        onFilterChange={handleDataTableFilterChange}
-        onSortChange={handleSortChange}
-      />
+      {/* Loading Skeleton or DataTable */}
+      {loading ? (
+        <LoadingTableSkeleton rows={5} columns={7} />
+      ) : (
+        <DataTable
+          data={purchaseOrders?.data || []}
+          columns={columns}
+          keyField="purchase_order_id"
+          className="bg-white p-1"
+          headerClassName="bg-gray-50 border-b border-gray-100"
+          rowClassName="border-b border-gray-100 hover:bg-gray-50"
+          paginationMeta={meta}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          onFilterChange={handleDataTableFilterChange}
+          onSortChange={handleSortChange}
+        />
+      )}
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         isOpen={canDeletePurchaseOrder && isDeleteDialogOpen}
@@ -391,9 +423,18 @@ export default function PurchaseOrdersPage() {
             setIsDetailFormOpen(false);
             setPurchaseOrderToView(null);
           }}
+          onSuccess={fetchPurchaseOrders}
           purchaseOrder={purchaseOrderToView}
         />
       )}
+
+      <ActionResultDialog
+        isOpen={resultDialog.isOpen}
+        status={resultDialog.status}
+        action="delete"
+        message={resultDialog.message}
+        onClose={() => setResultDialog((prev) => ({ ...prev, isOpen: false }))}
+      />
 
     </div>
   );

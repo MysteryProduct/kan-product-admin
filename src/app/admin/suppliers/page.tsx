@@ -9,6 +9,8 @@ import SupplierDetailModal from './components/detail';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import Pagination from '@/components/Pagination';
 import { usePermissions } from '@/hooks/usePermissions';
+import ActionResultDialog from '@/components/ActionResultDialog';
+import LoadingTableSkeleton from '@/components/LoadingTableSkeleton';
 
 export default function SupplierPage() {
     const { can } = usePermissions();
@@ -28,6 +30,15 @@ export default function SupplierPage() {
     const [selectedSupplier, setSelectedSupplier] = useState<SupplierWithPayment | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
     const [supplierToDelete, setSupplierToDelete] = useState<Supplier | null>(null);
+    const [resultDialog, setResultDialog] = useState<{
+        isOpen: boolean;
+        status: 'success' | 'error';
+        message: string;
+    }>({
+        isOpen: false,
+        status: 'success',
+        message: '',
+    });
 
     useEffect(() => {
         fetchSuppliers();
@@ -84,8 +95,18 @@ export default function SupplierPage() {
                 const supplierModel = new SupplierModel();
                 await supplierModel.deleteSupplier(supplierToDelete.supplier_id);
                 await handleRefreshSuppliers(true);
+                setResultDialog({
+                    isOpen: true,
+                    status: 'success',
+                    message: 'ลบผู้จัดจำหน่ายสำเร็จ',
+                });
             } catch (err: any) {
                 setError(err.message);
+                setResultDialog({
+                    isOpen: true,
+                    status: 'error',
+                    message: err?.message || 'เกิดข้อผิดพลาดในการลบผู้จัดจำหน่าย',
+                });
             } finally {
                 setIsDeleteDialogOpen(false);
                 setSupplierToDelete(null);
@@ -249,9 +270,12 @@ export default function SupplierPage() {
                     </div>
                 </div>
 
-                {/* Table */}
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
+                {/* Loading Skeleton or Table */}
+                {loading ? (
+                    <LoadingTableSkeleton rows={5} columns={7} />
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
                         <thead className="text-sm text-gray-500 uppercase bg-gray-50 border-b border-gray-100">
                             <tr>
                                 <th scope="col" className="px-6 py-4 font-semibold whitespace-nowrap">
@@ -394,21 +418,10 @@ export default function SupplierPage() {
                                 </svg>
                             </div>
                             <h3 className="text-lg font-semibold text-gray-900 mb-2">No suppliers found</h3>
-                            <p className="text-gray-500 mb-6">Get started by adding your first supplier</p>
-                            {canAddSupplier && (
-                                <button
-                                    onClick={() => setIsFormOpen(true)}
-                                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    Add First Supplier
-                                </button>
-                            )}
                         </div>
                     )}
-                </div>
+                    </div>
+                )}
 
                 {/* Pagination */}
                 {meta && meta.last_page > 1 && (
@@ -465,6 +478,13 @@ export default function SupplierPage() {
                     }}
                 />
             )}
+            <ActionResultDialog
+                isOpen={resultDialog.isOpen}
+                status={resultDialog.status}
+                action="delete"
+                message={resultDialog.message}
+                onClose={() => setResultDialog((prev) => ({ ...prev, isOpen: false }))}
+            />
         </div>
     );
 }

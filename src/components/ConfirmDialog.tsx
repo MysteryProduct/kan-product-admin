@@ -4,6 +4,7 @@ interface ConfirmDialogProps {
   onCancel: () => void;
   title?: string;
   message: string;
+  bottom_className?: string;
 }
 
 export default function ConfirmDialog({
@@ -12,6 +13,7 @@ export default function ConfirmDialog({
   onCancel,
   title = 'ยืนยันการดำเนินการ',
   message,
+  bottom_className = '',
 }: ConfirmDialogProps) {
   if (!isOpen) return null;
 
@@ -45,9 +47,9 @@ export default function ConfirmDialog({
               onConfirm();
               onCancel();
             }}
-            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+            className={` ${bottom_className !== '' ? bottom_className : 'px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium'} `}
           >
-            ลบข้อมูล
+            ยืนยัน
           </button>
         </div>
       </div>

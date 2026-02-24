@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { UpdateColorDto } from '@/types/color';
 import ColorModel from '@/models/color';
+import ActionResultDialog from '@/components/ActionResultDialog';
 
 interface UpdateColorFormProps {
     isOpen: boolean;
@@ -13,14 +14,22 @@ export default function UpdateColorForm({ isOpen, onClose, onSuccess, initialDat
     const [formData, setFormData] = useState<UpdateColorDto>(initialData);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState(false);
+    const [resultDialog, setResultDialog] = useState<{
+        isOpen: boolean;
+        status: 'success' | 'error';
+        message: string;
+    }>({
+        isOpen: false,
+        status: 'success',
+        message: '',
+    });
 
     useEffect(() => {
         if (isOpen) {
             // Reset form when opened
             setFormData(initialData);
             setError(null);
-            setSuccess(false);
+            setResultDialog((prev) => ({ ...prev, isOpen: false }));
         }
     }, [isOpen, initialData]);
 
@@ -35,7 +44,6 @@ export default function UpdateColorForm({ isOpen, onClose, onSuccess, initialDat
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
-        setSuccess(false);
         setLoading(true);
         try {
             // Validate inputs
@@ -52,16 +60,29 @@ export default function UpdateColorForm({ isOpen, onClose, onSuccess, initialDat
             const colorModel = new ColorModel();
             // Assuming updateColor method exists in ColorModel
             await colorModel.updateColor(formData);
-            setSuccess(true);
-            setTimeout(() => {
-                onClose();
-                onSuccess?.();
-            }, 1000);
-        } catch (err) {
-            setError('เกิดข้อผิดพลาดในการอัปเดตสี');
-            setLoading(false);
+            setResultDialog({
+                isOpen: true,
+                status: 'success',
+                message: 'บันทึกข้อมูลสีสำเร็จ',
+            });
+        } catch (err: any) {
+            setResultDialog({
+                isOpen: true,
+                status: 'error',
+                message: err?.message || 'เกิดข้อผิดพลาดในการอัปเดตสี',
+            });
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleResultDialogClose = () => {
+        const isSuccess = resultDialog.status === 'success';
+        setResultDialog((prev) => ({ ...prev, isOpen: false }));
+
+        if (isSuccess) {
+            onClose();
+            onSuccess?.();
         }
     };
 
@@ -84,13 +105,6 @@ export default function UpdateColorForm({ isOpen, onClose, onSuccess, initialDat
 
                 {/* Body */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    {/* Success Message */}
-                    {success && (
-                        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                            <p className="text-sm text-green-800">บันทึกข้อมูลสีสำเร็จ</p>
-                        </div>
-                    )}
-
                     {/* Error Message */}
                     {error && (
                         <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -185,6 +199,13 @@ export default function UpdateColorForm({ isOpen, onClose, onSuccess, initialDat
                     </button>
                 </div>
             </div>
+            <ActionResultDialog
+                isOpen={resultDialog.isOpen}
+                status={resultDialog.status}
+                action="update"
+                message={resultDialog.message}
+                onClose={handleResultDialogClose}
+            />
         </div>
     );
 }

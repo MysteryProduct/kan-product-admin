@@ -2,6 +2,7 @@
 import { useState, useCallback } from 'react';
 import { SupplierWithPayment, Payment } from '@/types/supplier';
 import SupplierModel, { CreateSupplierDto } from '@/models/supplier';
+import ActionResultDialog from '@/components/ActionResultDialog';
 
 interface SupplierInsertFormProps {
     isOpen: boolean;
@@ -28,6 +29,15 @@ export default function SupplierInsertForm({ isOpen, onClose, onSuccess }: Suppl
 
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [resultDialog, setResultDialog] = useState<{
+        isOpen: boolean;
+        status: 'success' | 'error';
+        message: string;
+    }>({
+        isOpen: false,
+        status: 'success',
+        message: '',
+    });
 
     const validateForm = useCallback((): boolean => {
         const newErrors: { [key: string]: string } = {};
@@ -119,13 +129,32 @@ export default function SupplierInsertForm({ isOpen, onClose, onSuccess }: Suppl
             }]);
             setErrors({});
 
-            onSuccess();
-            onClose();
+            setResultDialog({
+                isOpen: true,
+                status: 'success',
+                message: 'สร้างผู้จัดจำหน่ายสำเร็จ',
+            });
         } catch (error: any) {
             console.error('Error creating supplier:', error);
-            setErrors({ submit: 'Failed to create supplier. Please try again.' });
+            const message = error?.message || 'Failed to create supplier. Please try again.';
+            setErrors({ submit: message });
+            setResultDialog({
+                isOpen: true,
+                status: 'error',
+                message,
+            });
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleResultDialogClose = () => {
+        const isSuccess = resultDialog.status === 'success';
+        setResultDialog((prev) => ({ ...prev, isOpen: false }));
+
+        if (isSuccess) {
+            onSuccess();
+            onClose();
         }
     };
 
@@ -587,6 +616,13 @@ export default function SupplierInsertForm({ isOpen, onClose, onSuccess }: Suppl
                     </div>
                 </div>
             </div>
+            <ActionResultDialog
+                isOpen={resultDialog.isOpen}
+                status={resultDialog.status}
+                action="insert"
+                message={resultDialog.message}
+                onClose={handleResultDialogClose}
+            />
         </div>
     );
 }

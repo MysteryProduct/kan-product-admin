@@ -8,6 +8,7 @@ import CustomSelect from '@/components/CustomSelect';
 import { ProductUnitModel } from '@/models/product-unit';
 import SupplierModel from '@/models/supplier';
 import Cookies from 'js-cookie';
+import ActionResultDialog, { ActionResultDialogAction } from '@/components/ActionResultDialog';
 interface PurchaseOrderItemForm {
     id: string;
     product_id: string;
@@ -42,6 +43,17 @@ export default function InsertPurchaseOrderForm({
     const [productUnits, setProductUnits] = useState<any[]>([]);
     const [suppliers, setSuppliers] = useState<any[]>([]);
     const [supplierId, setSupplierId] = useState<string>('');
+    const [resultDialog, setResultDialog] = useState<{
+        isOpen: boolean;
+        status: 'success' | 'error';
+        action: ActionResultDialogAction;
+        message: string;
+    }>({
+        isOpen: false,
+        status: 'success',
+        action: 'insert',
+        message: '',
+    });
     useEffect(() => {
         if (isOpen) {
             fetchProducts('');
@@ -162,8 +174,6 @@ export default function InsertPurchaseOrderForm({
             if (!user) {
                 throw new Error('User not authenticated');
             }
-            console.log(user);
-            
             await purchaseOrderModel.createPurchaseOrder({
                 purchase_order_name: purchaseOrderName,
                 purchase_order_detail: purchaseOrderDetail,
@@ -179,7 +189,30 @@ export default function InsertPurchaseOrderForm({
                 })),
             });
 
-            // Reset form
+            setResultDialog({
+                isOpen: true,
+                status: 'success',
+                action: 'insert',
+                message: 'สร้างใบสั่งซื้อสำเร็จ',
+            });
+        } catch (error) {
+            console.error('Failed to create purchase order:', error);
+            setResultDialog({
+                isOpen: true,
+                status: 'error',
+                action: 'insert',
+                message: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการสร้างใบสั่งซื้อ',
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleResultDialogClose = () => {
+        const isSuccess = resultDialog.status === 'success';
+        setResultDialog((prev) => ({ ...prev, isOpen: false }));
+
+        if (isSuccess) {
             setPurchaseOrderName('');
             setPurchaseOrderDetail('');
             setItems([{ id: crypto.randomUUID(), product_id: '', purchase_order_list_qty: 1, purchase_order_list_price: 0, product_unit_id: 0 }]);
@@ -187,11 +220,6 @@ export default function InsertPurchaseOrderForm({
 
             onSuccess();
             onClose();
-        } catch (error) {
-            console.error('Failed to create purchase order:', error);
-            alert('เกิดข้อผิดพลาดในการสร้างใบสั่งซื้อ');
-        } finally {
-            setIsSubmitting(false);
         }
     };
 
@@ -216,6 +244,7 @@ export default function InsertPurchaseOrderForm({
     };
 
     return (
+        <>
         <div className="fixed inset-0 bg-gray-300/40 bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
             <div className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full my-8 overflow-hidden">
                 {/* Header */}
@@ -543,5 +572,13 @@ export default function InsertPurchaseOrderForm({
                 </form>
             </div>
         </div>
+        <ActionResultDialog
+            isOpen={resultDialog.isOpen}
+            status={resultDialog.status}
+            action={resultDialog.action}
+            message={resultDialog.message}
+            onClose={handleResultDialogClose}
+        />
+        </>
     );
 }

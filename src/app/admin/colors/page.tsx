@@ -9,6 +9,8 @@ import UpdateColorForm from '@/app/admin/colors/component/update';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import Pagination from '@/components/Pagination';
 import { usePermissions } from '@/hooks/usePermissions';
+import ActionResultDialog from '@/components/ActionResultDialog';
+import LoadingTableSkeleton from '@/components/LoadingTableSkeleton';
 export default function ColorsPage() {
   const { can } = usePermissions();
   const canAddColor = can('colors', 'add');
@@ -24,32 +26,46 @@ export default function ColorsPage() {
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [colorToDelete, setColorToDelete] = useState<Color | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [resultDialog, setResultDialog] = useState<{
+    isOpen: boolean;
+    status: 'success' | 'error';
+    message: string;
+  }>({
+    isOpen: false,
+    status: 'success',
+    message: '',
+  });
 
   useEffect(() => {
     const fetchColors = async () => {
       const colorModel = new ColorModel();
       try {
+        setLoading(true);
         const data = await colorModel.getColors(currentPage, 10, searchQuery);
         setColors(data.data);
         setMeta(data.meta);
       } catch (error) {
         console.error('Failed to fetch colors:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchColors();
   }, [currentPage, searchQuery]);
 
-  const handleRefreshColors = () => {
+  const handleRefreshColors = async () => {
     const colorModel = new ColorModel();
+    try {
+      setLoading(true);
+      // ตรวจสอบว่าถ้าหน้าปัจจุบันไม่มีข้อมูลเหลืออยู่ (ยกเว้นหน้าแรก) 
+      // ให้ลดค่า currentPage ลง 1 หน้า
+      const pageToFetch = (colors.length === 1 && currentPage > 1)
+        ? currentPage - 1
+        : currentPage;
 
-    // ตรวจสอบว่าถ้าหน้าปัจจุบันไม่มีข้อมูลเหลืออยู่ (ยกเว้นหน้าแรก) 
-    // ให้ลดค่า currentPage ลง 1 หน้า
-    const pageToFetch = (colors.length === 1 && currentPage > 1)
-      ? currentPage - 1
-      : currentPage;
-
-    colorModel.getColors(pageToFetch, 10, searchQuery).then((data) => {
+      const data = await colorModel.getColors(pageToFetch, 10, searchQuery);
       setColors(data.data);
       setMeta(data.meta);
 
@@ -57,7 +73,11 @@ export default function ColorsPage() {
       if (pageToFetch !== currentPage) {
         setCurrentPage(pageToFetch);
       }
-    });
+    } catch (error) {
+      console.error('Failed to refresh colors:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
 
@@ -107,75 +127,81 @@ export default function ColorsPage() {
           </div>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto -mx-2 sm:mx-0 p-3">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 hidden sm:table-cell">Color Id</th>
-                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700">
-                  Color Name
-                </th>
-                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700">
-                  Color
-                </th>
-                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 lg:w-50 md:w-40 ">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {colors.map((color, index) => (
-                <tr
-                  key={color.color_id}
-                  className="bg-white border-b border-gray-50 hover:bg-gray-50 transition-colors"
-                >
-                  <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 hidden sm:table-cell">{color.color_id}</td>
-                  <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-900">{color.color_name}</td>
-                  <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4">
-                    <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
-                      <div
-                        className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg shadow-sm border-2 border-gray-200 flex-shrink-0"
-                        style={{ backgroundColor: color.color_hex }}
-                        title={color.color_hex}
-                      />
-
-                    </div>
-                  </td>
-                  <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4">
-                    {canEditColor && (
-                      <button
-                        onClick={() => {
-                          setSelectedColor(color);
-                          setIsUpdateFormOpen(true);
-                        }}
-                        className="text-gray-400 hover:text-blue-500 transition-colors mr-4"
-                      >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 12v3h3l8.293-8.293-3-3L5 12z" />
-                        </svg>
-                      </button>
-                    )}
-                    {canDeleteColor && (
-                      <button className="text-gray-400 hover:text-red-500 transition-colors"
-                        onClick={() => {
-                          setColorToDelete(color);
-                          setIsDeleteDialogOpen(true);
-                        }}
-                      >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                          <path
-                            fillRule="evenodd"
-                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                            clipRule="evenodd"
+        {/* Loading Skeleton or Table */}
+        {loading ? (
+          <LoadingTableSkeleton rows={5} columns={4} />
+        ) : (
+          <>
+            <div className="overflow-x-auto -mx-2 sm:mx-0 p-3">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-100">
+                    <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 hidden sm:table-cell">Color Id</th>
+                    <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700">
+                      Color Name
+                    </th>
+                    <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700">
+                      Color
+                    </th>
+                    <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 lg:w-50 md:w-40 ">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {colors.map((color, index) => (
+                    <tr
+                      key={color.color_id}
+                      className="bg-white border-b border-gray-50 hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 hidden sm:table-cell">{color.color_id}</td>
+                      <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-900">{color.color_name}</td>
+                      <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4">
+                        <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
+                          <div
+                            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg shadow-sm border-2 border-gray-200 flex-shrink-0"
+                            style={{ backgroundColor: color.color_hex }}
+                            title={color.color_hex}
                           />
-                        </svg>
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+
+                        </div>
+                      </td>
+                      <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4">
+                        {canEditColor && (
+                          <button
+                            onClick={() => {
+                              setSelectedColor(color);
+                              setIsUpdateFormOpen(true);
+                            }}
+                            className="text-gray-400 hover:text-blue-500 transition-colors mr-4"
+                          >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 12v3h3l8.293-8.293-3-3L5 12z" />
+                            </svg>
+                          </button>
+                        )}
+                        {canDeleteColor && (
+                          <button className="text-gray-400 hover:text-red-500 transition-colors"
+                            onClick={() => {
+                              setColorToDelete(color);
+                              setIsDeleteDialogOpen(true);
+                            }}
+                          >
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                              <path
+                                fillRule="evenodd"
+                                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
         {meta && meta.last_page > 1 && (
           <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-100">
             <div className="flex items-center justify-between">
@@ -218,8 +244,18 @@ export default function ColorsPage() {
           try {
             await colorModel.deleteColor(colorToDelete.color_id);
             handleRefreshColors();
-          } catch (error) {
+            setResultDialog({
+              isOpen: true,
+              status: 'success',
+              message: 'ลบสีสำเร็จ',
+            });
+          } catch (error: any) {
             console.error('Failed to delete color:', error);
+            setResultDialog({
+              isOpen: true,
+              status: 'error',
+              message: error?.message || 'เกิดข้อผิดพลาดในการลบสี',
+            });
           }
         }}
         onCancel={() => {
@@ -227,6 +263,13 @@ export default function ColorsPage() {
           setColorToDelete(null);
         }}
         message={`คุณต้องการลบสี "${colorToDelete?.color_name}" ใช่หรือไม่?`}
+      />
+      <ActionResultDialog
+        isOpen={resultDialog.isOpen}
+        status={resultDialog.status}
+        action="delete"
+        message={resultDialog.message}
+        onClose={() => setResultDialog((prev) => ({ ...prev, isOpen: false }))}
       />
     </div>
   )

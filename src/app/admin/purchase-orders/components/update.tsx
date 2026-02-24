@@ -8,7 +8,8 @@ import SupplierModel from '@/models/supplier';
 import CustomSelect from '@/components/CustomSelect';
 import { Product } from '@/types/product';
 import { PurchaseOrder, PurchaseOrderItem } from '@/types/purchase-order';
-
+import ActionResultDialog, { ActionResultDialogAction } from '@/components/ActionResultDialog';
+import Cookies from 'js-cookie';
 interface PurchaseOrderItemForm {
     id: string;
     product_id: string;
@@ -44,6 +45,17 @@ export default function UpdatePurchaseOrderForm({
     const [supplierId, setSupplierId] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [resultDialog, setResultDialog] = useState<{
+        isOpen: boolean;
+        status: 'success' | 'error';
+        action: ActionResultDialogAction;
+        message: string;
+    }>({
+        isOpen: false,
+        status: 'success',
+        action: 'update',
+        message: '',
+    });
     
     useEffect(() => {
         if (isOpen && initialData) {
@@ -195,11 +207,16 @@ export default function UpdatePurchaseOrderForm({
         setIsSubmitting(true);
 
         try {
+            const user = Cookies.get('user') ? JSON.parse(Cookies.get('user') as string) : null;
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
             await purchaseOrderModel.updatePurchaseOrder({
                 purchase_order_id: initialData.purchase_order_id,
                 purchase_order_name: purchaseOrderName,
                 purchase_order_detail: purchaseOrderDetail,
                 supplier_id: supplierId,
+                update_by: user.employee_id,
                 purchase_order_total: calculateGrandTotal(),
                 purchaseOrderLists: items.map(item => ({
                     product_id: item.product_id,
@@ -210,13 +227,32 @@ export default function UpdatePurchaseOrderForm({
                 })),
             });
 
-            onSuccess();
-            onClose();
+            setResultDialog({
+                isOpen: true,
+                status: 'success',
+                action: 'update',
+                message: 'แก้ไขใบสั่งซื้อสำเร็จ',
+            });
         } catch (error) {
             console.error('Failed to update purchase order:', error);
-            alert('เกิดข้อผิดพลาดในการแก้ไขใบสั่งซื้อ');
+            setResultDialog({
+                isOpen: true,
+                status: 'error',
+                action: 'update',
+                message: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการแก้ไขใบสั่งซื้อ',
+            });
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleResultDialogClose = () => {
+        const isSuccess = resultDialog.status === 'success';
+        setResultDialog((prev) => ({ ...prev, isOpen: false }));
+
+        if (isSuccess) {
+            onSuccess();
+            onClose();
         }
     };
 
@@ -238,6 +274,7 @@ export default function UpdatePurchaseOrderForm({
     };
     
     return (
+        <>
         <div className="fixed inset-0 bg-gray-300/40 bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
             <div className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full my-8 overflow-hidden">
                 {/* Header */}
@@ -572,5 +609,13 @@ export default function UpdatePurchaseOrderForm({
                 </form>
             </div>
         </div>
+        <ActionResultDialog
+            isOpen={resultDialog.isOpen}
+            status={resultDialog.status}
+            action={resultDialog.action}
+            message={resultDialog.message}
+            onClose={handleResultDialogClose}
+        />
+        </>
     );
 }

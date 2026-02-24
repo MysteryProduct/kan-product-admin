@@ -1,21 +1,39 @@
 'use client';
-
+import React from 'react';
 import { PurchaseOrder, PurchaseOrderItem } from '@/types/purchase-order';
-
+import { usePermissions } from '@/hooks/usePermissions';
+import PurchaseOrderModel from '@/models/purchase-order';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import Cookies from 'js-cookie';
+import ActionResultDialog, { ActionResultDialogAction } from '@/components/ActionResultDialog';
 interface PurchaseOrderDetailModalProps {
 	isOpen: boolean;
 	onClose: () => void;
+	onSuccess?: () => void;
 	purchaseOrder: PurchaseOrder;
 }
-
+const purchaseOrderModel = new PurchaseOrderModel();
 export default function PurchaseOrderDetailModal({
 	isOpen,
 	onClose,
 	purchaseOrder,
+	onSuccess,
 }: PurchaseOrderDetailModalProps) {
-    console.log(isOpen,purchaseOrder);
+	const { can } = usePermissions();
+	const canApprovePurchaseOrder = can('purchase_orders', 'approve');
 	// if (!isOpen) return null;
-
+	const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
+	const [resultDialog, setResultDialog] = React.useState<{
+		isOpen: boolean;
+		status: 'success' | 'error';
+		action: ActionResultDialogAction;
+		message: string;
+	}>({
+		isOpen: false,
+		status: 'success',
+		action: 'approve',
+		message: '',
+	});
 	const items = ((purchaseOrder.purchaseOrderLists ?? (purchaseOrder as any).items ?? []) as PurchaseOrderItem[]);
 
 	const calculateItemTotal = (item: PurchaseOrderItem) => {
@@ -35,11 +53,51 @@ export default function PurchaseOrderDetailModal({
 
 	const statusClassMap = {
 		pending: 'bg-yellow-100 text-yellow-700',
-		approved: 'bg-green-100 text-green-700',
-		rejected: 'bg-red-100 text-red-700',
+		active: 'bg-green-100 text-green-700',
+		inactive: 'bg-red-100 text-red-700',
+		partial: 'bg-blue-100 text-blue-700',
 	};
+	const statusText ={
+		pending: 'รออนุมัติ ',
+		active: 'ใช้งานอยู่',
+		inactive: 'ยกเลิก',
+		partial: 'รับสินค้าบางส่วน',
+	}
+	async function handleApprove() {
+		try {
+			const user = Cookies.get('user') ? JSON.parse(Cookies.get('user') as string) : null;
+			if (!user) {
+				throw new Error('User not authenticated');
+			}
+			await purchaseOrderModel.approvePurchaseOrder(purchaseOrder.purchase_order_id, user.employee_id);
+			setResultDialog({
+				isOpen: true,
+				status: 'success',
+				action: 'approve',
+				message: 'อนุมัติใบสั่งซื้อสำเร็จ',
+			});
+		} catch (error) {
+			console.error('Error approving purchase order:', error);
+			setResultDialog({
+				isOpen: true,
+				status: 'error',
+				action: 'approve',
+				message: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการอนุมัติใบสั่งซื้อ',
+			});
+		}
+	}
 
+	const handleResultDialogClose = () => {
+		const isSuccess = resultDialog.status === 'success';
+		setResultDialog((prev) => ({ ...prev, isOpen: false }));
+
+		if (isSuccess) {
+			onSuccess?.();
+			onClose();
+		}
+	};
 	return (
+		<>
 		<div className="fixed inset-0 bg-gray-300/40 bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
 			<div className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full my-8 overflow-hidden">
 				<div className="bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 px-6 py-5 shadow-lg">
@@ -91,7 +149,7 @@ export default function PurchaseOrderDetailModal({
 							<label className="block text-sm font-semibold text-gray-700 mb-2">สถานะ</label>
 							<div className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-800 shadow-sm">
 								<span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${statusClassMap[purchaseOrder.purchase_order_status]}`}>
-									{purchaseOrder.purchase_order_status}
+									{statusText[purchaseOrder.purchase_order_status]}
 								</span>
 							</div>
 						</div>
@@ -185,9 +243,37 @@ export default function PurchaseOrderDetailModal({
 						>
 							ปิด
 						</button>
+						{canApprovePurchaseOrder && purchaseOrder.purchase_order_status === 'pending' && (
+							<button
+								type="button"
+								onClick={() => setShowConfirmDialog(true)}
+								className="w-full ml-4 px-6 py-3.5 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all font-semibold border-2 border-green-600 hover:border-green-700"
+							>
+								อนุมัติ
+							</button>
+						)}
+						{showConfirmDialog && (
+							<ConfirmDialog
+								isOpen={showConfirmDialog}
+								title="ยืนยันการอนุมัติ"
+								message="คุณแน่ใจหรือไม่ว่าต้องการอนุมัติใบสั่งซื้อนี้?"
+								onConfirm={handleApprove}
+								onCancel={() => setShowConfirmDialog(false)}
+								bottom_className=" px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all font-semibold border-2 border-green-600 hover:border-green-700"
+							/>
+						)}
 					</div>
 				</div>
 			</div>
+			
 		</div>
+		<ActionResultDialog
+			isOpen={resultDialog.isOpen}
+			status={resultDialog.status}
+			action={resultDialog.action}
+			message={resultDialog.message}
+			onClose={handleResultDialogClose}
+		/>
+		</>
 	);
 }

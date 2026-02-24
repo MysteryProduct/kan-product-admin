@@ -11,6 +11,8 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import StockModel from '@/models/stocks';
 import { DataTable, DataTableColumn } from '@/components/DataTable';
 import { usePermissions } from '@/hooks/usePermissions';
+import ActionResultDialog from '@/components/ActionResultDialog';
+import LoadingTableSkeleton from '@/components/LoadingTableSkeleton';
 const productModel = new ProductModel();
 const stockModel = new StockModel();
 
@@ -37,10 +39,21 @@ export default function ProductsPage() {
   const [inStock, setInStock] = useState(0);
   const [outStock, setOutStock] = useState(0);
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [resultDialog, setResultDialog] = useState<{
+    isOpen: boolean;
+    status: 'success' | 'error';
+    message: string;
+  }>({
+    isOpen: false,
+    status: 'success',
+    message: '',
+  });
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setLoading(true);
         let data = await productModel.getProducts(currentPage, 10, searchQuery, sortField, sortOrder,filters);
         let stockStatuses = await stockModel.getStockStatuses();
         setProducts(data);
@@ -49,6 +62,8 @@ export default function ProductsPage() {
         setOutStock(stockStatuses.out_stock);
       } catch (error) {
         console.error('Failed to fetch products:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -288,20 +303,24 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        {/* Table */}
-        <DataTable
-          data={products?.data || []}
-          columns={columns}
-          keyField="product_id"
-          className="bg-white p-1"
-          headerClassName="bg-gray-50 border-b border-gray-100"
-          rowClassName="border-b border-gray-100 hover:bg-gray-50"
-          paginationMeta={meta}
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-          onFilterChange={handleDataTableFilterChange}
-          onSortChange={handleSortChange}
-        />
+        {/* Loading Skeleton or DataTable */}
+        {loading ? (
+          <LoadingTableSkeleton rows={5} columns={7} />
+        ) : (
+          <DataTable
+            data={products?.data || []}
+            columns={columns}
+            keyField="product_id"
+            className="bg-white p-1"
+            headerClassName="bg-gray-50 border-b border-gray-100"
+            rowClassName="border-b border-gray-100 hover:bg-gray-50"
+            paginationMeta={meta}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+            onFilterChange={handleDataTableFilterChange}
+            onSortChange={handleSortChange}
+          />
+        )}
 
       </div>
       {canAddProduct && (
@@ -338,13 +357,31 @@ export default function ProductsPage() {
               await productModel.deleteProduct(productToDelete.product_id);
               // รีเฟรชข้อมูลสินค้า และตรวจสอบว่าหน้านี้ยังมีข้อมูลหรือไม่
               handleRefreshProduct(filters, true);
-            } catch (error) {
+              setResultDialog({
+                isOpen: true,
+                status: 'success',
+                message: 'ลบสินค้าสำเร็จ',
+              });
+            } catch (error: any) {
               console.error('Failed to delete product:', error);
+              setResultDialog({
+                isOpen: true,
+                status: 'error',
+                message: error?.message || 'เกิดข้อผิดพลาดในการลบสินค้า',
+              });
             }
             setIsDeleteDialogOpen(false);
             setProductToDelete(null);
           }
         }}
+      />
+
+      <ActionResultDialog
+        isOpen={resultDialog.isOpen}
+        status={resultDialog.status}
+        action="delete"
+        message={resultDialog.message}
+        onClose={() => setResultDialog((prev) => ({ ...prev, isOpen: false }))}
       />
 
     </div>

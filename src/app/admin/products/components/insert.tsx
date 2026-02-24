@@ -8,6 +8,7 @@ import { Color } from '@/types/color';
 import { ProductFile } from '@/types/product';
 import CustomSelect from '@/components/CustomSelect';
 import { emojiCategories } from '@/lib/emojis';
+import ActionResultDialog from '@/components/ActionResultDialog';
 interface ProductFormProps {
   isOpen: boolean;
   onClose: () => void;
@@ -485,52 +486,13 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
       )}
     </div>
 
-    {/* Dialog Modal */}
-    {showDialog && (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-black/50" onClick={handleDialogClose} />
-        <div className="relative bg-white rounded-xl shadow-2xl p-6 max-w-md w-full animate-fadeIn">
-          <div className="flex flex-col items-center gap-4">
-            {/* Icon */}
-            {dialogType === 'success' ? (
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-            ) : (
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </div>
-            )}
-            
-            {/* Title */}
-            <h3 className={`text-xl font-semibold ${
-              dialogType === 'success' ? 'text-green-600' : 'text-red-600'
-            }`}>
-              {dialogType === 'success' ? 'สำเร็จ!' : 'เกิดข้อผิดพลาด'}
-            </h3>
-            
-            {/* Message */}
-            <p className="text-gray-700 text-center">{dialogMessage}</p>
-            
-            {/* Button */}
-            <button
-              onClick={handleDialogClose}
-              className={`w-full px-6 py-3 rounded-lg font-medium transition-colors ${
-                dialogType === 'success'
-                  ? 'bg-green-600 hover:bg-green-700 text-white'
-                  : 'bg-red-600 hover:bg-red-700 text-white'
-              }`}
-            >
-              ตกลง
-            </button>
-          </div>
-        </div>
-      </div>
-    )}
+    <ActionResultDialog
+      isOpen={showDialog}
+      status={dialogType}
+      action="insert"
+      message={dialogMessage}
+      onClose={handleDialogClose}
+    />
   </>
   );
 }

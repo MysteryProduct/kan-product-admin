@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { CreateCategoryDto } from '@/types/category';
 import CategoryModel from '@/models/category';
+import ActionResultDialog from '@/components/ActionResultDialog';
 
 interface CategoryFormProps {
     isOpen: boolean;
@@ -16,7 +17,15 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState(false);
+    const [resultDialog, setResultDialog] = useState<{
+        isOpen: boolean;
+        status: 'success' | 'error';
+        message: string;
+    }>({
+        isOpen: false,
+        status: 'success',
+        message: '',
+    });
 
     useEffect(() => {
         if (isOpen) {
@@ -25,7 +34,7 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
                 category_name: '',
             });
             setError(null);
-            setSuccess(false);
+            setResultDialog((prev) => ({ ...prev, isOpen: false }));
         }
     }, [isOpen]);
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,7 +47,6 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
-        setSuccess(false);
         setLoading(true);
         try {
             // Validate inputs
@@ -49,15 +57,29 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
             }
             const categoryModel = new CategoryModel();
             await categoryModel.createCategory(formData.category_name);
-            setSuccess(true);
+            setResultDialog({
+                isOpen: true,
+                status: 'success',
+                message: 'บันทึกข้อมูลประเภทสินค้าสำเร็จ',
+            });
+        } catch (err: any) {
+            setResultDialog({
+                isOpen: true,
+                status: 'error',
+                message: err?.message || 'เกิดข้อผิดพลาดในการสร้างประเภทสินค้า',
+            });
+        } finally {
             setLoading(false);
-            setTimeout(() => {
-                onClose();
-                onSuccess?.();
-            }, 1000);
-        } catch (err) {
-            setError('เกิดข้อผิดพลาดในการสร้างประเภทสินค้า');
-            setLoading(false);
+        }
+    };
+
+    const handleResultDialogClose = () => {
+        const isSuccess = resultDialog.status === 'success';
+        setResultDialog((prev) => ({ ...prev, isOpen: false }));
+
+        if (isSuccess) {
+            onClose();
+            onSuccess?.();
         }
     };
     if (!isOpen) return null;
@@ -81,12 +103,6 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
                             required
                         />
                     </div>
-                    {success && (
-                        <div className="p-4 bg-green-50 border border-green-200 rounded-lg mt-3 mb-2">
-                            <p className="text-sm text-green-800">บันทึกข้อมูลประเภทสินค้าสำเร็จ</p>
-                        </div>
-                    )}
-
                     {/* Error Message */}
                     {error && (
                         <div className="p-4 bg-red-50 border border-red-200 rounded-lg mt-3 mb-2">
@@ -112,6 +128,13 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
                     </div>
                 </form>
             </div>
+            <ActionResultDialog
+                isOpen={resultDialog.isOpen}
+                status={resultDialog.status}
+                action="insert"
+                message={resultDialog.message}
+                onClose={handleResultDialogClose}
+            />
         </div>
     )
 }
