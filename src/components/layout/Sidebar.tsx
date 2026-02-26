@@ -70,6 +70,7 @@ export default function Sidebar() {
       ),
       subItems: [
         { title: 'ใบสั่งซื้อ', menu_name: 'purchase_orders', href: '/admin/purchase-orders' },
+        { title: 'ใบรับสินค้า', menu_name: 'purchase_receipt', href: '/admin/purchase-receipt' },
       ],
     },
     {

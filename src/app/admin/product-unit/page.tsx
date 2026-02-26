@@ -25,6 +25,7 @@ const ProductUnitPage = () => {
     const [isEditFormOpen, setIsEditFormOpen] = useState<boolean>(false);
     const [meta, setMeta] = useState<PaginationMeta | null>(null);
     const [searchQuery, setSearchQuery] = useState<string>('');
+    const [appliedSearchQuery, setAppliedSearchQuery] = useState<string>('');
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
@@ -46,7 +47,7 @@ const ProductUnitPage = () => {
             const response: ApiProductUnitResponse = await productUnitModel.getProductUnits(
                 currentPage,
                 limit,
-                searchQuery
+                appliedSearchQuery
             );
             setProductUnits(response.data);
             setMeta(response.meta);
@@ -59,7 +60,18 @@ const ProductUnitPage = () => {
 
     useEffect(() => {
         fetchProductUnits();
-    }, [currentPage, searchQuery]);
+    }, [currentPage, appliedSearchQuery]);
+
+    const handleSearch = () => {
+        setCurrentPage(1);
+        setAppliedSearchQuery(searchQuery.trim());
+    };
+
+    const handleClearSearch = () => {
+        setSearchQuery('');
+        setAppliedSearchQuery('');
+        setCurrentPage(1);
+    };
 
 
     const fetchProductUnitsOnDelete = async () => {
@@ -69,7 +81,7 @@ const ProductUnitPage = () => {
                 ? currentPage - 1
                 : currentPage;
 
-            const data = await productUnitModel.getProductUnits(pageToFetch, limit, searchQuery);
+            const data = await productUnitModel.getProductUnits(pageToFetch, limit, appliedSearchQuery);
             setProductUnits(data.data);
             setMeta(data.meta);
             if (pageToFetch !== currentPage) {
@@ -112,27 +124,50 @@ const ProductUnitPage = () => {
                 {/* Search Bar and Add Button */}
                 <div className="p-3 sm:p-4 md:p-6 border-b border-gray-100 dark:border-gray-700">
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
-                        <div className="relative flex-1 max-w-full sm:max-w-xs">
-                            <input
-                                type="text"
-                                placeholder="Search"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-700"
-                            />
-                            <svg
-                                className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        <div className="flex flex-col sm:flex-row items-stretch gap-1 w-full sm:w-auto sm:flex-1 sm:max-w-md">
+                            <div className="relative flex-1">
+                                <input
+                                    type="text"
+                                    placeholder="Search"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            handleSearch();
+                                        }
+                                    }}
+                                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-700"
                                 />
-                            </svg>
+                                <svg
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                    />
+                                </svg>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleSearch}
+                                className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors font-medium whitespace-nowrap"
+                            >
+                                ค้นหา
+                            </button>
+                            {(searchQuery || appliedSearchQuery) && (
+                                <button
+                                    type="button"
+                                    onClick={handleClearSearch}
+                                    className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
+                                >
+                                    ล้าง
+                                </button>
+                            )}
                         </div>
 
                         {canAddProductUnit && (

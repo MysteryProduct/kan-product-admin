@@ -56,12 +56,14 @@ export default function PurchaseOrderDetailModal({
 		active: 'bg-green-100 text-green-700',
 		inactive: 'bg-red-100 text-red-700',
 		partial: 'bg-blue-100 text-blue-700',
+		completed: 'bg-gray-100 text-gray-700',
 	};
 	const statusText ={
 		pending: 'รออนุมัติ ',
 		active: 'ใช้งานอยู่',
 		inactive: 'ยกเลิก',
 		partial: 'รับสินค้าบางส่วน',
+		completed: 'รับสินค้าครบแล้ว',
 	}
 	async function handleApprove() {
 		try {

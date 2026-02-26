@@ -29,6 +29,7 @@ export default function SupplierPage() {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [appliedSearchQuery, setAppliedSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [sortField, setSortField] = useState<SortField>(null);
     const [sortOrder, setSortOrder] = useState<SortOrder>('ASC');
@@ -51,13 +52,24 @@ export default function SupplierPage() {
 
     useEffect(() => {
         fetchSuppliers();
-    }, [currentPage, searchQuery, sortField, sortOrder]);
+    }, [currentPage, sortField, sortOrder, appliedSearchQuery]);
+
+    const handleSearch = () => {
+        setCurrentPage(1);
+        setAppliedSearchQuery(searchQuery.trim());
+    };
+
+    const handleClearSearch = () => {
+        setSearchQuery('');
+        setAppliedSearchQuery('');
+        setCurrentPage(1);
+    };
 
     const fetchSuppliers = async (page = currentPage, activeFilters = filters) => {
         setLoading(true);
         try {
             const supplierModel = new SupplierModel();
-            const result = await supplierModel.getSuppliers(page, 10, searchQuery, sortField, sortOrder, activeFilters);
+            const result = await supplierModel.getSuppliers(page, 10, appliedSearchQuery, sortField, sortOrder, activeFilters);
             setSuppliers(result.data);
             setMeta(result.meta);
         } catch (err: any) {
@@ -190,7 +202,6 @@ export default function SupplierPage() {
             {
                 key: 'supplier_name',
                 label: 'ชื่อผู้จัดจำหน่าย',
-                filterable: true,
                 sortable: true,
                 render: (value) => (
                     <div className="font-semibold text-gray-900 dark:text-gray-100 text-base">
@@ -201,7 +212,6 @@ export default function SupplierPage() {
             {
                 key: 'supplier_contact',
                 label: 'ติดต่อ',
-                filterable: true,
                 sortable: true,
                 render: (value) => (
                     <div className="flex items-center gap-2">
@@ -219,7 +229,6 @@ export default function SupplierPage() {
             {
                 key: 'supplier_phone',
                 label: 'โทรศัพท์',
-                filterable: true,
                 sortable: true,
                 render: (value) => (
                     <div className="flex items-center gap-2">
@@ -255,7 +264,6 @@ export default function SupplierPage() {
             {
                 key: 'tax_id',
                 label: 'เลขประจำตัวผู้เสียภาษี',
-                filterable: true,
                 sortable: true,
                 render: (value) => (
                     <div className="font-mono text-gray-700 dark:text-gray-300 bg-yellow-50 dark:bg-yellow-900/20 px-3 py-1 rounded-lg inline-block border border-yellow-200 dark:border-yellow-800">
@@ -405,37 +413,52 @@ export default function SupplierPage() {
                 {/* Search Bar and Add Button */}
                 <div className="p-6 bg-gradient-to-r from-gray-50 dark:from-gray-700 to-blue-50 dark:to-gray-700 border-b border-gray-100 dark:border-gray-600">
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-                        <div className="relative flex-1 max-w-full sm:max-w-md">
-                            <input
-                                type="text"
-                                placeholder="Search suppliers by name, contact, or phone..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full px-4 py-3 pl-11 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-700 shadow-sm transition-all duration-200"
-                            />
-                            <svg
-                                className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        <div className="flex flex-col sm:flex-row items-stretch gap-1 w-full sm:w-auto sm:flex-1 sm:max-w-xl">
+                            <div className="relative flex-1">
+                                <input
+                                    type="text"
+                                    placeholder="Search suppliers by name, contact, or phone..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            handleSearch();
+                                        }
+                                    }}
+                                    className="w-full px-4 py-3 pl-11 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-700 shadow-sm transition-all duration-200"
                                 />
-                            </svg>
-                            {searchQuery && (
-                                <button
-                                    onClick={() => setSearchQuery('')}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 hover:text-gray-600 transition-colors"
+                                <svg
+                                    className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
                                 >
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            )}
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                    />
+                                </svg>
+                                {(searchQuery || appliedSearchQuery) && (
+                                    <button
+                                        onClick={handleClearSearch}
+                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 hover:text-gray-600 transition-colors"
+                                    >
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                )}
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={handleSearch}
+                                className="px-6 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors font-medium shadow-lg hover:shadow-xl whitespace-nowrap"
+                            >
+                                ค้นหา
+                            </button>
                         </div>
 
                         <div className="flex items-center gap-3">

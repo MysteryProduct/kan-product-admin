@@ -32,7 +32,7 @@ export interface PurchaseOrder {
   purchase_order_total: number;
   purchase_date: Date;
   create_at?: Date;
-  purchase_order_status: 'pending' | 'active' | 'inactive' | 'partial';
+  purchase_order_status: 'pending' | 'active' | 'inactive' | 'partial' | 'completed';
 }
 
 export interface PurchaseOrderResponse {

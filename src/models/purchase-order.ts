@@ -41,6 +41,31 @@ class PurchaseOrderModel {
     }
   }
 
+  async advisePurchaseOrders(
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+    sortField?: 'purchase_date' | 'purchase_order_total' | null,
+    sortOrder?: 'ASC' | 'DESC',
+    filters?: Record<string, string>,
+  ) : Promise<PurchaseOrderResponse> {
+    try {
+      const response = await axiosInstance.get<PurchaseOrderResponse>('/purchase-order/advisePurchaseOrders', {
+        params: {
+          page,
+          limit,
+          ...(search && { search }),
+          ...(sortField && { sortField }),
+          ...(sortOrder && { sortOrder }),
+          ...(filters && { filters: JSON.stringify(filters) }),
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching purchase orders:', error);
+      throw error;
+    }
+  }
 
   /**
    * ดึงข้อมูล Purchase Order ตาม ID
