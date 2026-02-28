@@ -5,6 +5,7 @@ export interface PurchaseOrderItem {
     purchase_order_list_qty: number;
     purchase_order_list_price: number;
     purchase_order_list_total: number;
+    purchase_order_list_balance_qty?: number;
     purchase_order_id: string;
     product_unit_id?: number;
     product?: {

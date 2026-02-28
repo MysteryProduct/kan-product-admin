@@ -47,10 +47,10 @@ const mapOrderItemToFormItem = (item: PurchaseOrderItem): ReceiptItemForm => ({
 	id: crypto.randomUUID(),
 	product_id: item.product_id,
 	purchase_order_list_id: item.purchase_order_list_id,
-	purchase_receipt_list_qty: Number(item.purchase_order_list_qty || 0),
+	purchase_receipt_list_qty: Number(item.purchase_order_list_balance_qty || 0),
 	purchase_receipt_list_price: Number(item.purchase_order_list_price || 0),
 	product_unit_id: Number(item.product_unit_id || 0),
-	ordered_qty: Number(item.purchase_order_list_qty || 0),
+	ordered_qty: Number(item.purchase_order_list_balance_qty || 0),
 	product_name: item.product?.product_name,
 	product_unit_name: item.productUnit?.product_unit_name,
 	product: item.product,
@@ -118,6 +118,12 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 		try {
 			setIsLoadingItems(true);
 			const response = await purchaseOrderListModel.getPurchaseOrderItems(purchaseOrderId, 1, 500);
+			if (response.data) {
+				response.data.forEach((item) => {
+					item.product_id = item.product?.product_id || item.product_id;
+					item.product_unit_id = item.productUnit?.product_unit_id || item.product_unit_id;
+				});
+			}
 			setItems((response.data || []).map(mapOrderItemToFormItem));
 		} catch (error) {
 			console.error('Failed to load purchase order items:', error);
@@ -150,7 +156,12 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 				selectionSortOrder,
                 excludeIds ,
 			);
-            console.log(excludeIds);
+            if (response.data) {
+				response.data.forEach((item) => {
+					item.product_id = item.product?.product_id || item.product_id;
+					item.product_unit_id = item.productUnit?.product_unit_id || item.product_unit_id;
+				});
+			}
             
 			setSelectionRows(response.data || []);
 			setSelectionMeta(response.meta || null);
@@ -288,7 +299,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 		}
 
 		items.forEach((item, index) => {
-			if (!item.purchase_order_list_id || !item.product_id) {
+			if (!item.purchase_order_list_id) {
 				nextErrors[`item_${index}_product`] = 'กรุณาเลือกรายการสินค้า';
 			}
 			if (item.purchase_receipt_list_qty <= 0) {
@@ -333,7 +344,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 				purchase_order_id: purchaseOrder!.purchase_order_id,
 				supplier_id: purchaseOrder!.supplier_id || purchaseOrder!.supplier?.supplier_id || '',
 				entry_date: entryDate,
-				purchase_receipt_datail: receiptDetail,
+				purchase_receipt_detail: receiptDetail,
 				purchase_receipt_total: grandTotal,
 				create_by: user.employee_id,
 				purchaseReceiptLists: items.map((item) => ({

@@ -85,7 +85,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 		}
 
 		setEntryDate(new Date(initialData.entry_date || new Date()).toISOString().slice(0, 10));
-		setReceiptDetail(initialData.purchase_receipt_datail || initialData.purchase_receipt_detail || '');
+		setReceiptDetail(initialData.purchase_receipt_detail || initialData.purchase_receipt_detail || '');
 		setItems(
 			(initialData.purchaseReceiptLists || []).map((item: PurchaseReceiptListItem) => ({
 				id: crypto.randomUUID(),
@@ -94,7 +94,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 				purchase_receipt_list_qty: Number(item.purchase_receipt_list_qty || 0),
 				purchase_receipt_list_price: Number(item.purchase_receipt_list_price || 0),
 				product_unit_id: Number(item.product_unit_id || 0),
-				ordered_qty: Number(item.purchaseOrderList?.purchase_order_list_qty || item.purchase_receipt_list_qty || 0),
+				ordered_qty: Number((item.purchaseOrderList?.purchase_order_list_balance_qty || 0) + (item.purchase_receipt_list_qty || 0)),
 				product_name: item.product?.product_name,
 				product_unit_name: item.productUnit?.product_unit_name,
 			})),
@@ -290,7 +290,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 				purchase_order_id: initialData.purchase_order_id,
 				supplier_id: initialData.supplier_id,
 				entry_date: entryDate,
-				purchase_receipt_datail: receiptDetail,
+				purchase_receipt_detail: receiptDetail,
 				purchase_receipt_total: grandTotal,
 				update_by: user.employee_id,
 				create_by: initialData.create_by,

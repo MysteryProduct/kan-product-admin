@@ -193,8 +193,10 @@ export default function PurchaseOrdersPage() {
       filterType: 'multi-select',
       filterOptions: [
         { label: "pending", value: 'pending' },
-        { label: 'approved', value: 'approved' },
-        { label: 'rejected', value: 'rejected' },
+        { label: 'active', value: 'active' },
+        { label: 'inactive', value: 'inactive' },
+        { label: 'completed', value: 'completed' },
+        { label: 'partial', value: 'partial' },
       ],
       filterValue: (row) => row.purchase_order_status || '',
       render: (value: any) => value,

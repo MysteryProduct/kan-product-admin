@@ -24,6 +24,7 @@ export interface PurchaseReceiptListItem {
     purchase_order_list_qty?: number;
     purchase_order_list_price?: number;
     purchase_order_list_total?: number;
+    purchase_order_list_balance_qty?: number;
   };
 }
 
@@ -33,7 +34,6 @@ export interface PurchaseReceipt {
   purchase_order_id: string;
   supplier_id: string;
   entry_date: Date;
-  purchase_receipt_datail?: string;
   purchase_receipt_detail?: string;
   purchase_receipt_total: number;
   create_at?: Date;
@@ -61,7 +61,7 @@ export interface CreatePurchaseReceiptDto {
   purchase_order_id: string;
   supplier_id: string;
   entry_date: string;
-  purchase_receipt_datail?: string;
+  purchase_receipt_detail?: string;
   purchase_receipt_total: number;
   create_by?: string;
   purchaseReceiptLists: {

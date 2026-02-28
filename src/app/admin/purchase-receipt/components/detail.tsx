@@ -87,7 +87,7 @@ export default function PurchaseReceiptDetailModal({
 						<div>
 							<label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">รายละเอียดใบรับสินค้า</label>
 							<div className="min-h-[44px] rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">
-								{purchaseReceipt.purchase_receipt_datail || purchaseReceipt.purchase_receipt_detail || '-'}
+								{purchaseReceipt.purchase_receipt_detail || purchaseReceipt.purchase_receipt_detail || '-'}
 							</div>
 						</div>
 					</div>
