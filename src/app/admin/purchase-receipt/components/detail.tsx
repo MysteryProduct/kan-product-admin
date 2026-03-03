@@ -26,6 +26,16 @@ export default function PurchaseReceiptDetailModal({
 		return Number(item.purchase_receipt_list_qty) * Number(item.purchase_receipt_list_price);
 	};
 
+	const getMaterialDisplay = (item: PurchaseReceiptListItem) => {
+		return (
+			item.material?.material_name ||
+			item.purchaseOrderList?.material?.material_name ||
+			item.material_id ||
+			item.purchaseOrderList?.material_id ||
+			'-'
+		);
+	};
+
 	const grandTotal =
 		purchaseReceipt.purchase_receipt_total || items.reduce((sum, item) => sum + calculateItemTotal(item), 0);
 
@@ -110,9 +120,9 @@ export default function PurchaseReceiptDetailModal({
 
 									<div className="grid grid-cols-1 gap-4 md:grid-cols-5">
 										<div>
-											<label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">Product ID</label>
+											<label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">วัตถุดิบ</label>
 											<div className="rounded-xl border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">
-												{item.product?.product_name || item.product_id}
+												{getMaterialDisplay(item)}
 											</div>
 										</div>
 										<div>
@@ -144,7 +154,7 @@ export default function PurchaseReceiptDetailModal({
 							))
 						) : (
 							<div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
-								ไม่พบรายการสินค้า
+								ไม่พบรายการวัตถุดิบ
 							</div>
 						)}
 					</div>

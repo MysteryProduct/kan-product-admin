@@ -2,7 +2,7 @@ import { PaginationMeta } from './pagination';
 
 export interface PurchaseReceiptListItem {
   purchase_receipt_list_id?: string;
-  product_id: string;
+  material_id: string;
   purchase_order_list_id: string;
   purchase_receipt_list_qty: number;
   purchase_receipt_list_price: number;
@@ -10,10 +10,10 @@ export interface PurchaseReceiptListItem {
   purchase_receipt_id?: string;
   create_at?: Date;
   product_unit_id: number;
-  product?: {
-    product_id: string;
-    product_name: string;
-    price?: number;
+  material?: {
+    material_id: string;
+    material_name: string;
+    material_price?: number;
   };
   productUnit?: {
     product_unit_id: number;
@@ -21,6 +21,12 @@ export interface PurchaseReceiptListItem {
   };
   purchaseOrderList?: {
     purchase_order_list_id: string;
+    material_id?: string;
+    material?: {
+      material_id: string;
+      material_name: string;
+      material_price?: number;
+    };
     purchase_order_list_qty?: number;
     purchase_order_list_price?: number;
     purchase_order_list_total?: number;
@@ -65,7 +71,7 @@ export interface CreatePurchaseReceiptDto {
   purchase_receipt_total: number;
   create_by?: string;
   purchaseReceiptLists: {
-    product_id: string;
+    material_id: string;
     purchase_order_list_id: string;
     purchase_receipt_list_qty: number;
     purchase_receipt_list_price: number;

@@ -12,13 +12,13 @@ import { PaginationMeta } from '@/types/pagination';
 
 interface ReceiptItemForm {
 	id: string;
-	product_id: string;
+	material_id: string;
 	purchase_order_list_id: string;
 	purchase_receipt_list_qty: number;
 	purchase_receipt_list_price: number;
 	product_unit_id: number;
 	ordered_qty: number;
-	product_name?: string;
+	material_name?: string;
 	product_unit_name?: string;
 }
 
@@ -37,13 +37,13 @@ const purchaseOrderListModel = new PurchaseOrderListModel();
 
 const mapOrderItemToFormItem = (item: PurchaseOrderItem): ReceiptItemForm => ({
 	id: crypto.randomUUID(),
-	product_id: item.product_id,
+	material_id: item.material_id,
 	purchase_order_list_id: item.purchase_order_list_id,
 	purchase_receipt_list_qty: Number(item.purchase_order_list_qty || 0),
 	purchase_receipt_list_price: Number(item.purchase_order_list_price || 0),
 	product_unit_id: Number(item.product_unit_id || 0),
 	ordered_qty: Number(item.purchase_order_list_qty || 0),
-	product_name: item.product?.product_name,
+	material_name: item.material?.material_name,
 	product_unit_name: item.productUnit?.product_unit_name,
 });
 
@@ -89,13 +89,17 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 		setItems(
 			(initialData.purchaseReceiptLists || []).map((item: PurchaseReceiptListItem) => ({
 				id: crypto.randomUUID(),
-				product_id: item.product_id,
+				material_id:
+					item.material?.material_id ||
+					item.purchaseOrderList?.material?.material_id ||
+					item.purchaseOrderList?.material_id ||
+					item.material_id,
 				purchase_order_list_id: item.purchase_order_list_id,
 				purchase_receipt_list_qty: Number(item.purchase_receipt_list_qty || 0),
 				purchase_receipt_list_price: Number(item.purchase_receipt_list_price || 0),
 				product_unit_id: Number(item.product_unit_id || 0),
 				ordered_qty: Number((item.purchaseOrderList?.purchase_order_list_balance_qty || 0) + (item.purchase_receipt_list_qty || 0)),
-				product_name: item.product?.product_name,
+				material_name: item.material?.material_name || item.purchaseOrderList?.material?.material_name,
 				product_unit_name: item.productUnit?.product_unit_name,
 			})),
 		);
@@ -124,6 +128,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 
 		try {
 			setIsSelectionLoading(true);
+			const excludeIds = Array.from(existingItemIds).join(',');
 			const response = await purchaseOrderListModel.getPurchaseOrderItems(
 				initialData.purchase_order_id,
 				selectionPage,
@@ -131,9 +136,15 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 				selectionAppliedSearch,
 				selectionSortField,
 				selectionSortOrder,
+				excludeIds,
 			);
-			const filteredRows = (response.data || []).filter((row) => !existingItemIds.has(String(row.purchase_order_list_id)));
-			setSelectionRows(filteredRows);
+			if (response.data) {
+				response.data.forEach((item) => {
+					item.material_id = item.material?.material_id || item.material_id;
+					item.product_unit_id = item.productUnit?.product_unit_id || item.product_unit_id;
+				});
+			}
+			setSelectionRows(response.data || []);
 			setSelectionMeta(response.meta || null);
 		} catch (error) {
 			console.error('Failed to fetch selectable purchase order items:', error);
@@ -252,11 +263,11 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 			nextErrors.entry_date = 'กรุณาเลือกวันที่รับสินค้า';
 		}
 		if (items.length === 0) {
-			nextErrors.items = 'ไม่พบรายการสินค้าในใบรับสินค้า';
+			nextErrors.items = 'ไม่พบรายการวัตถุดิบในใบรับสินค้า';
 		}
 		items.forEach((item, index) => {
-			if (!item.purchase_order_list_id || !item.product_id) {
-				nextErrors[`item_${index}_product`] = 'กรุณาเลือกรายการสินค้า';
+			if (!item.purchase_order_list_id || !item.material_id) {
+				nextErrors[`item_${index}_material`] = 'กรุณาเลือกรายการวัตถุดิบ';
 			}
 			if (item.purchase_receipt_list_qty <= 0) {
 				nextErrors[`item_${index}_qty`] = 'จำนวนรับต้องมากกว่า 0';
@@ -295,7 +306,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 				update_by: user.employee_id,
 				create_by: initialData.create_by,
 				purchaseReceiptLists: items.map((item) => ({
-					product_id: item.product_id,
+					material_id: item.material_id,
 					purchase_order_list_id: item.purchase_order_list_id,
 					purchase_receipt_list_qty: Number(item.purchase_receipt_list_qty),
 					purchase_receipt_list_price: Number(item.purchase_receipt_list_price),
@@ -376,7 +387,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 						</div>
 
 						<div className="mb-4 flex items-center justify-between">
-							<h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">รายการสินค้าอ้างอิงจากใบสั่งซื้อ</h3>
+							<h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">รายการวัตถุดิบอ้างอิงจากใบสั่งซื้อ</h3>
 							<button type="button" onClick={openSelectModal} disabled={isSubmitting} className="rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50">เพิ่มรายการ</button>
 						</div>
 
@@ -389,7 +400,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 									</div>
 
 									<div className="grid grid-cols-1 gap-4 md:grid-cols-5">
-										<div><label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">Product ID</label><div className="rounded-xl border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">{item.product_name || item.product_id}</div></div>
+										<div><label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">วัตถุดิบ</label><div className="rounded-xl border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">{item.material_name || item.material_id || '-'}</div>{errors[`item_${index}_material`] && <p className="mt-1 text-xs text-red-500">{errors[`item_${index}_material`]}</p>}</div>
 										<div>
 											<label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">จำนวนรับ</label>
 											<input type="number" min={0} max={item.ordered_qty} step="0.01" value={item.purchase_receipt_list_qty} onChange={(e) => updateItem(item.id, 'purchase_receipt_list_qty', Number(e.target.value))} className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100" disabled={isSubmitting} />
@@ -424,13 +435,13 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 				<div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4">
 					<div className="w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-800">
 						<div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
-							<h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">เลือกรายการสินค้าเพื่อเพิ่ม</h3>
+							<h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">เลือกรายการวัตถุดิบเพื่อเพิ่ม</h3>
 							<button type="button" onClick={() => { setIsSelectModalOpen(false); setSelectedOrderItems({}); }} className="rounded-lg px-2 py-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700">✕</button>
 						</div>
 
 						<div className="border-b border-gray-200 p-4 dark:border-gray-700">
 							<div className="flex flex-1 gap-2">
-								<input type="text" placeholder="ค้นหาสินค้า..." value={selectionSearch} onChange={(e) => setSelectionSearch(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSelectionSearch()} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100" />
+								<input type="text" placeholder="ค้นหาวัตถุดิบ..." value={selectionSearch} onChange={(e) => setSelectionSearch(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSelectionSearch()} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100" />
 								<button type="button" onClick={handleSelectionSearch} className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700">ค้นหา</button>
 								{(selectionSearch || selectionAppliedSearch) && <button type="button" onClick={handleSelectionClearSearch} className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">ล้าง</button>}
 							</div>
@@ -441,7 +452,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 								<thead>
 									<tr className="bg-gray-100 text-left text-gray-700 dark:bg-gray-700 dark:text-gray-200">
 										<th className="w-14 px-3 py-2"><input type="checkbox" checked={allCurrentPageSelected} onChange={toggleSelectAllCurrentPage} /></th>
-										<th className="px-3 py-2">สินค้า</th>
+										<th className="px-3 py-2">วัตถุดิบ</th>
 										<th className="px-3 py-2">จำนวนสั่งซื้อ</th>
 										<th className="px-3 py-2"><button type="button" className="flex items-center gap-1 font-semibold" onClick={() => handleSelectionSort('purchase_order_list_price')}>ราคา/หน่วย{selectionSortField === 'purchase_order_list_price' && <span>{selectionSortOrder === 'ASC' ? '↑' : '↓'}</span>}</button></th>
 										<th className="px-3 py-2">หน่วย</th>
@@ -459,7 +470,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 										return (
 											<tr key={itemId} className="border-b border-gray-100 dark:border-gray-700">
 												<td className="px-3 py-2"><input type="checkbox" checked={Boolean(selectedOrderItems[itemId])} onChange={() => toggleOrderItemSelection(orderItem)} /></td>
-												<td className="px-3 py-2 text-gray-900 dark:text-gray-100">{orderItem.product?.product_name || orderItem.product_id}</td>
+												<td className="px-3 py-2 text-gray-900 dark:text-gray-100">{orderItem.material?.material_name || orderItem.material_id}</td>
 												<td className="px-3 py-2">{orderItem.purchase_order_list_qty}</td>
 												<td className="px-3 py-2">฿{formatCurrency(Number(orderItem.purchase_order_list_price || 0))}</td>
 												<td className="px-3 py-2">{orderItem.productUnit?.product_unit_name || orderItem.product_unit_id || '-'}</td>

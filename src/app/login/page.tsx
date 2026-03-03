@@ -46,7 +46,7 @@ export default function LoginPage() {
                     </svg>
                   </div>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Spike Admin</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Kan Product Admin</h2>
                 <p className="text-gray-600 text-sm">Modern Admin Dashboard</p>
               </div>
             </div>
@@ -59,11 +59,11 @@ export default function LoginPage() {
                     <path d="M11 17a1 1 0 001.447.894l4-2A1 1 0 0017 15V9.236a1 1 0 00-1.447-.894l-4 2a1 1 0 00-.553.894V17zM15.211 6.276a1 1 0 000-1.788l-4.764-2.382a1 1 0 00-.894 0L4.789 4.488a1 1 0 000 1.788l4.764 2.382a1 1 0 00.894 0l4.764-2.382zM4.447 8.342A1 1 0 003 9.236V15a1 1 0 00.553.894l4 2A1 1 0 009 17v-5.764a1 1 0 00-.553-.894l-4-2z" />
                   </svg>
                 </div>
-                <span className="text-xl font-bold text-gray-900">Spike Admin</span>
+                <span className="text-xl font-bold text-gray-900">Kan Product Admin</span>
               </div>
 
               <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Spike Admin</h1>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Kan Product Admin</h1>
                 <p className="text-gray-600 text-sm">Your Admin Dashboard</p>
               </div>
 

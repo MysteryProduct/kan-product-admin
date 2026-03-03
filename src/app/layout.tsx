@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Spike Admin - Dashboard",
+  title: "Kan Product - Dashboard",
   description: "Modern admin dashboard built with Next.js",
 };
 

@@ -1,16 +1,16 @@
 import { PaginationMeta } from './pagination';
 export interface PurchaseOrderItem {
   purchase_order_list_id: number;
-  product_id: string;
+  material_id: string;
   purchase_order_list_qty: number;
   purchase_order_list_price: number;
   purchase_order_list_total: number;
   purchase_order_id: string;
   product_unit_id?: number;
-  product?: {
-    product_id: string;
-    product_name: string;
-    price: number;
+  material?: {
+    material_id: string;
+    material_name: string;
+    material_price: number;
   };
   productUnit?: {
     product_unit_id: number;
@@ -47,7 +47,7 @@ export interface CreatePurchaseOrderDto {
   create_by?: string;
   purchase_order_total: number;
   purchaseOrderLists: {
-    product_id: string;
+    material_id: string;
     purchase_order_list_qty: number;
     purchase_order_list_price: number;
     purchase_order_list_total: number;

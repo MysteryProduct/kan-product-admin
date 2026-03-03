@@ -1,5 +1,6 @@
 const ROUTE_MENU_MAP: Record<string, string> = {
   '/admin/purchase-orders': 'purchase_orders',
+  '/admin/materials': 'materials',
   '/admin/products': 'products',
   '/admin/colors': 'colors',
   '/admin/categories': 'categories',

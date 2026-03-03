@@ -12,17 +12,17 @@ import { PaginationMeta } from '@/types/pagination';
 
 interface ReceiptItemForm {
 	id: string;
-	product_id: string;
+	material_id: string;
 	purchase_order_list_id: string;
 	purchase_receipt_list_qty: number;
 	purchase_receipt_list_price: number;
 	product_unit_id: number;
 	ordered_qty: number;
-	product_name?: string;
+	material_name?: string;
 	product_unit_name?: string;
-	product?: {
-		product_id: string;
-		product_name: string;
+	material?: {
+		material_id: string;
+		material_name: string;
 	};
 	productUnit?: {
 		product_unit_id: number;
@@ -45,15 +45,15 @@ const purchaseReceiptModel = new PurchaseReceiptModel();
 
 const mapOrderItemToFormItem = (item: PurchaseOrderItem): ReceiptItemForm => ({
 	id: crypto.randomUUID(),
-	product_id: item.product_id,
+	material_id: item.material_id,
 	purchase_order_list_id: item.purchase_order_list_id,
 	purchase_receipt_list_qty: Number(item.purchase_order_list_balance_qty || 0),
 	purchase_receipt_list_price: Number(item.purchase_order_list_price || 0),
 	product_unit_id: Number(item.product_unit_id || 0),
 	ordered_qty: Number(item.purchase_order_list_balance_qty || 0),
-	product_name: item.product?.product_name,
+	material_name: item.material?.material_name,
 	product_unit_name: item.productUnit?.product_unit_name,
-	product: item.product,
+	material: item.material,
 	productUnit: item.productUnit,
 });
 
@@ -120,7 +120,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 			const response = await purchaseOrderListModel.getPurchaseOrderItems(purchaseOrderId, 1, 500);
 			if (response.data) {
 				response.data.forEach((item) => {
-					item.product_id = item.product?.product_id || item.product_id;
+					item.material_id = item.material?.material_id || item.material_id;
 					item.product_unit_id = item.productUnit?.product_unit_id || item.product_unit_id;
 				});
 			}
@@ -132,7 +132,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 				isOpen: true,
 				status: 'error',
 				action: 'insert',
-				message: error instanceof Error ? error.message : 'ไม่สามารถโหลดรายการสินค้าได้',
+				message: error instanceof Error ? error.message : 'ไม่สามารถโหลดรายการวัตถุดิบได้',
 			});
 		} finally {
 			setIsLoadingItems(false);
@@ -158,7 +158,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 			);
             if (response.data) {
 				response.data.forEach((item) => {
-					item.product_id = item.product?.product_id || item.product_id;
+					item.material_id = item.material?.material_id || item.material_id;
 					item.product_unit_id = item.productUnit?.product_unit_id || item.product_unit_id;
 				});
 			}
@@ -295,12 +295,12 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 			nextErrors.entry_date = 'กรุณาเลือกวันที่รับสินค้า';
 		}
 		if (items.length === 0) {
-			nextErrors.items = 'ไม่พบรายการสินค้าในใบสั่งซื้อ';
+			nextErrors.items = 'ไม่พบรายการวัตถุดิบในใบสั่งซื้อ';
 		}
 
 		items.forEach((item, index) => {
 			if (!item.purchase_order_list_id) {
-				nextErrors[`item_${index}_product`] = 'กรุณาเลือกรายการสินค้า';
+				nextErrors[`item_${index}_material`] = 'กรุณาเลือกรายการวัตถุดิบ';
 			}
 			if (item.purchase_receipt_list_qty <= 0) {
 				nextErrors[`item_${index}_qty`] = 'จำนวนรับต้องมากกว่า 0';
@@ -348,7 +348,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 				purchase_receipt_total: grandTotal,
 				create_by: user.employee_id,
 				purchaseReceiptLists: items.map((item) => ({
-					product_id: item.product_id,
+					material_id: item.material_id,
 					purchase_order_list_id: item.purchase_order_list_id,
 					purchase_receipt_list_qty: Number(item.purchase_receipt_list_qty),
 					purchase_receipt_list_price: Number(item.purchase_receipt_list_price),
@@ -454,7 +454,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 						</div>
 
 						<div className="mb-4 flex items-center justify-between">
-							<h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">รายการสินค้าอ้างอิงจากใบสั่งซื้อ</h3>
+							<h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">รายการวัตถุดิบอ้างอิงจากใบสั่งซื้อ</h3>
 							<button
 								type="button"
 								onClick={openSelectModal}
@@ -467,7 +467,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 
 						{isLoadingItems ? (
 							<div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
-								กำลังโหลดรายการสินค้า...
+								กำลังโหลดรายการวัตถุดิบ...
 							</div>
 						) : (
 							<div className="space-y-4">
@@ -489,9 +489,9 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 
 										<div className="grid grid-cols-1 gap-4 md:grid-cols-5">
 											<div>
-												<label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">ชื่อสินค้า</label>
-												<div className="rounded-xl border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">{item.product?.product_name || item.product_id}</div>
-												{errors[`item_${index}_product`] && <p className="mt-1 text-xs text-red-500">{errors[`item_${index}_product`]}</p>}
+												<label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">ชื่อวัตถุดิบ</label>
+												<div className="rounded-xl border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">{item.material?.material_name || item.material_id}</div>
+												{errors[`item_${index}_material`] && <p className="mt-1 text-xs text-red-500">{errors[`item_${index}_material`]}</p>}
 											</div>
 											<div>
 												<label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">จำนวนรับ</label>
@@ -556,7 +556,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 				<div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4">
 					<div className="w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-800">
 						<div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
-							<h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">เลือกรายการสินค้าเพื่อเพิ่ม</h3>
+							<h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">เลือกรายการวัตถุดิบเพื่อเพิ่ม</h3>
 							<button
 								type="button"
 								onClick={() => {
@@ -574,7 +574,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 								<div className="flex flex-1 gap-2">
 									<input
 										type="text"
-										placeholder="ค้นหาสินค้า..."
+										placeholder="ค้นหาวัตถุดิบ..."
 										value={selectionSearch}
 										onChange={(e) => setSelectionSearch(e.target.value)}
 										onKeyDown={(e) => e.key === 'Enter' && handleSelectionSearch()}
@@ -595,7 +595,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 										<th className="w-14 px-3 py-2">
 											<input type="checkbox" checked={allCurrentPageSelected} onChange={toggleSelectAllCurrentPage} />
 										</th>
-										<th className="px-3 py-2">สินค้า</th>
+										<th className="px-3 py-2">วัตถุดิบ</th>
 										<th className="px-3 py-2">จำนวนสั่งซื้อ</th>
 										<th className="px-3 py-2">
 											<button type="button" className="flex items-center gap-1 font-semibold" onClick={() => handleSelectionSort('purchase_order_list_price')}>
@@ -634,7 +634,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 															onChange={() => toggleOrderItemSelection(orderItem)}
 														/>
 													</td>
-													<td className="px-3 py-2 text-gray-900 dark:text-gray-100">{orderItem.product?.product_name || orderItem.product_id}</td>
+													<td className="px-3 py-2 text-gray-900 dark:text-gray-100">{orderItem.material?.material_name || orderItem.material_id}</td>
 													<td className="px-3 py-2">{orderItem.purchase_order_list_qty}</td>
 													<td className="px-3 py-2">฿{formatCurrency(Number(orderItem.purchase_order_list_price || 0))}</td>
 													<td className="px-3 py-2">{orderItem.productUnit?.product_unit_name || orderItem.product_unit_id || '-'}</td>

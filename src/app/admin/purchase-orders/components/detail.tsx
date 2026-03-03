@@ -172,14 +172,14 @@ export default function PurchaseOrderDetailModal({
 										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
 									</svg>
 								</div>
-								รายการสินค้า
+								รายการวัตถุดิบ
 							</h3>
 						</div>
 
 						<div className="space-y-5">
 							{items.length > 0 ? (
 								items.map((item, index) => (
-									<div key={item.purchase_order_list_id ?? `${item.product_id}-${index}`} className="bg-gradient-to-br from-white to-gray-50 p-5 rounded-2xl border border-gray-200 shadow-sm">
+									<div key={item.purchase_order_list_id ?? `${item.material_id}-${index}`} className="bg-gradient-to-br from-white to-gray-50 p-5 rounded-2xl border border-gray-200 shadow-sm">
 										<div className="flex items-center gap-2 mb-4">
 											<div className="bg-blue-100 text-blue-600 font-bold text-sm w-8 h-8 rounded-full flex items-center justify-center">
 												{index + 1}
@@ -189,9 +189,9 @@ export default function PurchaseOrderDetailModal({
 
 										<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 											<div className="md:col-span-2">
-												<label className="block text-sm font-semibold text-gray-700 mb-2">สินค้า</label>
+												<label className="block text-sm font-semibold text-gray-700 mb-2">วัตถุดิบ</label>
 												<div className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-800 shadow-sm">
-													{item.product?.product_name || '-'}
+													{item.material?.material_name || '-'}
 												</div>
 											</div>
 											<div>
@@ -224,7 +224,7 @@ export default function PurchaseOrderDetailModal({
 								))
 							) : (
 								<div className="text-center py-8 text-gray-500 border border-dashed border-gray-300 rounded-xl bg-gray-50">
-									ไม่พบรายการสินค้า
+									ไม่พบรายการวัตถุดิบ
 								</div>
 							)}
 						</div>

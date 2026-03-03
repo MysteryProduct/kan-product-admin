@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import ProductModel from '@/models/product';
+import MaterialModel from '@/models/material';
 import PurchaseOrderModel from '@/models/purchase-order';
-import { Product } from '@/types/product';
+import { Material } from '@/types/material';
 import CustomSelect from '@/components/CustomSelect';
 import { ProductUnitModel } from '@/models/product-unit';
 import SupplierModel from '@/models/supplier';
@@ -11,7 +11,7 @@ import Cookies from 'js-cookie';
 import ActionResultDialog, { ActionResultDialogAction } from '@/components/ActionResultDialog';
 interface PurchaseOrderItemForm {
     id: string;
-    product_id: string;
+    material_id: string;
     purchase_order_list_qty: number;
     purchase_order_list_price: number;
     product_unit_id: number;
@@ -23,7 +23,7 @@ interface InsertPurchaseOrderFormProps {
     onSuccess: () => void;
 }
 
-const productModel = new ProductModel();
+const materialModel = new MaterialModel();
 const purchaseOrderModel = new PurchaseOrderModel();
 const productUnitModel = new ProductUnitModel();
 const supplierModel = new SupplierModel();
@@ -35,9 +35,9 @@ export default function InsertPurchaseOrderForm({
     const [purchaseOrderName, setPurchaseOrderName] = useState('');
     const [purchaseOrderDetail, setPurchaseOrderDetail] = useState('');
     const [items, setItems] = useState<PurchaseOrderItemForm[]>([
-        { id: crypto.randomUUID(), product_id: '0', purchase_order_list_qty: 1, purchase_order_list_price: 0, product_unit_id: 0 }
+        { id: crypto.randomUUID(), material_id: '0', purchase_order_list_qty: 1, purchase_order_list_price: 0, product_unit_id: 0 }
     ]);
-    const [products, setProducts] = useState<Product[]>([]);
+    const [materials, setMaterials] = useState<Material[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [productUnits, setProductUnits] = useState<any[]>([]);
@@ -56,18 +56,18 @@ export default function InsertPurchaseOrderForm({
     });
     useEffect(() => {
         if (isOpen) {
-            fetchProducts('');
+            fetchMaterials('');
             fetchProductUnits('');
             fetchSuppliers('');
         }
     }, [isOpen]);
 
-    const fetchProducts = async (search: string) => {
+    const fetchMaterials = async (search: string) => {
         try {
-            const response = await productModel.getProducts(1, 100, search);
-            setProducts(response.data);
+            const response = await materialModel.getMaterials(1, 100, search);
+            setMaterials(response.data);
         } catch (error) {
-            console.error('Failed to fetch products:', error);
+            console.error('Failed to fetch materials:', error);
         }
     };
     const fetchProductUnits = async (search: string) => {
@@ -90,7 +90,7 @@ export default function InsertPurchaseOrderForm({
     const addItem = () => {
         setItems([
             ...items,
-            { id: crypto.randomUUID(), product_id: '0', purchase_order_list_qty: 1, purchase_order_list_price: 0, product_unit_id: 0 }
+            { id: crypto.randomUUID(), material_id: '0', purchase_order_list_qty: 1, purchase_order_list_price: 0, product_unit_id: 0 }
         ]);
     };
 
@@ -105,11 +105,10 @@ export default function InsertPurchaseOrderForm({
             if (item.id === id) {
                 const updatedItem = { ...item, [field]: value };
 
-                // Auto-fill price when product is selected
-                if (field === 'product_id') {
-                    const selectedProduct = products.find(p => p.product_id === value);
-                    if (selectedProduct) {
-                        updatedItem.purchase_order_list_price = selectedProduct.price;
+                if (field === 'material_id') {
+                    const selectedMaterial = materials.find((material) => material.material_id === value);
+                    if (selectedMaterial) {
+                        updatedItem.purchase_order_list_price = selectedMaterial.material_price;
                     }
                 }
 
@@ -142,8 +141,8 @@ export default function InsertPurchaseOrderForm({
         }
 
         items.forEach((item, index) => {
-            if (!item.product_id || item.product_id === '') {
-                newErrors[`item_${index}_product`] = 'กรุณาเลือกสินค้า';
+            if (!item.material_id || item.material_id === '') {
+                newErrors[`item_${index}_material`] = 'กรุณาเลือกวัตถุดิบ';
             }
             if (item.purchase_order_list_qty <= 0) {
                 newErrors[`item_${index}_qty`] = 'จำนวนต้องมากกว่า 0';
@@ -181,7 +180,7 @@ export default function InsertPurchaseOrderForm({
                 create_by: user.employee_id,
                 purchase_order_total : calculateGrandTotal(),
                 purchaseOrderLists: items.map(item => ({
-                    product_id: item.product_id,
+                    material_id: item.material_id,
                     purchase_order_list_qty: item.purchase_order_list_qty,
                     purchase_order_list_price: item.purchase_order_list_price,
                     purchase_order_list_total: calculateItemTotal(item),
@@ -215,7 +214,7 @@ export default function InsertPurchaseOrderForm({
         if (isSuccess) {
             setPurchaseOrderName('');
             setPurchaseOrderDetail('');
-            setItems([{ id: crypto.randomUUID(), product_id: '', purchase_order_list_qty: 1, purchase_order_list_price: 0, product_unit_id: 0 }]);
+            setItems([{ id: crypto.randomUUID(), material_id: '', purchase_order_list_qty: 1, purchase_order_list_price: 0, product_unit_id: 0 }]);
             setErrors({});
 
             onSuccess();
@@ -227,7 +226,7 @@ export default function InsertPurchaseOrderForm({
         if (!isSubmitting) {
             setPurchaseOrderName('');
             setPurchaseOrderDetail('');
-            setItems([{ id: crypto.randomUUID(), product_id: '', purchase_order_list_qty: 1, purchase_order_list_price: 0, product_unit_id: 0 }]);
+            setItems([{ id: crypto.randomUUID(), material_id: '', purchase_order_list_qty: 1, purchase_order_list_price: 0, product_unit_id: 0 }]);
             setErrors({});
             onClose();
         }
@@ -379,7 +378,7 @@ export default function InsertPurchaseOrderForm({
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                     </svg>
                                 </div>
-                                รายการสินค้า
+                                รายการวัตถุดิบ
                             </h3>
                             <button
                                 type="button"
@@ -390,7 +389,7 @@ export default function InsertPurchaseOrderForm({
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                                 </svg>
-                                เพิ่มสินค้า
+                                เพิ่มวัตถุดิบ
                             </button>
                         </div>
 
@@ -421,19 +420,19 @@ export default function InsertPurchaseOrderForm({
                                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                         <div className="md:col-span-2">
                                             <CustomSelect
-                                                label="สินค้า"
+                                                label="วัตถุดิบ"
                                                 required
-                                                value={item.product_id}
-                                                onChange={(value) => updateItem(item.id, 'product_id', value)}
-                                                options={products.map((cat) => ({
-                                                    value: cat.product_id,
-                                                    label: cat.product_name,
+                                                value={item.material_id}
+                                                onChange={(value) => updateItem(item.id, 'material_id', value)}
+                                                options={materials.map((material) => ({
+                                                    value: material.material_id,
+                                                    label: material.material_name,
                                                 }))}
-                                                fetchData={fetchProducts}
-                                                placeholder="เลือกสินค้า..."
+                                                fetchData={fetchMaterials}
+                                                placeholder="เลือกวัตถุดิบ..."
                                             />
-                                            {errors[`item_${index}_product`] && (
-                                                <p className="text-red-500 text-sm mt-1">{errors[`item_${index}_product`]}</p>
+                                            {errors[`item_${index}_material`] && (
+                                                <p className="text-red-500 text-sm mt-1">{errors[`item_${index}_material`]}</p>
                                             )}
                                         </div>
                                         <div>
