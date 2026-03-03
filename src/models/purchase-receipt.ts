@@ -43,7 +43,6 @@ class PurchaseReceiptModel {
       const response = await axiosInstance.get<SinglePurchaseReceiptResponse>(`/purchase-receipt/${id}`);
       return response.data.data;
     } catch (error) {
-      console.error(`Error fetching purchase receipt ${id}:`, error);
       throw error;
     }
   }
@@ -53,11 +52,21 @@ class PurchaseReceiptModel {
       const response = await axiosInstance.post<SinglePurchaseReceiptResponse>('/purchase-receipt', data);
       return response.data.data;
     } catch (error) {
-      console.error('Error creating purchase receipt:', error);
       throw error;
     }
   }
-
+  async approvePurchaseReceipt(id: string, update_by: string): Promise<PurchaseReceipt> {
+    try {
+      const response = await axiosInstance.post<SinglePurchaseReceiptResponse>(
+        `/purchase-receipt/${id}/approve`,
+        { status: 'approved', update_by }
+      );
+      return response.data.data;
+    }
+    catch (error) {
+      throw error;
+    }
+  }
   async updatePurchaseReceipt(data: UpdatePurchaseReceiptDto): Promise<PurchaseReceipt> {
     try {
       const response = await axiosInstance.patch<SinglePurchaseReceiptResponse>(
@@ -66,7 +75,6 @@ class PurchaseReceiptModel {
       );
       return response.data.data;
     } catch (error) {
-      console.error('Error updating purchase receipt:', error);
       throw error;
     }
   }
@@ -75,7 +83,6 @@ class PurchaseReceiptModel {
     try {
       await axiosInstance.delete(`/purchase-receipt/${id}`);
     } catch (error) {
-      console.error('Error deleting purchase receipt:', error);
       throw error;
     }
   }

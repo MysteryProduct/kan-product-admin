@@ -168,7 +168,6 @@ export default function PurchaseReceiptPage() {
                 await fetchPurchaseReceipts();
             }
         } catch (error) {
-            console.error('Failed to delete purchase receipt:', error);
             setResultDialog({
                 isOpen: true,
                 status: 'error',
@@ -329,7 +328,7 @@ export default function PurchaseReceiptPage() {
                         </svg>
                     </button>
 
-                    {canEditPurchaseReceipt && (
+                    {canEditPurchaseReceipt && row.purchase_receipt_status === 'pending' && (
                         <button
                             onClick={() => void openReceiptUpdate(row)}
                             className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-blue-600 dark:hover:bg-gray-700"
@@ -342,7 +341,7 @@ export default function PurchaseReceiptPage() {
                         </button>
                     )}
 
-                    {canDeletePurchaseReceipt && (
+                    {canDeletePurchaseReceipt && row.purchase_receipt_status === 'pending' && (
                         <button
                             onClick={() => {
                                 setPurchaseReceiptToDelete(row);
@@ -460,6 +459,10 @@ export default function PurchaseReceiptPage() {
                         setSelectedPurchaseReceipt(null);
                     }}
                     purchaseReceipt={selectedPurchaseReceipt}
+                    onSuccess={async () => {
+                        await fetchPurchaseReceipts();
+                        await fetchPurchaseOrders();
+                    }}
                 />
             )}
 

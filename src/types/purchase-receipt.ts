@@ -46,6 +46,7 @@ export interface PurchaseReceipt {
   create_by?: string;
   update_at?: Date;
   update_by?: string;
+  purchase_receipt_status: 'pending' | 'approved' | 'rejected';
   supplier?: {
     supplier_id: string;
     supplier_name: string;

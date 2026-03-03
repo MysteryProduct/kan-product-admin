@@ -1,22 +1,43 @@
 'use client';
-
+import React from 'react';
 import { PurchaseReceipt, PurchaseReceiptListItem } from '@/types/purchase-receipt';
+import { usePermissions } from '@/hooks/usePermissions';
+import Cookies from 'js-cookie';
+import ActionResultDialog, { ActionResultDialogAction } from '@/components/ActionResultDialog';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import PurchaseReceiptModel from '@/models/purchase-receipt';
+
 
 interface PurchaseReceiptDetailModalProps {
 	isOpen: boolean;
 	onClose: () => void;
+	onSuccess?: () => void;
 	purchaseReceipt: PurchaseReceipt;
 }
-
+const purchaseReceiptModel = new PurchaseReceiptModel();
 export default function PurchaseReceiptDetailModal({
 	isOpen,
 	onClose,
+	onSuccess,
 	purchaseReceipt,
 }: PurchaseReceiptDetailModalProps) {
 	if (!isOpen) {
 		return null;
 	}
-
+	const { can } = usePermissions();
+	const canApprovePurchaseReceipt = can('purchase_receipt', 'approve');
+	const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
+	const [resultDialog, setResultDialog] = React.useState<{
+		isOpen: boolean;
+		status: 'success' | 'error';
+		action: ActionResultDialogAction;
+		message: string;
+	}>({
+		isOpen: false,
+		status: 'success',
+		action: 'approve',
+		message: '',
+	});
 	const items = purchaseReceipt.purchaseReceiptLists || [];
 
 	const calculateItemTotal = (item: PurchaseReceiptListItem) => {
@@ -47,6 +68,37 @@ export default function PurchaseReceiptDetailModal({
 		}).format(amount);
 	};
 
+	async function handleApprove() {
+		try {
+			const user = Cookies.get('user') ? JSON.parse(Cookies.get('user') as string) : null;
+			if (!user) {
+				throw new Error('User not authenticated');
+			}
+			await purchaseReceiptModel.approvePurchaseReceipt(purchaseReceipt.purchase_receipt_id, user.employee_id);
+			setResultDialog({
+				isOpen: true,
+				status: 'success',
+				action: 'approve',
+				message: 'อนุมัติใบรับสินค้าสำเร็จ',
+			});
+		} catch (error) {
+			setResultDialog({
+				isOpen: true,
+				status: 'error',
+				action: 'approve',
+				message: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการอนุมัติใบรับสินค้า',
+			});
+		}
+	}
+	const handleResultDialogClose = () => {
+		const isSuccess = resultDialog.status === 'success';
+		setResultDialog((prev) => ({ ...prev, isOpen: false }));
+
+		if (isSuccess) {
+			onSuccess?.();
+			onClose();
+		}
+	};
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-300/40 p-4 backdrop-blur-sm">
 			<div className="w-full max-w-6xl overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-gray-800">
@@ -113,9 +165,9 @@ export default function PurchaseReceiptDetailModal({
 										<span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
 											{index + 1}
 										</span>
-										<span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+										{/* <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
 											PO List ID: {item.purchase_order_list_id}
-										</span>
+										</span> */}
 									</div>
 
 									<div className="grid grid-cols-1 gap-4 md:grid-cols-5">
@@ -166,17 +218,43 @@ export default function PurchaseReceiptDetailModal({
 						</div>
 					</div>
 
-					<div className="mt-6 border-t border-gray-200 pt-6 dark:border-gray-700">
+					<div className="flex pt-6 border-t-2 border-gray-200">
 						<button
 							type="button"
 							onClick={onClose}
-							className="w-full rounded-xl border-2 border-gray-300 bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-all hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600"
+							className="w-full px-6 py-3.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all font-semibold border-2 border-gray-200 hover:border-gray-300"
 						>
 							ปิด
 						</button>
+						{canApprovePurchaseReceipt && purchaseReceipt.purchase_receipt_status === 'pending' && (
+							<button
+								type="button"
+								onClick={() => setShowConfirmDialog(true)}
+								className="w-full ml-4 px-6 py-3.5 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all font-semibold border-2 border-green-600 hover:border-green-700"
+							>
+								อนุมัติ
+							</button>
+						)}
+						{showConfirmDialog && (
+							<ConfirmDialog
+								isOpen={showConfirmDialog}
+								title="ยืนยันการอนุมัติ"
+								message="คุณแน่ใจหรือไม่ว่าต้องการอนุมัติใบรับสินค้านี้?"
+								onConfirm={handleApprove}
+								onCancel={() => setShowConfirmDialog(false)}
+								bottom_className=" px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all font-semibold border-2 border-green-600 hover:border-green-700"
+							/>
+						)}
 					</div>
 				</div>
 			</div>
+			<ActionResultDialog
+				isOpen={resultDialog.isOpen}
+				status={resultDialog.status}
+				action={resultDialog.action}
+				message={resultDialog.message}
+				onClose={handleResultDialogClose}
+			/>
 		</div>
 	);
 }
