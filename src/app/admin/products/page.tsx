@@ -1,22 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import ProductForm from '../products/components/insert';
-import UpdateProductForm from '../products/components/update';
+import ProductForm from './components/insert';
+import UpdateProductForm from './components/update';
+import ProductDetailModal from './components/detail';
 
 import ProductModel from '@/models/product';
 import { Product, ProductResponse } from '@/types/product';
 import { PaginationMeta } from '@/types/pagination';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import StockModel from '@/models/stocks';
 import { DataTable, DataTableColumn } from '@/components/DataTable';
 import { usePermissions } from '@/hooks/usePermissions';
 import ActionResultDialog from '@/components/ActionResultDialog';
-import LoadingTableSkeleton from '@/components/LoadingTableSkeleton';
+import LoadingSkeletonProps from '@/components/LoadingSkeleton';
 const productModel = new ProductModel();
-const stockModel = new StockModel();
 
-type SortField = 'adddate' | 'price' | null;
+type SortField = 'adddate' | 'product_price' | null;
 type SortOrder = 'ASC' | 'DESC';
 
 export default function ProductsPage() {
@@ -34,11 +33,11 @@ export default function ProductsPage() {
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>('ASC');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedDetailProduct, setSelectedDetailProduct] = useState<Product | null>(null);
   const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
+  const [isDetailFormOpen, setIsDetailFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
-  const [inStock, setInStock] = useState(0);
-  const [outStock, setOutStock] = useState(0);
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [resultDialog, setResultDialog] = useState<{
@@ -55,12 +54,9 @@ export default function ProductsPage() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        let data = await productModel.getProducts(currentPage, 10, appliedSearchQuery, sortField, sortOrder,filters);
-        let stockStatuses = await stockModel.getStockStatuses();
+        const data = await productModel.getProducts(currentPage, 10, appliedSearchQuery, sortField, sortOrder, filters);
         setProducts(data);
         setMeta(data.meta);
-        setInStock(stockStatuses.in_stock);
-        setOutStock(stockStatuses.out_stock);
       } catch (error) {
         console.error('Failed to fetch products:', error);
       } finally {
@@ -89,8 +85,8 @@ export default function ProductsPage() {
       return;
     }
 
-    const nextField = sort.key as SortField;
-    if (nextField !== 'adddate' && nextField !== 'price') {
+    const nextField = (sort.key === 'product_price' ? 'product_price' : sort.key) as SortField;
+    if (nextField !== 'adddate' && nextField !== 'product_price') {
       setSortField(null);
       setSortOrder('ASC');
       return;
@@ -101,7 +97,7 @@ export default function ProductsPage() {
   };
 
   const handleDataTableFilterChange = (filters: Record<string, string | string[]>) => {
-    let updatedFilters: Record<string, string> = {};
+    const updatedFilters: Record<string, string> = {};
     for (const columnKey in filters) {
       const value = filters[columnKey];
       if (Array.isArray(value)) {
@@ -126,7 +122,7 @@ export default function ProductsPage() {
       width: '250px',
     },
     {
-      key: 'category' as any as keyof Product,
+      key: 'category' as keyof Product,
       label: 'ประเภทสินค้า',
       filterable: true,
       filterType: 'multi-select',
@@ -135,10 +131,10 @@ export default function ProductsPage() {
         { label: 'เม็ดแนว', value: 'เม็ดแนว' },
       ],
       filterValue: (row) => row.category?.category_name || '',
-      render: (value: any) => value?.category_name,
+      render: (value) => (value as Product['category'])?.category_name,
     },
     {
-      key: 'color' as any as keyof Product,
+      key: 'color' as keyof Product,
       label: 'สีสินค้า',
       filterable: true,
       filterType: 'multi-select',
@@ -148,7 +144,7 @@ export default function ProductsPage() {
         { label: 'สีแดง', value: 'สีแดง' },
       ],
       filterValue: (row) => row.color?.color_name || '',
-      render: (value: any) => value?.color_name,
+      render: (value) => (value as Product['color'])?.color_name,
     },
     {
       key: 'adddate' as keyof Product,
@@ -157,12 +153,12 @@ export default function ProductsPage() {
       render: (value) => new Date(value as string).toLocaleDateString(),
     },
     {
-      key: 'price' as keyof Product,
+      key: 'product_price' as keyof Product,
       label: 'ราคา',
       sortable: true,
     },
     {
-      key: 'stock' as any as keyof Product,
+      key: 'stock' as keyof Product,
       label: 'สถานะสินค้า',
       filterable: true,
       filterType: 'multi-select',
@@ -173,11 +169,12 @@ export default function ProductsPage() {
 
       ],
       filterValue: (row) => row.stock?.stock_status || '',
-      render: (value: any) => {
-        if (value?.stock_status === 'in stock') return 'มีสินค้า';
-        if (value?.stock_status === 'out stock') return 'สินค้าหมด';
-        if (value?.stock_status === 'test') return 'test';
-        return value?.stock_status;
+      render: (value) => {
+        const stockValue = value as Product['stock'] | undefined;
+        if (stockValue?.stock_status === 'in stock') return 'มีสินค้า';
+        if (stockValue?.stock_status === 'out stock') return 'สินค้าหมด';
+        if (stockValue?.stock_status === 'test') return 'test';
+        return stockValue?.stock_status;
       },
     },
     {
@@ -185,6 +182,29 @@ export default function ProductsPage() {
       label: 'การจัดการ',
       render: (value, row: Product) => (
         <div className="flex gap-2">
+          <button
+            onClick={() => {
+              setSelectedDetailProduct(row);
+              setIsDetailFormOpen(true);
+            }}
+            className="text-gray-400 hover:text-indigo-500 transition-colors"
+            title="ดูรายละเอียด"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+              />
+            </svg>
+          </button>
           {canEditProduct && (
             <button
               onClick={() => {
@@ -228,6 +248,7 @@ export default function ProductsPage() {
     // รีเฟรชข้อมูลสินค้าเมื่อมีการเพิ่มสินค้าใหม่
     try {
       // คำนวณหน้าที่จะใช้ก่อนเรียก API
+      setLoading(true);
       let targetPage = currentPage;
 
       // ถ้าเป็นการลบข้อมูลและไม่ใช่หน้าแรก และหน้าปัจจุบันมีเพียง 1 รายการ
@@ -237,15 +258,16 @@ export default function ProductsPage() {
         setCurrentPage(targetPage);
       }
 
-      let data = await productModel.getProducts(targetPage, 10, appliedSearchQuery, sortField, sortOrder, filters);
-      let stockStatuses = await stockModel.getStockStatuses();
+      const data = await productModel.getProducts(targetPage, 10, appliedSearchQuery, sortField, sortOrder, filters);
 
       setProducts(data);
       setMeta(data.meta);
-      setInStock(stockStatuses.in_stock);
-      setOutStock(stockStatuses.out_stock);
+
     } catch (error) {
       console.error('Failed to fetch products:', error);
+    }
+    finally {
+      setLoading(false);
     }
   };
   return (
@@ -262,7 +284,7 @@ export default function ProductsPage() {
           <div className="text-xs sm:text-sm text-orange-700 font-medium">Pending Products</div>
         </div> */}
 
-        <div className="bg-gradient-to-br from-green-50 dark:from-green-900 to-green-100 dark:to-green-800 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
+        {/* <div className="bg-gradient-to-br from-green-50 dark:from-green-900 to-green-100 dark:to-green-800 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
           <div className="text-2xl sm:text-4xl font-bold text-green-600 dark:text-green-300 mb-1 sm:mb-2">{inStock}</div>
           <div className="text-xs sm:text-sm text-green-700 dark:text-green-300 font-medium">In Stock</div>
         </div>
@@ -270,7 +292,7 @@ export default function ProductsPage() {
         <div className="bg-gradient-to-br from-red-50 dark:from-red-900 to-red-100 dark:to-red-800 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
           <div className="text-2xl sm:text-4xl font-bold text-red-600 dark:text-red-300 mb-1 sm:mb-2">{outStock}</div>
           <div className="text-xs sm:text-sm text-red-700 dark:text-red-300 font-medium">Out of Stock</div>
-        </div>
+        </div> */}
       </div>
 
       {/* Main Content Card */}
@@ -338,24 +360,22 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        {/* Loading Skeleton or DataTable */}
-        {loading ? (
-          <LoadingTableSkeleton rows={5} columns={7} />
-        ) : (
-          <DataTable
-            data={products?.data || []}
-            columns={columns}
-            keyField="product_id"
-            className="bg-white dark:bg-gray-800 p-1"
-            headerClassName="bg-gray-50 dark:bg-gray-700 border-b border-gray-100 dark:border-gray-600"
-            rowClassName="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-            paginationMeta={meta}
-            currentPage={currentPage}
-            onPageChange={setCurrentPage}
-            onFilterChange={handleDataTableFilterChange}
-            onSortChange={handleSortChange}
-          />
-        )}
+        {loading && <LoadingSkeletonProps />}
+        <DataTable
+          data={products?.data || []}
+          columns={columns}
+          keyField="product_id"
+          disabled={loading}
+          className="bg-white dark:bg-gray-800 p-1"
+          headerClassName="bg-gray-50 dark:bg-gray-700 border-b border-gray-100 dark:border-gray-600"
+          rowClassName="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+          paginationMeta={meta}
+          currentPage={currentPage}
+          onPageChange={setCurrentPage}
+          onFilterChange={handleDataTableFilterChange}
+          onSortChange={handleSortChange}
+        />
+
 
       </div>
       {canAddProduct && (
@@ -377,6 +397,14 @@ export default function ProductsPage() {
           initialData={selectedProduct}
         />
       )}
+      <ProductDetailModal
+        isOpen={isDetailFormOpen}
+        onClose={() => {
+          setIsDetailFormOpen(false);
+          setSelectedDetailProduct(null);
+        }}
+        product={selectedDetailProduct}
+      />
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         isOpen={canDeleteProduct && isDeleteDialogOpen}
@@ -397,12 +425,20 @@ export default function ProductsPage() {
                 status: 'success',
                 message: 'ลบสินค้าสำเร็จ',
               });
-            } catch (error: any) {
+            } catch (error: unknown) {
               console.error('Failed to delete product:', error);
+              const errorMessage =
+                typeof error === 'object' &&
+                  error !== null &&
+                  'message' in error &&
+                  typeof (error as { message?: unknown }).message === 'string'
+                  ? (error as { message: string }).message
+                  : 'เกิดข้อผิดพลาดในการลบสินค้า';
+
               setResultDialog({
                 isOpen: true,
                 status: 'error',
-                message: error?.message || 'เกิดข้อผิดพลาดในการลบสินค้า',
+                message: errorMessage,
               });
             }
             setIsDeleteDialogOpen(false);

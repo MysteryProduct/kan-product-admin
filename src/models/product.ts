@@ -23,7 +23,7 @@ class ProductModel {
     page: number = 1,
     limit: number = 10,
     search?: string,
-    sortField?: 'adddate' | 'price' | null,
+    sortField?: 'adddate' | 'product_price' | null,
     sortOrder?: 'ASC' | 'DESC',
     filters?: Record<string, string>,
   ): Promise<ApiProductResponse> {
@@ -48,7 +48,7 @@ class ProductModel {
   /**
    * ดึงข้อมูล Product ตาม ID
    */
-  async getProductById(id: number): Promise<Product> {
+  async getProductById(id: string): Promise<Product> {
     try {
       const response = await axiosInstance.get<SingleProductResponse>(`/product/${id}`);
       return response.data.data;
@@ -66,9 +66,11 @@ class ProductModel {
       const formData = new FormData();
       formData.append('product_name', productData.product_name);
       formData.append('product_description', productData.product_description);
-      formData.append('price', productData.price.toString());
+      formData.append('product_price', productData.product_price.toString());
       formData.append('category_id', productData.category_id.toString());
       formData.append('color_id', productData.color_id.toString());
+      formData.append('product_unit_id', productData.product_unit_id.toString());
+      formData.append('product_materials', JSON.stringify(productData.product_materials));
 
       // เพิ่มไฟล์
       if (productData.files) {
@@ -97,9 +99,11 @@ class ProductModel {
       const formData = new FormData();
       formData.append('product_name', productData.product_name);
       formData.append('product_description', productData.product_description);
-      formData.append('price', productData.price.toString());
+      formData.append('product_price', productData.product_price.toString());
       formData.append('category_id', productData.category_id.toString());
       formData.append('color_id', productData.color_id.toString());
+      formData.append('product_unit_id', productData.product_unit_id.toString());
+      formData.append('product_materials', JSON.stringify(productData.product_materials));
 
       // เพิ่มไฟล์ใหม่
       if (productData.files) {

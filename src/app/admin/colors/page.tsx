@@ -10,7 +10,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import Pagination from '@/components/Pagination';
 import { usePermissions } from '@/hooks/usePermissions';
 import ActionResultDialog from '@/components/ActionResultDialog';
-import LoadingTableSkeleton from '@/components/LoadingTableSkeleton';
+import LoadingSkeletonProps from '@/components/LoadingSkeleton';
 export default function ColorsPage() {
   const { can } = usePermissions();
   const canAddColor = can('colors', 'add');
@@ -161,11 +161,7 @@ export default function ColorsPage() {
             )}
           </div>
         </div>
-
-        {/* Loading Skeleton or Table */}
-        {loading ? (
-          <LoadingTableSkeleton rows={5} columns={4} />
-        ) : (
+        
           <>
             <div className="overflow-x-auto -mx-2 sm:mx-0 p-3">
               <table className="w-full">
@@ -234,9 +230,10 @@ export default function ColorsPage() {
                   ))}
                 </tbody>
               </table>
+              {loading && <LoadingSkeletonProps />}
             </div>
           </>
-        )}
+        
         {meta && meta.last_page > 1 && (
           <div className="px-6 py-4 bg-gradient-to-r from-gray-50 dark:from-gray-800 to-blue-50 dark:to-gray-700 border-t border-gray-100 dark:border-gray-700">
             <div className="flex items-center justify-between">

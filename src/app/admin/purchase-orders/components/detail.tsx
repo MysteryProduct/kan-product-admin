@@ -100,8 +100,8 @@ export default function PurchaseOrderDetailModal({
 	};
 	return (
 		<>
-		<div className="fixed inset-0 bg-gray-300/40 bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-			<div className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full my-8 overflow-hidden">
+		<div className="fixed inset-0 bg-gray-300/40 dark:bg-gray-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+			<div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-5xl w-full my-8 overflow-hidden">
 				<div className="bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 px-6 py-5 shadow-lg">
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-3">
@@ -127,29 +127,29 @@ export default function PurchaseOrderDetailModal({
 				<div className="p-6 max-h-[calc(90vh-200px)] overflow-y-auto">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 						<div>
-							<label className="block text-sm font-semibold text-gray-700 mb-2">ชื่อใบสั่งซื้อ</label>
-							<div className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-800 shadow-sm">
+							<label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">ชื่อใบสั่งซื้อ</label>
+							<div className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm">
 								{purchaseOrder.purchase_order_name || '-'}
 							</div>
 						</div>
 
 						<div>
-							<label className="block text-sm font-semibold text-gray-700 mb-2">วันที่สร้าง</label>
-							<div className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-800 shadow-sm">
+							<label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">วันที่สร้าง</label>
+							<div className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm">
 								{purchaseOrder.purchase_date ? new Date(purchaseOrder.purchase_date).toLocaleDateString('th-TH') : '-'}
 							</div>
 						</div>
 
 						<div>
-							<label className="block text-sm font-semibold text-gray-700 mb-2">ผู้จัดจำหน่าย</label>
-							<div className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-800 shadow-sm">
+							<label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">ผู้จัดจำหน่าย</label>
+							<div className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm">
 								{purchaseOrder.supplier?.supplier_name || '-'}
 							</div>
 						</div>
 
 						<div>
-							<label className="block text-sm font-semibold text-gray-700 mb-2">สถานะ</label>
-							<div className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-800 shadow-sm">
+							<label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">สถานะ</label>
+							<div className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm">
 								<span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${statusClassMap[purchaseOrder.purchase_order_status]}`}>
 									{statusText[purchaseOrder.purchase_order_status]}
 								</span>
@@ -158,15 +158,15 @@ export default function PurchaseOrderDetailModal({
 					</div>
 
 					<div className="mb-6">
-						<label className="block text-sm font-semibold text-gray-700 mb-2">รายละเอียด</label>
-						<div className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-800 shadow-sm min-h-[80px] whitespace-pre-line">
+						<label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">รายละเอียด</label>
+						<div className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm min-h-[80px] whitespace-pre-line">
 							{purchaseOrder.purchase_order_detail || '-'}
 						</div>
 					</div>
 
 					<div className="mb-6">
 						<div className="flex items-center justify-between mb-5">
-							<h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+							<h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
 								<div className="bg-blue-100 p-2 rounded-lg">
 									<svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -179,51 +179,51 @@ export default function PurchaseOrderDetailModal({
 						<div className="space-y-5">
 							{items.length > 0 ? (
 								items.map((item, index) => (
-									<div key={item.purchase_order_list_id ?? `${item.material_id}-${index}`} className="bg-gradient-to-br from-white to-gray-50 p-5 rounded-2xl border border-gray-200 shadow-sm">
+									<div key={item.purchase_order_list_id ?? `${item.material_id}-${index}`} className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 p-5 rounded-2xl border border-gray-200 dark:border-gray-600 shadow-sm">
 										<div className="flex items-center gap-2 mb-4">
 											<div className="bg-blue-100 text-blue-600 font-bold text-sm w-8 h-8 rounded-full flex items-center justify-center">
 												{index + 1}
 											</div>
-											<h4 className="font-semibold text-gray-900">รายการที่ {index + 1}</h4>
+											<h4 className="font-semibold text-gray-900 dark:text-gray-100">รายการที่ {index + 1}</h4>
 										</div>
 
 										<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 											<div className="md:col-span-2">
-												<label className="block text-sm font-semibold text-gray-700 mb-2">วัตถุดิบ</label>
-												<div className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-800 shadow-sm">
+												<label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">วัตถุดิบ</label>
+												<div className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm">
 													{item.material?.material_name || '-'}
 												</div>
 											</div>
 											<div>
-												<label className="block text-sm font-semibold text-gray-700 mb-2">จำนวน</label>
-												<div className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-800 shadow-sm">
+												<label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">จำนวน</label>
+												<div className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm">
 													{item.purchase_order_list_qty}
 												</div>
 											</div>
 											<div>
-												<label className="block text-sm font-semibold text-gray-700 mb-2">ราคา/หน่วย</label>
-												<div className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-800 shadow-sm">
+												<label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">ราคา/หน่วย</label>
+												<div className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm">
 													฿{formatCurrency(item.purchase_order_list_price)}
 												</div>
 											</div>
 											<div>
-												<label className="block text-sm font-semibold text-gray-700 mb-2">หน่วยสินค้า</label>
-												<div className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-gray-50 text-gray-800 shadow-sm">
+												<label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">หน่วยสินค้า</label>
+												<div className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm">
 													{item.productUnit?.product_unit_name || '-'}
 												</div>
 											</div>
 										</div>
 
 										<div className="mt-4 pt-4 border-t-2 border-gray-200">
-											<div className="flex justify-between items-center bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg">
-												<span className="text-sm font-semibold text-gray-700">ยอดรวมรายการนี้:</span>
+											<div className="flex justify-between items-center bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-700 p-3 rounded-lg">
+												<span className="text-sm font-semibold text-gray-700 dark:text-gray-200">ยอดรวมรายการนี้:</span>
 												<span className="text-xl font-bold text-blue-600">฿{formatCurrency(calculateItemTotal(item))}</span>
 											</div>
 										</div>
 									</div>
 								))
 							) : (
-								<div className="text-center py-8 text-gray-500 border border-dashed border-gray-300 rounded-xl bg-gray-50">
+								<div className="text-center py-8 text-gray-500 dark:text-gray-400 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700">
 									ไม่พบรายการวัตถุดิบ
 								</div>
 							)}
@@ -237,11 +237,11 @@ export default function PurchaseOrderDetailModal({
 						</div>
 					</div>
 
-					<div className="flex pt-6 border-t-2 border-gray-200">
+					<div className="flex pt-6 border-t-2 border-gray-200 dark:border-gray-600">
 						<button
 							type="button"
 							onClick={onClose}
-							className="w-full px-6 py-3.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all font-semibold border-2 border-gray-200 hover:border-gray-300"
+							className="w-full px-6 py-3.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all font-semibold border-2 border-gray-200 dark:border-gray-600 hover:border-gray-300"
 						>
 							ปิด
 						</button>

@@ -11,7 +11,7 @@ import PurchaseOrderDetailModal from './components/detail';
 import { DataTable, DataTableColumn } from '@/components/DataTable';
 import { usePermissions } from '@/hooks/usePermissions';
 import ActionResultDialog from '@/components/ActionResultDialog';
-import LoadingTableSkeleton from '@/components/LoadingTableSkeleton';
+import LoadingSkeletonProps from '@/components/LoadingSkeleton';
 const purchaseOrderModel = new PurchaseOrderModel();
 
 type SortField = 'purchase_date' | 'purchase_order_total' | null;
@@ -141,8 +141,8 @@ export default function PurchaseOrdersPage() {
   const handleRefreshProduct = async (filters: Record<string, string> = {}, checkPageAfterDelete = false) => {
     // รีเฟรชข้อมูลสินค้าเมื่อมีการเพิ่มสินค้าใหม่
     try {
-      setLoading(true);
       // คำนวณหน้าที่จะใช้ก่อนเรียก API
+      setLoading(true);
       let targetPage = currentPage;
 
       // ถ้าเป็นการลบข้อมูลและไม่ใช่หน้าแรก และหน้าปัจจุบันมีเพียง 1 รายการ
@@ -199,7 +199,15 @@ export default function PurchaseOrdersPage() {
         { label: 'partial', value: 'partial' },
       ],
       filterValue: (row) => row.purchase_order_status || '',
-      render: (value: any) => value,
+      render: (value) => {
+        const status = value as PurchaseOrder['purchase_order_status'] | undefined;
+        if (status === 'pending') return 'รออนุมัติ';
+        if (status === 'active') return 'ใช้งานอยู่';
+        if (status === 'inactive') return 'ยกเลิก';
+        if (status === 'partial') return 'รับสินค้าบางส่วน';
+        if (status === 'completed') return 'รับสินค้าครบแล้ว';
+        return status;
+      },
     },
     {
       key: 'purchase_date' as keyof PurchaseOrder,
@@ -400,14 +408,13 @@ export default function PurchaseOrdersPage() {
         </div>
       </div>
 
-      {/* Loading Skeleton or DataTable */}
-      {loading ? (
-        <LoadingTableSkeleton rows={5} columns={7} />
-      ) : (
+      {loading && <LoadingSkeletonProps />}
+      <div className="relative">
         <DataTable
           data={purchaseOrders?.data || []}
           columns={columns}
           keyField="purchase_order_id"
+          disabled={loading}
           className="bg-white dark:bg-gray-800 p-1"
           headerClassName="bg-gray-50 dark:bg-gray-700 border-b border-gray-100 dark:border-gray-600"
           rowClassName="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -417,7 +424,8 @@ export default function PurchaseOrdersPage() {
           onFilterChange={handleDataTableFilterChange}
           onSortChange={handleSortChange}
         />
-      )}
+      </div>
+
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         isOpen={canDeletePurchaseOrder && isDeleteDialogOpen}

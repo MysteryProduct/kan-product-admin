@@ -32,6 +32,7 @@ export interface DataTableProps<T> {
   headerClassName?: string;
   rowClassName?: string;
   footerClassName?: string;
+  disabled?: boolean;
 }
 
 interface SortConfig<T> {
@@ -62,6 +63,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
       headerClassName = '',
       rowClassName = '',
       footerClassName = '',
+      disabled = false,
     },
     ref
   ) => {
@@ -109,6 +111,12 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
         }
       };
     }, [showFilterKey]);
+
+    React.useEffect(() => {
+      if (!disabled) return;
+      setShowFilterKey(null);
+      setOpenFilterKey(null);
+    }, [disabled]);
     // Handle sort
     const handleSort = (key: string) => {
       const columnKey = key as keyof any;
@@ -183,7 +191,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
     return (
       <div
         ref={ref}
-        className={`w-full ${className}`}
+        className={`w-full ${disabled ? 'select-none' : ''} ${className}`}
         onClick={() => setOpenFilterKey(null)}
       >
         {/* Table Container */}
@@ -208,7 +216,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                         >
                           <div
                             className="flex items-center gap-2"
-                            onClick={() => col.sortable && handleSort(String(col.key))}
+                            onClick={() => !disabled && col.sortable && handleSort(String(col.key))}
                           >
                             <span className="text-[13px] font-semibold text-white uppercase tracking-widest">
                               {col.label}
@@ -237,6 +245,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                             <button
                               type="button"
                               onClick={(e) => {
+                                if (disabled) return;
                                 e.stopPropagation();
                                 setShowFilterKey((prev) => {
                                   const newVal = prev === String(col.key) ? null : String(col.key);
@@ -247,6 +256,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                                 });
                                 setOpenFilterKey(null);
                               }}
+                              disabled={disabled}
                               className="inline-flex items-center justify-center w-7 h-7 rounded-md border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 hover:bg-slate-800 transition-colors"
                               aria-label="Toggle column filter"
                               ref={(el) => {
@@ -261,7 +271,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                         </div>
 
                         {/* Filter Input */}
-                        {showFilterKey === String(col.key) && col.filterable && (
+                        {showFilterKey === String(col.key) && col.filterable && !disabled && (
                           <div className="relative">
                             {col.filterType === 'text' || !col.filterType ? (
                               <div className="relative">

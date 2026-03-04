@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { DataTable, DataTableColumn } from '@/components/DataTable';
 import { PaginationMeta } from '@/types/pagination';
-import LoadingTableSkeleton from '@/components/LoadingTableSkeleton';
+import LoadingSkeletonProps from '@/components/LoadingSkeleton';
 import { usePermissions } from '@/hooks/usePermissions';
 import PurchaseOrderModel from '@/models/purchase-order';
 import { PurchaseOrder, PurchaseOrderResponse } from '@/types/purchase-order';
@@ -36,8 +36,7 @@ export default function PurchaseReceiptPage() {
     const [purchaseOrderMeta, setPurchaseOrderMeta] = useState<PaginationMeta | null>(null);
     const [purchaseReceiptMeta, setPurchaseReceiptMeta] = useState<PaginationMeta | null>(null);
 
-    const [loadingPurchaseOrders, setLoadingPurchaseOrders] = useState(true);
-    const [loadingPurchaseReceipts, setLoadingPurchaseReceipts] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     const [purchaseOrderSortField, setPurchaseOrderSortField] = useState<PurchaseOrderSortField>(null);
     const [purchaseOrderSortOrder, setPurchaseOrderSortOrder] = useState<SortOrder>('ASC');
@@ -74,7 +73,7 @@ export default function PurchaseReceiptPage() {
 
     const fetchPurchaseOrders = async () => {
         try {
-            setLoadingPurchaseOrders(true);
+            setLoading(true);
             const purchase = await purchaseOrderModel.advisePurchaseOrders(
                 purchaseOrderPage,
                 10,
@@ -87,13 +86,13 @@ export default function PurchaseReceiptPage() {
         } catch (error) {
             console.error('Failed to fetch purchase orders:', error);
         } finally {
-            setLoadingPurchaseOrders(false);
+            setLoading(false);
         }
     };
 
     const fetchPurchaseReceipts = async () => {
         try {
-            setLoadingPurchaseReceipts(true);
+            setLoading(true);
             const receipt = await purchaseReceiptModel.getPurchaseReceipts(
                 purchaseReceiptPage,
                 10,
@@ -106,7 +105,7 @@ export default function PurchaseReceiptPage() {
         } catch (error) {
             console.error('Failed to fetch purchase receipts:', error);
         } finally {
-            setLoadingPurchaseReceipts(false);
+            setLoading(false);
         }
     };
 
@@ -367,6 +366,7 @@ export default function PurchaseReceiptPage() {
 
     return (
         <div className="bg-gray-50 dark:bg-gray-900 p-2 sm:p-4 md:p-6 lg:p-8">
+            {loading && <LoadingSkeletonProps />}
             <div className="space-y-6">
                 <section className="rounded-2xl bg-white shadow-sm dark:bg-gray-800">
                     <div className="border-b border-gray-100 p-4 dark:border-gray-700">
@@ -378,20 +378,17 @@ export default function PurchaseReceiptPage() {
                         </p>
                     </div>
                     <div className="p-2">
-                        {loadingPurchaseOrders ? (
-                            <LoadingTableSkeleton rows={5} columns={6} />
-                        ) : (
-                            <DataTable
-                                data={purchaseOrders?.data || []}
-                                columns={purchaseOrderColumns}
-                                keyField="purchase_order_id"
-                                className="bg-white dark:bg-gray-800"
-                                paginationMeta={purchaseOrderMeta}
-                                currentPage={purchaseOrderPage}
-                                onPageChange={setPurchaseOrderPage}
-                                onSortChange={handlePurchaseOrderSortChange}
-                            />
-                        )}
+                        
+                        <DataTable
+                            data={purchaseOrders?.data || []}
+                            columns={purchaseOrderColumns}
+                            keyField="purchase_order_id"
+                            className="bg-white dark:bg-gray-800"
+                            paginationMeta={purchaseOrderMeta}
+                            currentPage={purchaseOrderPage}
+                            onPageChange={setPurchaseOrderPage}
+                            onSortChange={handlePurchaseOrderSortChange}
+                        />
                     </div>
                 </section>
 
@@ -403,20 +400,16 @@ export default function PurchaseReceiptPage() {
                         </p>
                     </div>
                     <div className="p-2">
-                        {loadingPurchaseReceipts ? (
-                            <LoadingTableSkeleton rows={5} columns={6} />
-                        ) : (
-                            <DataTable
-                                data={purchaseReceipts?.data || []}
-                                columns={purchaseReceiptColumns}
-                                keyField="purchase_receipt_id"
-                                className="bg-white dark:bg-gray-800"
-                                paginationMeta={purchaseReceiptMeta}
-                                currentPage={purchaseReceiptPage}
-                                onPageChange={setPurchaseReceiptPage}
-                                onSortChange={handlePurchaseReceiptSortChange}
-                            />
-                        )}
+                        <DataTable
+                            data={purchaseReceipts?.data || []}
+                            columns={purchaseReceiptColumns}
+                            keyField="purchase_receipt_id"
+                            className="bg-white dark:bg-gray-800"
+                            paginationMeta={purchaseReceiptMeta}
+                            currentPage={purchaseReceiptPage}
+                            onPageChange={setPurchaseReceiptPage}
+                            onSortChange={handlePurchaseReceiptSortChange}
+                        />
                     </div>
                 </section>
             </div>

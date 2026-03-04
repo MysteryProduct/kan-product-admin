@@ -6,7 +6,7 @@ import { PaginationMeta } from '@/types/pagination';
 import { Material, MaterialResponse } from '@/types/material';
 import MaterialModel from '@/models/material';
 import { usePermissions } from '@/hooks/usePermissions';
-import LoadingTableSkeleton from '@/components/LoadingTableSkeleton';
+import LoadingSkeletonProps from '@/components/LoadingSkeleton';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import InsertMaterialForm from './components/insert';
@@ -291,22 +291,21 @@ export default function MaterialsPage() {
 					</div>
 				</div>
 
-				{loading ? (
-					<LoadingTableSkeleton rows={5} columns={5} />
-				) : (
-					<DataTable
-						data={materials?.data || []}
-						columns={columns}
-						keyField="material_id"
-						className="bg-white p-1 dark:bg-gray-800"
-						headerClassName="border-b border-gray-100 bg-gray-50 dark:border-gray-600 dark:bg-gray-700"
-						rowClassName="border-b border-gray-100 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
-						paginationMeta={meta}
-						currentPage={currentPage}
-						onPageChange={setCurrentPage}
-						onSortChange={handleSortChange}
-					/>
-				)}
+				{loading && <LoadingSkeletonProps />}
+				<DataTable
+					data={materials?.data || []}
+					columns={columns}
+					keyField="material_id"
+					disabled={loading}
+					className="bg-white p-1 dark:bg-gray-800"
+					headerClassName="border-b border-gray-100 bg-gray-50 dark:border-gray-600 dark:bg-gray-700"
+					rowClassName="border-b border-gray-100 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
+					paginationMeta={meta}
+					currentPage={currentPage}
+					onPageChange={setCurrentPage}
+					onSortChange={handleSortChange}
+				/>
+
 			</div>
 
 			{canAddMaterial && (
