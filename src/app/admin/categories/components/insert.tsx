@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CreateCategoryDto } from '@/types/category';
 import CategoryModel from '@/models/category';
 import ActionResultDialog from '@/components/ActionResultDialog';
+import SizeModel from '@/models/size';
+import { Size } from '@/types/size';
 
 interface CategoryFormProps {
     isOpen: boolean;
@@ -14,7 +15,9 @@ interface CategoryFormProps {
 export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFormProps) {
     const [formData, setFormData] = useState({
         category_name: '',
+        size_ids: [] as number[],
     });
+    const [sizes, setSizes] = useState<Size[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [resultDialog, setResultDialog] = useState<{
@@ -29,14 +32,28 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
 
     useEffect(() => {
         if (isOpen) {
-            // Reset form when opened
             setFormData({
                 category_name: '',
+                size_ids: [],
             });
             setError(null);
             setResultDialog((prev) => ({ ...prev, isOpen: false }));
+
+            const fetchSizes = async () => {
+                try {
+                    const sizeModel = new SizeModel();
+                    const result = await sizeModel.getSizes(1, 200);
+                    setSizes(result.data);
+                } catch (fetchError) {
+                    console.error('Error fetching sizes for category form:', fetchError);
+                    setSizes([]);
+                }
+            };
+
+            fetchSizes();
         }
     }, [isOpen]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
@@ -44,29 +61,39 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
             [name]: value,
         }));
     }
+
+    const toggleSize = (sizeId: number) => {
+        setFormData((prev) => ({
+            ...prev,
+            size_ids: prev.size_ids.includes(sizeId)
+                ? prev.size_ids.filter((id) => id !== sizeId)
+                : [...prev.size_ids, sizeId],
+        }));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
         setLoading(true);
         try {
-            // Validate inputs
             if (!formData.category_name.trim()) {
                 setError('กรุณากรอกชื่อประเภทสินค้า');
                 setLoading(false);
                 return;
             }
             const categoryModel = new CategoryModel();
-            await categoryModel.createCategory(formData.category_name);
+            await categoryModel.createCategory(formData.category_name, formData.size_ids);
             setResultDialog({
                 isOpen: true,
                 status: 'success',
                 message: 'บันทึกข้อมูลประเภทสินค้าสำเร็จ',
             });
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการสร้างประเภทสินค้า';
             setResultDialog({
                 isOpen: true,
                 status: 'error',
-                message: err?.message || 'เกิดข้อผิดพลาดในการสร้างประเภทสินค้า',
+                message,
             });
         } finally {
             setLoading(false);
@@ -84,12 +111,12 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
     };
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 bg-gray-300/40 bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-                <h2 className="text-xl text-gray-700 font-semibold mb-4">เพิ่มประเภทสินค้า</h2>
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-4">
-                        <label className="block text-gray-700 mb-2" htmlFor="category_name">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
+            <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800">
+                <h2 className="mb-4 text-xl font-semibold text-gray-700 dark:text-gray-100">เพิ่มประเภทสินค้า</h2>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                        <label className="mb-2 block text-gray-700 dark:text-gray-200" htmlFor="category_name">
                             ชื่อประเภทสินค้า
                         </label>
                         <input
@@ -98,22 +125,49 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
                             name="category_name"
                             value={formData.category_name}
                             onChange={handleChange}
-                            className="w-full text-gray-700 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-700 focus:border-blue-300 focus:outline-none focus:ring dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
                             disabled={loading}
                             required
                         />
                     </div>
-                    {/* Error Message */}
+
+                    <div>
+                        <label className="mb-2 block text-gray-700 dark:text-gray-200">
+                            Size ที่เชื่อมโยง
+                        </label>
+                        <div className="grid max-h-52 grid-cols-1 gap-2 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/30 sm:grid-cols-2">
+                            {sizes.length > 0 ? (
+                                sizes.map((size) => (
+                                    <label
+                                        key={size.size_id}
+                                        className="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.size_ids.includes(size.size_id)}
+                                            onChange={() => toggleSize(size.size_id)}
+                                            disabled={loading}
+                                        />
+                                        {size.size_name}
+                                    </label>
+                                ))
+                            ) : (
+                                <span className="text-sm text-gray-500 dark:text-gray-400">ไม่พบรายการ Size</span>
+                            )}
+                        </div>
+                    </div>
+
                     {error && (
                         <div className="p-4 bg-red-50 border border-red-200 rounded-lg mt-3 mb-2">
                             <p className="text-sm text-red-800">{error}</p>
                         </div>
                     )}
-                    <div className="flex justify-end">
+
+                    <div className="flex justify-end gap-3 pt-2">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="mr-4 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
                             disabled={loading}
                         >
                             ยกเลิก
@@ -128,6 +182,7 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
                     </div>
                 </form>
             </div>
+
             <ActionResultDialog
                 isOpen={resultDialog.isOpen}
                 status={resultDialog.status}

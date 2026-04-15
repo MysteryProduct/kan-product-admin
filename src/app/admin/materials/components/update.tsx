@@ -4,22 +4,38 @@ import { useEffect, useState } from 'react';
 import MaterialModel from '@/models/material';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import { Material } from '@/types/material';
-
+import SizeModel from '@/models/size';
+import ColorModel from '@/models/color';
+import CustomSelect from '@/components/CustomSelect';
 interface UpdateMaterialFormProps {
 	isOpen: boolean;
 	onClose: () => void;
 	onSuccess: () => void;
 	initialData: Material;
 }
+interface Color {
+	color_id: number;
+	color_name: string;
+	color_hex: string;
+}
 
+interface Size {
+	size_id: number;
+	size_name: string;
+}
 const materialModel = new MaterialModel();
-
+const sizeModel = new SizeModel();
+const colorModel = new ColorModel();
 export default function UpdateMaterialForm({ isOpen, onClose, onSuccess, initialData }: UpdateMaterialFormProps) {
 	const [materialName, setMaterialName] = useState('');
 	const [materialDescription, setMaterialDescription] = useState('');
 	const [materialPrice, setMaterialPrice] = useState('');
+	const [materialSize, setMaterialSize] = useState<number>(0);
+	const [materialColor, setMaterialColor] = useState<number>(0);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [sizeOptions, setSizeOptions] = useState<Size[]>([]);
+	const [colorOptions, setColorOptions] = useState<Color[]>([]);
 	const [resultDialog, setResultDialog] = useState<{
 		isOpen: boolean;
 		status: 'success' | 'error';
@@ -37,7 +53,16 @@ export default function UpdateMaterialForm({ isOpen, onClose, onSuccess, initial
 		setMaterialName(initialData.material_name || '');
 		setMaterialDescription(initialData.material_description || '');
 		setMaterialPrice(String(initialData.material_price ?? ''));
+		setMaterialSize(initialData.size_id ?? 0);
+		setMaterialColor(initialData.color_id ?? 0);
 		setError(null);
+		const fetchOptions = async () => {
+			const sizes = await sizeModel.getSizes();
+			const colors = await colorModel.getColors();
+			setSizeOptions(sizes.data);
+			setColorOptions(colors.data);
+		};
+		fetchOptions();
 	}, [isOpen, initialData]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -65,6 +90,8 @@ export default function UpdateMaterialForm({ isOpen, onClose, onSuccess, initial
 				material_name: materialName.trim(),
 				material_description: materialDescription.trim(),
 				material_price: price,
+				size_id: materialSize,
+				color_id: materialColor,
 			});
 
 			setResultDialog({
@@ -161,7 +188,33 @@ export default function UpdateMaterialForm({ isOpen, onClose, onSuccess, initial
 								disabled={isSubmitting}
 							/>
 						</div>
+						<div className="grid grid-cols-1 gap-3 md:grid-cols-2">
 
+							<CustomSelect
+								label="สี"
+								required
+								value={Number(materialColor)}
+								onChange={(value) => setMaterialColor(Number(value))}
+								options={colorOptions.map((color) => ({
+									value: color.color_id,
+									label: color.color_name,
+								}))}
+								placeholder="เลือกสี"
+								showColor
+							/>
+
+							<CustomSelect
+								label="ขนาด"
+								required
+								value={Number(materialSize)}
+								onChange={(value) => setMaterialSize(Number(value))}
+								options={sizeOptions.map((size) => ({
+									value: size.size_id,
+									label: size.size_name,
+								}))}
+								placeholder="เลือกหน่วยสินค้า"
+							/>
+						</div>
 						<div className="flex justify-end gap-3 border-t border-gray-200 pt-4 dark:border-gray-700">
 							<button
 								type="button"

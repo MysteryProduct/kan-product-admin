@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { PaginationMeta } from '@/types/pagination';
 import { Category } from '@/types/category';
@@ -10,8 +10,8 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import Pagination from '@/components/Pagination';
 import { usePermissions } from '@/hooks/usePermissions';
 import ActionResultDialog from '@/components/ActionResultDialog';
-import LoadingSkeletonProps from '@/components/LoadingSkeleton';
 import LoadingSkeleton from '@/components/LoadingSkeleton';
+
 export default function CategoryPage() {
     const { can } = usePermissions();
     const canAddCategory = can('categories', 'add');
@@ -21,7 +21,6 @@ export default function CategoryPage() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [meta, setMeta] = useState<PaginationMeta | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [appliedSearchQuery, setAppliedSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState<number>(1);
@@ -40,22 +39,43 @@ export default function CategoryPage() {
         message: '',
     });
 
+    const categoryModel = useMemo(() => new CategoryModel(), []);
+
+    const hydrateCategorySizeRelation = useCallback(async (list: Category[]): Promise<Category[]> => {
+        const hydrated = await Promise.all(
+            list.map(async (category) => {
+                const sizeIds = await categoryModel.getCategorySizeIds(category.category_id);
+                return {
+                    ...category,
+                    size_ids: sizeIds,
+                };
+            })
+        );
+
+        return hydrated;
+    }, [categoryModel]);
+
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const categoryModel = new CategoryModel();
                 const result = await categoryModel.getCategories(currentPage, 10, appliedSearchQuery);
-                setCategories(result.data);
+                const hydratedCategories = await hydrateCategorySizeRelation(result.data);
+                setCategories(hydratedCategories);
                 setMeta(result.meta);
-            } catch (err: any) {
-                setError(err.message);
+            } catch (err: unknown) {
+                const message = err instanceof Error ? err.message : 'ไม่สามารถดึงข้อมูลประเภทสินค้าได้';
+                setResultDialog({
+                    isOpen: true,
+                    status: 'error',
+                    message,
+                });
             } finally {
                 setLoading(false);
             }
         };
 
         fetchCategories();
-    }, [currentPage, appliedSearchQuery]);
+    }, [appliedSearchQuery, categoryModel, currentPage, hydrateCategorySizeRelation]);
 
     const handleSearch = () => {
         setCurrentPage(1);
@@ -71,23 +91,24 @@ export default function CategoryPage() {
     const handleRefreshCategories = async (checkPageAfterDelete = false) => {
         setLoading(true);
         try {
-            // คำนวณหน้าที่จะใช้ก่อนเรียก API
             let targetPage = currentPage;
 
-            // ถ้าเป็นการลบข้อมูลและไม่ใช่หน้าแรก และหน้าปัจจุบันมีเพียง 1 รายการ
-            // ให้ลดหน้าลงมา 1 หน้า
             if (checkPageAfterDelete && currentPage > 1 && categories.length === 1) {
                 targetPage = currentPage - 1;
                 setCurrentPage(targetPage);
             }
 
-            const categoryModel = new CategoryModel();
             const result = await categoryModel.getCategories(targetPage, 10, appliedSearchQuery);
-
-            setCategories(result.data);
+            const hydratedCategories = await hydrateCategorySizeRelation(result.data);
+            setCategories(hydratedCategories);
             setMeta(result.meta);
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'ไม่สามารถรีเฟรชข้อมูลประเภทสินค้าได้';
+            setResultDialog({
+                isOpen: true,
+                status: 'error',
+                message,
+            });
         } finally {
             setLoading(false);
         }
@@ -170,17 +191,29 @@ export default function CategoryPage() {
                                     <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">
                                         Category Name
                                     </th>
+                                    <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                        Size ที่เชื่อมโยง
+                                    </th>
                                     <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 lg:w-50 md:w-40 ">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {categories.map((category, index) => (
+                                {categories.map((category) => (
                                     <tr
                                         key={category.category_id}
                                         className="bg-white dark:bg-gray-800 border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                     >
                                         <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 dark:text-gray-400 hidden sm:table-cell">{category.category_id}</td>
                                         <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-900 dark:text-gray-100">{category.category_name}</td>
+                                        <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4">
+                                            {category.size_ids && category.size_ids.length > 0 ? (
+                                                <span className="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                                                    {category.size_ids.length} ขนาด
+                                                </span>
+                                            ) : (
+                                                <span className="text-xs text-gray-500 dark:text-gray-400">ยังไม่ผูก Size</span>
+                                            )}
+                                        </td>
                                         <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4">
                                             {canEditCategory && (
                                                 <button
@@ -217,7 +250,7 @@ export default function CategoryPage() {
                             </tbody>
                         </table>
 
-                        {loading && <LoadingSkeletonProps />}
+                        {loading && <LoadingSkeleton />}
                     </div>
                 </>
 
@@ -257,7 +290,7 @@ export default function CategoryPage() {
                         setIsUpdateFormOpen(false);
                         handleRefreshCategories();
                     }}
-                    initialData={selectedCategory || { category_id: 0, category_name: '' }}
+                    initialData={selectedCategory || { category_id: 0, category_name: '', size_ids: [] }}
                 />
             )}
             <ConfirmDialog
@@ -265,7 +298,6 @@ export default function CategoryPage() {
                 onConfirm={async () => {
                     if (!categoryToDelete) return;
 
-                    const categoryModel = new CategoryModel();
                     try {
                         await categoryModel.deleteCategory(categoryToDelete.category_id);
                         handleRefreshCategories(true);
@@ -274,12 +306,13 @@ export default function CategoryPage() {
                             status: 'success',
                             message: 'ลบประเภทสินค้าสำเร็จ',
                         });
-                    } catch (error: any) {
+                    } catch (error: unknown) {
+                        const message = error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการลบประเภทสินค้า';
                         console.error('Failed to delete category:', error);
                         setResultDialog({
                             isOpen: true,
                             status: 'error',
-                            message: error?.message || 'เกิดข้อผิดพลาดในการลบประเภทสินค้า',
+                            message,
                         });
                     }
                 }}

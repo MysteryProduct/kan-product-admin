@@ -1,23 +1,42 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import MaterialModel from '@/models/material';
 import ActionResultDialog from '@/components/ActionResultDialog';
-
+import SizeModel from '@/models/size';
+import ColorModel from '@/models/color';
+import CustomSelect from '@/components/CustomSelect';
 interface InsertMaterialFormProps {
 	isOpen: boolean;
 	onClose: () => void;
 	onSuccess: () => void;
 }
+interface Color {
+	color_id: number;
+	color_name: string;
+	color_hex: string;
+}
+
+interface Size {
+	size_id: number;
+	size_name: string;
+}
 
 const materialModel = new MaterialModel();
+const sizeModel = new SizeModel();
+const colorModel = new ColorModel();
 
 export default function InsertMaterialForm({ isOpen, onClose, onSuccess }: InsertMaterialFormProps) {
 	const [materialName, setMaterialName] = useState('');
 	const [materialDescription, setMaterialDescription] = useState('');
-	const [materialPrice, setMaterialPrice] = useState('');
+	const [materialPrice, setMaterialPrice] = useState(0);
+	const [materialSize, setMaterialSize] = useState<number>(0);
+	const [materialColor, setMaterialColor] = useState<number>(0);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [sizeOptions, setSizeOptions] = useState<Size[]>([]);
+	const [colorOptions, setColorOptions] = useState<Color[]>([]);
+
 	const [resultDialog, setResultDialog] = useState<{
 		isOpen: boolean;
 		status: 'success' | 'error';
@@ -31,9 +50,25 @@ export default function InsertMaterialForm({ isOpen, onClose, onSuccess }: Inser
 	const resetForm = () => {
 		setMaterialName('');
 		setMaterialDescription('');
-		setMaterialPrice('');
+		setMaterialPrice(0);
+		setMaterialSize(0);
+		setMaterialColor(0);
 		setError(null);
 	};
+
+	useEffect(() => {
+		if (!isOpen) {
+			return;
+		}
+		const fetchOptions = async () => {
+			const sizes = await sizeModel.getSizes();
+			const colors = await colorModel.getColors();
+			setSizeOptions(sizes.data);
+			setColorOptions(colors.data);
+		};
+		fetchOptions();
+	}, [isOpen]);
+
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -52,6 +87,14 @@ export default function InsertMaterialForm({ isOpen, onClose, onSuccess }: Inser
 			setError('กรุณากรอกราคาที่ถูกต้อง');
 			return;
 		}
+		if (!materialColor || materialColor === 0) {
+			setError('กรุณาเลือกสี');
+			return;
+		}
+		if (!materialSize || materialSize === 0) {
+			setError('กรุณาเลือกขนาด');
+			return;
+		}
 
 		setIsSubmitting(true);
 		try {
@@ -59,6 +102,8 @@ export default function InsertMaterialForm({ isOpen, onClose, onSuccess }: Inser
 				material_name: materialName.trim(),
 				material_description: materialDescription.trim(),
 				material_price: price,
+				size_id: materialSize,
+				color_id: materialColor,
 			});
 
 			setResultDialog({
@@ -158,10 +203,37 @@ export default function InsertMaterialForm({ isOpen, onClose, onSuccess }: Inser
 								min="0"
 								step="0.01"
 								value={materialPrice}
-								onChange={(e) => setMaterialPrice(e.target.value)}
+								onChange={(e) => setMaterialPrice(Number(e.target.value))}
 								className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-800 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500"
 								placeholder="0.00"
 								disabled={isSubmitting}
+							/>
+						</div>
+						<div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+							
+							<CustomSelect
+								label="สี"
+								required
+								value={Number(materialColor)}
+								onChange={(value) => setMaterialColor(Number(value))}
+								options={colorOptions.map((color) => ({
+									value: color.color_id,
+									label: color.color_name,
+								}))}
+								placeholder="เลือกสี"
+								showColor
+							/>
+
+							<CustomSelect
+								label="ขนาด"
+								required
+								value={Number(materialSize)}
+								onChange={(value) => setMaterialSize(Number(value))}
+								options={sizeOptions.map((size) => ({
+									value: size.size_id,
+									label: size.size_name,
+								}))}
+								placeholder="เลือกหน่วยสินค้า"
 							/>
 						</div>
 

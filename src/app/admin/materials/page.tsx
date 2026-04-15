@@ -12,8 +12,12 @@ import ActionResultDialog from '@/components/ActionResultDialog';
 import InsertMaterialForm from './components/insert';
 import UpdateMaterialForm from './components/update';
 import MaterialDetailModal from './components/detail';
+import ColorModel from '@/models/color';
+import SizeModel from '@/models/size';
 
 const materialModel = new MaterialModel();
+const colorModel = new ColorModel();
+const sizeModel = new SizeModel();
 
 type SortField = 'adddate' | 'material_price' | null;
 type SortOrder = 'ASC' | 'DESC';
@@ -40,7 +44,8 @@ export default function MaterialsPage() {
 
 	const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
 	const [materialToDelete, setMaterialToDelete] = useState<Material | null>(null);
-
+	const [colorOptions, setColorOptions] = useState<{ label: string; value: string }[]>([]);
+	const [sizeOptions, setSizeOptions] = useState<{ label: string; value: string }[]>([]);
 	const [resultDialog, setResultDialog] = useState<{
 		isOpen: boolean;
 		status: 'success' | 'error';
@@ -50,7 +55,19 @@ export default function MaterialsPage() {
 		status: 'success',
 		message: '',
 	});
-
+	useEffect(() => {
+		// Fetch color and size options
+		const fetchOptions = async () => {
+			try {
+				const [colors, sizes] = await Promise.all([colorModel.getColors(), sizeModel.getSizes()]);
+				setColorOptions(colors.data.map((color) => ({ label: color.color_name, value: color.color_id.toString() })));
+				setSizeOptions(sizes.data.map((size) => ({ label: size.size_name, value: size.size_id.toString() })));
+			} catch (error) {
+				console.error('Failed to fetch color or size options:', error);
+			}
+		};
+		void fetchOptions();
+	}, []);
 	const fetchMaterials = useCallback(async (targetPage = currentPage) => {
 		try {
 			setLoading(true);
@@ -166,12 +183,30 @@ export default function MaterialsPage() {
 			render: (value) => `฿${formatCurrency(Number(value || 0))}`,
 		},
 		{
+			key: 'color' as keyof Material,
+			label: 'สีสินค้า',
+			filterable: true,
+			filterType: 'multi-select',
+			filterOptions: colorOptions,
+			filterValue: (row) => row.color?.color_name || '',
+			render: (value) => (value as Material['color'])?.color_name,
+		},
+		{
+			key: 'size' as keyof Material,
+			label: 'ขนาดสินค้า',
+			filterable: true,
+			filterType: 'multi-select',
+			filterOptions: sizeOptions,
+			filterValue: (row) => row.size?.size_name || '',
+			render: (value) => (value as Material['size'])?.size_name,
+		},
+		{
 			key: 'material_id',
 			label: 'การจัดการ',
 			width: '180px',
 			render: (_, row) => (
 				<div className="flex items-center gap-2">
-					<button
+					{/* <button
 						onClick={() => {
 							setSelectedMaterial(row);
 							setIsDetailOpen(true);
@@ -184,7 +219,7 @@ export default function MaterialsPage() {
 							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
 							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
 						</svg>
-					</button>
+					</button> */}
 
 					{canEditMaterial && (
 						<button

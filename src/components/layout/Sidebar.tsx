@@ -95,6 +95,7 @@ export default function Sidebar() {
         // { title: 'สินค้า', menu_name: 'products', href: '/admin/products' },
         { title: 'วัตถุดิบ', menu_name: 'materials', href: '/admin/materials' },
         { title: 'สีของสินค้า', menu_name: 'colors', href: '/admin/colors' },
+        { title: 'ขนาดของสินค้า', menu_name: 'sizes', href: '/admin/sizes' },
         { title: 'ประเภทสินค้า', menu_name: 'categories', href: '/admin/categories' },
         { title: 'หน่วยสินค้า', menu_name: 'product_unit', href: '/admin/product-unit' },
         { title: 'ผู้จัดจำหน่าย', menu_name: 'suppliers', href: '/admin/suppliers' },
