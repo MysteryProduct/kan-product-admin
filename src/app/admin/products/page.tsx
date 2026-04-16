@@ -15,8 +15,13 @@ import ActionResultDialog from '@/components/ActionResultDialog';
 import LoadingSkeletonProps from '@/components/LoadingSkeleton';
 const productModel = new ProductModel();
 
-type SortField = 'adddate' | 'product_price' | null;
+type SortField = 'adddate' | 'product_variant_price' | null;
 type SortOrder = 'ASC' | 'DESC';
+
+const getPrimaryVariant = (product: Product) => {
+  const variants = product.product_variants || product.productVariants || [];
+  return variants[0];
+};
 
 export default function ProductsPage() {
   const { can } = usePermissions();
@@ -65,7 +70,7 @@ export default function ProductsPage() {
     };
 
     fetchProducts();
-  }, [currentPage, appliedSearchQuery, sortField, sortOrder]);
+  }, [currentPage, appliedSearchQuery, sortField, sortOrder, filters]);
 
   const handleSearch = () => {
     setCurrentPage(1);
@@ -85,8 +90,8 @@ export default function ProductsPage() {
       return;
     }
 
-    const nextField = (sort.key === 'product_price' ? 'product_price' : sort.key) as SortField;
-    if (nextField !== 'adddate' && nextField !== 'product_price') {
+    const nextField = (sort.key === 'product_variant_price' ? 'product_variant_price' : sort.key) as SortField;
+    if (nextField !== 'adddate' && nextField !== 'product_variant_price') {
       setSortField(null);
       setSortOrder('ASC');
       return;
@@ -110,8 +115,8 @@ export default function ProductsPage() {
         }
       }
     }
+    setCurrentPage(1);
     setFilters(updatedFilters);
-    setTimeout(() => handleRefreshProduct(updatedFilters), 0);
   };
 
   // Define DataTable columns
@@ -143,8 +148,11 @@ export default function ProductsPage() {
         { label: 'สีดำ', value: 'สีดำ' },
         { label: 'สีแดง', value: 'สีแดง' },
       ],
-      filterValue: (row) => row.color?.color_name || '',
-      render: (value) => (value as Product['color'])?.color_name,
+      filterValue: (row) => row.color?.color_name || getPrimaryVariant(row)?.color?.color_name || '',
+      render: (value, row) =>
+        (value as Product['color'])?.color_name ||
+        getPrimaryVariant(row)?.color?.color_name ||
+        '-',
     },
     {
       key: 'adddate' as keyof Product,
@@ -153,9 +161,21 @@ export default function ProductsPage() {
       render: (value) => new Date(value as string).toLocaleDateString(),
     },
     {
-      key: 'product_price' as keyof Product,
+      key: 'product_variant_price' as keyof Product,
       label: 'ราคา',
       sortable: true,
+      render: (value, row) => {
+        const displayPrice =
+          typeof value === 'number'
+            ? value
+            : getPrimaryVariant(row)?.product_variant_price;
+
+        if (typeof displayPrice !== 'number') {
+          return '-';
+        }
+
+        return new Intl.NumberFormat('th-TH').format(displayPrice);
+      },
     },
     {
       key: 'stock' as keyof Product,
@@ -409,7 +429,7 @@ export default function ProductsPage() {
       <ConfirmDialog
         isOpen={canDeleteProduct && isDeleteDialogOpen}
         title="ยืนยันการลบสินค้า"
-        message={`คุณแน่ใจหรือไม่ว่าต้องการลบสินค้า "${productToDelete?.product_name}"? การกระทำนี้ไม่สามารถย้อนกลับได้.`}
+        message={`คุณแน่ใจหรือไม่ว่าต้องการลบสินค้า "${productToDelete?.product_name}"? ระบบจะลบข้อมูลที่เชื่อมโยงตาม ER (รวมไฟล์สินค้าแบบ Product และ Product Variant) และไม่สามารถย้อนกลับได้.`}
         onCancel={() => {
           setIsDeleteDialogOpen(false);
           setProductToDelete(null);
@@ -419,7 +439,7 @@ export default function ProductsPage() {
             try {
               await productModel.deleteProduct(productToDelete.product_id);
               // รีเฟรชข้อมูลสินค้า และตรวจสอบว่าหน้านี้ยังมีข้อมูลหรือไม่
-              handleRefreshProduct(filters, true);
+              await handleRefreshProduct(filters, true);
               setResultDialog({
                 isOpen: true,
                 status: 'success',
@@ -427,13 +447,22 @@ export default function ProductsPage() {
               });
             } catch (error: unknown) {
               console.error('Failed to delete product:', error);
-              const errorMessage =
-                typeof error === 'object' &&
-                  error !== null &&
-                  'message' in error &&
-                  typeof (error as { message?: unknown }).message === 'string'
-                  ? (error as { message: string }).message
-                  : 'เกิดข้อผิดพลาดในการลบสินค้า';
+              const errorWithResponse = error as {
+                response?: {
+                  data?: {
+                    message?: string | string[];
+                  };
+                };
+                message?: string;
+              };
+
+              const responseMessage = errorWithResponse.response?.data?.message;
+
+              const errorMessage = Array.isArray(responseMessage)
+                ? responseMessage.join(', ')
+                : typeof responseMessage === 'string'
+                  ? responseMessage
+                  : errorWithResponse.message || 'เกิดข้อผิดพลาดในการลบสินค้า';
 
               setResultDialog({
                 isOpen: true,

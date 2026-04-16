@@ -5,6 +5,7 @@ interface Option {
   value: string | number;
   label: string;
   color?: string; // สำหรับแสดงสีใน option
+  disabled?: boolean;
 }
 
 interface CustomSelectProps {
@@ -53,7 +54,11 @@ export default function CustomSelect({
     option.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleSelect = (optionValue: string | number) => {
+  const handleSelect = (optionValue: string | number, disabled?: boolean) => {
+    if (disabled) {
+      return;
+    }
+
     onChange(optionValue.toString());
     setIsOpen(false);
     setSearchQuery('');
@@ -70,7 +75,7 @@ export default function CustomSelect({
   return (
     <div ref={dropdownRef} className="relative">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
@@ -79,7 +84,7 @@ export default function CustomSelect({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-left flex items-center justify-between"
+        className="flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-left text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
       >
         <span className="flex items-center gap-2">
           {showColor && selectedOption?.color && (
@@ -125,10 +130,15 @@ export default function CustomSelect({
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => handleSelect(option.value)}
-                  className={`w-full px-4 py-2 text-left hover:bg-blue-50 dark:hover:bg-gray-700 flex items-center gap-2 ${option.value.toString() === value.toString()
-                    ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300'
-                    : 'text-gray-900 dark:text-gray-100'
+                  onClick={() => handleSelect(option.value, option.disabled)}
+                  disabled={option.disabled}
+                  className={`flex w-full items-center gap-2 px-4 py-2 text-left ${option.disabled
+                    ? 'cursor-not-allowed bg-gray-50 text-gray-400 dark:bg-gray-700/50 dark:text-gray-500'
+                    : 'hover:bg-blue-50 dark:hover:bg-gray-700'} ${option.value.toString() === value.toString()
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300'
+                    : option.disabled
+                      ? ''
+                      : 'text-gray-900 dark:text-gray-100'
                     }`}
                 >
                   {showColor && option.color && (

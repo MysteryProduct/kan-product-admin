@@ -1,5 +1,5 @@
 import axiosInstance from '@/lib/axios';
-import { Product, ProductResponse, CreateProductDto, UpdateProductDto } from '@/types/product';
+import { Product, CreateProductDto, UpdateProductDto } from '@/types/product';
 import { PaginationMeta } from '@/types/pagination';
 
 // Interface สำหรับ API Response
@@ -23,7 +23,7 @@ class ProductModel {
     page: number = 1,
     limit: number = 10,
     search?: string,
-    sortField?: 'adddate' | 'product_price' | null,
+    sortField?: 'adddate' | 'product_variant_price' | null,
     sortOrder?: 'ASC' | 'DESC',
     filters?: Record<string, string>,
   ): Promise<ApiProductResponse> {
@@ -66,11 +66,32 @@ class ProductModel {
       const formData = new FormData();
       formData.append('product_name', productData.product_name);
       formData.append('product_description', productData.product_description);
-      formData.append('product_price', productData.product_price.toString());
       formData.append('category_id', productData.category_id.toString());
-      formData.append('color_id', productData.color_id.toString());
-      formData.append('product_unit_id', productData.product_unit_id.toString());
-      formData.append('product_materials', JSON.stringify(productData.product_materials));
+      formData.append('product_variants', JSON.stringify(productData.product_variants));
+
+      const primaryVariant = productData.product_variants[0];
+      if (primaryVariant) {
+        // Compatibility with legacy backend fields.
+        formData.append('product_variant_price', primaryVariant.product_variant_price.toString());
+        formData.append('color_id', primaryVariant.color_id.toString());
+        formData.append('product_unit_id', primaryVariant.product_unit_id.toString());
+        formData.append('product_materials', JSON.stringify(primaryVariant.product_materials));
+      }
+
+      if (productData.product_files) {
+        productData.product_files.forEach((file) => {
+          formData.append('product_files', file);
+          formData.append('files', file);
+        });
+      }
+
+      if (productData.variant_files) {
+        Object.entries(productData.variant_files).forEach(([variantKey, files]) => {
+          files.forEach((file) => {
+            formData.append(`variant_files[${variantKey}]`, file);
+          });
+        });
+      }
 
       // เพิ่มไฟล์
       if (productData.files) {
@@ -99,11 +120,40 @@ class ProductModel {
       const formData = new FormData();
       formData.append('product_name', productData.product_name);
       formData.append('product_description', productData.product_description);
-      formData.append('product_price', productData.product_price.toString());
       formData.append('category_id', productData.category_id.toString());
-      formData.append('color_id', productData.color_id.toString());
-      formData.append('product_unit_id', productData.product_unit_id.toString());
-      formData.append('product_materials', JSON.stringify(productData.product_materials));
+      formData.append('product_variants', JSON.stringify(productData.product_variants));
+
+      const primaryVariant = productData.product_variants[0];
+      if (primaryVariant) {
+        // Compatibility with legacy backend fields.
+        formData.append('product_variant_price', primaryVariant.product_variant_price.toString());
+        formData.append('color_id', primaryVariant.color_id.toString());
+        formData.append('product_unit_id', primaryVariant.product_unit_id.toString());
+        formData.append('product_materials', JSON.stringify(primaryVariant.product_materials));
+      }
+
+      if (productData.product_files) {
+        productData.product_files.forEach((file) => {
+          formData.append('product_files', file);
+          formData.append('files', file);
+        });
+      }
+
+      if (productData.variant_files) {
+        Object.entries(productData.variant_files).forEach(([variantKey, files]) => {
+          files.forEach((file) => {
+            formData.append(`variant_files[${variantKey}]`, file);
+          });
+        });
+      }
+
+      if (productData.existing_product_files) {
+        formData.append('existing_product_files', JSON.stringify(productData.existing_product_files));
+      }
+
+      if (productData.existing_variant_files) {
+        formData.append('existing_variant_files', JSON.stringify(productData.existing_variant_files));
+      }
 
       // เพิ่มไฟล์ใหม่
       if (productData.files) {
