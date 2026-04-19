@@ -1,6 +1,7 @@
 'use client';
 
 import { Material } from '@/types/material';
+import { formatThaiDate } from '@/lib/date-format';
 
 interface MaterialDetailModalProps {
 	isOpen: boolean;
@@ -50,7 +51,7 @@ export default function MaterialDetailModal({ isOpen, onClose, material }: Mater
 						<div>
 							<label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">วันที่เพิ่ม</label>
 							<div className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
-								{material.adddate ? new Date(material.adddate).toLocaleDateString('th-TH') : '-'}
+								{formatThaiDate(material.adddate)}
 							</div>
 						</div>
 					</div>

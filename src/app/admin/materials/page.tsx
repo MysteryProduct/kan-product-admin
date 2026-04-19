@@ -14,6 +14,7 @@ import UpdateMaterialForm from './components/update';
 import MaterialDetailModal from './components/detail';
 import ColorModel from '@/models/color';
 import SizeModel from '@/models/size';
+import { formatThaiDate } from '@/lib/date-format';
 
 const materialModel = new MaterialModel();
 const colorModel = new ColorModel();
@@ -174,7 +175,7 @@ export default function MaterialsPage() {
 			key: 'adddate',
 			label: 'วันที่เพิ่ม',
 			sortable: true,
-			render: (value) => (value ? new Date(value as Date).toLocaleDateString('th-TH') : '-'),
+			render: (value) => formatThaiDate(value as Date),
 		},
 		{
 			key: 'material_price',

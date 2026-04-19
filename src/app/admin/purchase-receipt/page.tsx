@@ -13,6 +13,7 @@ import UpdatePurchaseReceiptForm from './components/update';
 import PurchaseReceiptDetailModal from './components/detail';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import ActionResultDialog from '@/components/ActionResultDialog';
+import { formatThaiDate } from '@/lib/date-format';
 
 const purchaseOrderModel = new PurchaseOrderModel();
 const purchaseReceiptModel = new PurchaseReceiptModel();
@@ -232,7 +233,7 @@ export default function PurchaseReceiptPage() {
             key: 'purchase_date',
             label: 'วันที่สั่งซื้อ',
             sortable: true,
-            render: (value) => new Date(value as Date).toLocaleDateString('th-TH'),
+            render: (value) => formatThaiDate(value as Date),
         },
         {
             key: 'purchase_order_total',
@@ -301,7 +302,7 @@ export default function PurchaseReceiptPage() {
             key: 'entry_date',
             label: 'วันที่รับสินค้า',
             sortable: true,
-            render: (value) => new Date(value as Date).toLocaleDateString('th-TH'),
+            render: (value) => formatThaiDate(value as Date),
         },
         {
             key: 'purchase_receipt_total',

@@ -13,6 +13,7 @@ import { DataTable, DataTableColumn } from '@/components/DataTable';
 import { usePermissions } from '@/hooks/usePermissions';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import LoadingSkeletonProps from '@/components/LoadingSkeleton';
+import { formatThaiDate } from '@/lib/date-format';
 const productModel = new ProductModel();
 
 type SortField = 'adddate' | 'product_variant_price' | null;
@@ -158,7 +159,7 @@ export default function ProductsPage() {
       key: 'adddate' as keyof Product,
       label: 'วันที่เพิ่ม',
       sortable: true,
-      render: (value) => new Date(value as string).toLocaleDateString(),
+      render: (value) => formatThaiDate(value as string),
     },
     {
       key: 'product_variant_price' as keyof Product,

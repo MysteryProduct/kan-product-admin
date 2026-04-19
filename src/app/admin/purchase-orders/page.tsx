@@ -12,6 +12,7 @@ import { DataTable, DataTableColumn } from '@/components/DataTable';
 import { usePermissions } from '@/hooks/usePermissions';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import LoadingSkeletonProps from '@/components/LoadingSkeleton';
+import { formatThaiDate } from '@/lib/date-format';
 const purchaseOrderModel = new PurchaseOrderModel();
 
 type SortField = 'purchase_date' | 'purchase_order_total' | null;
@@ -213,7 +214,7 @@ export default function PurchaseOrdersPage() {
       key: 'purchase_date' as keyof PurchaseOrder,
       label: 'วันที่เพิ่ม',
       sortable: true,
-      render: (value) => new Date(value as string).toLocaleDateString(),
+      render: (value) => formatThaiDate(value as string),
     },
     {
       key: 'purchase_order_total' as keyof PurchaseOrder,

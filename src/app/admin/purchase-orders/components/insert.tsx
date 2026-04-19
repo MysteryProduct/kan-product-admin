@@ -9,6 +9,7 @@ import { ProductUnitModel } from '@/models/product-unit';
 import SupplierModel from '@/models/supplier';
 import Cookies from 'js-cookie';
 import ActionResultDialog, { ActionResultDialogAction } from '@/components/ActionResultDialog';
+import { formatThaiDate } from '@/lib/date-format';
 interface PurchaseOrderItemForm {
     id: string;
     material_id: string;
@@ -341,7 +342,7 @@ export default function InsertPurchaseOrderForm({
                             </label>
                             <input
                                 type="text"
-                                value={new Date().toLocaleDateString('th-TH')}
+                                value={formatThaiDate(new Date())}
                                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm"
                                 disabled
                             />

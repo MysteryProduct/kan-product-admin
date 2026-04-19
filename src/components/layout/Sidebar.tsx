@@ -70,6 +70,7 @@ export default function Sidebar() {
       ),
       subItems: [
         { title: 'สินค้า', menu_name: 'products', href: '/admin/products' },
+        { title: 'ผลิตสินค้า', menu_name: 'job_orders', href: '/admin/job-orders' },
       ],
     },
     {
