@@ -134,6 +134,10 @@ export default function JobOrderDetailModal({
 							<p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">จำนวนที่ผลิต</p>
 							<p className="text-slate-900 dark:text-slate-100 font-semibold">{jobOrder.job_order_qty ?? 0}</p>
 						</div>
+						<div>
+							<p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">ราคาสินค้า (บาท)</p>
+							<p className="text-slate-900 dark:text-slate-100 font-semibold">{jobOrder.job_order_price ?? 0}</p>
+						</div>
 					</div>
 
 					<div>

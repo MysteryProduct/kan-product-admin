@@ -26,6 +26,7 @@ interface MaterialRow {
 	id: string;
 	material_id: string;
 	material_qty: number;
+	material_name?: string;
 }
 
 interface ProductVariantOption {
@@ -34,9 +35,11 @@ interface ProductVariantOption {
 	productName: string;
 	sizeId?: number;
 	colorId?: number;
+	productPrice?: number;
 	materials: Array<{
 		material_id: string;
 		material_qty: number;
+		material_name?: string;
 	}>;
 }
 
@@ -84,6 +87,7 @@ const buildInitialMaterials = (materials?: CreateJobOrderDto['jobOrderMaterials'
 		id: crypto.randomUUID(),
 		material_id: item.material_id,
 		material_qty: Number(item.material_qty) || 1,
+		material_name: item.material_name,
 	}));
 };
 
@@ -98,6 +102,7 @@ export default function InsertJobOrderForm({
 	const [jobOrderName, setJobOrderName] = useState('');
 	const [jobOrderDescription, setJobOrderDescription] = useState('');
 	const [jobOrderQty, setJobOrderQty] = useState('0');
+	const [jobOrderPrice, setJobOrderPrice] = useState('0');
 	const [targetDate, setTargetDate] = useState(getDefaultTargetDate());
 	const [sizeId, setSizeId] = useState('');
 	const [colorId, setColorId] = useState('');
@@ -145,9 +150,11 @@ export default function InsertJobOrderForm({
 					productName: product.product_name,
 					sizeId: variant.size_id,
 					colorId: variant.color_id,
+					productPrice: variant.product_variant_price,
 					materials: materialsFromVariant.map((item) => ({
 						material_id: item.material_id,
 						material_qty: Number(item.material_qty) || 1,
+						material_name: item.material?.material_name,
 					})),
 				});
 			});
@@ -192,6 +199,7 @@ export default function InsertJobOrderForm({
 		setJobOrderName(initialData?.job_order_name || '');
 		setJobOrderDescription(initialData?.job_order_description || '');
 		setJobOrderQty(typeof initialData?.job_order_qty === 'number' ? String(initialData.job_order_qty) : '0');
+		setJobOrderPrice(typeof initialData?.job_order_price === 'number' ? String(initialData.job_order_price) : '0');
 		setTargetDate(initialData?.target_date ? String(initialData.target_date).slice(0, 10) : getDefaultTargetDate());
 		setSizeId(initialData?.size_id ? String(initialData.size_id) : '');
 		setColorId(initialData?.color_id ? String(initialData.color_id) : '');
@@ -204,10 +212,11 @@ export default function InsertJobOrderForm({
 		if (!selected) {
 			return;
 		}
-
+		
 		setJobOrderName(selected.productName+" Size:"+ (sizeOptions.find(s => s.size_id === selected.sizeId)?.size_name || '-') +" Color:"+ (colorOptions.find(c => c.color_id === selected.colorId)?.color_name || '-'));
 		setSizeId(selected.sizeId ? String(selected.sizeId) : '');
 		setColorId(selected.colorId ? String(selected.colorId) : '');
+		setJobOrderPrice(selected.productPrice ? String(selected.productPrice) : '0');
 
 		if (selected.materials.length > 0) {
 			setMaterials(
@@ -215,6 +224,7 @@ export default function InsertJobOrderForm({
 					id: crypto.randomUUID(),
 					material_id: item.material_id,
 					material_qty: item.material_qty,
+					material_name: item.material_name,
 				})),
 			);
 		}
@@ -253,6 +263,23 @@ export default function InsertJobOrderForm({
 				return {
 					...item,
 					[field]: field === 'material_qty' ? Math.max(0, Number(value)) : value,
+				};
+			}),
+		);
+	};
+
+	const handleMaterialSelect = (id: string, materialId: string) => {
+		const selectedMaterial = materialOptions.find((material) => material.material_id === materialId);
+		setMaterials((prev) =>
+			prev.map((item) => {
+				if (item.id !== id) {
+					return item;
+				}
+
+				return {
+					...item,
+					material_id: materialId,
+					material_name: selectedMaterial?.material_name,
 				};
 			}),
 		);
@@ -312,8 +339,7 @@ export default function InsertJobOrderForm({
 			const payload: CreateJobOrderDto = {
 				job_order_name: jobOrderName.trim(),
 				job_order_description: jobOrderDescription.trim(),
-				job_order_qty: Number(jobOrderQty) || 0,
-				job_order_type: jobOrderType,
+				job_order_qty: Number(jobOrderQty) || 0,			job_order_price: Number(jobOrderPrice) || 0,				job_order_type: jobOrderType,
 				job_order_status: 'pending',
 				product_variant_id: jobOrderType === 'website' ? productVariantId : null,
 				size_id: sizeId ? Number(sizeId) : null,
@@ -326,6 +352,7 @@ export default function InsertJobOrderForm({
 					.map((item) => ({
 						material_id: item.material_id,
 						material_qty: item.material_qty,
+						material_name: item.material_name || materialOptions.find((material) => material.material_id === item.material_id)?.material_name,
 					})),
 			};
 
@@ -497,20 +524,20 @@ export default function InsertJobOrderForm({
 								/>
 								{errors.job_order_qty && <p className="text-red-500 text-sm mt-1">{errors.job_order_qty}</p>}
 							</div>
-						</div>
 
-						<div>
-							<label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">รายละเอียดงาน</label>
-							<textarea
-								rows={3}
-								value={jobOrderDescription}
-								onChange={(e) => setJobOrderDescription(e.target.value)}
-								disabled={isSubmitting}
-								placeholder="รายละเอียดเพิ่มเติมของงานผลิต"
-								className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500 resize-none"
-							/>
-						</div>
-
+								<div>
+									<label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">ราคาสินค้า (บาท)</label>
+									<input
+										type="number"
+										min={0}
+										step="0.01"
+										value={jobOrderPrice}
+										onChange={(e) => setJobOrderPrice(e.target.value)}
+										disabled={isSubmitting}
+										className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
+									/>
+									{errors.job_order_price && <p className="text-red-500 text-sm mt-1">{errors.job_order_price}</p>}
+								</div>							</div>
 						<div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/40 p-4 sm:p-5">
 							<div className="flex items-center justify-between mb-4 gap-3">
 								<div>
@@ -551,7 +578,7 @@ export default function InsertJobOrderForm({
 												<CustomSelect
 													label={`วัตถุดิบ #${index + 1}`}
 													value={item.material_id}
-													onChange={(value) => updateMaterialRow(item.id, 'material_id', value)}
+													onChange={(value) => handleMaterialSelect(item.id, value)}
 													options={options}
 													placeholder="เลือกวัตถุดิบ"
 												/>

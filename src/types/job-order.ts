@@ -21,6 +21,7 @@ export interface JobOrder {
   job_order_description?: string;
   job_order_qty?: number;
   job_order_defect_qty?: number;
+  job_order_price?: number;
   job_order_type: JobOrderType | string;
   job_order_status: JobOrderStatus | string;
   product_variant_id?: string | null;
@@ -76,6 +77,7 @@ export interface CreateJobOrderDto {
   job_order_description?: string;
   job_order_qty?: number;
   job_order_defect_qty?: number;
+  job_order_price?: number;
   job_order_type: JobOrderType | string;
   job_order_status?: JobOrderStatus | string;
   product_variant_id?: string | null;
@@ -87,6 +89,7 @@ export interface CreateJobOrderDto {
   jobOrderMaterials?: Array<{
     material_id: string;
     material_qty: number;
+    material_name?: string;
   }>;
 }
 
