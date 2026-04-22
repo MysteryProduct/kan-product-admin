@@ -119,6 +119,76 @@ const getUserFromCookie = () => {
 	}
 };
 
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+
+const startOfDay = (value: Date) => new Date(value.getFullYear(), value.getMonth(), value.getDate());
+
+const getDelayDays = (targetDate: Date, compareDate: Date) => {
+	const target = startOfDay(targetDate);
+	const compare = startOfDay(compareDate);
+	return Math.floor((compare.getTime() - target.getTime()) / DAY_IN_MS);
+};
+
+const getFinishDate = (job: JobOrder): Date | null => {
+	return (
+		toDateValue(job.finish_date) ||
+		toDateValue(job.completed_date) ||
+		toDateValue(job.completed_at) ||
+		toDateValue(job.finish_at)
+	);
+};
+
+const getDelayBadge = (job: JobOrder) => {
+	const status = normalizeStatus(job.job_order_status);
+	if (status === 'cancelled') {
+		return null;
+	}
+
+	const targetDate = toDateValue(job.target_date);
+	if (!targetDate) {
+		return {
+			label: 'ไม่พบ Target Date',
+			className: 'bg-slate-100 text-slate-600 dark:bg-slate-700/70 dark:text-slate-200',
+		};
+	}
+
+	if (status === 'completed') {
+		const finishDate = getFinishDate(job);
+		if (!finishDate) {
+			return {
+				label: 'ไม่พบ Finish Date',
+				className: 'bg-slate-100 text-slate-600 dark:bg-slate-700/70 dark:text-slate-200',
+			};
+		}
+
+		const delayedDays = getDelayDays(targetDate, finishDate);
+		if (delayedDays > 0) {
+			return {
+				label: `ล่าช้า ${delayedDays} วัน`,
+				className: 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-200',
+			};
+		}
+
+		return {
+			label: 'ไม่ล่าช้า',
+			className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200',
+		};
+	}
+
+	const delayedDays = getDelayDays(targetDate, new Date());
+	if (delayedDays > 0) {
+		return {
+			label: `ล่าช้า ${delayedDays} วัน`,
+			className: 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-200',
+		};
+	}
+
+	return {
+		label: 'ไม่ล่าช้า',
+		className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200',
+	};
+};
+
 export default function JobOrdersPage() {
 	const { can } = usePermissions();
 	const canAdd = can('job_orders', 'add') || can('stock', 'add');
@@ -324,7 +394,9 @@ export default function JobOrdersPage() {
 
 		setIsConfirmingComplete(true);
 		try {
+			pendingCompleteJob.finish_date = new Date().toISOString();
 			await updateJobStatus(pendingCompleteJob.job_order_id, 'completed', qty, defectQty);
+
 			closeDetailModal();
 		} finally {
 			setIsConfirmingComplete(false);
@@ -627,6 +699,7 @@ export default function JobOrdersPage() {
 												{visibleCards.map((job) => {
 													const assignee = getAssigneeName(job);
 													const isCompleted = normalizeStatus(job.job_order_status) === 'completed';
+													const delayBadge = getDelayBadge(job);
 
 													return (
 														<article
@@ -665,6 +738,13 @@ export default function JobOrdersPage() {
 																	<span className="text-slate-300 dark:text-slate-600">·</span>
 																	<span>ผลิต {job.job_order_qty ?? 0}</span>
 																</div>
+																{delayBadge && (
+																	<div className="pt-0.5">
+																		<span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${delayBadge.className}`}>
+																			{delayBadge.label}
+																		</span>
+																	</div>
+																)}
 															</div>
 
 															<div className="mt-1.5 pt-1 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-1">

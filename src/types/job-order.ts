@@ -30,6 +30,10 @@ export interface JobOrder {
   employee_id?: string;
   target_date?: string | Date;
   create_date?: string | Date;
+  finish_date?: string | Date;
+  completed_date?: string | Date;
+  completed_at?: string | Date;
+  finish_at?: string | Date;
   employee?: {
     employee_id: string;
     employee_firstname?: string;
