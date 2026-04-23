@@ -9,6 +9,7 @@ import PurchaseReceiptModel from '@/models/purchase-receipt';
 import PurchaseOrderListModel from '@/models/purchase-order-list';
 import { PurchaseOrderItem } from '@/types/purchase-order-list';
 import { PaginationMeta } from '@/types/pagination';
+import { calculateVatSummary, VAT_TYPE_LABELS, VAT_TYPE_OPTIONS, VatType } from '@/lib/vat';
 
 interface ReceiptItemForm {
 	id: string;
@@ -50,6 +51,7 @@ const mapOrderItemToFormItem = (item: PurchaseOrderItem): ReceiptItemForm => ({
 export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, initialData }: UpdatePurchaseReceiptFormProps) {
 	const [entryDate, setEntryDate] = useState<string>('');
 	const [receiptDetail, setReceiptDetail] = useState('');
+	const [vatType, setVatType] = useState<VatType>('none');
 	const [items, setItems] = useState<ReceiptItemForm[]>([]);
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,6 +88,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 
 		setEntryDate(new Date(initialData.entry_date || new Date()).toISOString().slice(0, 10));
 		setReceiptDetail(initialData.purchase_receipt_detail || initialData.purchase_receipt_detail || '');
+		setVatType(initialData.vat_type || 'none');
 		setItems(
 			(initialData.purchaseReceiptLists || []).map((item: PurchaseReceiptListItem) => ({
 				id: crypto.randomUUID(),
@@ -157,6 +160,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 
 	const calculateItemTotal = (item: ReceiptItemForm) => Number(item.purchase_receipt_list_qty) * Number(item.purchase_receipt_list_price);
 	const grandTotal = useMemo(() => items.reduce((sum, item) => sum + calculateItemTotal(item), 0), [items]);
+	const vatSummary = useMemo(() => calculateVatSummary(grandTotal, vatType), [grandTotal, vatType]);
 
 	const formatCurrency = (amount: number) => {
 		return new Intl.NumberFormat('th-TH', {
@@ -302,7 +306,10 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 				supplier_id: initialData.supplier_id,
 				entry_date: entryDate,
 				purchase_receipt_detail: receiptDetail,
-				purchase_receipt_total: grandTotal,
+				vat_type: vatType,
+				purchase_receipt_subtotal: vatSummary.subtotal,
+				purchase_receipt_vat_amount: vatSummary.vatAmount,
+				purchase_receipt_total: vatSummary.total,
 				update_by: user.employee_id,
 				create_by: initialData.create_by,
 				purchaseReceiptLists: items.map((item) => ({
@@ -375,6 +382,21 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 								<div className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">{initialData.purchaseOrder?.purchase_order_code || initialData.purchase_order_id}</div>
 							</div>
 							<div>
+								<label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">รูปแบบ VAT</label>
+								<select
+									value={vatType}
+									onChange={(e) => setVatType(e.target.value as VatType)}
+									className="w-full rounded-xl border border-gray-300 px-4 py-2 text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100"
+									disabled={isSubmitting}
+								>
+									{VAT_TYPE_OPTIONS.map((option) => (
+										<option key={option.value} value={option.value}>
+											{option.label}
+										</option>
+									))}
+								</select>
+							</div>
+							<div>
 								<label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">วันที่รับสินค้า</label>
 								<input type="date" value={entryDate} onChange={(e) => setEntryDate(e.target.value)} className="w-full rounded-xl border border-gray-300 px-4 py-2 text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100" disabled={isSubmitting} />
 								{errors.entry_date && <p className="mt-1 text-sm text-red-500">{errors.entry_date}</p>}
@@ -421,7 +443,20 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 
 						{errors.items && <p className="mt-3 text-sm text-red-500">{errors.items}</p>}
 
-						<div className="mt-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-5 shadow-lg"><div className="flex items-center justify-between"><span className="text-lg font-semibold text-white">ยอดรวมทั้งสิ้น</span><span className="text-2xl font-bold text-white">฿{formatCurrency(grandTotal)}</span></div></div>
+						<div className="mt-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-5 shadow-lg text-white space-y-2">
+							<div className="flex items-center justify-between text-sm md:text-base">
+								<span>ยอดก่อน VAT</span>
+								<span>฿{formatCurrency(vatSummary.subtotal)}</span>
+							</div>
+							<div className="flex items-center justify-between text-sm md:text-base">
+								<span>VAT 7% ({VAT_TYPE_LABELS[vatType]})</span>
+								<span>฿{formatCurrency(vatSummary.vatAmount)}</span>
+							</div>
+							<div className="flex items-center justify-between border-t border-white/30 pt-2">
+								<span className="text-lg font-semibold">ยอดรวมทั้งสิ้น</span>
+								<span className="text-2xl font-bold">฿{formatCurrency(vatSummary.total)}</span>
+							</div>
+						</div>
 
 						<div className="mt-6 flex gap-3 border-t border-gray-200 pt-6 dark:border-gray-700">
 							<button type="button" onClick={onClose} disabled={isSubmitting} className="w-full rounded-xl border-2 border-gray-300 bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-all hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600">ยกเลิก</button>

@@ -10,6 +10,8 @@ import SupplierModel from '@/models/supplier';
 import Cookies from 'js-cookie';
 import ActionResultDialog, { ActionResultDialogAction } from '@/components/ActionResultDialog';
 import { formatThaiDate } from '@/lib/date-format';
+import { calculateVatSummary, VAT_TYPE_LABELS, VAT_TYPE_OPTIONS, VatType } from '@/lib/vat';
+import { SupplierWithPayment } from '@/types/supplier';
 interface PurchaseOrderItemForm {
     id: string;
     material_id: string;
@@ -42,8 +44,9 @@ export default function InsertPurchaseOrderForm({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [productUnits, setProductUnits] = useState<any[]>([]);
-    const [suppliers, setSuppliers] = useState<any[]>([]);
+    const [suppliers, setSuppliers] = useState<SupplierWithPayment[]>([]);
     const [supplierId, setSupplierId] = useState<string>('');
+    const [vatType, setVatType] = useState<VatType>('none');
     const [resultDialog, setResultDialog] = useState<{
         isOpen: boolean;
         status: 'success' | 'error';
@@ -142,6 +145,14 @@ export default function InsertPurchaseOrderForm({
         return items.reduce((sum, item) => sum + calculateItemTotal(item), 0);
     };
 
+    const vatSummary = calculateVatSummary(calculateGrandTotal(), vatType);
+
+    const handleSupplierChange = (value: string) => {
+        setSupplierId(value);
+        const selectedSupplier = suppliers.find((supplier) => supplier.supplier_id === value);
+        setVatType(selectedSupplier?.vat_type || 'none');
+    };
+
     const validateForm = () => {
         const newErrors: { [key: string]: string } = {};
 
@@ -208,8 +219,11 @@ export default function InsertPurchaseOrderForm({
                 purchase_order_name: purchaseOrderName,
                 purchase_order_detail: purchaseOrderDetail,
                 supplier_id: supplierId,
+                vat_type: vatType,
+                purchase_order_subtotal: vatSummary.subtotal,
+                purchase_order_vat_amount: vatSummary.vatAmount,
                 create_by: user.employee_id,
-                purchase_order_total : calculateGrandTotal(),
+                purchase_order_total : vatSummary.total,
                 purchaseOrderLists: items.map(item => ({
                     material_id: item.material_id,
                     purchase_order_list_qty: item.purchase_order_list_qty,
@@ -246,6 +260,7 @@ export default function InsertPurchaseOrderForm({
             setPurchaseOrderName('');
             setPurchaseOrderDetail('');
             setItems([{ id: crypto.randomUUID(), material_id: '', purchase_order_list_qty: 1, purchase_order_list_price: 0, product_unit_id: 0 }]);
+            setVatType('none');
             setErrors({});
 
             onSuccess();
@@ -258,6 +273,7 @@ export default function InsertPurchaseOrderForm({
             setPurchaseOrderName('');
             setPurchaseOrderDetail('');
             setItems([{ id: crypto.randomUUID(), material_id: '', purchase_order_list_qty: 1, purchase_order_list_price: 0, product_unit_id: 0 }]);
+            setVatType('none');
             setErrors({});
             onClose();
         }
@@ -353,7 +369,7 @@ export default function InsertPurchaseOrderForm({
                                 label="ผู้จัดจำหน่าย"
                                 required={true}
                                 value={supplierId}
-                                onChange={(value) => setSupplierId(value)}
+                                onChange={handleSupplierChange}
                                 options={suppliers.map((sup) => ({
                                     value: sup.supplier_id,
                                     label: sup.supplier_name,
@@ -369,6 +385,24 @@ export default function InsertPurchaseOrderForm({
                                     {errors.supplier}
                                 </p>
                             )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                รูปแบบ VAT
+                            </label>
+                            <select
+                                value={vatType}
+                                onChange={(e) => setVatType(e.target.value as VatType)}
+                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                disabled={isSubmitting}
+                            >
+                                {VAT_TYPE_OPTIONS.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
 
@@ -547,18 +581,19 @@ export default function InsertPurchaseOrderForm({
 
                         {/* Grand Total */}
                         <div className="mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 p-6 rounded-2xl shadow-lg">
-                            <div className="flex justify-between items-center">
-                                <span className="text-lg font-bold text-white flex items-center gap-3">
-                                    <div className="bg-white bg-opacity-20 p-2 rounded-lg">
-                                        <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-                                        </svg>
-                                    </div>
-                                    ยอดรวมทั้งสิ้น:
-                                </span>
-                                <span className="text-3xl font-bold text-white">
-                                    ฿{formatCurrency(calculateGrandTotal())}
-                                </span>
+                            <div className="space-y-2 text-white">
+                                <div className="flex justify-between items-center text-sm md:text-base">
+                                    <span>ยอดก่อน VAT</span>
+                                    <span>฿{formatCurrency(vatSummary.subtotal)}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm md:text-base">
+                                    <span>VAT 7% ({VAT_TYPE_LABELS[vatType]})</span>
+                                    <span>฿{formatCurrency(vatSummary.vatAmount)}</span>
+                                </div>
+                                <div className="flex justify-between items-center pt-2 border-t border-white/30">
+                                    <span className="text-lg font-bold">ยอดรวมทั้งสิ้น</span>
+                                    <span className="text-3xl font-bold">฿{formatCurrency(vatSummary.total)}</span>
+                                </div>
                             </div>
                         </div>
                     </div>

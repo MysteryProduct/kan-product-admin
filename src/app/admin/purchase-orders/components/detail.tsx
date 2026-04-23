@@ -7,6 +7,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import Cookies from 'js-cookie';
 import ActionResultDialog, { ActionResultDialogAction } from '@/components/ActionResultDialog';
 import { formatThaiDate } from '@/lib/date-format';
+import { calculateVatSummary, VAT_TYPE_LABELS } from '@/lib/vat';
 interface PurchaseOrderDetailModalProps {
 	isOpen: boolean;
 	onClose: () => void;
@@ -43,6 +44,10 @@ export default function PurchaseOrderDetailModal({
 
 	const grandTotal =
 		purchaseOrder.purchase_order_total || items.reduce((sum, item) => sum + calculateItemTotal(item), 0);
+	const vatSummary = calculateVatSummary(
+		purchaseOrder.purchase_order_total || grandTotal,
+		purchaseOrder.vat_type || 'none',
+	);
 
 	const formatCurrency = (amount: number) => {
 		return new Intl.NumberFormat('th-TH', {
@@ -156,6 +161,13 @@ export default function PurchaseOrderDetailModal({
 								</span>
 							</div>
 						</div>
+
+						<div>
+							<label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">รูปแบบ VAT</label>
+							<div className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm">
+								{VAT_TYPE_LABELS[purchaseOrder.vat_type || 'none']}
+							</div>
+						</div>
 					</div>
 
 					<div className="mb-6">
@@ -230,10 +242,18 @@ export default function PurchaseOrderDetailModal({
 							)}
 						</div>
 
-						<div className="mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 p-6 rounded-2xl shadow-lg">
-							<div className="flex justify-between items-center">
-								<span className="text-lg font-bold text-white">ยอดรวมทั้งสิ้น:</span>
-								<span className="text-3xl font-bold text-white">฿{formatCurrency(grandTotal)}</span>
+						<div className="mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 p-6 rounded-2xl shadow-lg text-white space-y-2">
+							<div className="flex justify-between items-center text-sm md:text-base">
+								<span>ยอดก่อน VAT</span>
+								<span>฿{formatCurrency(vatSummary.subtotal)}</span>
+							</div>
+							<div className="flex justify-between items-center text-sm md:text-base">
+								<span>VAT 7% ({VAT_TYPE_LABELS[purchaseOrder.vat_type || 'none']})</span>
+								<span>฿{formatCurrency(vatSummary.vatAmount)}</span>
+							</div>
+							<div className="flex justify-between items-center pt-2 border-t border-white/30">
+								<span className="text-lg font-bold">ยอดรวมทั้งสิ้น</span>
+								<span className="text-3xl font-bold">฿{formatCurrency(vatSummary.total)}</span>
 							</div>
 						</div>
 					</div>

@@ -7,6 +7,7 @@ import {
     ApiSupplierWithPaymentResponse, 
     Payment 
 } from '@/types/supplier';
+import { VatType } from '@/lib/vat';
 
 export interface CreateSupplierDto {
     supplier_name: string;
@@ -14,6 +15,7 @@ export interface CreateSupplierDto {
     supplier_address: string;
     supplier_phone: string;
     tax_id: string;
+    vat_type?: VatType;
     payments: {
         account_name: string;
         account_number: string;
@@ -29,6 +31,7 @@ export interface UpdateSupplierDto {
     supplier_address: string;
     supplier_phone: string;
     tax_id: string;
+    vat_type?: VatType;
     payments: {
         payment_id: string;
         account_name: string;
@@ -109,7 +112,7 @@ export default class SupplierModel {
      */
     getSupplierWithPaymentsById = async (supplier_id: string): Promise<SupplierWithPayment> => {
         try {
-            const response = await axiosInstance.get<SupplierWithPayment>(`/supplier/${supplier_id}/with-payments`);
+            const response = await axiosInstance.get<SupplierWithPayment>(`/supplier/with-payments/${supplier_id}`);
             return response.data;
         } catch (error) {
             console.error('Error fetching supplier with payments:', error);

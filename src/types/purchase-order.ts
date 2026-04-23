@@ -1,4 +1,5 @@
 import { PaginationMeta } from './pagination';
+import { VatType } from '@/lib/vat';
 export interface PurchaseOrderItem {
   purchase_order_list_id: number;
   material_id: string;
@@ -26,9 +27,13 @@ export interface PurchaseOrder {
   supplier?:{
     supplier_id:  string;
     supplier_name: string;
+    vat_type?: VatType;
   };
   supplier_id: string;
   purchaseOrderLists?: PurchaseOrderItem[];
+  vat_type?: VatType;
+  purchase_order_subtotal?: number;
+  purchase_order_vat_amount?: number;
   purchase_order_total: number;
   purchase_date: Date;
   create_at?: Date;
@@ -44,6 +49,9 @@ export interface CreatePurchaseOrderDto {
   purchase_order_name: string;
   purchase_order_detail: string;
   supplier_id: string;
+  vat_type?: VatType;
+  purchase_order_subtotal?: number;
+  purchase_order_vat_amount?: number;
   create_by?: string;
   purchase_order_total: number;
   purchaseOrderLists: {

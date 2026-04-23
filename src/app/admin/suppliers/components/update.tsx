@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import SupplierModel from '@/models/supplier';
 import { SupplierWithPayment, Payment, PaymentUpdate } from '@/types/supplier';
 import ActionResultDialog from '@/components/ActionResultDialog';
+import { VAT_TYPE_OPTIONS } from '@/lib/vat';
 
 interface UpdateSupplierModalProps {
     isOpen: boolean;
@@ -17,7 +18,8 @@ export default function UpdateSupplierModal({ isOpen, onClose, supplierId, onUpd
         supplier_contact: '',
         supplier_phone: '',
         supplier_address: '',
-        tax_id: ''
+        tax_id: '',
+        vat_type: 'none' as NonNullable<SupplierWithPayment['vat_type']>,
     });
 
     const [payments, setPayments] = useState<Omit<PaymentUpdate, 'supplier_id'>[]>([{
@@ -53,7 +55,8 @@ export default function UpdateSupplierModal({ isOpen, onClose, supplierId, onUpd
                         supplier_contact: supplier.supplier_contact,
                         supplier_phone: supplier.supplier_phone,
                         supplier_address: supplier.supplier_address,
-                        tax_id: supplier.tax_id
+                        tax_id: supplier.tax_id,
+                        vat_type: supplier.vat_type || 'none',
                     });
                     setPayments(supplier.payments && supplier.payments.length > 0 
                         ? supplier.payments.map(p => ({
@@ -193,6 +196,7 @@ export default function UpdateSupplierModal({ isOpen, onClose, supplierId, onUpd
                 supplier_address: formData.supplier_address,
                 supplier_phone: formData.supplier_phone,
                 tax_id: formData.tax_id,
+                vat_type: formData.vat_type || 'none',
                 payments: payments.map(payment => ({
                     payment_id: payment.payment_id || '',
                     account_name: payment.account_name,
@@ -314,6 +318,33 @@ export default function UpdateSupplierModal({ isOpen, onClose, supplierId, onUpd
                                                     <span>{errors.tax_id}</span>
                                                 </p>
                                             )}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                <span className="flex items-center space-x-2">
+                                                    <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5S13.657 14 12 14s-3 .672-3 1.5S10.343 17 12 17m0-9v9" />
+                                                    </svg>
+                                                    <span>รูปแบบ VAT</span>
+                                                </span>
+                                            </label>
+                                            <select
+                                                name="vat_type"
+                                                value={formData.vat_type || 'none'}
+                                                onChange={(e) =>
+                                                    setFormData((prev) => ({
+                                                        ...prev,
+                                                        vat_type: e.target.value as NonNullable<SupplierWithPayment['vat_type']>,
+                                                    }))
+                                                }
+                                                className="text-gray-700 w-full px-4 py-3 border-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 border-gray-300"
+                                            >
+                                                {VAT_TYPE_OPTIONS.map((option) => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </div>
                                         <div className="space-y-2">
                                             <label className="block text-sm font-semibold text-gray-700 mb-2">

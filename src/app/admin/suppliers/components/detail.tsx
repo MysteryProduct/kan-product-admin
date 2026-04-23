@@ -1,5 +1,6 @@
 'use client';
 import { SupplierWithPayment } from '@/types/supplier';
+import { VAT_TYPE_LABELS } from '@/lib/vat';
 
 interface SupplierDetailModalProps {
     isOpen: boolean;
@@ -65,6 +66,19 @@ export default function SupplierDetailModal({ isOpen, onClose, supplier }: Suppl
                                         </label>
                                         <div className="w-full px-4 py-3 bg-gradient-to-r from-yellow-50 to-yellow-100 border-2 border-yellow-200 rounded-xl text-gray-700 font-mono text-lg shadow-sm">
                                             {supplier.tax_id}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-semibold text-gray-700">
+                                            <span className="flex items-center space-x-2">
+                                                <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5S13.657 14 12 14s-3 .672-3 1.5S10.343 17 12 17m0-9v9" />
+                                                </svg>
+                                                <span>รูปแบบ VAT</span>
+                                            </span>
+                                        </label>
+                                        <div className="w-full px-4 py-3 bg-white border-2 border-gray-200 rounded-xl text-gray-700 shadow-sm">
+                                            {VAT_TYPE_LABELS[supplier.vat_type || 'none']}
                                         </div>
                                     </div>
                                     

@@ -1,5 +1,7 @@
 const ROUTE_MENU_MAP: Record<string, string> = {
   '/admin/purchase-orders': 'purchase_orders',
+  '/admin/purchase-receipt': 'purchase_receipt',
+  '/admin/invoice-supplier': 'invoice_supplier',
   '/admin/materials': 'materials',
   '/admin/products': 'products',
   '/admin/colors': 'colors',

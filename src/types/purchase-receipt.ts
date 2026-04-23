@@ -1,4 +1,5 @@
 import { PaginationMeta } from './pagination';
+import { VatType } from '@/lib/vat';
 
 export interface PurchaseReceiptListItem {
   purchase_receipt_list_id?: string;
@@ -41,6 +42,9 @@ export interface PurchaseReceipt {
   supplier_id: string;
   entry_date: Date;
   purchase_receipt_detail?: string;
+  vat_type?: VatType;
+  purchase_receipt_subtotal?: number;
+  purchase_receipt_vat_amount?: number;
   purchase_receipt_total: number;
   create_at?: Date;
   create_by?: string;
@@ -69,6 +73,9 @@ export interface CreatePurchaseReceiptDto {
   supplier_id: string;
   entry_date: string;
   purchase_receipt_detail?: string;
+  vat_type?: VatType;
+  purchase_receipt_subtotal?: number;
+  purchase_receipt_vat_amount?: number;
   purchase_receipt_total: number;
   create_by?: string;
   purchaseReceiptLists: {

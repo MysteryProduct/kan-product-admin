@@ -1,4 +1,5 @@
 import { PaginationMeta } from "./pagination";
+import { VatType } from '@/lib/vat';
 
 export interface Supplier {
     supplier_id: string;
@@ -7,6 +8,7 @@ export interface Supplier {
     supplier_address: string;
     supplier_phone: string;
     tax_id: string;
+    vat_type?: VatType;
 }
 export interface SupplierUpdate extends Supplier {
     payments?: PaymentUpdate[];

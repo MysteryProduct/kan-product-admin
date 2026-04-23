@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { SupplierWithPayment, Payment } from '@/types/supplier';
 import SupplierModel, { CreateSupplierDto } from '@/models/supplier';
 import ActionResultDialog from '@/components/ActionResultDialog';
+import { VAT_TYPE_OPTIONS } from '@/lib/vat';
 
 interface SupplierInsertFormProps {
     isOpen: boolean;
@@ -17,7 +18,8 @@ export default function SupplierInsertForm({ isOpen, onClose, onSuccess }: Suppl
         supplier_contact: '',
         supplier_address: '',
         supplier_phone: '',
-        tax_id: ''
+        tax_id: '',
+        vat_type: 'none',
     });
 
     const [payments, setPayments] = useState<Omit<Payment, 'supplier_id'>[]>([{
@@ -102,6 +104,7 @@ export default function SupplierInsertForm({ isOpen, onClose, onSuccess }: Suppl
                 supplier_address: formData.supplier_address,
                 supplier_phone: formData.supplier_phone,
                 tax_id: formData.tax_id,
+                vat_type: formData.vat_type || 'none',
                 payments: payments.map(payment => ({
                     account_name: payment.account_name,
                     account_number: payment.account_number,
@@ -119,7 +122,8 @@ export default function SupplierInsertForm({ isOpen, onClose, onSuccess }: Suppl
                 supplier_contact: '',
                 supplier_address: '',
                 supplier_phone: '',
-                tax_id: ''
+                tax_id: '',
+                vat_type: 'none',
             });
             setPayments([{
                 account_name: '',
@@ -278,6 +282,33 @@ export default function SupplierInsertForm({ isOpen, onClose, onSuccess }: Suppl
                                             <span>{errors.tax_id}</span>
                                         </p>
                                     )}
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        <span className="flex items-center space-x-2">
+                                            <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5S13.657 14 12 14s-3 .672-3 1.5S10.343 17 12 17m0-9v9" />
+                                            </svg>
+                                            <span>รูปแบบ VAT</span>
+                                        </span>
+                                    </label>
+                                    <select
+                                        name="vat_type"
+                                        value={formData.vat_type || 'none'}
+                                        onChange={(e) =>
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                vat_type: e.target.value as SupplierWithPayment['vat_type'],
+                                            }))
+                                        }
+                                        className="text-gray-700 w-full px-4 py-3 border-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 border-gray-300"
+                                    >
+                                        {VAT_TYPE_OPTIONS.map((option) => (
+                                            <option key={option.value} value={option.value}>
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">

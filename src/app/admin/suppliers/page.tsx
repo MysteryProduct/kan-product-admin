@@ -10,6 +10,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import { DataTable, DataTableColumn } from '@/components/DataTable';
 import { usePermissions } from '@/hooks/usePermissions';
 import ActionResultDialog from '@/components/ActionResultDialog';
+import { VAT_TYPE_LABELS } from '@/lib/vat';
 
 type SupplierTableRow = SupplierWithPayment & {
     rowNumber: number;
@@ -269,6 +270,15 @@ export default function SupplierPage() {
                     <div className="font-mono text-gray-700 dark:text-gray-300 bg-yellow-50 dark:bg-yellow-900/20 px-3 py-1 rounded-lg inline-block border border-yellow-200 dark:border-yellow-800">
                         {value as string}
                     </div>
+                ),
+            },
+            {
+                key: 'vat_type',
+                label: 'VAT',
+                render: (value) => (
+                    <span className="inline-flex rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                        {VAT_TYPE_LABELS[(value as SupplierWithPayment['vat_type']) || 'none']}
+                    </span>
                 ),
             },
             {

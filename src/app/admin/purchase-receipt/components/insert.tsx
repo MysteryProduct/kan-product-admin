@@ -9,6 +9,7 @@ import PurchaseReceiptModel from '@/models/purchase-receipt';
 import { PurchaseOrderItem, PurchaseOrderItemResponse } from '@/types/purchase-order-list';
 import { PurchaseOrder } from '@/types/purchase-order';
 import { PaginationMeta } from '@/types/pagination';
+import { calculateVatSummary, VAT_TYPE_LABELS, VAT_TYPE_OPTIONS, VatType } from '@/lib/vat';
 
 interface ReceiptItemForm {
 	id: string;
@@ -60,6 +61,7 @@ const mapOrderItemToFormItem = (item: PurchaseOrderItem): ReceiptItemForm => ({
 export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, purchaseOrder }: InsertPurchaseReceiptFormProps) {
 	const [entryDate, setEntryDate] = useState<string>(new Date().toISOString().slice(0, 10));
 	const [receiptDetail, setReceiptDetail] = useState('');
+	const [vatType, setVatType] = useState<VatType>('none');
 	const [items, setItems] = useState<ReceiptItemForm[]>([]);
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -95,6 +97,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 			void loadInitialPurchaseOrderItems(purchaseOrder.purchase_order_id);
 			setEntryDate(new Date().toISOString().slice(0, 10));
 			setReceiptDetail('');
+			setVatType(purchaseOrder.vat_type || purchaseOrder.supplier?.vat_type || 'none');
 			setErrors({});
 		}
 	}, [isOpen, purchaseOrder?.purchase_order_id]);
@@ -178,6 +181,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 	const calculateItemTotal = (item: ReceiptItemForm) => Number(item.purchase_receipt_list_qty) * Number(item.purchase_receipt_list_price);
 
 	const grandTotal = useMemo(() => items.reduce((sum, item) => sum + calculateItemTotal(item), 0), [items]);
+	const vatSummary = useMemo(() => calculateVatSummary(grandTotal, vatType), [grandTotal, vatType]);
 
 	const formatCurrency = (amount: number) => {
 		return new Intl.NumberFormat('th-TH', {
@@ -320,6 +324,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 	const resetAndClose = () => {
 		setEntryDate(new Date().toISOString().slice(0, 10));
 		setReceiptDetail('');
+		setVatType('none');
 		setItems([]);
 		setSelectedOrderItems({});
 		setIsSelectModalOpen(false);
@@ -345,7 +350,10 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 				supplier_id: purchaseOrder!.supplier_id || purchaseOrder!.supplier?.supplier_id || '',
 				entry_date: entryDate,
 				purchase_receipt_detail: receiptDetail,
-				purchase_receipt_total: grandTotal,
+				vat_type: vatType,
+				purchase_receipt_subtotal: vatSummary.subtotal,
+				purchase_receipt_vat_amount: vatSummary.vatAmount,
+				purchase_receipt_total: vatSummary.total,
 				create_by: user.employee_id,
 				purchaseReceiptLists: items.map((item) => ({
 					material_id: item.material_id,
@@ -427,6 +435,21 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 								<div className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">
 									{purchaseOrder?.supplier?.supplier_name || '-'}
 								</div>
+							</div>
+							<div>
+								<label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">รูปแบบ VAT</label>
+								<select
+									value={vatType}
+									onChange={(e) => setVatType(e.target.value as VatType)}
+									className="w-full rounded-xl border border-gray-300 px-4 py-2 text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100"
+									disabled={isSubmitting}
+								>
+									{VAT_TYPE_OPTIONS.map((option) => (
+										<option key={option.value} value={option.value}>
+											{option.label}
+										</option>
+									))}
+								</select>
 							</div>
 							<div>
 								<label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">วันที่รับสินค้า</label>
@@ -537,10 +560,18 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 
 						{errors.items && <p className="mt-3 text-sm text-red-500">{errors.items}</p>}
 
-						<div className="mt-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-5 shadow-lg">
-							<div className="flex items-center justify-between">
-								<span className="text-lg font-semibold text-white">ยอดรวมทั้งสิ้น</span>
-								<span className="text-2xl font-bold text-white">฿{formatCurrency(grandTotal)}</span>
+						<div className="mt-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-5 shadow-lg text-white space-y-2">
+							<div className="flex items-center justify-between text-sm md:text-base">
+								<span>ยอดก่อน VAT</span>
+								<span>฿{formatCurrency(vatSummary.subtotal)}</span>
+							</div>
+							<div className="flex items-center justify-between text-sm md:text-base">
+								<span>VAT 7% ({VAT_TYPE_LABELS[vatType]})</span>
+								<span>฿{formatCurrency(vatSummary.vatAmount)}</span>
+							</div>
+							<div className="flex items-center justify-between border-t border-white/30 pt-2">
+								<span className="text-lg font-semibold">ยอดรวมทั้งสิ้น</span>
+								<span className="text-2xl font-bold">฿{formatCurrency(vatSummary.total)}</span>
 							</div>
 						</div>
 

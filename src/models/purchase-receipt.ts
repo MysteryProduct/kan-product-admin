@@ -38,6 +38,32 @@ class PurchaseReceiptModel {
     }
   }
 
+  async getApprovedPurchaseReceiptsForInvoiceStatus(
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+    sortField?: 'entry_date' | 'purchase_receipt_total' | null,
+    sortOrder?: 'ASC' | 'DESC',
+    filters?: Record<string, string>,
+  ): Promise<PurchaseReceiptResponse> {
+    try {
+      const response = await axiosInstance.get<PurchaseReceiptResponse>('/purchase-receipt/approved/invoice-status', {
+        params: {
+          page,
+          limit,
+          ...(search && { search }),
+          ...(sortField && { sortField }),
+          ...(sortOrder && { sortOrder }),
+          ...(filters && { filters: JSON.stringify(filters) }),
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching approved purchase receipts for invoice status:', error);
+      throw error;
+    }
+  }
+
   async getPurchaseReceiptById(id: string): Promise<PurchaseReceipt> {
     try {
       const response = await axiosInstance.get<SinglePurchaseReceiptResponse>(`/purchase-receipt/${id}`);

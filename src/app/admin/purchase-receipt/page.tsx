@@ -14,6 +14,7 @@ import PurchaseReceiptDetailModal from './components/detail';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import { formatThaiDate } from '@/lib/date-format';
+import { VAT_TYPE_LABELS } from '@/lib/vat';
 
 const purchaseOrderModel = new PurchaseOrderModel();
 const purchaseReceiptModel = new PurchaseReceiptModel();
@@ -242,6 +243,11 @@ export default function PurchaseReceiptPage() {
             render: (value) => `฿${formatCurrency(Number(value || 0))}`,
         },
         {
+            key: 'vat_type',
+            label: 'VAT',
+            render: (value) => VAT_TYPE_LABELS[(value as PurchaseOrder['vat_type']) || 'none'],
+        },
+        {
             key: 'purchase_order_status',
             label: 'สถานะ',
             render: (_, row) => {
@@ -309,6 +315,11 @@ export default function PurchaseReceiptPage() {
             label: 'ยอดรวมใบรับสินค้า',
             sortable: true,
             render: (value) => `฿${formatCurrency(Number(value || 0))}`,
+        },
+        {
+            key: 'vat_type',
+            label: 'VAT',
+            render: (value) => VAT_TYPE_LABELS[(value as PurchaseReceipt['vat_type']) || 'none'],
         },
         {
             key: 'purchase_receipt_id',

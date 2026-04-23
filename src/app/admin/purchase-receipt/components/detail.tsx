@@ -7,6 +7,7 @@ import ActionResultDialog, { ActionResultDialogAction } from '@/components/Actio
 import ConfirmDialog from '@/components/ConfirmDialog';
 import PurchaseReceiptModel from '@/models/purchase-receipt';
 import { formatThaiDate } from '@/lib/date-format';
+import { calculateVatSummary, VAT_TYPE_LABELS } from '@/lib/vat';
 
 
 interface PurchaseReceiptDetailModalProps {
@@ -60,6 +61,10 @@ export default function PurchaseReceiptDetailModal({
 
 	const grandTotal =
 		purchaseReceipt.purchase_receipt_total || items.reduce((sum, item) => sum + calculateItemTotal(item), 0);
+	const vatSummary = calculateVatSummary(
+		purchaseReceipt.purchase_receipt_total || grandTotal,
+		purchaseReceipt.vat_type || 'none',
+	);
 
 	const formatCurrency = (amount: number) => {
 		return new Intl.NumberFormat('th-TH', {
@@ -148,6 +153,12 @@ export default function PurchaseReceiptDetailModal({
 							</div>
 						</div>
 						<div>
+							<label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">รูปแบบ VAT</label>
+							<div className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">
+								{VAT_TYPE_LABELS[purchaseReceipt.vat_type || 'none']}
+							</div>
+						</div>
+						<div>
 							<label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">รายละเอียดใบรับสินค้า</label>
 							<div className="min-h-[44px] rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">
 								{purchaseReceipt.purchase_receipt_detail || purchaseReceipt.purchase_receipt_detail || '-'}
@@ -212,10 +223,18 @@ export default function PurchaseReceiptDetailModal({
 						)}
 					</div>
 
-					<div className="mt-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-5 shadow-lg">
-						<div className="flex items-center justify-between">
-							<span className="text-lg font-semibold text-white">ยอดรวมทั้งสิ้น</span>
-							<span className="text-2xl font-bold text-white">฿{formatCurrency(grandTotal)}</span>
+					<div className="mt-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-5 shadow-lg text-white space-y-2">
+						<div className="flex items-center justify-between text-sm md:text-base">
+							<span>ยอดก่อน VAT</span>
+							<span>฿{formatCurrency(vatSummary.subtotal)}</span>
+						</div>
+						<div className="flex items-center justify-between text-sm md:text-base">
+							<span>VAT 7% ({VAT_TYPE_LABELS[purchaseReceipt.vat_type || 'none']})</span>
+							<span>฿{formatCurrency(vatSummary.vatAmount)}</span>
+						</div>
+						<div className="flex items-center justify-between border-t border-white/30 pt-2">
+							<span className="text-lg font-semibold">ยอดรวมทั้งสิ้น</span>
+							<span className="text-2xl font-bold">฿{formatCurrency(vatSummary.total)}</span>
 						</div>
 					</div>
 

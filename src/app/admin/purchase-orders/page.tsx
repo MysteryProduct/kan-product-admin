@@ -13,6 +13,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import LoadingSkeletonProps from '@/components/LoadingSkeleton';
 import { formatThaiDate } from '@/lib/date-format';
+import { VAT_TYPE_LABELS } from '@/lib/vat';
 const purchaseOrderModel = new PurchaseOrderModel();
 
 type SortField = 'purchase_date' | 'purchase_order_total' | null;
@@ -220,6 +221,11 @@ export default function PurchaseOrdersPage() {
       key: 'purchase_order_total' as keyof PurchaseOrder,
       label: 'ราคา',
       sortable: true,
+    },
+    {
+      key: 'vat_type' as keyof PurchaseOrder,
+      label: 'VAT',
+      render: (value) => VAT_TYPE_LABELS[(value as PurchaseOrder['vat_type']) || 'none'],
     },
     {
       key: 'purchase_order_id' as keyof PurchaseOrder,
