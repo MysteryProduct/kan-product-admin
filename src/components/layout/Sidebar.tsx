@@ -87,6 +87,20 @@ export default function Sidebar() {
       ],
     },
     {
+      title: 'ขายสินค้า',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+      ),
+      subItems: [
+        { title: 'ใบสั่งขาย', menu_name: 'sale_orders', href: '/admin/sale-orders' },
+        { title: 'ใบเสร็จรับเงิน', menu_name: 'payment_receipts', href: '/admin/payment-receipts' },
+        // { title: 'ใบส่งสินค้า', menu_name: 'delivery_notes', href: '/admin/delivery-notes' },
+        // { title: 'ใบแจ้งหนี้', menu_name: 'invoices', href: '/admin/invoices' },
+      ],
+    },
+    {
       title: 'จัดการข้อมูลพื้นฐาน',
       icon: (
         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
