@@ -16,6 +16,14 @@ import { formatThaiDate, formatThaiDateLong, toDateValue } from '@/lib/date-form
 const jobOrderModel = new JobOrderModel();
 
 type BoardStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
+type ViewMode = 'board' | 'calendar';
+
+interface CalendarCell {
+	date: Date;
+	dateKey: string;
+	inCurrentMonth: boolean;
+	jobs: JobOrder[];
+}
 
 interface BoardColumn {
 	key: BoardStatus;
@@ -24,6 +32,12 @@ interface BoardColumn {
 	titleClass: string;
 	countClass: string;
 	accentClass: string;
+}
+
+interface StatusStyle {
+	label: string;
+	chipClass: string;
+	dotClass: string;
 }
 
 const BOARD_COLUMNS: BoardColumn[] = [
@@ -60,6 +74,31 @@ const BOARD_COLUMNS: BoardColumn[] = [
 		accentClass: 'border-rose-400/60 dark:border-rose-400/30',
 	},
 ];
+
+const STATUS_STYLES: Record<BoardStatus, StatusStyle> = {
+	pending: {
+		label: 'รอดำเนินการ',
+		chipClass: 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-200',
+		dotClass: 'bg-blue-500',
+	},
+	in_progress: {
+		label: 'กำลังผลิต',
+		chipClass: 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200',
+		dotClass: 'bg-amber-500',
+	},
+	completed: {
+		label: 'ผลิตเสร็จแล้ว',
+		chipClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200',
+		dotClass: 'bg-emerald-500',
+	},
+	cancelled: {
+		label: 'ยกเลิกการผลิต',
+		chipClass: 'bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-200',
+		dotClass: 'bg-rose-500',
+	},
+};
+
+const WEEKDAY_LABELS = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
 
 const normalizeStatus = (status?: string): BoardStatus => {
 	if (!status) {
@@ -122,6 +161,10 @@ const getUserFromCookie = () => {
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 const startOfDay = (value: Date) => new Date(value.getFullYear(), value.getMonth(), value.getDate());
+
+const toDateKey = (value: Date) => {
+	return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
+};
 
 const getDelayDays = (targetDate: Date, compareDate: Date) => {
 	const target = startOfDay(targetDate);
@@ -207,6 +250,11 @@ export default function JobOrdersPage() {
 	const [searchText, setSearchText] = useState('');
 	const [selectedAssignee, setSelectedAssignee] = useState('all');
 	const [selectedType, setSelectedType] = useState<'all' | 'website' | 'purchase'>('all');
+	const [viewMode, setViewMode] = useState<ViewMode>('board');
+	const [calendarMonth, setCalendarMonth] = useState(() => {
+		const now = new Date();
+		return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+	});
 	const [dateStart, setDateStart] = useState(() => {
 		const now = new Date();
 		return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
@@ -300,6 +348,61 @@ export default function JobOrdersPage() {
 			return acc;
 		}, {} as Record<BoardStatus, JobOrder[]>);
 	}, [filteredJobOrders]);
+
+	const calendarDate = useMemo(() => {
+		const [yearText, monthText] = calendarMonth.split('-');
+		const year = Number(yearText);
+		const month = Number(monthText);
+
+		if (Number.isNaN(year) || Number.isNaN(month) || month < 1 || month > 12) {
+			const now = new Date();
+			return new Date(now.getFullYear(), now.getMonth(), 1);
+		}
+
+		return new Date(year, month - 1, 1);
+	}, [calendarMonth]);
+
+	const calendarTitle = useMemo(() => {
+		return calendarDate.toLocaleDateString('th-TH', {
+			month: 'long',
+			year: 'numeric',
+		});
+	}, [calendarDate]);
+
+	const calendarCells = useMemo<CalendarCell[]>(() => {
+		const currentYear = calendarDate.getFullYear();
+		const currentMonth = calendarDate.getMonth();
+		const monthStart = new Date(currentYear, currentMonth, 1);
+		const monthEnd = new Date(currentYear, currentMonth + 1, 0);
+		const daysInMonth = monthEnd.getDate();
+		const leadingDays = monthStart.getDay();
+		const totalSlots = Math.ceil((leadingDays + daysInMonth) / 7) * 7;
+
+		const jobsByDate = new Map<string, JobOrder[]>();
+		filteredJobOrders.forEach((job) => {
+			const targetDate = toDateValue(job.target_date);
+			if (!targetDate || targetDate.getFullYear() !== currentYear || targetDate.getMonth() !== currentMonth) {
+				return;
+			}
+
+			const key = toDateKey(targetDate);
+			const previous = jobsByDate.get(key) || [];
+			jobsByDate.set(key, [...previous, job]);
+		});
+
+		return Array.from({ length: totalSlots }, (_, index) => {
+			const date = new Date(currentYear, currentMonth, index - leadingDays + 1);
+			const dateKey = toDateKey(date);
+			const jobs = jobsByDate.get(dateKey) || [];
+
+			return {
+				date,
+				dateKey,
+				inCurrentMonth: date.getMonth() === currentMonth,
+				jobs,
+			};
+		});
+	}, [calendarDate, filteredJobOrders]);
 
 	useEffect(() => {
 		setColumnVisible({ pending: PAGE_SIZE, in_progress: PAGE_SIZE, completed: PAGE_SIZE, cancelled: PAGE_SIZE });
@@ -489,6 +592,18 @@ export default function JobOrdersPage() {
 	const pendingCards = grouped.pending?.length || 0;
 	const inProgressCards = grouped.in_progress?.length || 0;
 	const doneCards = grouped.completed?.length || 0;
+	const todayDateKey = toDateKey(new Date());
+
+	const moveCalendarMonth = (direction: -1 | 1) => {
+		setCalendarMonth((prev) => {
+			const [yearText, monthText] = prev.split('-');
+			const year = Number(yearText);
+			const month = Number(monthText);
+			const baseDate = !Number.isNaN(year) && !Number.isNaN(month) ? new Date(year, month - 1, 1) : new Date();
+			baseDate.setMonth(baseDate.getMonth() + direction);
+			return `${baseDate.getFullYear()}-${String(baseDate.getMonth() + 1).padStart(2, '0')}`;
+		});
+	};
 
 	return (
 		<div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.08),transparent_40%),radial-gradient(circle_at_bottom_right,_rgba(56,189,248,0.08),transparent_35%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.10),transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(14,116,144,0.16),transparent_35%)] p-3 sm:p-5 lg:p-7">
@@ -517,23 +632,54 @@ export default function JobOrdersPage() {
 						<div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
 							<div>
 								<h1 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100">Production Board</h1>
-								<p className="text-sm text-slate-500 dark:text-slate-400 mt-1">ลากการ์ดเพื่อเปลี่ยนสถานะงานผลิตให้ตรงกับกระบวนการจริง</p>
+								<p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+									{viewMode === 'board'
+										? 'ลากการ์ดเพื่อเปลี่ยนสถานะงานผลิตให้ตรงกับกระบวนการจริง'
+										: 'ดูงานผลิตเป็นรายเดือน พร้อมแยกสีตามสถานะงานในแต่ละวัน'}
+								</p>
 							</div>
-							{canAdd && (
-								<button
-									type="button"
-									onClick={() => {
-										setCopySeed(null);
-										setIsInsertOpen(true);
-									}}
-									className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold hover:from-blue-700 hover:to-cyan-600 transition-colors shadow-sm"
-								>
-									<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-									</svg>
-									เพิ่มงานผลิต
-								</button>
-							)}
+							<div className="flex flex-wrap items-center gap-2">
+								<div className="inline-flex rounded-xl border border-slate-300 dark:border-slate-700 p-1 bg-white dark:bg-slate-800">
+									<button
+										type="button"
+										onClick={() => setViewMode('board')}
+										className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+											viewMode === 'board'
+												? 'bg-cyan-600 text-white shadow-sm'
+												: 'text-slate-600 dark:text-slate-300 hover:text-cyan-700 dark:hover:text-cyan-300'
+										}`}
+									>
+										โหมดงาน (Task)
+									</button>
+									<button
+										type="button"
+										onClick={() => setViewMode('calendar')}
+										className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+											viewMode === 'calendar'
+												? 'bg-cyan-600 text-white shadow-sm'
+												: 'text-slate-600 dark:text-slate-300 hover:text-cyan-700 dark:hover:text-cyan-300'
+										}`}
+									>
+										โหมดปฏิทิน
+									</button>
+								</div>
+
+								{canAdd && (
+									<button
+										type="button"
+										onClick={() => {
+											setCopySeed(null);
+											setIsInsertOpen(true);
+										}}
+										className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold hover:from-blue-700 hover:to-cyan-600 transition-colors shadow-sm"
+									>
+										<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+										</svg>
+										เพิ่มงานผลิต
+									</button>
+								)}
+							</div>
 						</div>
 
 						<div className="space-y-3">
@@ -656,175 +802,306 @@ export default function JobOrdersPage() {
 							<LoadingSkeletonProps />
 						</div>
 					) : (
-						<div className="p-3 sm:p-4 lg:p-5 overflow-x-auto">
-							<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 min-w-[940px] md:min-w-0 items-start">
-								{BOARD_COLUMNS.map((column) => {
-									const cards = grouped[column.key] || [];
-									const visibleCount = columnVisible[column.key];
-									const visibleCards = cards.slice(0, visibleCount);
-									const hasMore = cards.length > visibleCount;
-									const remaining = cards.length - visibleCount;
-									const isDragOver = dragOverColumn === column.key;
+						viewMode === 'board' ? (
+							<div className="p-3 sm:p-4 lg:p-5 overflow-x-auto">
+								<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 min-w-[940px] md:min-w-0 items-start">
+									{BOARD_COLUMNS.map((column) => {
+										const cards = grouped[column.key] || [];
+										const visibleCount = columnVisible[column.key];
+										const visibleCards = cards.slice(0, visibleCount);
+										const hasMore = cards.length > visibleCount;
+										const remaining = cards.length - visibleCount;
+										const isDragOver = dragOverColumn === column.key;
 
-									return (
-										<section
-											key={column.key}
-											onDragOver={(event) => {
-												event.preventDefault();
-												setDragOverColumn(column.key);
-											}}
-											onDragLeave={() => setDragOverColumn(null)}
-											onDrop={(event) => {
-												event.preventDefault();
-												void handleDrop(column.key);
-											}}
-											className={`rounded-2xl border-2 transition-all ${column.accentClass} ${
-												isDragOver ? 'ring-2 ring-cyan-500/60 shadow-lg shadow-cyan-500/10 scale-[1.01]' : ''
-											} bg-slate-100/70 dark:bg-slate-800/60 flex flex-col h-[70vh] min-h-[430px]`}
-										>
-											<header className={`px-3 py-2 rounded-t-xl ${column.headerClass}`}>
-											<div className="flex items-center justify-between">
-													<h2 className={`font-bold text-sm ${column.titleClass}`}>{column.label}</h2>
-													<span className={`text-xs font-bold px-2 py-0.5 rounded-full ${column.countClass}`}>{cards.length}</span>
-												</div>
-											</header>
-
-											<div className="p-2 space-y-1.5 overflow-y-auto flex-1 min-h-0">
-												{cards.length === 0 && (
-													<div className="rounded-lg border border-dashed border-slate-300 dark:border-slate-600 p-3 text-xs text-slate-500 dark:text-slate-400 text-center bg-white/50 dark:bg-slate-800/40">
-														ไม่มีงานในสถานะนี้
+										return (
+											<section
+												key={column.key}
+												onDragOver={(event) => {
+													event.preventDefault();
+													setDragOverColumn(column.key);
+												}}
+												onDragLeave={() => setDragOverColumn(null)}
+												onDrop={(event) => {
+													event.preventDefault();
+													void handleDrop(column.key);
+												}}
+												className={`rounded-2xl border-2 transition-all ${column.accentClass} ${
+													isDragOver ? 'ring-2 ring-cyan-500/60 shadow-lg shadow-cyan-500/10 scale-[1.01]' : ''
+												} bg-slate-100/70 dark:bg-slate-800/60 flex flex-col h-[70vh] min-h-[430px]`}
+											>
+												<header className={`px-3 py-2 rounded-t-xl ${column.headerClass}`}>
+													<div className="flex items-center justify-between">
+														<h2 className={`font-bold text-sm ${column.titleClass}`}>{column.label}</h2>
+														<span className={`text-xs font-bold px-2 py-0.5 rounded-full ${column.countClass}`}>{cards.length}</span>
 													</div>
-												)}
+												</header>
 
-												{visibleCards.map((job) => {
-													const assignee = getAssigneeName(job);
-													const isCompleted = normalizeStatus(job.job_order_status) === 'completed';
-													const delayBadge = getDelayBadge(job);
+												<div className="p-2 space-y-1.5 overflow-y-auto flex-1 min-h-0">
+													{cards.length === 0 && (
+														<div className="rounded-lg border border-dashed border-slate-300 dark:border-slate-600 p-3 text-xs text-slate-500 dark:text-slate-400 text-center bg-white/50 dark:bg-slate-800/40">
+															ไม่มีงานในสถานะนี้
+														</div>
+													)}
 
-													return (
-														<article
-															key={job.job_order_id}
-															draggable={!isCompleted}
-															onDragStart={(event) => {
-																if (isCompleted) {
-																	event.preventDefault();
-																	return;
-																}
-																event.dataTransfer.effectAllowed = 'move';
-																event.dataTransfer.setData('text/plain', job.job_order_id);
-																setDraggingJobId(job.job_order_id);
-															}}
-															onDragEnd={() => {
-																setDraggingJobId(null);
-																setDragOverColumn(null);
-															}}
-														className={`rounded-lg border border-slate-200/90 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 shadow-sm transition-all ${
-																isCompleted ? 'cursor-not-allowed opacity-95' : 'hover:shadow-md cursor-grab active:cursor-grabbing'
-															} ${
-																draggingJobId === job.job_order_id ? 'opacity-60' : ''
-															}`}
-														>
-															<div className="flex items-start gap-1.5">
-																<h3 className="flex-1 text-xs font-semibold text-slate-800 dark:text-slate-100 line-clamp-1 leading-tight">{job.job_order_name}</h3>
-																<span className="shrink-0 text-[9px] px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 leading-none">
-																	{job.job_order_type}
-																</span>
-															</div>
+													{visibleCards.map((job) => {
+														const assignee = getAssigneeName(job);
+														const isCompleted = normalizeStatus(job.job_order_status) === 'completed';
+														const delayBadge = getDelayBadge(job);
 
-															<div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 space-y-0.5">
-																<p className="truncate font-medium text-slate-700 dark:text-slate-300">{assignee}</p>
-																<div className="flex items-center gap-2">
-																	<span>{formatThaiDate(job.target_date)}</span>
-																	<span className="text-slate-300 dark:text-slate-600">·</span>
-																	<span>ผลิต {job.job_order_qty ?? 0}</span>
+														return (
+															<article
+																key={job.job_order_id}
+																draggable={!isCompleted}
+																onDragStart={(event) => {
+																	if (isCompleted) {
+																		event.preventDefault();
+																		return;
+																	}
+																	event.dataTransfer.effectAllowed = 'move';
+																	event.dataTransfer.setData('text/plain', job.job_order_id);
+																	setDraggingJobId(job.job_order_id);
+																}}
+																onDragEnd={() => {
+																	setDraggingJobId(null);
+																	setDragOverColumn(null);
+																}}
+																className={`rounded-lg border border-slate-200/90 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 shadow-sm transition-all ${
+																	isCompleted ? 'cursor-not-allowed opacity-95' : 'hover:shadow-md cursor-grab active:cursor-grabbing'
+																} ${draggingJobId === job.job_order_id ? 'opacity-60' : ''}`}
+															>
+																<div className="flex items-start gap-1.5">
+																	<h3 className="flex-1 text-xs font-semibold text-slate-800 dark:text-slate-100 line-clamp-1 leading-tight">{job.job_order_name}</h3>
+																	<span className="shrink-0 text-[9px] px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 leading-none">
+																		{job.job_order_type}
+																	</span>
 																</div>
-																{delayBadge && (
-																	<div className="pt-0.5">
-																		<span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${delayBadge.className}`}>
-																			{delayBadge.label}
-																		</span>
-																	</div>
-																)}
-															</div>
 
-															<div className="mt-1.5 pt-1 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-1">
-																<button
-																	type="button"
-																	onClick={() => {
-																		setSelectedJobOrder(job);
-																		setIsDetailOpen(true);
-																	}}
-																	className="p-1 rounded-md text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-500/10 transition-colors"
-																	title="ดูรายละเอียด"
-																>
-																	<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																		<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-																		<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S3.732 16.057 2.458 12Z" />
-																	</svg>
-																</button>
-																<button
-																	type="button"
-																	onClick={() => handleCardCopy(job)}
-																	className="p-1 rounded-md text-slate-400 hover:text-violet-600 dark:hover:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-500/10 transition-colors"
-																	title="Copy เป็นงานใหม่"
-																>
-																	<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																		<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2m-4 4H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2Z" />
-																	</svg>
-																</button>
-                                                                {canEdit && job.job_order_status !== 'completed' && (
-                                                                    <button
-                                                                        type="button"                                                                        onClick={() => {
-                                                                            setSelectedJobOrder(job);
-                                                                            setIsUpdateOpen(true);
-                                                                        }}
-                                                                        className="p-1 rounded-md text-slate-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors"
-                                                                        title="แก้ไขงานผลิต"
-                                                                    >
-                                                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828  2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                                        </svg>
-                                                                    </button>
-                                                                )}
-																{canDelete && job.job_order_status !== 'completed' && (
+																<div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 space-y-0.5">
+																	<p className="truncate font-medium text-slate-700 dark:text-slate-300">{assignee}</p>
+																	<div className="flex items-center gap-2">
+																		<span>{formatThaiDate(job.target_date)}</span>
+																		<span className="text-slate-300 dark:text-slate-600">·</span>
+																		<span>ผลิต {job.job_order_qty ?? 0}</span>
+																	</div>
+																	{delayBadge && (
+																		<div className="pt-0.5">
+																			<span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${delayBadge.className}`}>
+																				{delayBadge.label}
+																			</span>
+																		</div>
+																	)}
+																</div>
+
+																<div className="mt-1.5 pt-1 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-1">
 																	<button
 																		type="button"
 																		onClick={() => {
-																			setJobOrderToDelete(job);
-																			setIsDeleteDialogOpen(true);
+																			setSelectedJobOrder(job);
+																			setIsDetailOpen(true);
 																		}}
-																		className="p-1 rounded-md text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
-																		title="ลบงานผลิต"
+																		className="p-1 rounded-md text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-500/10 transition-colors"
+																		title="ดูรายละเอียด"
 																	>
 																		<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 7h12m-9 0V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-7 0h8m-9 4v6m4-6v6m4-6v6M5 7h14v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7Z" />
+																			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+																			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S3.732 16.057 2.458 12Z" />
 																		</svg>
 																	</button>
-																)}
-															</div>
-														</article>
-													);
-												})}
-												{hasMore && (
-													<button
-														type="button"
-														onClick={() =>
-															setColumnVisible((prev) => ({
-																...prev,
-																[column.key]: prev[column.key] + PAGE_SIZE,
-															}))
-														}
-														className="w-full py-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors"
-													>
-														โหลดเพิ่ม ({remaining} งาน)
-													</button>
-												)}
-											</div>
-										</section>
-									);
-								})}
+																	<button
+																		type="button"
+																		onClick={() => handleCardCopy(job)}
+																		className="p-1 rounded-md text-slate-400 hover:text-violet-600 dark:hover:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-500/10 transition-colors"
+																		title="Copy เป็นงานใหม่"
+																	>
+																		<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+																			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2m-4 4H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2Z" />
+																		</svg>
+																	</button>
+																	{canEdit && job.job_order_status !== 'completed' && (
+																		<button
+																			type="button"
+																			onClick={() => {
+																				setSelectedJobOrder(job);
+																				setIsUpdateOpen(true);
+																			}}
+																			className="p-1 rounded-md text-slate-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors"
+																			title="แก้ไขงานผลิต"
+																		>
+																			<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+																				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+																			</svg>
+																		</button>
+																	)}
+																	{canDelete && job.job_order_status !== 'completed' && (
+																		<button
+																			type="button"
+																			onClick={() => {
+																				setJobOrderToDelete(job);
+																				setIsDeleteDialogOpen(true);
+																			}}
+																			className="p-1 rounded-md text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
+																			title="ลบงานผลิต"
+																		>
+																			<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+																				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 7h12m-9 0V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-7 0h8m-9 4v6m4-6v6m4-6v6M5 7h14v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7Z" />
+																			</svg>
+																		</button>
+																	)}
+																</div>
+															</article>
+														);
+													})}
+													{hasMore && (
+														<button
+															type="button"
+															onClick={() =>
+																setColumnVisible((prev) => ({
+																	...prev,
+																	[column.key]: prev[column.key] + PAGE_SIZE,
+																}))
+															}
+															className="w-full py-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors"
+														>
+															โหลดเพิ่ม ({remaining} งาน)
+														</button>
+													)}
+												</div>
+											</section>
+										);
+									})}
+								</div>
 							</div>
-						</div>
+						) : (
+							<div className="p-3 sm:p-4 lg:p-5 space-y-3 sm:space-y-4">
+								<div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/50 p-3">
+									<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+										<div className="flex items-center gap-2">
+											<button
+												type="button"
+												onClick={() => moveCalendarMonth(-1)}
+												className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-colors"
+												aria-label="เดือนก่อนหน้า"
+											>
+												<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m15 19-7-7 7-7" />
+												</svg>
+											</button>
+											<div>
+												<p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">เดือนที่แสดง</p>
+												<h2 className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100">{calendarTitle}</h2>
+											</div>
+											<button
+												type="button"
+												onClick={() => moveCalendarMonth(1)}
+												className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-colors"
+												aria-label="เดือนถัดไป"
+											>
+												<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m9 5 7 7-7 7" />
+												</svg>
+											</button>
+										</div>
+
+										<div className="flex items-center gap-2">
+											<input
+												type="month"
+												value={calendarMonth}
+												onChange={(event) => setCalendarMonth(event.target.value)}
+												className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+											/>
+											<button
+												type="button"
+												onClick={() => {
+													const now = new Date();
+													setCalendarMonth(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
+												}}
+												className="rounded-xl px-3 py-2 text-sm font-semibold border border-cyan-300 text-cyan-700 hover:bg-cyan-50 dark:border-cyan-500/40 dark:text-cyan-200 dark:hover:bg-cyan-500/10 transition-colors"
+											>
+												เดือนปัจจุบัน
+											</button>
+										</div>
+									</div>
+
+									<div className="mt-3 flex flex-wrap items-center gap-2">
+										{BOARD_COLUMNS.map((column) => {
+											const style = STATUS_STYLES[column.key];
+											return (
+												<span key={column.key} className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${style.chipClass}`}>
+													<span className={`w-2 h-2 rounded-full ${style.dotClass}`} />
+													{style.label}
+												</span>
+											);
+										})}
+									</div>
+								</div>
+
+								<div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700">
+									<div className="min-w-[860px]">
+										<div className="grid grid-cols-7 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+											{WEEKDAY_LABELS.map((dayLabel) => (
+												<div key={dayLabel} className="px-2 py-2 text-center text-xs font-bold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+													{dayLabel}
+												</div>
+											))}
+										</div>
+
+										<div className="grid grid-cols-7">
+											{calendarCells.map((cell) => {
+												const isToday = cell.dateKey === todayDateKey;
+												return (
+													<div
+														key={cell.dateKey}
+														className={`min-h-[150px] border-b border-r border-slate-200 dark:border-slate-700 p-2 ${
+															cell.inCurrentMonth ? 'bg-white dark:bg-slate-900/70' : 'bg-slate-50 dark:bg-slate-900/35'
+														}`}
+													>
+														<div className="flex items-center justify-between mb-1.5">
+															<span
+																className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${
+																	isToday
+																		? 'bg-cyan-600 text-white'
+																		: cell.inCurrentMonth
+																		? 'text-slate-700 dark:text-slate-200'
+																		: 'text-slate-400 dark:text-slate-500'
+																}`}
+															>
+																{cell.date.getDate()}
+															</span>
+															<span className="text-[11px] text-slate-400 dark:text-slate-500">{cell.jobs.length} งาน</span>
+														</div>
+
+														<div className="space-y-1">
+															{cell.jobs.slice(0, 3).map((job) => {
+																const status = normalizeStatus(job.job_order_status);
+																const style = STATUS_STYLES[status];
+																return (
+																	<button
+																		key={job.job_order_id}
+																		type="button"
+																		onClick={() => {
+																			setSelectedJobOrder(job);
+																			setIsDetailOpen(true);
+																		}}
+																		className={`w-full flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] text-left truncate transition-colors hover:brightness-95 ${style.chipClass}`}
+																		title={`${job.job_order_name} (${style.label})`}
+																	>
+																		<span className={`w-2 h-2 rounded-full shrink-0 ${style.dotClass}`} />
+																		<span className="truncate">{job.job_order_name}</span>
+																	</button>
+																);
+															})}
+															{cell.jobs.length > 3 && (
+																<p className="px-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">+{cell.jobs.length - 3} งานเพิ่มเติม</p>
+															)}
+														</div>
+													</div>
+												);
+											})}
+										</div>
+									</div>
+								</div>
+							</div>
+						)
 					)}
 				</section>
 			</div>

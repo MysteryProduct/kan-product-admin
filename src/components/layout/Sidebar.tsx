@@ -115,6 +115,8 @@ export default function Sidebar() {
         { title: 'ประเภทสินค้า', menu_name: 'categories', href: '/admin/categories' },
         { title: 'หน่วยสินค้า', menu_name: 'product_unit', href: '/admin/product-unit' },
         { title: 'ผู้จัดจำหน่าย', menu_name: 'suppliers', href: '/admin/suppliers' },
+        { title: 'บัญชีรับเงิน', menu_name: 'bank_accounts', href: '/admin/bank-account' },
+        { title: 'ตั้งค่าพื้นฐาน', menu_name: 'settings', href: '/admin/settings' },
         { title: 'สิทธธิ์ผู้ใช้งาน', menu_name: 'license', href: '/admin/license' },
       ],
     },

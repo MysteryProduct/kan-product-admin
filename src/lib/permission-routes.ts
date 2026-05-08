@@ -8,6 +8,10 @@ const ROUTE_MENU_MAP: Record<string, string> = {
   '/admin/categories': 'categories',
   '/admin/product-unit': 'product_unit',
   '/admin/suppliers': 'suppliers',
+  '/admin/bank-account': 'bank_accounts',
+  '/admin/settings': 'settings',
+  '/admin/sale-orders': 'sale_orders',
+  '/admin/payment-receipts': 'payment_receipts',
   '/admin/license': 'license',
 };
 
