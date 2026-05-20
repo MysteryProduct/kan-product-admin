@@ -412,6 +412,22 @@ export default function JobOrdersPage() {
 		void fetchJobOrders(dateStart, dateEnd);
 	}, [dateStart, dateEnd, sortDirection]);
 
+	useEffect(() => {
+		if (viewMode === 'calendar') {
+			const [yearText, monthText] = calendarMonth.split('-');
+			const year = Number(yearText);
+			const month = Number(monthText);
+
+			if (!Number.isNaN(year) && !Number.isNaN(month) && month >= 1 && month <= 12) {
+				const monthStart = new Date(year, month - 1, 1);
+				const monthEnd = new Date(year, month, 0);
+				const start = `${monthStart.getFullYear()}-${String(monthStart.getMonth() + 1).padStart(2, '0')}-${String(monthStart.getDate()).padStart(2, '0')}`;
+				const end = `${monthEnd.getFullYear()}-${String(monthEnd.getMonth() + 1).padStart(2, '0')}-${String(monthEnd.getDate()).padStart(2, '0')}`;
+				void fetchJobOrders(start, end);
+			}
+		}
+	}, [viewMode, calendarMonth]);
+
 	const fetchJobOrders = async (start?: string, end?: string) => {
 		try {
 			setIsLoading(true);
@@ -732,68 +748,70 @@ export default function JobOrdersPage() {
 								</div>
 							</div>
 
-							<div className="rounded-2xl border border-slate-200/80 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/45 p-2.5 sm:p-3">
-								<div className="flex items-center justify-between mb-2 px-1">
-									<p className="text-xs font-semibold tracking-wide text-slate-600 dark:text-slate-300 uppercase">ช่วงวันที่เป้าหมาย</p>
-									<button
-										type="button"
-										onClick={() => {
-											setDateStart('');
-											setDateEnd('');
-										}}
-										className="text-xs font-medium text-cyan-700 hover:text-cyan-800 dark:text-cyan-300 dark:hover:text-cyan-200"
-									>
-										ล้างช่วงวันที่
-									</button>
-								</div>
+							{viewMode !== 'calendar' && (
+								<div className="rounded-2xl border border-slate-200/80 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/45 p-2.5 sm:p-3">
+									<div className="flex items-center justify-between mb-2 px-1">
+										<p className="text-xs font-semibold tracking-wide text-slate-600 dark:text-slate-300 uppercase">ช่วงวันที่เป้าหมาย</p>
+										<button
+											type="button"
+											onClick={() => {
+												setDateStart('');
+												setDateEnd('');
+											}}
+											className="text-xs font-medium text-cyan-700 hover:text-cyan-800 dark:text-cyan-300 dark:hover:text-cyan-200"
+										>
+											ล้างช่วงวันที่
+										</button>
+									</div>
 
-								<div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
-									<button
-										type="button"
-										onClick={() => openNativeDatePicker(startDateInputRef.current)}
-										className="group relative text-left rounded-xl border border-slate-300 dark:border-slate-600 bg-white/90 dark:bg-slate-800/90 px-3 py-2.5 hover:border-cyan-400 dark:hover:border-cyan-400 transition-colors cursor-pointer"
-									>
-										<input
-											ref={startDateInputRef}
-											type="date"
-											lang="th-TH"
-											value={dateStart}
-											onChange={(e) => setDateStart(e.target.value)}
-											className="absolute inset-0 h-full w-full opacity-0 pointer-events-none"
-										/>
-										<div className="flex items-center justify-between">
-											<span className="text-xs font-semibold text-slate-600 dark:text-slate-300">เริ่มวันที่</span>
-											<svg className="w-4 h-4 text-slate-400 group-hover:text-cyan-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" />
-											</svg>
-										</div>
-										<p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{dateStart ? formatThaiDateLong(dateStart) : 'เลือกวันที่เริ่มต้น'}</p>
-									</button>
+									<div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
+										<button
+											type="button"
+											onClick={() => openNativeDatePicker(startDateInputRef.current)}
+											className="group relative text-left rounded-xl border border-slate-300 dark:border-slate-600 bg-white/90 dark:bg-slate-800/90 px-3 py-2.5 hover:border-cyan-400 dark:hover:border-cyan-400 transition-colors cursor-pointer"
+										>
+											<input
+												ref={startDateInputRef}
+												type="date"
+												lang="th-TH"
+												value={dateStart}
+												onChange={(e) => setDateStart(e.target.value)}
+												className="absolute inset-0 h-full w-full opacity-0 pointer-events-none"
+											/>
+											<div className="flex items-center justify-between">
+												<span className="text-xs font-semibold text-slate-600 dark:text-slate-300">เริ่มวันที่</span>
+												<svg className="w-4 h-4 text-slate-400 group-hover:text-cyan-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" />
+												</svg>
+											</div>
+											<p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{dateStart ? formatThaiDateLong(dateStart) : 'เลือกวันที่เริ่มต้น'}</p>
+										</button>
 
-									<button
-										type="button"
-										onClick={() => openNativeDatePicker(endDateInputRef.current)}
-										className="group relative text-left rounded-xl border border-slate-300 dark:border-slate-600 bg-white/90 dark:bg-slate-800/90 px-3 py-2.5 hover:border-cyan-400 dark:hover:border-cyan-400 transition-colors cursor-pointer"
-									>
-										<input
-											ref={endDateInputRef}
-											type="date"
-											lang="th-TH"
-											value={dateEnd}
-											onChange={(e) => setDateEnd(e.target.value)}
-											min={dateStart || undefined}
-											className="absolute inset-0 h-full w-full opacity-0 pointer-events-none"
-										/>
-										<div className="flex items-center justify-between">
-											<span className="text-xs font-semibold text-slate-600 dark:text-slate-300">สิ้นสุดวันที่</span>
-											<svg className="w-4 h-4 text-slate-400 group-hover:text-cyan-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" />
-											</svg>
-										</div>
-										<p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{dateEnd ? formatThaiDateLong(dateEnd) : 'เลือกวันที่สิ้นสุด'}</p>
-									</button>
+										<button
+											type="button"
+											onClick={() => openNativeDatePicker(endDateInputRef.current)}
+											className="group relative text-left rounded-xl border border-slate-300 dark:border-slate-600 bg-white/90 dark:bg-slate-800/90 px-3 py-2.5 hover:border-cyan-400 dark:hover:border-cyan-400 transition-colors cursor-pointer"
+										>
+											<input
+												ref={endDateInputRef}
+												type="date"
+												lang="th-TH"
+												value={dateEnd}
+												onChange={(e) => setDateEnd(e.target.value)}
+												min={dateStart || undefined}
+												className="absolute inset-0 h-full w-full opacity-0 pointer-events-none"
+											/>
+											<div className="flex items-center justify-between">
+												<span className="text-xs font-semibold text-slate-600 dark:text-slate-300">สิ้นสุดวันที่</span>
+												<svg className="w-4 h-4 text-slate-400 group-hover:text-cyan-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" />
+												</svg>
+											</div>
+											<p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{dateEnd ? formatThaiDateLong(dateEnd) : 'เลือกวันที่สิ้นสุด'}</p>
+										</button>
+									</div>
 								</div>
-							</div>
+							)}
 						</div>
 					</div>
 

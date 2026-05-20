@@ -23,6 +23,7 @@ export default function SettingsPage() {
 	const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
 
 	const [formData, setFormData] = useState({
+		setting_id: '',
 		account_id: '',
 		vat_rate: '7',
 	});
@@ -50,8 +51,10 @@ export default function SettingsPage() {
 				]);
 
 				setSettings(settingsData);
+				
 				setBankAccounts(bankAccountData.data || []);
 				setFormData({
+					setting_id: settingsData?.setting_id || '',
 					account_id: settingsData?.account_id || '',
 					vat_rate: String(settingsData?.vat_rate ?? 7),
 				});
@@ -105,9 +108,10 @@ export default function SettingsPage() {
 			const user = Cookies.get('user') ? JSON.parse(Cookies.get('user') as string) : null;
 
 			const updated = await settingsModel.updateSettings({
+				setting_id: settings?.setting_id || '',
 				account_id: formData.account_id,
 				vat_rate: Number(formData.vat_rate),
-				update_by: user?.employee_id,
+				// update_by: user?.employee_id,
 			});
 
 			setSettings(updated);
