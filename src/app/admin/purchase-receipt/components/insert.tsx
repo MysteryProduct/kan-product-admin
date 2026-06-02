@@ -10,6 +10,7 @@ import { PurchaseOrderItem, PurchaseOrderItemResponse } from '@/types/purchase-o
 import { PurchaseOrder } from '@/types/purchase-order';
 import { PaginationMeta } from '@/types/pagination';
 import { calculateVatSummary, VAT_TYPE_LABELS, VAT_TYPE_OPTIONS, VatType } from '@/lib/vat';
+import useVatRate from '@/hooks/useVatRate';
 
 interface ReceiptItemForm {
 	id: string;
@@ -59,6 +60,7 @@ const mapOrderItemToFormItem = (item: PurchaseOrderItem): ReceiptItemForm => ({
 });
 
 export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, purchaseOrder }: InsertPurchaseReceiptFormProps) {
+	const vatRate = useVatRate();
 	const [entryDate, setEntryDate] = useState<string>(new Date().toISOString().slice(0, 10));
 	const [receiptDetail, setReceiptDetail] = useState('');
 	const [vatType, setVatType] = useState<VatType>('none');
@@ -181,7 +183,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 	const calculateItemTotal = (item: ReceiptItemForm) => Number(item.purchase_receipt_list_qty) * Number(item.purchase_receipt_list_price);
 
 	const grandTotal = useMemo(() => items.reduce((sum, item) => sum + calculateItemTotal(item), 0), [items]);
-	const vatSummary = useMemo(() => calculateVatSummary(grandTotal, vatType), [grandTotal, vatType]);
+	const vatSummary = useMemo(() => calculateVatSummary(grandTotal, vatType, vatRate), [grandTotal, vatType, vatRate]);
 
 	const formatCurrency = (amount: number) => {
 		return new Intl.NumberFormat('th-TH', {
@@ -566,7 +568,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 								<span>฿{formatCurrency(vatSummary.subtotal)}</span>
 							</div>
 							<div className="flex items-center justify-between text-sm md:text-base">
-								<span>VAT 7% ({VAT_TYPE_LABELS[vatType]})</span>
+								<span>VAT {vatRate}% ({VAT_TYPE_LABELS[vatType]})</span>
 								<span>฿{formatCurrency(vatSummary.vatAmount)}</span>
 							</div>
 							<div className="flex items-center justify-between border-t border-white/30 pt-2">

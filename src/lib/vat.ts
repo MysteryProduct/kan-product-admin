@@ -7,7 +7,19 @@ export interface VatSummary {
   total: number;
 }
 
-const VAT_RATE = 0.07;
+export const DEFAULT_VAT_RATE_PERCENT = 7;
+
+const sanitizeVatRatePercent = (vatRatePercent?: number): number => {
+  if (!Number.isFinite(vatRatePercent) || vatRatePercent === undefined) {
+    return DEFAULT_VAT_RATE_PERCENT;
+  }
+
+  if (vatRatePercent < 0) {
+    return 0;
+  }
+
+  return vatRatePercent;
+};
 
 const toMoney = (value: number): number => {
   if (!Number.isFinite(value)) {
@@ -16,11 +28,12 @@ const toMoney = (value: number): number => {
   return Math.round(value * 100) / 100;
 };
 
-export function calculateVatSummary(baseAmount: number, vatType: VatType): VatSummary {
+export function calculateVatSummary(baseAmount: number, vatType: VatType, vatRatePercent?: number): VatSummary {
   const amount = Math.max(0, Number(baseAmount || 0));
+  const vatRate = sanitizeVatRatePercent(vatRatePercent) / 100;
 
   if (vatType === 'exclude') {
-    const vatAmount = toMoney(amount * VAT_RATE);
+    const vatAmount = toMoney(amount * vatRate);
     return {
       vatType,
       subtotal: toMoney(amount),
@@ -30,7 +43,7 @@ export function calculateVatSummary(baseAmount: number, vatType: VatType): VatSu
   }
 
   if (vatType === 'include') {
-    const vatAmount = toMoney((amount * VAT_RATE) / (1 + VAT_RATE));
+    const vatAmount = toMoney((amount * vatRate) / (1 + vatRate));
     return {
       vatType,
       subtotal: toMoney(amount - vatAmount),

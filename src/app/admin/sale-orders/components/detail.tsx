@@ -8,6 +8,7 @@ import ActionResultDialog, { ActionResultDialogAction } from '@/components/Actio
 import ConfirmDialog from '@/components/ConfirmDialog';
 import SaleOrderModel from '@/models/sale-order';
 import { calculateVatSummary, VAT_TYPE_LABELS } from '@/lib/vat';
+import useVatRate from '@/hooks/useVatRate';
 
 interface SaleOrderDetailModalProps {
     isOpen: boolean;
@@ -19,6 +20,7 @@ interface SaleOrderDetailModalProps {
 const saleOrderModel = new SaleOrderModel();
 
 export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleOrder }: SaleOrderDetailModalProps) {
+    const vatRate = useVatRate();
     const { can } = usePermissions();
     const canApproveSaleOrder = can('sale_order', 'approve');
 
@@ -46,7 +48,7 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
 
     const grandTotal =
         saleOrder.sale_order_total || items.reduce((sum, item) => sum + calculateItemTotal(item), 0);
-    const vatSummary = calculateVatSummary(grandTotal, saleOrder.vat_type || 'none');
+    const vatSummary = calculateVatSummary(grandTotal, saleOrder.vat_type || 'none', vatRate);
 
     const formatCurrency = (amount: number) =>
         new Intl.NumberFormat('th-TH', {
@@ -225,7 +227,7 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
                                 <span>฿{formatCurrency(vatSummary.subtotal)}</span>
                             </div>
                             <div className="flex items-center justify-between text-sm md:text-base">
-                                <span>VAT 7% ({VAT_TYPE_LABELS[saleOrder.vat_type || 'none']})</span>
+                                <span>VAT {vatRate}% ({VAT_TYPE_LABELS[saleOrder.vat_type || 'none']})</span>
                                 <span>฿{formatCurrency(vatSummary.vatAmount)}</span>
                             </div>
                             <div className="flex items-center justify-between border-t border-white/30 pt-2">

@@ -8,6 +8,7 @@ import Cookies from 'js-cookie';
 import ActionResultDialog, { ActionResultDialogAction } from '@/components/ActionResultDialog';
 import { formatThaiDate } from '@/lib/date-format';
 import { calculateVatSummary, VAT_TYPE_LABELS } from '@/lib/vat';
+import useVatRate from '@/hooks/useVatRate';
 interface PurchaseOrderDetailModalProps {
 	isOpen: boolean;
 	onClose: () => void;
@@ -21,6 +22,7 @@ export default function PurchaseOrderDetailModal({
 	purchaseOrder,
 	onSuccess,
 }: PurchaseOrderDetailModalProps) {
+    const vatRate = useVatRate();
 	const { can } = usePermissions();
 	const canApprovePurchaseOrder = can('purchase_orders', 'approve');
 	// if (!isOpen) return null;
@@ -47,6 +49,7 @@ export default function PurchaseOrderDetailModal({
 	const vatSummary = calculateVatSummary(
 		purchaseOrder.purchase_order_total || grandTotal,
 		purchaseOrder.vat_type || 'none',
+		vatRate,
 	);
 
 	const formatCurrency = (amount: number) => {
@@ -248,7 +251,7 @@ export default function PurchaseOrderDetailModal({
 								<span>฿{formatCurrency(vatSummary.subtotal)}</span>
 							</div>
 							<div className="flex justify-between items-center text-sm md:text-base">
-								<span>VAT 7% ({VAT_TYPE_LABELS[purchaseOrder.vat_type || 'none']})</span>
+								<span>VAT {vatRate}% ({VAT_TYPE_LABELS[purchaseOrder.vat_type || 'none']})</span>
 								<span>฿{formatCurrency(vatSummary.vatAmount)}</span>
 							</div>
 							<div className="flex justify-between items-center pt-2 border-t border-white/30">

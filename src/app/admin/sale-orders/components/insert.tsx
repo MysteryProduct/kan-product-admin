@@ -8,6 +8,7 @@ import SaleOrderModel from '@/models/sale-order';
 import { FetchSaleOrder, FetchSaleOrderResponse } from '@/types/sale-order';
 import { PaginationMeta } from '@/types/pagination';
 import { calculateVatSummary, VAT_TYPE_OPTIONS, VatType } from '@/lib/vat';
+import useVatRate from '@/hooks/useVatRate';
 
 interface SaleOrderItemForm {
     id: string;
@@ -41,6 +42,7 @@ const mapFetchToFormItem = (item: FetchSaleOrder): SaleOrderItemForm => ({
 });
 
 export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initialFetchSaleOrder }: InsertSaleOrderFormProps) {
+    const vatRate = useVatRate();
     const [saleOrderName, setSaleOrderName] = useState('');
     const [saleOrderDetail, setSaleOrderDetail] = useState('');
     const [shippingAddressName, setShippingAddressName] = useState('');
@@ -117,7 +119,7 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
         Number(item.sale_order_list_qty) * Number(item.sale_order_list_price);
 
     const grandTotal = useMemo(() => items.reduce((sum, item) => sum + calculateItemTotal(item), 0), [items]);
-    const vatSummary = useMemo(() => calculateVatSummary(grandTotal, vatType), [grandTotal, vatType]);
+    const vatSummary = useMemo(() => calculateVatSummary(grandTotal, vatType, vatRate), [grandTotal, vatType, vatRate]);
 
     const formatCurrency = (amount: number) =>
         new Intl.NumberFormat('th-TH', {
@@ -490,7 +492,7 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                                         <span>฿{formatCurrency(vatSummary.subtotal)}</span>
                                     </div>
                                     <div className="flex items-center justify-between text-sm md:text-base">
-                                        <span>VAT 7%</span>
+                                        <span>VAT {vatRate}%</span>
                                         <span>฿{formatCurrency(vatSummary.vatAmount)}</span>
                                     </div>
                                     <div className="flex items-center justify-between border-t border-white/30 pt-2">

@@ -12,6 +12,7 @@ import ActionResultDialog, { ActionResultDialogAction } from '@/components/Actio
 import { formatThaiDate } from '@/lib/date-format';
 import { calculateVatSummary, VAT_TYPE_LABELS, VAT_TYPE_OPTIONS, VatType } from '@/lib/vat';
 import { SupplierWithPayment } from '@/types/supplier';
+import useVatRate from '@/hooks/useVatRate';
 interface PurchaseOrderItemForm {
     id: string;
     material_id: string;
@@ -35,6 +36,7 @@ export default function InsertPurchaseOrderForm({
     onClose,
     onSuccess,
 }: InsertPurchaseOrderFormProps) {
+    const vatRate = useVatRate();
     const [purchaseOrderName, setPurchaseOrderName] = useState('');
     const [purchaseOrderDetail, setPurchaseOrderDetail] = useState('');
     const [items, setItems] = useState<PurchaseOrderItemForm[]>([
@@ -145,7 +147,7 @@ export default function InsertPurchaseOrderForm({
         return items.reduce((sum, item) => sum + calculateItemTotal(item), 0);
     };
 
-    const vatSummary = calculateVatSummary(calculateGrandTotal(), vatType);
+    const vatSummary = calculateVatSummary(calculateGrandTotal(), vatType, vatRate);
 
     const handleSupplierChange = (value: string) => {
         setSupplierId(value);
@@ -587,7 +589,7 @@ export default function InsertPurchaseOrderForm({
                                     <span>฿{formatCurrency(vatSummary.subtotal)}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-sm md:text-base">
-                                    <span>VAT 7% ({VAT_TYPE_LABELS[vatType]})</span>
+                                    <span>VAT {vatRate}% ({VAT_TYPE_LABELS[vatType]})</span>
                                     <span>฿{formatCurrency(vatSummary.vatAmount)}</span>
                                 </div>
                                 <div className="flex justify-between items-center pt-2 border-t border-white/30">

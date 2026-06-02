@@ -146,9 +146,6 @@ export default function SettingsPage() {
 			<section className="rounded-2xl bg-white shadow-sm dark:bg-gray-800">
 				<div className="border-b border-gray-100 p-4 dark:border-gray-700">
 					<h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">ตั้งค่าพื้นฐานระบบ</h2>
-					<p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-						หน้านี้ใช้สำหรับแก้ไขค่าตั้งต้นของระบบเท่านั้น โดยจะแสดงข้อมูลปัจจุบันทันที
-					</p>
 				</div>
 
 				<form onSubmit={handleSubmit} className="space-y-6 p-4 sm:p-6">

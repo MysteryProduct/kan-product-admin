@@ -8,6 +8,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import PurchaseReceiptModel from '@/models/purchase-receipt';
 import { formatThaiDate } from '@/lib/date-format';
 import { calculateVatSummary, VAT_TYPE_LABELS } from '@/lib/vat';
+import useVatRate from '@/hooks/useVatRate';
 
 
 interface PurchaseReceiptDetailModalProps {
@@ -23,6 +24,7 @@ export default function PurchaseReceiptDetailModal({
 	onSuccess,
 	purchaseReceipt,
 }: PurchaseReceiptDetailModalProps) {
+	const vatRate = useVatRate();
 	if (!isOpen) {
 		return null;
 	}
@@ -64,6 +66,7 @@ export default function PurchaseReceiptDetailModal({
 	const vatSummary = calculateVatSummary(
 		purchaseReceipt.purchase_receipt_total || grandTotal,
 		purchaseReceipt.vat_type || 'none',
+		vatRate,
 	);
 
 	const formatCurrency = (amount: number) => {
@@ -229,7 +232,7 @@ export default function PurchaseReceiptDetailModal({
 							<span>฿{formatCurrency(vatSummary.subtotal)}</span>
 						</div>
 						<div className="flex items-center justify-between text-sm md:text-base">
-							<span>VAT 7% ({VAT_TYPE_LABELS[purchaseReceipt.vat_type || 'none']})</span>
+							<span>VAT {vatRate}% ({VAT_TYPE_LABELS[purchaseReceipt.vat_type || 'none']})</span>
 							<span>฿{formatCurrency(vatSummary.vatAmount)}</span>
 						</div>
 						<div className="flex items-center justify-between border-t border-white/30 pt-2">
