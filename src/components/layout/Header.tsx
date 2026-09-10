@@ -88,11 +88,11 @@ export default function Header() {
           <div className="flex items-center gap-2 md:gap-3">
             <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full overflow-hidden flex items-center justify-center">
               <span className="text-white text-sm font-semibold">
-                {user?.username?.charAt(0).toUpperCase() || 'U'}
+                {user?.employee_username?.charAt(0).toUpperCase() || 'U'}
               </span>
             </div>
             <div className="text-left hidden sm:block">
-              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{user?.username || 'User'}</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{user?.employee_username || 'User'}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">Admin</p>
             </div>
             <button

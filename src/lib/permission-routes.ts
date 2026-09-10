@@ -3,6 +3,7 @@ const ROUTE_MENU_MAP: Record<string, string> = {
   '/admin/purchase-receipt': 'purchase_receipt',
   '/admin/invoice-supplier': 'invoice_supplier',
   '/admin/materials': 'materials',
+  '/admin/job-orders': 'job_orders',
   '/admin/products': 'products',
   '/admin/colors': 'colors',
   '/admin/categories': 'categories',
@@ -12,12 +13,12 @@ const ROUTE_MENU_MAP: Record<string, string> = {
   '/admin/settings': 'settings',
   '/admin/sale-orders': 'sale_orders',
   '/admin/payment-receipts': 'payment_receipts',
-  '/admin/license': 'license',
+  '/admin/license': 'employee_licenses',
 };
 
 export function getMenuNameFromPath(pathname: string): string | null {
   const sortedPrefixes = Object.keys(ROUTE_MENU_MAP).sort((a, b) => b.length - a.length);
-  const matchedPrefix = sortedPrefixes.find((prefix) => pathname.startsWith(prefix));
+  const matchedPrefix = sortedPrefixes.find((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 
   if (!matchedPrefix) {
     return null;

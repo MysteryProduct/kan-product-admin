@@ -55,7 +55,7 @@ export default function ActionResultDialog({
             {title}
           </h3>
 
-          <p className="text-gray-700 dark:text-gray-300 text-center">{message || defaultMessage}</p>
+          <p role={status === 'error' ? 'alert' : 'status'} className="text-gray-700 dark:text-gray-300 text-center whitespace-pre-line break-words">{message || defaultMessage}</p>
 
           <button
             onClick={onClose}

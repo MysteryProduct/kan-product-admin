@@ -1,5 +1,5 @@
 export interface PermissionItem {
-  permission_id: number;
+  permission_id: string;
   permission_add: boolean;
   permission_edit: boolean;
   permission_delete: boolean;

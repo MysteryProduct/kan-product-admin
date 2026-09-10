@@ -68,8 +68,8 @@ export default function LoginPage() {
               </div>
 
               {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-700 text-sm font-medium">{error}</p>
+                <div id="login-error" role="alert" className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-700 text-sm font-medium whitespace-pre-line">{error}</p>
                 </div>
               )}
 
@@ -80,6 +80,8 @@ export default function LoginPage() {
                   </label>
                   <input
                     id="username"
+                    autoComplete="username"
+                    aria-describedby={error ? 'login-error' : undefined}
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
@@ -96,6 +98,8 @@ export default function LoginPage() {
                   </label>
                   <input
                     id="password"
+                    autoComplete="current-password"
+                    aria-describedby={error ? 'login-error' : undefined}
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}

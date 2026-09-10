@@ -1,27 +1,22 @@
 import axiosInstance from '@/lib/axios';
-import { UserType } from '@/types/user';
-
-// Interface สำหรับ User
-interface AuthResponse {
-    data : UserType;
-    access_token: string;
-    permissions: string[]; // เพิ่ม permissions ใน response
-}  
+import type { AuthResponse, AuthStatus } from '@/types/auth';
 
 interface LoginDto {
-    username: string;
-    password: string;
+  username: string;
+  password: string;
 }
-export default class AuthModel {
-    getLogin = async (loginDto: LoginDto): Promise<AuthResponse> => {
-        try {
-            const response = await axiosInstance.post<AuthResponse>('/auth/employee-login', loginDto);
-            return response.data;
-        } catch (error) {
-            console.error('Error fetching users:', error);
-            throw error;
-        }
-    };
 
-    
+export default class AuthModel {
+  async getLogin(loginDto: LoginDto): Promise<AuthResponse> {
+    const response = await axiosInstance.post<AuthResponse>(
+      '/auth/employee-login',
+      loginDto,
+    );
+    return response.data;
+  }
+
+  async getStatus(): Promise<AuthStatus> {
+    const response = await axiosInstance.get<AuthStatus>('/auth/status');
+    return response.data;
+  }
 }

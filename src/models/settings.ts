@@ -32,7 +32,9 @@ class SettingsModel {
       const data = response.data as AppSettings | SettingsPayload;
       if (data && typeof data === 'object' && 'data' in data) {
         const normalized = data.data;
-        return Array.isArray(normalized) ? normalized[0] : normalized;
+        const settings = Array.isArray(normalized) ? normalized[0] : normalized;
+        if (!settings) throw new Error('API ไม่ได้ส่งข้อมูลการตั้งค่าที่บันทึกกลับมา');
+        return settings;
       }
       return data as AppSettings;
     } catch (error) {

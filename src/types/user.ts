@@ -1,6 +1,8 @@
+// Public employee fields returned by /auth/employee-login. Never store hashes.
 export interface UserType {
-    user_id: string;
-    username: string;
-    firstName : string;
-    lastName : string;
+  employee_id: string;
+  employee_username: string;
+  employee_firstname?: string;
+  employee_lastname?: string;
+  license_id?: string;
 }

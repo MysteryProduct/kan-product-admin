@@ -1,91 +1,53 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { getApiErrorMessage, isLoginRequest } from './api-error';
+import {
+  clearStoredSession,
+  PERMISSIONS_REFRESH_EVENT,
+  SESSION_EXPIRED_EVENT,
+} from './auth-storage';
 
-// สร้าง axios instance พร้อม config
 const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/',
-  timeout: 10000, // 10 seconds
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003/',
+  timeout: 10000,
+  headers: { 'Content-Type': 'application/json' },
 });
 
-// Request Interceptor - เพิ่ม auth token ทุก request
-axiosInstance.interceptors.request.use(
-  (config) => {
-    // ดึง token จาก Cookies (ถ้ามี)
-    if (typeof window !== 'undefined') {
-      try {
-        const token = Cookies.get('token');
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-      } catch (error) {
-        console.error('Error reading token from cookies:', error);
-        // ลบ cookies ที่เสียหาย
-        Cookies.remove('user');
-        Cookies.remove('token');
-        localStorage.removeItem('permissions');
-      }
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+axiosInstance.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined' && !isLoginRequest(config.url)) {
+    const token = Cookies.get('token');
+    if (token) config.headers.Authorization = `Bearer ${token}`;
   }
-);
+  return config;
+});
 
-// Response Interceptor - จัดการ errors แบบรวมศูนย์
 axiosInstance.interceptors.response.use(
-  (response) => {
-    // ส่งข้อมูลกลับไปตรงๆ
-    return response;
-  },
-  (error) => {
-    // จัดการ error ต่างๆ
-    if (error.response) {
-      // Server responded with error status
-      const { status, data } = error.response;
-
-      switch (status) {
-        case 401:
-          // Unauthorized - ให้ redirect ไป login
-          if (typeof window !== 'undefined') {
-            Cookies.remove('user');
-            Cookies.remove('token');
-            localStorage.removeItem('permissions');
-            window.location.href = '/login';
-          }
-          break;
-        case 403:
-          console.error('Forbidden: You do not have permission');
-          Cookies.remove('user');
-          Cookies.remove('token');
-          localStorage.removeItem('permissions');
-          window.location.href = '/login';
-          break;
-        case 404:
-          console.error('Not Found:', data.message || 'Resource not found');
-          break;
-        case 500:
-          console.error('Server Error:', data.message || 'Internal server error');
-          break;
-        default:
-          console.error('API Error:', data.message || 'Unknown error');
+  (response) => response,
+  (error: unknown) => {
+    if (axios.isAxiosError(error)) {
+      error.message = getApiErrorMessage(error);
+      if (typeof window !== 'undefined' && !isLoginRequest(error.config?.url)) {
+        const token = Cookies.get('token');
+        const requestToken = error.config?.headers?.Authorization;
+        // A late response from an older session must not log out a new login.
+        const isCurrentSession = token && requestToken === `Bearer ${token}`;
+        if (error.response?.status === 401 && isCurrentSession) {
+          clearStoredSession();
+          window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
+          if (window.location.pathname !== '/login')
+            window.location.assign('/login');
+        } else if (
+          error.response?.status === 403 &&
+          isCurrentSession &&
+          !/(?:^|\/)auth\/status(?:[?#]|$)/.test(error.config?.url || '')
+        ) {
+          window.dispatchEvent(new Event(PERMISSIONS_REFRESH_EVENT));
+        }
       }
-
-      // Throw error with message
-      throw new Error(data.message || `API Error: ${status}`);
-    } else if (error.request) {
-      // Request was made but no response
-      console.error('Network Error: No response from server');
-      throw new Error('Network Error: Unable to connect to server');
-    } else {
-      // Something else happened
-      console.error('Error:', error.message);
-      throw error;
     }
-  }
+    // Preserve AxiosError.response, status, code and validation details.
+    return Promise.reject(error);
+  },
 );
 
 export default axiosInstance;
