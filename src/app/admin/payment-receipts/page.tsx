@@ -338,7 +338,7 @@ export default function PaymentReceiptPage() {
 						</svg>
 					</button>
 
-					{canEditPaymentReceipt && (
+					{canEditPaymentReceipt && row.payment_receipt_type !== 'refund' && (
 						<button
 							onClick={() => void openPaymentReceiptUpdate(row)}
 							className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-blue-400"
@@ -351,7 +351,7 @@ export default function PaymentReceiptPage() {
 						</button>
 					)}
 
-					{canDeletePaymentReceipt && (
+					{canDeletePaymentReceipt && row.payment_receipt_type !== 'refund' && (
 						<button
 							onClick={() => {
 								setPaymentReceiptToDelete(row);

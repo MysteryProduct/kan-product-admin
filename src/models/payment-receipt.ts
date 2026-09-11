@@ -27,7 +27,7 @@ class PaymentReceiptModel {
     sortOrder?: 'ASC' | 'DESC',
   ): Promise<PaymentReceiptResponse> {
     try {
-      const response = await axiosInstance.get<PaymentReceiptResponse>('/payment-receipt', {
+      const response = await axiosInstance.get<PaymentReceiptResponse>('/payment-receipts', {
         params: {
           page,
           limit,
@@ -45,7 +45,7 @@ class PaymentReceiptModel {
 
   async getPaymentReceiptById(id: string): Promise<PaymentReceipt> {
     try {
-      const response = await axiosInstance.get<PaymentReceipt | SinglePaymentReceiptResponse>(`/payment-receipt/${id}`);
+      const response = await axiosInstance.get<PaymentReceipt | SinglePaymentReceiptResponse>(`/payment-receipts/${id}`);
       return unwrapPaymentReceipt(response.data);
     } catch (error) {
       throw error;
@@ -54,7 +54,7 @@ class PaymentReceiptModel {
 
   async createPaymentReceipt(data: CreatePaymentReceiptDto): Promise<PaymentReceipt> {
     try {
-      const response = await axiosInstance.post<PaymentReceipt | SinglePaymentReceiptResponse>('/payment-receipt', data);
+      const response = await axiosInstance.post<PaymentReceipt | SinglePaymentReceiptResponse>('/payment-receipts', data);
       return unwrapPaymentReceipt(response.data);
     } catch (error) {
       throw error;
@@ -64,7 +64,7 @@ class PaymentReceiptModel {
   async updatePaymentReceipt(data: UpdatePaymentReceiptDto): Promise<PaymentReceipt> {
     try {
       const response = await axiosInstance.patch<PaymentReceipt | SinglePaymentReceiptResponse>(
-        `/payment-receipt/${data.payment_receipt_id}`,
+        `/payment-receipts/${data.payment_receipt_id}`,
         data,
       );
       return unwrapPaymentReceipt(response.data);
@@ -75,7 +75,7 @@ class PaymentReceiptModel {
 
   async deletePaymentReceipt(id: string): Promise<void> {
     try {
-      await axiosInstance.delete(`/payment-receipt/${id}`);
+      await axiosInstance.delete(`/payment-receipts/${id}`);
     } catch (error) {
       throw error;
     }

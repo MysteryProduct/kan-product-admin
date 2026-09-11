@@ -140,18 +140,8 @@ class JobOrderModel {
       });
       return response.data.data;
     } catch (primaryError) {
-      try {
-        const fallbackResponse = await axiosInstance.patch<SingleJobOrderResponse>(`/job-order/${jobOrderId}`, {
-          job_order_status: status,
-          ...(typeof jobOrderQty === 'number' && { job_order_qty: jobOrderQty }),
-          ...(typeof jobOrderDefectQty === 'number' && { job_order_defect_qty: jobOrderDefectQty }),
-          ...(updateBy && { update_by: updateBy }),
-        });
-        return fallbackResponse.data.data;
-      } catch (fallbackError) {
-        console.error(`Error updating status for job order ${jobOrderId}:`, primaryError, fallbackError);
-        throw fallbackError;
-      }
+      console.error(`Error updating status for job order ${jobOrderId}:`, primaryError);
+      throw primaryError;
     }
   }
 }

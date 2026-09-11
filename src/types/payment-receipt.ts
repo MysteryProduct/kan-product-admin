@@ -2,16 +2,16 @@ import { PaginationMeta } from './pagination';
 import { SaleOrder } from './sale-order';
 import { BankAccount } from './bank-account';
 
-export type PaymentReceiptType = 'full' | 'partial' | 'deposit';
+export type PaymentReceiptType = 'full' | 'partial' | 'deposit' | 'refund';
 export type PaymentMethod = 'cash' | 'bank';
-export type PaymentReceiptStatus = 'pending' | 'paid' | 'cancelled';
+export type PaymentReceiptStatus = 'pending' | 'paid' | 'cancelled' | 'refunded';
 
 export interface PaymentReceipt {
   payment_receipt_id: string;
   sale_order_id: string;
   payment_receipt_code: string;
   payment_receipt_type: PaymentReceiptType;
-  payment_method: PaymentMethod;
+  payment_method: PaymentMethod | 'refund';
   amount_paid: number;
   payment_date: Date | string;
   payment_status: PaymentReceiptStatus;
@@ -69,9 +69,11 @@ export const PAYMENT_RECEIPT_STATUS_LABELS: Record<PaymentReceiptStatus, string>
   pending: 'รอดำเนินการ',
   paid: 'ชำระแล้ว',
   cancelled: 'ยกเลิก',
+  refunded: 'คืนเงินแล้ว',
 };
 
-export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+export const PAYMENT_METHOD_LABELS: Record<string, string> = {
   cash: 'เงินสด',
   bank: 'โอนผ่านธนาคาร',
+  refund: 'คืนเงิน',
 };

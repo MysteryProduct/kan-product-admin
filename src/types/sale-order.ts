@@ -24,6 +24,7 @@ export interface SaleOrderList {
   product_name: string;
   job_order_id: string;
   sale_order_list_qty: number;
+  returned_qty?: number;
   sale_order_list_price: number;
   sale_order_list_total: number;
   sale_order_list_cost?: number;
@@ -38,7 +39,7 @@ export interface SaleOrder {
   sale_order_name: string;
   sale_order_detail?: string;
   sale_order_type?: string;
-  sale_order_status: 'pending' | 'approved' | 'rejected' | 'completed';
+  sale_order_status: 'pending' | 'approved' | 'partial' | 'paid' | 'cancelled' | 'partially_returned' | 'returned';
   vat_type?: VatType;
   vat_rate?: number;
   sale_order_vat_amount?: number;

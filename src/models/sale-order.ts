@@ -116,6 +116,16 @@ class SaleOrderModel {
     }
   }
 
+  async cancelSaleOrder(id: string): Promise<SaleOrder> {
+    const response = await axiosInstance.post<SaleOrder | SingleSaleOrderResponse>(`/sale-order/${id}/cancel`);
+    return unwrapSaleOrder(response.data);
+  }
+
+  async returnSaleOrderItems(id: string, return_reference: string, items: { sale_order_list_id: string; quantity: number }[]): Promise<SaleOrder> {
+    const response = await axiosInstance.post<SaleOrder | SingleSaleOrderResponse>(`/sale-order/${id}/return`, { return_reference, items });
+    return unwrapSaleOrder(response.data);
+  }
+
   async deleteSaleOrder(id: string): Promise<void> {
     try {
       await axiosInstance.delete(`/sale-order/${id}`);

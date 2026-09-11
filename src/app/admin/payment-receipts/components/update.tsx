@@ -86,7 +86,7 @@ export default function UpdatePaymentReceiptForm({
 		setFormData({
 			payment_receipt_code: initialData.payment_receipt_code || '',
 			payment_receipt_type: initialData.payment_receipt_type || 'full',
-			payment_method: initialData.payment_method || 'bank',
+			payment_method: initialData.payment_method === 'cash' ? 'cash' : 'bank',
 			amount_paid: String(Number(initialData.amount_paid || 0).toFixed(2)),
 			payment_date: String(initialData.payment_date || '').slice(0, 10),
 			payment_status: initialData.payment_status || 'paid',
