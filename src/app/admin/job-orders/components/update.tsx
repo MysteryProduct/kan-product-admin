@@ -374,8 +374,8 @@ export default function UpdateJobOrderForm({
 	return (
 		<>
 			<div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto">
-				<div className="mx-auto mt-3 sm:mt-8 max-w-4xl rounded-3xl border border-sky-100/70 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden">
-					<div className="bg-gradient-to-r from-sky-600 via-blue-600 to-cyan-600 px-5 sm:px-8 py-5 sm:py-6">
+				<div className="mx-auto mt-3 sm:mt-8 max-w-4xl rounded-2xl border border-[var(--color-border)] dark:border-[var(--color-border)] bg-[var(--color-bg-primary)]  overlay-surface overflow-hidden">
+					<div className="bg-[var(--color-primary)] px-5 sm:px-8 py-5 sm:py-6">
 						<div className="flex items-center justify-between gap-4">
 							<div>
 								<h2 className="text-xl sm:text-2xl font-black text-white">แก้ไขงานผลิต</h2>
@@ -385,7 +385,7 @@ export default function UpdateJobOrderForm({
 								type="button"
 								onClick={onClose}
 								disabled={isSubmitting}
-								className="rounded-xl bg-white/20 text-white p-2 hover:bg-white/30 transition-colors"
+								className="rounded-lg border border-white/60 bg-white/15 p-2 text-white transition-colors hover:bg-white/25 disabled:opacity-50"
 								aria-label="close"
 							>
 								<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -589,7 +589,7 @@ export default function UpdateJobOrderForm({
 							<button
 								type="submit"
 								disabled={isSubmitting}
-								className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-cyan-600 text-white font-semibold hover:from-sky-700 hover:to-cyan-700 transition-colors disabled:opacity-60"
+								className="rounded-lg bg-[var(--color-primary)] px-5 py-2.5 font-semibold text-white transition-colors hover:bg-[var(--color-primary-hover)] disabled:opacity-60"
 							>
 								{isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}
 							</button>

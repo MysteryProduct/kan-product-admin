@@ -298,14 +298,14 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
     return (
         <>
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-300/40 p-4 backdrop-blur-sm">
-                <div className="w-full max-w-6xl overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-gray-800">
-                    <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 px-6 py-5 shadow-lg">
+                <div className="w-full max-w-6xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)] overlay-surface ">
+                    <div className="bg-[var(--color-primary)] px-6 py-5 ">
                         <div className="flex items-center justify-between gap-3">
                             <h2 className="text-2xl font-bold text-white">สร้างใบขายสินค้า</h2>
                             <button
                                 onClick={resetAndClose}
                                 disabled={isSubmitting}
-                                className="rounded-xl p-2 text-white transition-all duration-200 hover:bg-white/20 hover:text-black disabled:opacity-50"
+                                className="rounded-lg border border-white/60 bg-white/15 p-2 text-white transition-colors hover:bg-white/25 disabled:opacity-50"
                                 type="button"
                             >
                                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -392,7 +392,7 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                                 type="button"
                                 onClick={openSelectModal}
                                 disabled={isSubmitting}
-                                className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+                                className="flex items-center gap-2 rounded-xl bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
                             >
                                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -410,7 +410,7 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                                 items.map((item, index) => (
                                     <div
                                         key={item.id}
-                                        className="rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-4 shadow-sm dark:border-gray-700 dark:from-gray-800 dark:to-gray-900"
+                                        className="rounded-2xl border border-gray-200 bg-[var(--color-bg-secondary)] from-white p-4 dark:border-gray-700 "
                                     >
                                         <div className="mb-3 flex items-center justify-between">
                                             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
@@ -485,7 +485,7 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
 
                         {/* VAT Summary */}
                         {items.length > 0 && (
-                            <div className="mt-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-5 text-white shadow-lg">
+                            <div className="mt-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5 text-[var(--color-text-primary)]">
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between text-sm md:text-base">
                                         <span>ยอดก่อน VAT</span>
@@ -495,7 +495,7 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                                         <span>VAT {vatRate}%</span>
                                         <span>฿{formatCurrency(vatSummary.vatAmount)}</span>
                                     </div>
-                                    <div className="flex items-center justify-between border-t border-white/30 pt-2">
+                                    <div className="flex items-center justify-between border-t border-[var(--color-border)] pt-2">
                                         <span className="text-lg font-semibold">ยอดรวมทั้งสิ้น</span>
                                         <span className="text-2xl font-bold">฿{formatCurrency(vatSummary.total)}</span>
                                     </div>
@@ -516,7 +516,7 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                             <button
                                 type="submit"
                                 disabled={isSubmitting || items.length === 0}
-                                className="flex-1 rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white transition-all hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="flex-1 rounded-xl bg-[var(--color-primary)] px-6 py-3.5 font-semibold text-white transition-all hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
                             >
                                 {isSubmitting ? 'กำลังบันทึก...' : 'สร้างใบขายสินค้า'}
                             </button>
@@ -528,7 +528,7 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
             {/* Selection Modal */}
             {isSelectModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gray-300/40 p-4 backdrop-blur-sm">
-                    <div className="w-full max-w-4xl overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-800">
+                    <div className="w-full max-w-4xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)] overlay-surface ">
                         <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">เลือกสินค้า</h3>
@@ -554,7 +554,7 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                                 />
                                 <button
                                     onClick={handleSelectionSearch}
-                                    className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                                    className="rounded-xl bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)]"
                                     type="button"
                                 >
                                     ค้นหา
@@ -647,7 +647,7 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                                 <button
                                     onClick={addSelectedItems}
                                     disabled={selectedCount === 0}
-                                    className="rounded-xl bg-blue-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="rounded-xl bg-[var(--color-primary)] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
                                     type="button"
                                 >
                                     เพิ่ม {selectedCount > 0 ? `(${selectedCount})` : ''}

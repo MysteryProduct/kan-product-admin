@@ -16,7 +16,7 @@ export default function SupplierDetailModal({ isOpen, onClose, supplier }: Suppl
             <div className="bg-white rounded-xl shadow-xl border border-gray-200 w-full max-w-6xl h-[95vh] relative overflow-hidden">
                 
                 {/* Fixed Header */}
-                <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-r from-blue-600 to-blue-700 rounded-t-2xl shadow-lg border-b border-blue-500">
+                <div className="absolute top-0 left-0 right-0 z-20 bg-[var(--color-bg-secondary)] rounded-t-2xl border-b border-blue-500">
                     <div className="flex justify-between items-center p-4 sm:p-6 lg:p-8">
                         <div className="flex items-center space-x-3">
                             <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
@@ -31,7 +31,7 @@ export default function SupplierDetailModal({ isOpen, onClose, supplier }: Suppl
                         </div>
                         <button
                             onClick={onClose}
-                            className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-lg flex-shrink-0 transition-all duration-200"
+                            className="rounded-lg border border-white/60 bg-white/15 p-2 text-white transition-colors hover:bg-white/25 disabled:opacity-50"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -44,9 +44,9 @@ export default function SupplierDetailModal({ isOpen, onClose, supplier }: Suppl
                 <div className="absolute top-0 left-0 right-0 bottom-0 overflow-y-auto pt-24 sm:pt-28 lg:pt-32 pb-8">
                     <div className="p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8">
                         {/* Supplier Information */}
-                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 sm:p-6 border border-blue-200 shadow-sm">
+                        <div className="bg-[var(--color-bg-secondary)] rounded-xl p-4 sm:p-6 border border-blue-200 ">
                             <div className="flex items-center space-x-3 mb-4 sm:mb-6">
-                                <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-md">
+                                <div className="p-3 bg-[var(--color-bg-secondary)] rounded-xl ">
                                     <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
@@ -64,7 +64,7 @@ export default function SupplierDetailModal({ isOpen, onClose, supplier }: Suppl
                                                 <span>เลขประจำตัวผู้เสียภาษี</span>
                                             </span>
                                         </label>
-                                        <div className="w-full px-4 py-3 bg-gradient-to-r from-yellow-50 to-yellow-100 border-2 border-yellow-200 rounded-xl text-gray-700 font-mono text-lg shadow-sm">
+                                        <div className="w-full px-4 py-3 bg-[var(--color-bg-secondary)] border-2 border-yellow-200 rounded-xl text-gray-700 font-mono text-lg ">
                                             {supplier.tax_id}
                                         </div>
                                     </div>
@@ -121,7 +121,7 @@ export default function SupplierDetailModal({ isOpen, onClose, supplier }: Suppl
                                                 <span>เบอร์โทรศัพท์</span>
                                             </span>
                                         </label>
-                                        <div className="w-full px-4 py-3 bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-200 rounded-xl text-gray-700 font-mono text-lg shadow-sm">
+                                        <div className="w-full px-4 py-3 bg-[var(--color-bg-secondary)] border-2 border-green-200 rounded-xl text-gray-700 font-mono text-lg ">
                                             {supplier.supplier_phone}
                                         </div>
                                     </div>
@@ -145,10 +145,10 @@ export default function SupplierDetailModal({ isOpen, onClose, supplier }: Suppl
                         </div>
 
                         {/* Payment Information */}
-                        <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-4 sm:p-6 border border-emerald-200 shadow-sm">
+                        <div className="bg-[var(--color-bg-secondary)] rounded-xl p-4 sm:p-6 border border-emerald-200 ">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                                 <div className="flex items-center space-x-3">
-                                    <div className="p-3 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl shadow-md">
+                                    <div className="p-3 bg-[var(--color-bg-secondary)] rounded-xl ">
                                         <svg className="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                                         </svg>
@@ -171,7 +171,7 @@ export default function SupplierDetailModal({ isOpen, onClose, supplier }: Suppl
                                         <div key={payment.payment_id} className="bg-white rounded-xl p-4 sm:p-6 border border-emerald-200 shadow-lg hover:shadow-xl transition-all duration-300">
                                             <div className="flex items-center justify-between mb-4 sm:mb-6">
                                                 <div className="flex items-center space-x-3">
-                                                    <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md">
+                                                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--color-primary)] text-lg font-bold text-white">
                                                         {index + 1}
                                                     </div>
                                                     <div>

@@ -156,11 +156,11 @@ export default function UpdateInvoiceSupplierForm({ isOpen, onClose, onSubmit, i
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-6xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-800">
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-5 text-white">
+            <div className="w-full max-w-6xl overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface dark:border-[var(--color-border)] ">
+                <div className="bg-[var(--color-primary)] px-6 py-5 text-white">
                     <div className="flex items-center justify-between gap-4">
                         <h2 className="text-xl font-bold sm:text-2xl">แก้ไขใบชำระหนี้ผู้จัดจำหน่าย</h2>
-                        <button type="button" onClick={onClose} className="rounded-lg p-2 transition hover:bg-white/20" aria-label="close">
+                        <button type="button" onClick={onClose} className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-2 text-[var(--color-text-primary)] transition-colors hover:border-[var(--color-primary)] hover:bg-[var(--color-bg-tertiary)]" aria-label="close">
                             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M6 6l12 12M18 6L6 18" />
                             </svg>
@@ -226,7 +226,7 @@ export default function UpdateInvoiceSupplierForm({ isOpen, onClose, onSubmit, i
                     <div className="rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
                         <div className="mb-3 flex items-center justify-between">
                             <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">Invoice Payment (ชำระได้หลายครั้ง)</h3>
-                            <button type="button" onClick={addPaymentRow} className="h-10 rounded-lg bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700">
+                            <button type="button" onClick={addPaymentRow} className="h-10 rounded-lg bg-[var(--color-primary)] px-4 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)]">
                                 เพิ่มรายการชำระ
                             </button>
                         </div>
@@ -318,7 +318,7 @@ export default function UpdateInvoiceSupplierForm({ isOpen, onClose, onSubmit, i
                         <button type="button" onClick={onClose} className="h-11 rounded-xl border border-slate-300 px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700">
                             ยกเลิก
                         </button>
-                        <button type="submit" className="h-11 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700">
+                        <button type="submit" className="h-11 rounded-xl bg-[var(--color-primary)] px-5 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)]">
                             บันทึกการแก้ไข
                         </button>
                     </div>

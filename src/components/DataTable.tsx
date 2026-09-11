@@ -195,16 +195,16 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
         onClick={() => setOpenFilterKey(null)}
       >
         {/* Table Container */}
-        <div className="border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm bg-white dark:bg-slate-900">
+        <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#CBD2D6] dark:bg-slate-800 dark:ring-slate-700">
           <div className="overflow-x-auto" ref={tableScrollRef}>
-            <table className="w-full text-sm">
+            <table className="w-full text-[15px] leading-6">
               <thead>
-                <tr className={`bg-slate-900 border-b border-slate-800 ${headerClassName}`}>
+                <tr className={`border-b border-[#CBD2D6] bg-[#F5F7FA] dark:border-slate-700 dark:bg-slate-900 ${headerClassName}`}>
                   {columns.map((col) => (
                     <th
                       key={String(col.key)}
                       data-filter-col={col.key}
-                      className="px-6 py-4 text-left"
+                      className="px-6 py-4 text-left align-middle"
                       style={col.width ? { minWidth: col.width } : undefined}
                     >
                       <div className="space-y-2.5">
@@ -218,11 +218,11 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                             className="flex items-center gap-2"
                             onClick={() => !disabled && col.sortable && handleSort(String(col.key))}
                           >
-                            <span className="text-[13px] font-semibold text-white uppercase tracking-widest">
+                            <span className="text-sm font-semibold leading-5 text-[#1A1A2E] dark:text-slate-100">
                               {col.label}
                             </span>
                             {col.sortable && (
-                              <span className="inline-flex items-center text-slate-300 group-hover:text-white transition-colors">
+                              <span className="inline-flex items-center text-slate-500 transition-colors group-hover:text-[#003087] dark:text-slate-400 dark:group-hover:text-white">
                                 {sortConfig?.key === col.key ? (
                                   sortConfig.direction === 'ASC' ? (
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -257,7 +257,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                                 setOpenFilterKey(null);
                               }}
                               disabled={disabled}
-                              className="inline-flex items-center justify-center w-7 h-7 rounded-md border border-slate-700 text-slate-300 hover:text-white hover:border-slate-500 hover:bg-slate-800 transition-colors"
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[#CBD2D6] text-[#687173] transition-colors hover:border-[#003087] hover:bg-white hover:text-[#003087] dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
                               aria-label="Toggle column filter"
                               ref={(el) => {
                                 if (el) filterRefs.current[String(col.key)] = el;
@@ -420,7 +420,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-900">
+              <tbody className="divide-y divide-slate-100 bg-white dark:divide-slate-700 dark:bg-slate-800">
                 {processedData.length > 0 ? (
                   processedData.map((row, idx) => (
                     <tr
@@ -433,7 +433,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                       {columns.map((col) => (
                         <td
                           key={String(col.key)}
-                          className="px-6 py-4 text-slate-800 dark:text-slate-100"
+                          className="px-6 py-[18px] text-slate-800 dark:text-slate-100"
                           style={col.width ? { width: col.width } : undefined}
                         >
                           {col.render
@@ -474,7 +474,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
         </div>
 
         {canShowPagination && (
-          <div className={`px-6 py-4 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 border-t border-slate-100 dark:border-slate-700 ${footerClassName}`}>
+          <div className={`border-t border-slate-100 bg-slate-50 px-6 py-4 dark:border-slate-700 dark:bg-slate-900 ${footerClassName}`}>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               {showPaginationInfo ? (
                 <div className="text-sm text-slate-600 dark:text-slate-300">

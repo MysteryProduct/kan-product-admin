@@ -363,11 +363,11 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 	return (
 		<>
 			<div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-300/40 p-4 backdrop-blur-sm">
-				<div className="w-full max-w-6xl overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-gray-800">
-					<div className="bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 px-6 py-5 shadow-lg">
+				<div className="w-full max-w-6xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)] overlay-surface ">
+					<div className="bg-[var(--color-primary)] px-6 py-5">
 						<div className="flex items-center justify-between gap-3">
 							<h2 className="text-2xl font-bold text-white">แก้ไขใบรับสินค้า</h2>
-							<button onClick={onClose} disabled={isSubmitting} className="rounded-xl p-2 text-white transition-all duration-200 hover:bg-white/20 hover:text-black disabled:opacity-50" type="button">
+							<button onClick={onClose} disabled={isSubmitting} className="rounded-lg border border-white/60 bg-white/15 p-2 text-white transition-colors hover:bg-white/25 disabled:opacity-50" type="button">
 								<svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
 							</button>
 						</div>
@@ -412,12 +412,12 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 
 						<div className="mb-4 flex items-center justify-between">
 							<h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">รายการวัตถุดิบอ้างอิงจากใบสั่งซื้อ</h3>
-							<button type="button" onClick={openSelectModal} disabled={isSubmitting} className="rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50">เพิ่มรายการ</button>
+							<button type="button" onClick={openSelectModal} disabled={isSubmitting} className="rounded-lg bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50">เพิ่มรายการ</button>
 						</div>
 
 						<div className="space-y-4">
 							{items.map((item, index) => (
-								<div key={item.id} className="rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-4 shadow-sm dark:border-gray-700 dark:from-gray-800 dark:to-gray-900">
+								<div key={item.id} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-4">
 									<div className="mb-3 flex items-center justify-between gap-2">
 										<span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">{index + 1}</span>
 										<button type="button" onClick={() => handleRemoveItem(item.id)} disabled={isSubmitting || items.length <= 1} className="rounded-lg bg-red-50 px-2.5 py-1.5 text-xs font-semibold text-red-600 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-red-900/30 dark:text-red-300">ลบ</button>
@@ -445,7 +445,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 
 						{errors.items && <p className="mt-3 text-sm text-red-500">{errors.items}</p>}
 
-						<div className="mt-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-5 shadow-lg text-white space-y-2">
+						<div className="mt-6 space-y-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5 text-[var(--color-text-primary)]">
 							<div className="flex items-center justify-between text-sm md:text-base">
 								<span>ยอดก่อน VAT</span>
 								<span>฿{formatCurrency(vatSummary.subtotal)}</span>
@@ -454,7 +454,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 								<span>VAT {vatRate}% ({VAT_TYPE_LABELS[vatType]})</span>
 								<span>฿{formatCurrency(vatSummary.vatAmount)}</span>
 							</div>
-							<div className="flex items-center justify-between border-t border-white/30 pt-2">
+							<div className="flex items-center justify-between border-t border-[var(--color-border)] pt-2">
 								<span className="text-lg font-semibold">ยอดรวมทั้งสิ้น</span>
 								<span className="text-2xl font-bold">฿{formatCurrency(vatSummary.total)}</span>
 							</div>
@@ -462,7 +462,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 
 						<div className="mt-6 flex gap-3 border-t border-gray-200 pt-6 dark:border-gray-700">
 							<button type="button" onClick={onClose} disabled={isSubmitting} className="w-full rounded-xl border-2 border-gray-300 bg-gray-100 px-6 py-3 font-semibold text-gray-700 transition-all hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600">ยกเลิก</button>
-							<button type="submit" disabled={isSubmitting} className="w-full rounded-xl border-2 border-blue-600 bg-blue-600 px-6 py-3 font-semibold text-white transition-all hover:bg-blue-700 disabled:opacity-60">{isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}</button>
+							<button type="submit" disabled={isSubmitting} className="w-full rounded-xl border-2 border-[var(--color-primary)] bg-[var(--color-primary)] px-6 py-3 font-semibold text-white transition-all hover:bg-[var(--color-primary-hover)] disabled:opacity-60">{isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}</button>
 						</div>
 					</form>
 				</div>
@@ -470,7 +470,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 
 			{isSelectModalOpen && (
 				<div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4">
-					<div className="w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-gray-800">
+					<div className="w-full max-w-5xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)] overlay-surface ">
 						<div className="flex items-center justify-between border-b border-gray-200 px-5 py-4 dark:border-gray-700">
 							<h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">เลือกรายการวัตถุดิบเพื่อเพิ่ม</h3>
 							<button type="button" onClick={() => { setIsSelectModalOpen(false); setSelectedOrderItems({}); }} className="rounded-lg px-2 py-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700">✕</button>
@@ -479,7 +479,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 						<div className="border-b border-gray-200 p-4 dark:border-gray-700">
 							<div className="flex flex-1 gap-2">
 								<input type="text" placeholder="ค้นหาวัตถุดิบ..." value={selectionSearch} onChange={(e) => setSelectionSearch(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSelectionSearch()} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100" />
-								<button type="button" onClick={handleSelectionSearch} className="rounded-lg bg-blue-600 px-3 py-2 text-sm text-white hover:bg-blue-700">ค้นหา</button>
+								<button type="button" onClick={handleSelectionSearch} className="rounded-lg bg-[var(--color-primary)] px-3 py-2 text-sm text-white hover:bg-[var(--color-primary-hover)]">ค้นหา</button>
 								{(selectionSearch || selectionAppliedSearch) && <button type="button" onClick={handleSelectionClearSearch} className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">ล้าง</button>}
 							</div>
 						</div>
@@ -525,7 +525,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 							<p className="text-sm text-gray-600 dark:text-gray-300">เลือกแล้ว {selectedCount} รายการ</p>
 							<div className="flex gap-2">
 								<button type="button" onClick={() => { setIsSelectModalOpen(false); setSelectedOrderItems({}); }} className="rounded-lg border border-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">ยกเลิก</button>
-								<button type="button" onClick={addSelectedItems} disabled={selectedCount === 0} className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">เพิ่มรายการที่เลือก</button>
+								<button type="button" onClick={addSelectedItems} disabled={selectedCount === 0} className="rounded-lg bg-[var(--color-primary)] px-4 py-2 text-white hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50">เพิ่มรายการที่เลือก</button>
 							</div>
 						</div>
 					</div>

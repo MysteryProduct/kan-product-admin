@@ -108,7 +108,7 @@ export default function ProductUnitForm({ isOpen, onClose, onSuccess }: ProductU
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                            className="px-4 py-2 bg-[var(--color-primary)] text-white rounded hover:bg-[var(--color-primary-hover)]"
                             disabled={loading}
                         >
                             {loading ? 'กำลังบันทึก...' : 'บันทึก'}

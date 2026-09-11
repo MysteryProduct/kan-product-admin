@@ -377,10 +377,10 @@ export default function PurchaseReceiptPage() {
     ];
 
     return (
-        <div className="bg-gray-50 dark:bg-gray-900 p-2 sm:p-4 md:p-6 lg:p-8">
+        <div className="min-h-full bg-[#F5F7FA] p-2 dark:bg-slate-950 sm:p-4 md:p-6 lg:p-8">
             {loading && <LoadingSkeletonProps />}
             <div className="space-y-6">
-                <section className="rounded-2xl bg-white shadow-sm dark:bg-gray-800">
+                <section className="rounded-2xl bg-white shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10">
                     <div className="border-b border-gray-100 p-4 dark:border-gray-700">
                         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                             รายการใบสั่งซื้อ (สำหรับสร้างใบรับสินค้า)
@@ -404,7 +404,7 @@ export default function PurchaseReceiptPage() {
                     </div>
                 </section>
 
-                <section className="rounded-2xl bg-white shadow-sm dark:bg-gray-800">
+                <section className="rounded-2xl bg-white shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10">
                     <div className="border-b border-gray-100 p-4 dark:border-gray-700">
                         <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">รายการใบรับสินค้า</h2>
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">

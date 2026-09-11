@@ -6,35 +6,26 @@ interface StatsCardProps {
   percentage: string;
   trend: 'up' | 'down';
   icon: React.ReactNode;
-  bgColor?: string;
-  accentColor?: string;
 }
 
-export default function StatsCard({ title, value, percentage, trend, icon, bgColor = 'from-blue-500', accentColor = 'from-orange-400' }: StatsCardProps) {
+export default function StatsCard({ title, value, percentage, trend, icon }: StatsCardProps) {
   const trendSymbol = trend === 'up' ? '+' : '-';
+  const trendColor = trend === 'up' ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]';
 
   return (
-    <div className={`relative rounded-2xl p-6 bg-gradient-to-br ${bgColor} to-blue-600 text-white overflow-hidden`}>
-      {/* Decorative shape */}
-      <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${accentColor} to-orange-500 rounded-full -mr-16 -mt-16 opacity-40`}></div>
-      
-      <div className="relative z-10">
-        {/* Icon */}
-        <div className="mb-4 w-12 h-12 bg-white/20 backdrop-blur rounded-lg flex items-center justify-center">
+    <section className="surface rounded-xl p-5 sm:p-6">
+      <div>
+        <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-primary)]">
           {icon}
         </div>
-
-        {/* Value and Percentage */}
         <div className="flex items-baseline gap-2 mb-1">
-          <h2 className="text-3xl font-bold">{value}</h2>
-          <span className="text-lg font-semibold">
+          <p className="numeric text-3xl font-semibold text-[var(--color-text-primary)]">{value}</p>
+          <span className={`numeric text-sm font-semibold ${trendColor}`} aria-label={`${trend === 'up' ? 'เพิ่มขึ้น' : 'ลดลง'} ${percentage}`}>
             {trendSymbol}{percentage}
           </span>
         </div>
-
-        {/* Title */}
-        <p className="text-white/90 text-sm font-medium">{title}</p>
+        <h2 className="text-sm font-medium text-[var(--color-text-secondary)]">{title}</h2>
       </div>
-    </div>
+    </section>
   );
 }

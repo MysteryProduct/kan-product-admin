@@ -112,7 +112,7 @@ export default function UpdateBankAccountForm({ isOpen, onClose, onSuccess, init
 	return (
 		<>
 			<div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4 backdrop-blur-sm">
-				<div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl dark:bg-gray-800">
+				<div className="w-full max-w-2xl rounded-2xl bg-[var(--color-bg-primary)] overlay-surface ">
 					<div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
 						<h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">แก้ไขบัญชีรับเงิน</h2>
 					</div>
@@ -180,7 +180,7 @@ export default function UpdateBankAccountForm({ isOpen, onClose, onSuccess, init
 							<button
 								type="submit"
 								disabled={isSubmitting}
-								className="h-11 rounded-xl bg-blue-600 px-6 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+								className="h-11 rounded-xl bg-[var(--color-primary)] px-6 text-sm font-semibold text-white hover:bg-[var(--color-primary-hover)] disabled:opacity-60"
 							>
 								{isSubmitting ? 'กำลังบันทึก...' : 'บันทึก'}
 							</button>

@@ -50,8 +50,8 @@ export default function InvoiceSupplierDetailModal({ isOpen, onClose, invoice }:
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-6xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-800">
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 px-6 py-5 text-white">
+      <div className="w-full max-w-6xl overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface dark:border-[var(--color-border)] ">
+        <div className="bg-[var(--color-primary)] px-6 py-5 text-white">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-xl font-bold sm:text-2xl">รายละเอียดใบชำระหนี้ผู้จัดจำหน่าย</h2>
@@ -167,18 +167,18 @@ export default function InvoiceSupplierDetailModal({ isOpen, onClose, invoice }:
             </div>
           </div>
 
-          <div className="rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 p-5 text-white shadow-lg">
+          <div className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5 text-[var(--color-text-primary)]">
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <div>
-                <p className="text-xs text-emerald-50">ยอดเอกสาร</p>
+                <p className="text-xs text-[var(--color-text-secondary)]">ยอดเอกสาร</p>
                 <p className="text-lg font-semibold">฿{formatCurrency(invoice.invoice_supplier_total)}</p>
               </div>
               <div>
-                <p className="text-xs text-emerald-50">ชำระแล้ว</p>
+                <p className="text-xs text-[var(--color-text-secondary)]">ชำระแล้ว</p>
                 <p className="text-lg font-semibold">฿{formatCurrency(paidTotal)}</p>
               </div>
               <div>
-                <p className="text-xs text-emerald-50">คงเหลือ</p>
+                <p className="text-xs text-[var(--color-text-secondary)]">คงเหลือ</p>
                 <p className="text-xl font-bold">฿{formatCurrency(Math.max(invoice.invoice_supplier_total - paidTotal, 0))}</p>
               </div>
             </div>

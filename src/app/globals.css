@@ -2,31 +2,49 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f5f7fa;
+  --foreground: #1a1a2e;
   
   /* Light mode colors */
   --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f9fafb;
-  --color-bg-tertiary: #f3f4f6;
-  --color-text-primary: #1f2937;
-  --color-text-secondary: #6b7280;
-  --color-border: #e5e7eb;
+  --color-bg-secondary: #f5f7fa;
+  --color-bg-tertiary: #eef2f6;
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #687173;
+  --color-border: #cbd2d6;
   --color-shadow: rgba(0, 0, 0, 0.1);
+  --color-focus: #003087;
+  --color-primary: #003087;
+  --color-primary-hover: #00246b;
+  --color-info: #009cde;
+  --color-success: #019c34;
+  --color-warning: #f5ba2e;
+  --color-error: #d20000;
+  --shadow-border: 0 0 0 1px rgba(0, 48, 135, 0.08), 0 1px 4px rgba(0, 48, 135, 0.06);
+  --shadow-overlay: 0 12px 32px rgba(0, 48, 135, 0.14), 0 0 0 1px rgba(0, 48, 135, 0.08);
 }
 
 html.dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #0b1324;
+  --foreground: #f8fafc;
   
   /* Dark mode colors */
-  --color-bg-primary: #111827;
-  --color-bg-secondary: #1f2937;
-  --color-bg-tertiary: #374151;
-  --color-text-primary: #f3f4f6;
-  --color-text-secondary: #d1d5db;
-  --color-border: #374151;
-  --color-shadow: rgba(0, 0, 0, 0.3);
+  --color-bg-primary: #1e293b;
+  --color-bg-secondary: #0f172a;
+  --color-bg-tertiary: #243247;
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #a8b3c7;
+  --color-border: #334155;
+  --color-shadow: rgba(2, 6, 23, 0.38);
+  --color-focus: #818cf8;
+  --color-primary: #6366f1;
+  --color-primary-hover: #818cf8;
+  --color-info: #38bdf8;
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-error: #fb7185;
+  --shadow-border: 0 0 0 1px rgba(148, 163, 184, 0.12), 0 8px 24px rgba(2, 6, 23, 0.18);
+  --shadow-overlay: 0 24px 64px rgba(2, 6, 23, 0.58), 0 0 0 1px rgba(148, 163, 184, 0.14);
 }
 
 @theme inline {
@@ -39,8 +57,18 @@ html.dark {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), "Noto Sans Thai", "Tahoma", sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
 }
+
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.surface { background: var(--color-bg-primary); box-shadow: var(--shadow-border); }
+.overlay-surface { box-shadow: var(--shadow-overlay); overscroll-behavior: contain; }
+.numeric { font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; } }
 
 /* Debug: Show dark mode is active */
 html.dark {

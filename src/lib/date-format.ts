@@ -63,4 +63,17 @@ export const formatThaiDateLong = (value: DateInput, fallback = DEFAULT_FALLBACK
 	});
 };
 
+export const formatThaiDateTime = (value: DateInput, fallback = DEFAULT_FALLBACK) => {
+	const date = parseDateInput(value);
+	if (!date) return fallback;
+
+	return new Intl.DateTimeFormat('th-TH', {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit',
+	}).format(date);
+};
+
 export const toDateValue = (value: DateInput) => parseDateInput(value);

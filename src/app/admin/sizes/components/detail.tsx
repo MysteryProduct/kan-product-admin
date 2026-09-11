@@ -17,14 +17,14 @@ export default function SizeDetailModal({ isOpen, onClose, size }: SizeDetailMod
 
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
-			<div className="w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-800">
-				<div className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 px-6 py-5">
+			<div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface dark:border-[var(--color-border)] ">
+				<div className="bg-[var(--color-primary)] px-6 py-5">
 					<div className="flex items-center justify-between gap-3">
 						<h2 className="text-xl font-bold text-white sm:text-2xl">รายละเอียดขนาดสินค้า</h2>
 						<button
 							type="button"
 							onClick={onClose}
-							className="rounded-lg p-2 text-white transition hover:bg-white/20"
+							className="rounded-lg border border-white/60 bg-white/15 p-2 text-white transition-colors hover:bg-white/25 disabled:opacity-50"
 						>
 							<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

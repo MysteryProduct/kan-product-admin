@@ -226,13 +226,13 @@ export default function SupplierInsertForm({ isOpen, onClose, onSuccess }: Suppl
                             </div>
                             <div>
                                 <h2 className="text-xl sm:text-2xl font-bold text-white">เพิ่มผู้จัดจำหน่ายใหม่</h2>
-                                <p className="text-white/80 text-sm hidden sm:block">กรุณากรอกข้อมูลให้ครบถ้วนเพื่อเพิ่มผู้จัดจำหน่ายใหม่</p>
+                                <p className="rounded-lg border border-white/60 bg-white/15 p-2 text-white transition-colors hover:bg-white/25 disabled:opacity-50">กรุณากรอกข้อมูลให้ครบถ้วนเพื่อเพิ่มผู้จัดจำหน่ายใหม่</p>
                             </div>
                         </div>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-lg flex-shrink-0"
+                            className="rounded-lg border border-white/60 bg-white/15 p-2 text-white transition-colors hover:bg-white/25 disabled:opacity-50"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -444,7 +444,7 @@ export default function SupplierInsertForm({ isOpen, onClose, onSuccess }: Suppl
                                 <button
                                     type="button"
                                     onClick={addPayment}
-                                    className="flex items-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 shadow-lg hover:shadow-lg text-sm sm:text-base w-full sm:w-auto justify-center sm:justify-start"
+                                    className="flex items-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-green-500 shadow-lg hover:shadow-lg text-sm sm:text-base w-full sm:w-auto justify-center sm:justify-start"
                                 >
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -624,7 +624,7 @@ export default function SupplierInsertForm({ isOpen, onClose, onSuccess }: Suppl
                         <button
                             type="submit"
                             onClick={handleSubmit}
-                            className={`px-8 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold shadow-lg hover:shadow-lg w-full sm:w-auto ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                            className={`px-8 py-3 text-white bg-blue-500 rounded-lg hover:bg-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold shadow-lg hover:shadow-lg w-full sm:w-auto ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
                                 }`}
                             disabled={isSubmitting}
                         >

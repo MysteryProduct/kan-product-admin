@@ -249,7 +249,7 @@ export default function InsertMaterialForm({ isOpen, onClose, onSuccess }: Inser
 							<button
 								type="submit"
 								disabled={isSubmitting}
-								className="rounded-lg bg-blue-600 px-6 py-2 font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+								className="rounded-lg bg-[var(--color-primary)] px-6 py-2 font-medium text-white transition-colors hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
 							>
 								{isSubmitting ? 'กำลังบันทึก...' : 'บันทึก'}
 							</button>

@@ -323,9 +323,9 @@ export default function UpdatePurchaseOrderForm({
     return (
         <>
         <div className="fixed inset-0 bg-gray-300/40 dark:bg-gray-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-            <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-5xl w-full my-8 overflow-hidden">
+            <div className="bg-[var(--color-bg-primary)]  rounded-2xl overlay-surface max-w-5xl w-full my-8 overflow-hidden">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 px-6 py-5 shadow-lg">
+                <div className="bg-[var(--color-primary)] px-6 py-5">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="bg-white bg-opacity-20 p-2 rounded-lg backdrop-blur-sm">
@@ -338,7 +338,7 @@ export default function UpdatePurchaseOrderForm({
                         <button
                             onClick={handleClose}
                             disabled={isSubmitting}
-                            className="text-white hover:text-black hover:bg-white hover:bg-opacity-25 rounded-xl p-2 transition-all duration-200 disabled:opacity-50 hover:scale-105"
+                            className="rounded-lg border border-white/60 bg-white/15 p-2 text-white transition-colors hover:bg-white/25 disabled:opacity-50"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -480,7 +480,7 @@ export default function UpdatePurchaseOrderForm({
                                 type="button"
                                 onClick={addItem}
                                 disabled={isSubmitting}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-xl hover:from-green-700 hover:to-green-600 transition-all shadow-md hover:shadow-lg disabled:opacity-50 font-medium"
+                                className="flex items-center gap-2 rounded-lg bg-[var(--color-primary)] px-5 py-2.5 font-medium text-white transition-colors hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -491,7 +491,7 @@ export default function UpdatePurchaseOrderForm({
 
                         <div className="space-y-5">
                             {items.map((item, index) => (
-                                <div key={item.id} className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 p-5 rounded-2xl border border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md transition-shadow">
+                                <div key={item.id} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-5">
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex items-center gap-3">
                                             <div className="bg-blue-100 text-blue-600 font-bold text-sm w-8 h-8 rounded-full flex items-center justify-center">
@@ -601,7 +601,7 @@ export default function UpdatePurchaseOrderForm({
                                     </div>
 
                                     <div className="mt-4 pt-4 border-t-2 border-gray-200">
-                                        <div className="flex justify-between items-center bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-700 p-3 rounded-lg">
+                                        <div className="flex items-center justify-between rounded-lg bg-[var(--color-bg-secondary)] p-3">
                                             <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
                                                 <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -618,8 +618,8 @@ export default function UpdatePurchaseOrderForm({
                         </div>
 
                         {/* Grand Total */}
-                        <div className="mt-6 bg-gradient-to-r from-blue-600 to-indigo-600 p-6 rounded-2xl shadow-lg">
-                            <div className="space-y-2 text-white">
+                        <div className="mt-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-6">
+                            <div className="space-y-2 text-[var(--color-text-primary)]">
                                 <div className="flex justify-between items-center text-sm md:text-base">
                                     <span>ยอดก่อน VAT</span>
                                     <span>฿{formatCurrency(vatSummary.subtotal)}</span>
@@ -628,7 +628,7 @@ export default function UpdatePurchaseOrderForm({
                                     <span>VAT {vatRate}% ({VAT_TYPE_LABELS[vatType]})</span>
                                     <span>฿{formatCurrency(vatSummary.vatAmount)}</span>
                                 </div>
-                                <div className="flex justify-between items-center pt-2 border-t border-white/30">
+                                <div className="flex items-center justify-between border-t border-[var(--color-border)] pt-2">
                                     <span className="text-lg font-bold">ยอดรวมทั้งสิ้น</span>
                                     <span className="text-3xl font-bold">฿{formatCurrency(vatSummary.total)}</span>
                                 </div>
@@ -649,7 +649,7 @@ export default function UpdatePurchaseOrderForm({
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="flex-1 px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all font-semibold disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+                            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-6 py-3.5 font-semibold text-white transition-colors hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
                         >
                             {isSubmitting ? (
                                 <>

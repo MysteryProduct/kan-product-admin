@@ -112,7 +112,7 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl dark:bg-gray-800">
+            <div className="w-full max-w-2xl rounded-2xl bg-[var(--color-bg-primary)] p-6 overlay-surface ">
                 <h2 className="mb-4 text-xl font-semibold text-gray-700 dark:text-gray-100">เพิ่มประเภทสินค้า</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -174,7 +174,7 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                            className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-md hover:bg-[var(--color-primary-hover)]"
                             disabled={loading}
                         >
                             {loading ? 'กำลังบันทึก...' : 'บันทึก'}

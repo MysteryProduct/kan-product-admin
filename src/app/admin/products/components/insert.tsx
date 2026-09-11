@@ -509,7 +509,7 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
       <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
         <div className="absolute inset-0 bg-gray-900/40 dark:bg-black/70" onClick={onClose} />
 
-        <div className="relative max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-800">
+        <div className="relative max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface dark:border-[var(--color-border)] ">
           <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6 dark:border-gray-700 dark:bg-gray-800/95">
             <h2 className="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-100">เพิ่มสินค้า</h2>
             <button onClick={onClose} className="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-200">
@@ -577,7 +577,7 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
                 <button
                   type="button"
                   onClick={addVariant}
-                  className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                  className="rounded-lg bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-primary-hover)]"
                 >
                   + เพิ่มสินค้า
                 </button>
@@ -664,7 +664,7 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
                         <button
                           type="button"
                           onClick={() => addMaterial(variant.client_variant_key)}
-                          className="rounded-md bg-blue-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-blue-700"
+                          className="rounded-md bg-[var(--color-primary)] px-2.5 py-1 text-xs font-medium text-white hover:bg-[var(--color-primary-hover)]"
                         >
                           + เพิ่มวัตถุดิบ
                         </button>
@@ -772,7 +772,7 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
                 />
                 <label
                   htmlFor="product-main-file-upload"
-                  className="inline-flex cursor-pointer rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                  className="inline-flex cursor-pointer rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-primary-hover)]"
                 >
                   เพิ่มไฟล์ Product หลัก
                 </label>
@@ -812,7 +812,7 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
               <button
                 type="submit"
                 disabled={loading}
-                className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-lg bg-[var(--color-primary)] px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {loading ? 'กำลังบันทึก...' : 'บันทึกสินค้า'}
               </button>

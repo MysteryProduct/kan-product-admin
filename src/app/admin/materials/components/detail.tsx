@@ -24,13 +24,13 @@ export default function MaterialDetailModal({ isOpen, onClose, material }: Mater
 
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-300/40 p-4 backdrop-blur-sm dark:bg-gray-900/60">
-			<div className="w-full max-w-3xl overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-gray-800">
-				<div className="bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 px-6 py-5 shadow-lg">
+			<div className="w-full max-w-3xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)] overlay-surface ">
+				<div className="bg-[var(--color-primary)] px-6 py-5 ">
 					<div className="flex items-center justify-between gap-3">
 						<h2 className="text-2xl font-bold text-white">รายละเอียดวัตถุดิบ</h2>
 						<button
 							onClick={onClose}
-							className="rounded-xl p-2 text-white transition-all duration-200 hover:bg-white/20 hover:text-gray-100"
+							className="rounded-lg border border-white/60 bg-white/15 p-2 text-white transition-colors hover:bg-white/25 disabled:opacity-50"
 							type="button"
 						>
 							<svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,7 +70,7 @@ export default function MaterialDetailModal({ isOpen, onClose, material }: Mater
 						</div>
 					</div>
 
-					<div className="rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-5 shadow-lg">
+					<div className="rounded-2xl bg-[var(--color-bg-secondary)] p-5 ">
 						<div className="flex items-center justify-between">
 							<span className="text-lg font-semibold text-white">ราคา</span>
 							<span className="text-2xl font-bold text-white">฿{formatCurrency(Number(material.material_price || 0))}</span>

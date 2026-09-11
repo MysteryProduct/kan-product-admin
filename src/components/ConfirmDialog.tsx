@@ -1,3 +1,5 @@
+import Modal from '@/components/Modal';
+
 interface ConfirmDialogProps {
   isOpen: boolean;
   onConfirm: () => void;
@@ -15,44 +17,39 @@ export default function ConfirmDialog({
   message,
   bottom_className = '',
 }: ConfirmDialogProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-gray-300/40 dark:bg-black/50 bg-opacity-50"
-        onClick={onCancel}
-      />
-      
-      {/* Modal */}
-      <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-md w-full mx-4 animate-in fade-in zoom-in duration-200">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-          {title}
-        </h3>
-        
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
-          {message}
-        </p>
-        
-        <div className="flex gap-3 justify-end">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
-          >
+    <Modal
+      isOpen={isOpen}
+      onClose={onCancel}
+      title={title}
+      description="โปรดตรวจสอบข้อมูลก่อนยืนยัน"
+      size="sm"
+      footer={
+        <>
+          <button type="button" onClick={onCancel} className="min-h-11 rounded-lg border border-[var(--color-border)] px-4 py-2 font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]">
             ยกเลิก
           </button>
           <button
+            type="button"
             onClick={() => {
               onConfirm();
               onCancel();
             }}
-            className={` ${bottom_className !== '' ? bottom_className : 'px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium'} `}
+            className={bottom_className || 'min-h-11 rounded-lg bg-[var(--color-error)] px-4 py-2 font-medium text-white hover:opacity-90'}
           >
             ยืนยัน
           </button>
+        </>
+      }
+    >
+      <div className="flex gap-4">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)] text-[var(--color-error)]" aria-hidden="true">
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v4m0 4h.01M10.3 3.7 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z" />
+          </svg>
         </div>
+        <p className="break-words text-[var(--color-text-secondary)]">{message}</p>
       </div>
-    </div>
+    </Modal>
   );
 }

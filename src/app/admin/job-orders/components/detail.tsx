@@ -80,7 +80,7 @@ export default function JobOrderDetailModal({
 
 	return (
 		<div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm p-4 overflow-y-auto">
-			<div className="mx-auto max-w-3xl mt-6 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl overflow-hidden">
+			<div className="mx-auto max-w-3xl mt-6 rounded-2xl bg-[var(--color-bg-primary)]  border border-[var(--color-border)] dark:border-[var(--color-border)] overlay-surface overflow-hidden">
 				<div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
 					<div className="flex items-center justify-between gap-3">
 						<h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">รายละเอียดงานผลิต</h2>
@@ -206,7 +206,7 @@ export default function JobOrderDetailModal({
 									type="button"
 									onClick={onConfirmComplete}
 									disabled={isConfirming}
-									className="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors disabled:opacity-60"
+									className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors disabled:opacity-60"
 								>
 									{isConfirming ? 'กำลังยืนยัน...' : 'ยืนยันปิดงาน'}
 								</button>

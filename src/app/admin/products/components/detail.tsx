@@ -107,7 +107,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
       <div className="absolute inset-0 bg-gray-900/40 dark:bg-black/70" onClick={onClose} />
 
-      <div className="relative max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-800">
+      <div className="relative max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface dark:border-[var(--color-border)] ">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6 dark:border-gray-700 dark:bg-gray-800/95">
           <h2 className="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-100">รายละเอียดสินค้าแบบ ER</h2>
           <button onClick={onClose} className="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-200">

@@ -9,6 +9,7 @@ import PurchaseReceiptModel from '@/models/purchase-receipt';
 import { formatThaiDate } from '@/lib/date-format';
 import { calculateVatSummary, VAT_TYPE_LABELS } from '@/lib/vat';
 import useVatRate from '@/hooks/useVatRate';
+import DocumentHistoryPanel from '@/components/document-history/DocumentHistoryPanel';
 
 
 interface PurchaseReceiptDetailModalProps {
@@ -109,15 +110,16 @@ export default function PurchaseReceiptDetailModal({
 		}
 	};
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-300/40 p-4 backdrop-blur-sm">
-			<div className="w-full max-w-6xl overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-gray-800">
-				<div className="bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 px-6 py-5 shadow-lg">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-[2px]">
+			<div className="overlay-surface w-full max-w-6xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)]">
+				<div className="border-b border-[var(--color-border)] px-6 py-5">
 					<div className="flex items-center justify-between gap-3">
-						<h2 className="text-2xl font-bold text-white">รายละเอียดใบรับสินค้า</h2>
+						<h2 className="text-xl font-semibold text-[var(--color-text-primary)]">รายละเอียดใบรับสินค้า</h2>
 						<button
 							onClick={onClose}
-							className="rounded-xl p-2 text-white transition-all duration-200 hover:bg-white/20 hover:text-black"
+							className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-2 text-[var(--color-text-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-bg-tertiary)]"
 							type="button"
+							aria-label="ปิดรายละเอียดใบรับสินค้า"
 						>
 							<svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -129,20 +131,20 @@ export default function PurchaseReceiptDetailModal({
 				<div className="max-h-[calc(90vh-160px)] overflow-y-auto p-6">
 					<div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
 						<div>
-							<label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">เลขที่ใบรับสินค้า</label>
-							<div className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">
+							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">เลขที่ใบรับสินค้า</label>
+							<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
 								{purchaseReceipt.purchase_receipt_code || purchaseReceipt.purchase_receipt_id}
 							</div>
 						</div>
 						<div>
-							<label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">เลขที่ใบสั่งซื้อ</label>
-							<div className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">
+							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">เลขที่ใบสั่งซื้อ</label>
+							<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
 								{purchaseReceipt.purchaseOrder?.purchase_order_code || purchaseReceipt.purchase_order_id}
 							</div>
 						</div>
 						<div>
-							<label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">วันที่รับสินค้า</label>
-							<div className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">
+							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">วันที่รับสินค้า</label>
+							<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
 								{formatThaiDate(purchaseReceipt.entry_date)}
 							</div>
 						</div>
@@ -150,20 +152,20 @@ export default function PurchaseReceiptDetailModal({
 
 					<div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
 						<div>
-							<label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">ผู้จัดจำหน่าย</label>
-							<div className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">
+							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">ผู้จัดจำหน่าย</label>
+							<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
 								{purchaseReceipt.supplier?.supplier_name || purchaseReceipt.supplier_id || '-'}
 							</div>
 						</div>
 						<div>
-							<label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">รูปแบบ VAT</label>
-							<div className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">
+							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">รูปแบบ VAT</label>
+							<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
 								{VAT_TYPE_LABELS[purchaseReceipt.vat_type || 'none']}
 							</div>
 						</div>
 						<div>
-							<label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">รายละเอียดใบรับสินค้า</label>
-							<div className="min-h-[44px] rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">
+							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">รายละเอียดใบรับสินค้า</label>
+							<div className="min-h-[44px] rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
 								{purchaseReceipt.purchase_receipt_detail || purchaseReceipt.purchase_receipt_detail || '-'}
 							</div>
 						</div>
@@ -174,45 +176,42 @@ export default function PurchaseReceiptDetailModal({
 							items.map((item, index) => (
 								<div
 									key={item.purchase_receipt_list_id || `${item.purchase_order_list_id}-${index}`}
-									className="rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-4 shadow-sm dark:border-gray-700 dark:from-gray-800 dark:to-gray-900"
+									className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-4"
 								>
 									<div className="mb-3 flex items-center gap-2">
-										<span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+										<span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)] text-sm font-semibold text-[var(--color-primary)]">
 											{index + 1}
 										</span>
-										{/* <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-											PO List ID: {item.purchase_order_list_id}
-										</span> */}
 									</div>
 
 									<div className="grid grid-cols-1 gap-4 md:grid-cols-5">
 										<div>
-											<label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">วัตถุดิบ</label>
-											<div className="rounded-xl border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">
+											<label className="mb-1 block text-xs font-medium text-[var(--color-text-secondary)]">วัตถุดิบ</label>
+											<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)]">
 												{getMaterialDisplay(item)}
 											</div>
 										</div>
 										<div>
-											<label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">จำนวนรับ</label>
-											<div className="rounded-xl border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">
+											<label className="mb-1 block text-xs font-medium text-[var(--color-text-secondary)]">จำนวนรับ</label>
+											<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)]">
 												{item.purchase_receipt_list_qty}
 											</div>
 										</div>
 										<div>
-											<label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">ราคา/หน่วย</label>
-											<div className="rounded-xl border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">
+											<label className="mb-1 block text-xs font-medium text-[var(--color-text-secondary)]">ราคา/หน่วย</label>
+											<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)]">
 												฿{formatCurrency(item.purchase_receipt_list_price)}
 											</div>
 										</div>
 										<div>
-											<label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">หน่วย</label>
-											<div className="rounded-xl border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100">
+											<label className="mb-1 block text-xs font-medium text-[var(--color-text-secondary)]">หน่วย</label>
+											<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)]">
 												{item.productUnit?.product_unit_name || item.product_unit_id || '-'}
 											</div>
 										</div>
 										<div>
-											<label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">ยอดรวม</label>
-											<div className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+											<label className="mb-1 block text-xs font-medium text-[var(--color-text-secondary)]">ยอดรวม</label>
+											<div className="numeric rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm font-semibold text-[var(--color-text-primary)]">
 												฿{formatCurrency(calculateItemTotal(item))}
 											</div>
 										</div>
@@ -220,13 +219,13 @@ export default function PurchaseReceiptDetailModal({
 								</div>
 							))
 						) : (
-							<div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
+							<div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-6 text-center text-[var(--color-text-secondary)]">
 								ไม่พบรายการวัตถุดิบ
 							</div>
 						)}
 					</div>
 
-					<div className="mt-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-5 shadow-lg text-white space-y-2">
+					<div className="mt-6 space-y-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5 text-[var(--color-text-primary)]">
 						<div className="flex items-center justify-between text-sm md:text-base">
 							<span>ยอดก่อน VAT</span>
 							<span>฿{formatCurrency(vatSummary.subtotal)}</span>
@@ -235,17 +234,19 @@ export default function PurchaseReceiptDetailModal({
 							<span>VAT {vatRate}% ({VAT_TYPE_LABELS[purchaseReceipt.vat_type || 'none']})</span>
 							<span>฿{formatCurrency(vatSummary.vatAmount)}</span>
 						</div>
-						<div className="flex items-center justify-between border-t border-white/30 pt-2">
+						<div className="flex items-center justify-between border-t border-[var(--color-border)] pt-3">
 							<span className="text-lg font-semibold">ยอดรวมทั้งสิ้น</span>
-							<span className="text-2xl font-bold">฿{formatCurrency(vatSummary.total)}</span>
+							<span className="numeric text-2xl font-semibold text-[var(--color-primary)]">฿{formatCurrency(vatSummary.total)}</span>
 						</div>
 					</div>
 
-					<div className="flex pt-6 border-t-2 border-gray-200">
+					<DocumentHistoryPanel endpoint={`/purchase-receipt/${purchaseReceipt.purchase_receipt_id}/history`} />
+
+					<div className="flex border-t border-[var(--color-border)] pt-6">
 						<button
 							type="button"
 							onClick={onClose}
-							className="w-full px-6 py-3.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all font-semibold border-2 border-gray-200 hover:border-gray-300"
+							className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-6 py-3 font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]"
 						>
 							ปิด
 						</button>
@@ -253,7 +254,7 @@ export default function PurchaseReceiptDetailModal({
 							<button
 								type="button"
 								onClick={() => setShowConfirmDialog(true)}
-								className="w-full ml-4 px-6 py-3.5 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all font-semibold border-2 border-green-600 hover:border-green-700"
+								className="ml-4 w-full rounded-lg bg-[var(--color-primary)] px-6 py-3 font-semibold text-white hover:bg-[var(--color-primary-hover)]"
 							>
 								อนุมัติ
 							</button>
@@ -265,7 +266,7 @@ export default function PurchaseReceiptDetailModal({
 								message="คุณแน่ใจหรือไม่ว่าต้องการอนุมัติใบรับสินค้านี้?"
 								onConfirm={handleApprove}
 								onCancel={() => setShowConfirmDialog(false)}
-								bottom_className=" px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all font-semibold border-2 border-green-600 hover:border-green-700"
+								bottom_className="rounded-lg bg-[var(--color-primary)] px-4 py-2 font-semibold text-white hover:bg-[var(--color-primary-hover)]"
 							/>
 						)}
 					</div>

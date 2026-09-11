@@ -253,13 +253,13 @@ export default function UpdateSupplierModal({ isOpen, onClose, supplierId, onUpd
                             </div>
                             <div>
                                 <h2 className="text-xl sm:text-2xl font-bold text-white">แก้ไขข้อมูลผู้จัดจำหน่าย</h2>
-                                <p className="text-white/80 text-sm hidden sm:block">กรุณาแก้ไขข้อมูลให้ครบถ้วนเพื่ออัปเดตผู้จัดจำหน่าย</p>
+                                <p className="rounded-lg border border-white/60 bg-white/15 p-2 text-white transition-colors hover:bg-white/25 disabled:opacity-50">กรุณาแก้ไขข้อมูลให้ครบถ้วนเพื่ออัปเดตผู้จัดจำหน่าย</p>
                             </div>
                         </div>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-lg flex-shrink-0"
+                            className="rounded-lg border border-white/60 bg-white/15 p-2 text-white transition-colors hover:bg-white/25 disabled:opacity-50"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -664,7 +664,7 @@ export default function UpdateSupplierModal({ isOpen, onClose, supplierId, onUpd
                                     type="submit"
                                     onClick={handleSubmit}
                                     disabled={isSubmitting}
-                                    className="w-full sm:w-auto px-8 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center gap-2"
+                                    className="w-full sm:w-auto px-8 py-3 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium flex items-center justify-center gap-2"
                                 >
                                     {isSubmitting ? (
                                         <>

@@ -17,15 +17,15 @@ export default function Header() {
   };
   
   return (
-    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-40">
+    <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[var(--color-bg-primary)]">
       <div className="px-6 py-4 flex items-center justify-between">
         {/* Left: Menu Button */}
         <button 
           onClick={toggleSidebar}
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-          aria-label="Toggle sidebar"
+          className="rounded-lg p-2 hover:bg-[var(--color-bg-tertiary)]"
+          aria-label="เปิดหรือปิดเมนูด้านข้าง"
         >
-          <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="h-6 w-6 text-[var(--color-text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
@@ -36,8 +36,9 @@ export default function Header() {
           <div className="relative hidden lg:block">
             <input
               type="text"
-              placeholder="Try to searching"
-              className="w-64 pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              aria-label="ค้นหา"
+              placeholder="ค้นหา"
+              className="w-64 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] py-2 pl-10 pr-4 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]"
             />
             <svg
               className="w-5 h-5 text-gray-400 dark:text-gray-500 absolute left-3 top-1/2 -translate-y-1/2"
@@ -50,21 +51,21 @@ export default function Header() {
           </div>
 
           {/* Search Icon for mobile */}
-          <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg lg:hidden">
+          <button type="button" aria-label="ค้นหา" className="rounded-lg p-2 hover:bg-[var(--color-bg-tertiary)] lg:hidden">
             <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </button>
 
           {/* Language - Hidden on small screens */}
-          <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg hidden md:block">
+          <button type="button" aria-label="เปลี่ยนภาษา" className="hidden rounded-lg p-2 hover:bg-[var(--color-bg-tertiary)] md:block">
             <div className="w-6 h-6 rounded-full overflow-hidden">
               <span className="text-lg">🇬🇧</span>
             </div>
           </button>
 
           {/* Shopping Cart - Hidden on small screens */}
-          <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg relative hidden sm:block">
+          <button type="button" aria-label="ตะกร้าสินค้า" className="relative hidden rounded-lg p-2 hover:bg-[var(--color-bg-tertiary)] sm:block">
             <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
@@ -77,7 +78,7 @@ export default function Header() {
           <ThemeToggle />
 
           {/* Notifications */}
-          <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg relative">
+          <button type="button" aria-label="การแจ้งเตือน" className="relative rounded-lg p-2 hover:bg-[var(--color-bg-tertiary)]">
             <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
@@ -98,7 +99,8 @@ export default function Header() {
             <button
               onClick={handleLogout}
               className="ml-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-              title="Logout"
+              aria-label="ออกจากระบบ"
+              title="ออกจากระบบ"
             >
               <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

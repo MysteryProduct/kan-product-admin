@@ -2,22 +2,23 @@ import React from 'react';
 import ChartCard from './ChartCard';
 
 export default function ProfitExpenses() {
+  const barHeights = [92, 128, 78, 146, 112, 164, 136];
   return (
     <ChartCard title="Profit & Expenses">
       <div className="space-y-3 sm:space-y-4">
-        <div className="h-48 sm:h-64 bg-gradient-to-t from-blue-100 dark:from-blue-900/30 to-transparent rounded-lg flex items-end justify-around p-2 sm:p-4">
+        <div className="flex h-48 items-end justify-around rounded-lg bg-[var(--color-bg-secondary)] p-2 sm:h-64 sm:p-4" aria-label="กราฟกำไรและค่าใช้จ่ายรายเดือน">
           {['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'].map((month, index) => (
             <div key={month} className="flex flex-col items-center">
               <div 
-                className="w-8 bg-blue-500 rounded-t"
-                style={{ height: `${Math.random() * 150 + 50}px` }}
+                className="w-8 rounded-t bg-[var(--color-primary)]"
+                style={{ height: `${barHeights[index]}px` }}
               ></div>
-              <span className="text-xs mt-2 text-gray-600 dark:text-gray-400">{month}</span>
+              <span className="mt-2 text-xs text-[var(--color-text-secondary)]">{month}</span>
             </div>
           ))}
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="grid grid-cols-1 gap-3 border-t border-[var(--color-border)] pt-3 sm:grid-cols-3 sm:gap-4 sm:pt-4">
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
               <span className="text-lg sm:text-xl">💰</span>
@@ -49,7 +50,7 @@ export default function ProfitExpenses() {
           </div>
         </div>
         
-        <button className="w-full text-center text-blue-600 font-semibold py-2 hover:bg-blue-50 rounded-lg transition">
+        <button type="button" className="w-full rounded-lg py-2 text-center font-semibold text-[var(--color-primary)] hover:bg-[var(--color-bg-secondary)]">
           View Full Report
         </button>
       </div>

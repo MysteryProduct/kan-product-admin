@@ -1,3 +1,5 @@
+import Modal from '@/components/Modal';
+
 type ActionResultDialogStatus = 'success' | 'error';
 export type ActionResultDialogAction = 'insert' | 'update' | 'delete' | 'approve';
 
@@ -25,50 +27,42 @@ export default function ActionResultDialog({
   message,
   confirmText = 'ตกลง',
 }: ActionResultDialogProps) {
-  if (!isOpen) return null;
-
-  const title = status === 'success' ? 'สำเร็จ!' : 'เกิดข้อผิดพลาด';
+  const isSuccess = status === 'success';
+  const title = isSuccess ? 'ดำเนินการสำเร็จ' : 'ดำเนินการไม่สำเร็จ';
   const actionLabel = actionLabelMap[action];
-  const defaultMessage =
-    status === 'success' ? `${actionLabel}สำเร็จ` : `${actionLabel}ไม่สำเร็จ`;
+  const defaultMessage = isSuccess ? `${actionLabel}สำเร็จ` : `${actionLabel}ไม่สำเร็จ`;
+  const statusColor = isSuccess ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]';
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 max-w-md w-full animate-fadeIn">
-        <div className="flex flex-col items-center gap-4">
-          {status === 'success' ? (
-            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={title}
+      description={actionLabel}
+      size="sm"
+      layer="elevated"
+      footer={
+        <button type="button" onClick={onClose} className="min-h-11 rounded-lg bg-[var(--color-primary)] px-5 py-2 font-medium text-white hover:bg-[var(--color-primary-hover)]">
+          {confirmText}
+        </button>
+      }
+    >
+      <div className="flex items-start gap-4">
+        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)] ${statusColor}`} aria-hidden="true">
+          {isSuccess ? (
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m5 13 4 4L19 7" />
+            </svg>
           ) : (
-            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </div>
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18 18 6M6 6l12 12" />
+            </svg>
           )}
-
-          <h3 className={`text-xl font-semibold ${status === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-            {title}
-          </h3>
-
-          <p role={status === 'error' ? 'alert' : 'status'} className="text-gray-700 dark:text-gray-300 text-center whitespace-pre-line break-words">{message || defaultMessage}</p>
-
-          <button
-            onClick={onClose}
-            className={`w-full px-6 py-3 rounded-lg font-medium transition-colors ${
-              status === 'success'
-                ? 'bg-green-600 hover:bg-green-700 text-white'
-                : 'bg-red-600 hover:bg-red-700 text-white'
-            }`}
-          >
-            {confirmText}
-          </button>
         </div>
+        <p role={isSuccess ? 'status' : 'alert'} className="break-words whitespace-pre-line text-[var(--color-text-secondary)]">
+          {message || defaultMessage}
+        </p>
       </div>
-    </div>
+    </Modal>
   );
 }

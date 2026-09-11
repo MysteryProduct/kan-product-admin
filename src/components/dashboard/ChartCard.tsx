@@ -7,11 +7,11 @@ interface ChartCardProps {
 
 export default function ChartCard({ title, children }: ChartCardProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 sm:p-6">
-      <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-900 dark:text-gray-100">{title}</h3>
+    <section className="surface rounded-xl p-4 sm:p-6">
+      <h2 className="mb-3 text-base font-semibold text-[var(--color-text-primary)] sm:mb-4 sm:text-lg">{title}</h2>
       <div className="w-full">
         {children}
       </div>
-    </div>
+    </section>
   );
 }

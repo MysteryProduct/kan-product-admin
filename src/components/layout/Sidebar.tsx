@@ -143,7 +143,7 @@ export default function Sidebar() {
               }
             }
           }}
-          className={`flex items-center justify-between px-4 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition-colors ${isActive || hasActiveSubItem ? 'bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400' : ''}
+          className={`flex items-center justify-between px-4 py-3 text-[15px] leading-6 text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-300 rounded-lg transition-colors ${isActive || hasActiveSubItem ? 'bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300' : ''}
             } ${isSubItem ? 'pl-12 text-sm' : ''}`}
         >
           <div className="flex items-center gap-3">
@@ -187,7 +187,7 @@ export default function Sidebar() {
                       closeSidebar();
                     }
                   }}
-                  className={`flex items-center px-4 py-2 pl-12 text-sm text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition-colors ${isSubItemActive ? 'bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-400 font-medium' : ''}`}
+                  className={`flex items-center px-4 py-2.5 pl-12 text-sm leading-6 text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-300 rounded-lg transition-colors ${isSubItemActive ? 'bg-blue-50 dark:bg-gray-700 text-blue-600 dark:text-blue-300 font-medium' : ''}`}
                 >
                   {subItem.title}
                 </Link>

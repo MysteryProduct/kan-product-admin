@@ -105,13 +105,13 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-300/40 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-6xl overflow-hidden rounded-3xl bg-white shadow-2xl dark:bg-gray-800">
-                <div className="bg-gradient-to-r from-blue-600 via-blue-500 to-indigo-600 px-6 py-5 shadow-lg">
+            <div className="w-full max-w-6xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)] overlay-surface ">
+                <div className="bg-[var(--color-primary)] px-6 py-5 ">
                     <div className="flex items-center justify-between gap-3">
                         <h2 className="text-2xl font-bold text-white">รายละเอียดใบขายสินค้า</h2>
                         <button
                             onClick={onClose}
-                            className="rounded-xl p-2 text-white transition-all duration-200 hover:bg-white/20 hover:text-black"
+                            className="rounded-lg border border-white/60 bg-white/15 p-2 text-white transition-colors hover:bg-white/25 disabled:opacity-50"
                             type="button"
                         >
                             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -177,7 +177,7 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
                             items.map((item, index) => (
                                 <div
                                     key={item.sale_order_list_id || `${item.product_name}-${index}`}
-                                    className="rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-gray-50 p-4 shadow-sm dark:border-gray-700 dark:from-gray-800 dark:to-gray-900"
+                                    className="rounded-2xl border border-gray-200 bg-[var(--color-bg-secondary)] from-white p-4 dark:border-gray-700 "
                                 >
                                     <div className="mb-3 flex items-center gap-2">
                                         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
@@ -220,7 +220,7 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
                     </div>
 
                     {/* VAT Summary */}
-                    <div className="mt-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-5 text-white shadow-lg">
+                    <div className="mt-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5 text-[var(--color-text-primary)]">
                         <div className="space-y-2">
                             <div className="flex items-center justify-between text-sm md:text-base">
                                 <span>ยอดก่อน VAT</span>
@@ -230,7 +230,7 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
                                 <span>VAT {vatRate}% ({VAT_TYPE_LABELS[saleOrder.vat_type || 'none']})</span>
                                 <span>฿{formatCurrency(vatSummary.vatAmount)}</span>
                             </div>
-                            <div className="flex items-center justify-between border-t border-white/30 pt-2">
+                            <div className="flex items-center justify-between border-t border-[var(--color-border)] pt-2">
                                 <span className="text-lg font-semibold">ยอดรวมทั้งสิ้น</span>
                                 <span className="text-2xl font-bold">฿{formatCurrency(vatSummary.total)}</span>
                             </div>
@@ -250,7 +250,7 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
                             <button
                                 type="button"
                                 onClick={() => setShowConfirmDialog(true)}
-                                className="flex-1 rounded-xl border-2 border-green-600 bg-green-600 px-6 py-3.5 font-semibold text-white transition-all hover:border-green-700 hover:bg-green-700"
+                                className="flex-1 rounded-xl border-2 border-[var(--color-primary)] bg-[var(--color-primary)] px-6 py-3.5 font-semibold text-white transition-all hover:border-[var(--color-primary-hover)] hover:bg-[var(--color-primary-hover)]"
                             >
                                 อนุมัติ
                             </button>
@@ -266,7 +266,7 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
                     message="คุณแน่ใจหรือไม่ว่าต้องการอนุมัติใบขายสินค้านี้?"
                     onConfirm={handleApprove}
                     onCancel={() => setShowConfirmDialog(false)}
-                    bottom_className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all font-semibold border-2 border-green-600 hover:border-green-700"
+                    bottom_className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-xl hover:bg-[var(--color-primary-hover)] transition-all font-semibold border-2 border-[var(--color-primary)] hover:border-[var(--color-primary-hover)]"
                 />
             )}
 

@@ -32,10 +32,10 @@ export default function DashboardLayout({
   // ถ้ากำลัง loading ให้แสดง loading screen
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex h-screen items-center justify-center bg-[var(--color-bg-secondary)]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-2 border-[var(--color-border)] border-b-[var(--color-primary)]" aria-hidden="true"></div>
+          <p className="text-[var(--color-text-secondary)]">กำลังโหลด…</p>
         </div>
       </div>
     );
@@ -43,11 +43,11 @@ export default function DashboardLayout({
 
   if (sessionError && !isAuthenticated) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-6">
-        <div className="max-w-xl rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
-          <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">ตรวจสอบเซสชันไม่สำเร็จ</h1>
-          <p role="alert" className="mt-2 text-sm text-gray-600 dark:text-gray-300 whitespace-pre-line">{sessionError}</p>
-          <button type="button" onClick={() => { void refreshSession(); }} className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">ลองใหม่</button>
+      <main className="flex min-h-screen items-center justify-center bg-[var(--color-bg-secondary)] p-6">
+        <div className="surface max-w-xl rounded-xl p-6">
+          <h1 className="text-lg font-semibold text-[var(--color-text-primary)]">ตรวจสอบเซสชันไม่สำเร็จ</h1>
+          <p role="alert" className="mt-2 whitespace-pre-line text-sm text-[var(--color-text-secondary)]">{sessionError}</p>
+          <button type="button" onClick={() => { void refreshSession(); }} className="mt-4 rounded-lg bg-[var(--color-primary)] px-4 py-2 text-white hover:bg-[var(--color-primary-hover)]">ลองใหม่</button>
         </div>
       </main>
     );
@@ -60,10 +60,10 @@ export default function DashboardLayout({
 
   if (!isPermissionLoaded) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex h-screen items-center justify-center bg-[var(--color-bg-secondary)]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Loading...</p>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-2 border-[var(--color-border)] border-b-[var(--color-primary)]" aria-hidden="true"></div>
+          <p className="text-[var(--color-text-secondary)]">กำลังโหลด…</p>
         </div>
       </div>
     );
@@ -72,14 +72,14 @@ export default function DashboardLayout({
   if (!canViewPage) {
     return (
       <SidebarProvider>
-        <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
+        <div className="flex h-screen overflow-hidden bg-[var(--color-bg-secondary)]">
           <Sidebar />
           <div className="flex flex-col flex-1 overflow-hidden">
             <Header />
-            <main className="overflow-auto flex-1 bg-gray-50 dark:bg-gray-900 p-6">
-              <div className="max-w-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 shadow-sm">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">ไม่พบสิทธิ์การเข้าถึง</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400">คุณไม่มีสิทธิ์ดูหน้านี้ กรุณาติดต่อผู้ดูแลระบบ</p>
+            <main className="flex-1 overflow-auto bg-[var(--color-bg-secondary)] p-6">
+              <div className="surface max-w-xl rounded-xl p-6">
+                <h2 className="mb-2 text-lg font-semibold text-[var(--color-text-primary)]">ไม่พบสิทธิ์การเข้าถึง</h2>
+                <p className="text-sm text-[var(--color-text-secondary)]">คุณไม่มีสิทธิ์ดูหน้านี้ กรุณาติดต่อผู้ดูแลระบบ</p>
               </div>
             </main>
           </div>
@@ -91,11 +91,11 @@ export default function DashboardLayout({
   // ถ้า login แล้ว แสดงผล dashboard พร้อม header และ sidebar
   return (
     <SidebarProvider>
-      <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
+      <div className="flex h-screen overflow-hidden bg-[var(--color-bg-secondary)]">
         <Sidebar />
         <div className="flex flex-col flex-1 overflow-hidden">
           <Header />
-          <main className="overflow-auto flex-1 bg-gray-50 dark:bg-gray-900">
+          <main className="flex-1 overflow-auto bg-[var(--color-bg-secondary)]">
             {children}
           </main>
         </div>
