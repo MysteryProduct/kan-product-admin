@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Modal from '@/components/Modal';
 import axiosInstance from '@/lib/axios';
 import { formatThaiDateTime } from '@/lib/date-format';
@@ -12,10 +12,24 @@ type Entry = {
   actor_id: string;
   supplier_names: Record<string, string>;
   purchase_order_codes: Record<string, string>;
+  material_names: Record<string, string>;
+  product_unit_names: Record<string, string>;
   reason: string | null;
   previous_value: Record<string, unknown> | null;
   next_value: Record<string, unknown> | null;
   created_at: string;
+};
+
+type HistoryItem = {
+  material_id?: string;
+  product_unit_id?: number;
+  quantity?: number;
+  status?: string;
+};
+
+type HistoryResponse = {
+  data: Entry[];
+  meta: { page: number; last_page: number };
 };
 
 const actions: Record<string, string> = { created: 'สร้างเอกสาร', updated: 'แก้ไขเอกสาร', approved: 'อนุมัติ', rejected: 'ปฏิเสธ', cancelled: 'ยกเลิก', status_changed: 'เปลี่ยนสถานะ', deleted: 'ลบเอกสาร' };
@@ -45,28 +59,53 @@ function changes(entry: Entry) {
     .filter((change) => change.before !== '-' || change.after !== '-');
 }
 
+function historyItems(value: Record<string, unknown> | null): HistoryItem[] {
+  return Array.isArray(value?.items) ? value.items as HistoryItem[] : [];
+}
+
+function itemText(item: HistoryItem, entry: Entry) {
+  const material = entry.material_names?.[item.material_id ?? ''] ?? item.material_id ?? 'ไม่ทราบวัตถุดิบ';
+  const unit = entry.product_unit_names?.[String(item.product_unit_id)] ?? item.product_unit_id ?? '-';
+  const status = item.status ? statuses[item.status] ?? item.status : null;
+  return `${material} · ${item.quantity ?? '-'} ${unit}${status ? ` · ${status}` : ''}`;
+}
+
 export default function DocumentHistoryPanel({ endpoint }: { endpoint: string }) {
   const [open, setOpen] = useState(false);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
 
-  useEffect(() => {
-    if (!open) return;
-    let active = true;
+  const loadHistory = async (nextPage: number) => {
     setLoading(true);
     setError('');
-    axiosInstance.get<{ data: Entry[] }>(endpoint)
-      .then((response) => active && setEntries(response.data.data ?? []))
-      .catch(() => active && setError('ไม่สามารถโหลดประวัติการเปลี่ยนแปลงได้'))
-      .finally(() => active && setLoading(false));
-    return () => { active = false; };
-  }, [endpoint, open]);
+    try {
+      const response = await axiosInstance.get<HistoryResponse>(endpoint, {
+        params: { page: nextPage, limit: 20 },
+      });
+      setEntries((current) => nextPage === 1
+        ? response.data.data ?? []
+        : [...current, ...(response.data.data ?? [])]);
+      setPage(response.data.meta?.page ?? nextPage);
+      setLastPage(response.data.meta?.last_page ?? nextPage);
+    } catch {
+      setError('ไม่สามารถโหลดประวัติการเปลี่ยนแปลงได้');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openHistory = () => {
+    setOpen(true);
+    void loadHistory(1);
+  };
 
   return (
     <>
       <div className="mt-6 border-t border-[var(--color-border)] pt-6">
-        <button type="button" onClick={() => setOpen(true)} className="flex w-full items-center justify-between gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-4 text-left hover:border-[var(--color-primary)]">
+        <button type="button" onClick={openHistory} className="flex w-full items-center justify-between gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-4 text-left hover:border-[var(--color-primary)]">
           <span>
             <strong className="block text-sm font-semibold text-[var(--color-text-primary)]">ประวัติการเปลี่ยนแปลง</strong>
             <span className="mt-1 block text-sm text-[var(--color-text-secondary)]">ดูผู้ดำเนินการ วันเวลา และรายละเอียดทั้งหมด</span>
@@ -82,6 +121,9 @@ export default function DocumentHistoryPanel({ endpoint }: { endpoint: string })
         <ol className="space-y-3">
           {entries.map((entry) => {
             const entryChanges = changes(entry);
+            const previousItems = historyItems(entry.previous_value);
+            const nextItems = historyItems(entry.next_value);
+            const itemsChanged = JSON.stringify(previousItems) !== JSON.stringify(nextItems);
             return (
               <li key={entry.document_history_id} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-4">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -106,10 +148,40 @@ export default function DocumentHistoryPanel({ endpoint }: { endpoint: string })
                     ))}
                   </dl>
                 )}
+                {itemsChanged && (
+                  <div className="mt-4 grid gap-3 border-t border-[var(--color-border)] pt-3 text-sm sm:grid-cols-2">
+                    <section aria-label="รายการเดิม">
+                      <strong className="text-[var(--color-text-secondary)]">รายการเดิม</strong>
+                      {previousItems.length > 0 ? (
+                        <ul className="mt-2 space-y-1">
+                          {previousItems.map((item, index) => <li key={`${item.material_id}-${index}`}>{itemText(item, entry)}</li>)}
+                        </ul>
+                      ) : <p className="mt-2 text-[var(--color-text-secondary)]">ไม่มีรายการ</p>}
+                    </section>
+                    <section aria-label="รายการใหม่">
+                      <strong className="text-[var(--color-text-primary)]">รายการใหม่</strong>
+                      {nextItems.length > 0 ? (
+                        <ul className="mt-2 space-y-1">
+                          {nextItems.map((item, index) => <li key={`${item.material_id}-${index}`}>{itemText(item, entry)}</li>)}
+                        </ul>
+                      ) : <p className="mt-2 text-[var(--color-text-secondary)]">ไม่มีรายการ</p>}
+                    </section>
+                  </div>
+                )}
               </li>
             );
           })}
         </ol>
+        {!error && entries.length > 0 && page < lastPage && (
+          <button
+            type="button"
+            onClick={() => void loadHistory(page + 1)}
+            disabled={loading}
+            className="mt-4 w-full rounded-lg border border-[var(--color-border)] px-4 py-2.5 text-sm font-medium text-[var(--color-primary)] hover:border-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? 'กำลังโหลด…' : 'โหลดประวัติเพิ่มเติม'}
+          </button>
+        )}
       </Modal>
     </>
   );
