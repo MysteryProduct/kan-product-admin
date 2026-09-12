@@ -22,6 +22,9 @@ type Entry = {
 
 type HistoryItem = {
   material_id?: string;
+  product_name?: string;
+  product_variant_id?: string;
+  sale_order_list_id?: string;
   product_unit_id?: number;
   quantity?: number;
   status?: string;
@@ -32,9 +35,9 @@ type HistoryResponse = {
   meta: { page: number; last_page: number };
 };
 
-const actions: Record<string, string> = { created: 'สร้างเอกสาร', updated: 'แก้ไขเอกสาร', approved: 'อนุมัติ', rejected: 'ปฏิเสธ', cancelled: 'ยกเลิก', status_changed: 'เปลี่ยนสถานะ', deleted: 'ลบเอกสาร' };
-const statuses: Record<string, string> = { pending: 'รออนุมัติ', active: 'ใช้งานอยู่', approved: 'อนุมัติแล้ว', rejected: 'ปฏิเสธ', inactive: 'ยกเลิก', cancelled: 'ยกเลิก', partial: 'รับสินค้าบางส่วน', completed: 'รับสินค้าครบแล้ว' };
-const labels: Record<string, string> = { purchase_order_name: 'ชื่อใบสั่งซื้อ', purchase_order_detail: 'รายละเอียด', purchase_order_status: 'สถานะใบสั่งซื้อ', purchase_receipt_detail: 'รายละเอียด', purchase_receipt_status: 'สถานะใบรับสินค้า', supplier_id: 'ผู้จัดจำหน่าย', purchase_order_id: 'ใบสั่งซื้ออ้างอิง', entry_date: 'วันที่รับสินค้า', tax_invoice_number: 'เลขที่ใบกำกับภาษี', tax_invoice_date: 'วันที่ใบกำกับภาษี', vat_type: 'รูปแบบ VAT', vat_rate: 'อัตรา VAT' };
+const actions: Record<string, string> = { created: 'สร้างเอกสาร', updated: 'แก้ไขเอกสาร', approved: 'อนุมัติ', rejected: 'ปฏิเสธ', cancelled: 'ยกเลิก', returned: 'คืนสินค้า', refund_created: 'สร้างรายการคืนเงิน', status_changed: 'เปลี่ยนสถานะ', deleted: 'ลบเอกสาร' };
+const statuses: Record<string, string> = { pending: 'รออนุมัติ', active: 'ใช้งานอยู่', approved: 'อนุมัติแล้ว', rejected: 'ปฏิเสธ', inactive: 'ยกเลิก', cancelled: 'ยกเลิก', partial: 'รับสินค้าบางส่วน', paid: 'ชำระแล้ว', refunded: 'คืนเงินแล้ว', partially_returned: 'คืนสินค้าบางส่วน', returned: 'คืนสินค้าแล้ว', in_progress: 'กำลังผลิต', completed: 'ผลิตเสร็จแล้ว' };
+const labels: Record<string, string> = { purchase_order_name: 'ชื่อใบสั่งซื้อ', purchase_order_detail: 'รายละเอียด', purchase_order_status: 'สถานะใบสั่งซื้อ', purchase_receipt_detail: 'รายละเอียด', purchase_receipt_status: 'สถานะใบรับสินค้า', supplier_id: 'ผู้จัดจำหน่าย', purchase_order_id: 'ใบสั่งซื้ออ้างอิง', entry_date: 'วันที่รับสินค้า', tax_invoice_number: 'เลขที่ใบกำกับภาษี', tax_invoice_date: 'วันที่ใบกำกับภาษี', vat_type: 'รูปแบบ VAT', vat_rate: 'อัตรา VAT', sale_order_status: 'สถานะใบขาย', sale_order_type: 'ประเภทใบขาย', payment_receipt_type: 'ประเภทรายการรับชำระ', payment_status: 'สถานะการชำระ', job_order_status: 'สถานะงานผลิต', job_order_qty: 'จำนวนผลิต', job_order_defect_qty: 'จำนวนเสีย', employee_id: 'ผู้รับผิดชอบ' };
 
 function displayValue(value: unknown, key: string, suppliers: Record<string, string>, codes: Record<string, string>) {
   if (value === null || value === undefined || value === '') return '-';
@@ -64,7 +67,7 @@ function historyItems(value: Record<string, unknown> | null): HistoryItem[] {
 }
 
 function itemText(item: HistoryItem, entry: Entry) {
-  const material = entry.material_names?.[item.material_id ?? ''] ?? item.material_id ?? 'ไม่ทราบวัตถุดิบ';
+  const material = item.product_name ?? entry.material_names?.[item.material_id ?? ''] ?? item.product_variant_id ?? item.material_id ?? 'ไม่ทราบรายการ';
   const unit = entry.product_unit_names?.[String(item.product_unit_id)] ?? item.product_unit_id ?? '-';
   const status = item.status ? statuses[item.status] ?? item.status : null;
   return `${material} · ${item.quantity ?? '-'} ${unit}${status ? ` · ${status}` : ''}`;

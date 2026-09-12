@@ -2,6 +2,7 @@
 
 import { JobOrder } from '@/types/job-order';
 import { formatThaiDate } from '@/lib/date-format';
+import DocumentHistoryPanel from '@/components/document-history/DocumentHistoryPanel';
 
 interface JobOrderDetailModalProps {
 	isOpen: boolean;
@@ -214,6 +215,7 @@ export default function JobOrderDetailModal({
 						</div>
 					)}
 				</div>
+				{jobOrder && <div className="px-6 pb-2"><DocumentHistoryPanel endpoint={`/job-order/${jobOrder.job_order_id}/history`} /></div>}
 			</div>
 		</div>
 	);

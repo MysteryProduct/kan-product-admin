@@ -9,6 +9,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import SaleOrderModel from '@/models/sale-order';
 import { calculateVatSummary, VAT_TYPE_LABELS } from '@/lib/vat';
 import useVatRate from '@/hooks/useVatRate';
+import DocumentHistoryPanel from '@/components/document-history/DocumentHistoryPanel';
 
 interface SaleOrderDetailModalProps {
     isOpen: boolean;
@@ -125,6 +126,7 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
                             </svg>
                         </button>
                     </div>
+                    <DocumentHistoryPanel endpoint={`/sale-order/${saleOrder.sale_order_id}/history`} />
                 </div>
 
                 <div className="max-h-[calc(90vh-160px)] overflow-y-auto p-6">

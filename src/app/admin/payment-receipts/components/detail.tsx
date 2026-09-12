@@ -2,6 +2,7 @@
 
 import { formatThaiDate } from '@/lib/date-format';
 import { PAYMENT_METHOD_LABELS, PAYMENT_RECEIPT_STATUS_LABELS, PaymentReceipt } from '@/types/payment-receipt';
+import DocumentHistoryPanel from '@/components/document-history/DocumentHistoryPanel';
 
 interface PaymentReceiptDetailModalProps {
 	isOpen: boolean;
@@ -77,6 +78,9 @@ export default function PaymentReceiptDetailModal({
 						<p className="text-xs text-gray-500 dark:text-gray-400">หมายเหตุ</p>
 						<p className="text-sm font-medium text-gray-900 dark:text-gray-100">{paymentReceipt.payment_receipt_remark || '-'}</p>
 					</div>
+				</div>
+				<div className="px-6 pb-2">
+					<DocumentHistoryPanel endpoint={`/payment-receipts/${paymentReceipt.payment_receipt_id}/history`} />
 				</div>
 
 				<div className="flex justify-end border-t border-gray-200 px-6 py-4 dark:border-gray-700">
