@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useEffect, useId, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -101,9 +102,9 @@ export default function Modal({
     };
   }, [closeOnEscape, isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || typeof document === 'undefined') return null;
 
-  return (
+  return createPortal(
     <div
       className={`fixed inset-0 ${layer === 'elevated' ? 'z-[80]' : 'z-[70]'} flex items-end justify-center bg-slate-950/55 p-0 backdrop-blur-[2px] sm:items-center sm:p-4`}
       onMouseDown={(event) => {
@@ -133,6 +134,7 @@ export default function Modal({
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6">{children}</div>
         {footer && <footer className="flex shrink-0 flex-col-reverse gap-3 border-t border-[var(--color-border)] bg-[var(--color-bg-primary)] px-5 py-4 sm:flex-row sm:justify-end sm:px-6">{footer}</footer>}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
