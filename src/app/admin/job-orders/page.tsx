@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Cookies from 'js-cookie';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import CancellationDialog from '@/components/CancellationDialog';
 import LoadingSkeletonProps from '@/components/LoadingSkeleton';
 import { usePermissions } from '@/hooks/usePermissions';
 import JobOrderModel from '@/models/job-order';
@@ -278,6 +279,7 @@ export default function JobOrdersPage() {
 	const [completionQty, setCompletionQty] = useState('');
 	const [completionDefectQty, setCompletionDefectQty] = useState('');
 	const [isConfirmingComplete, setIsConfirmingComplete] = useState(false);
+	const [pendingCancelJob, setPendingCancelJob] = useState<JobOrder | null>(null);
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const [jobOrderToDelete, setJobOrderToDelete] = useState<JobOrder | null>(null);
 	const [resultDialog, setResultDialog] = useState<{
@@ -445,7 +447,7 @@ export default function JobOrdersPage() {
 		}
 	};
 
-	const updateJobStatus = async (jobId: string, targetStatus: BoardStatus, qty?: number, defectQty?: number) => {
+	const updateJobStatus = async (jobId: string, targetStatus: BoardStatus, qty?: number, defectQty?: number, reason?: string) => {
 		const targetLabel = mapStatusToLabel(targetStatus);
 		const previous = [...jobOrders];
 		setJobOrders((prev) =>
@@ -462,7 +464,7 @@ export default function JobOrdersPage() {
 		);
 
 		try {
-			await jobOrderModel.updateJobOrderStatus(jobId, targetStatus, user?.employee_id, qty, defectQty);
+			await jobOrderModel.updateJobOrderStatus(jobId, targetStatus, user?.employee_id, qty, defectQty, reason);
 			setResultDialog({
 				isOpen: true,
 				status: 'success',
@@ -535,7 +537,13 @@ export default function JobOrdersPage() {
 		}
 
 		const currentStatus = normalizeStatus(current.job_order_status);
-		if (currentStatus === 'completed') {
+		const allowedTransitions: Record<BoardStatus, BoardStatus[]> = {
+			pending: ['in_progress', 'cancelled'],
+			in_progress: ['completed', 'cancelled'],
+			completed: [],
+			cancelled: [],
+		};
+		if (!allowedTransitions[currentStatus].includes(column)) {
 			setDraggingJobId(null);
 			setDragOverColumn(null);
 			return;
@@ -550,6 +558,8 @@ export default function JobOrdersPage() {
 						typeof current.job_order_defect_qty === 'number' && current.job_order_defect_qty > 0 ? String(current.job_order_defect_qty) : '0',
 					);
 				setIsDetailOpen(true);
+			} else if (column === 'cancelled') {
+				setPendingCancelJob(current);
 			} else {
 				await updateJobStatus(draggingJobId, column);
 			}
@@ -1162,6 +1172,11 @@ export default function JobOrdersPage() {
 				onConfirmComplete={handleConfirmComplete}
 				isConfirming={isConfirmingComplete}
 			/>
+
+			{pendingCancelJob && <CancellationDialog title="ยืนยันการยกเลิกงานผลิต" onClose={() => setPendingCancelJob(null)} onConfirm={async reason => {
+				await jobOrderModel.updateJobOrderStatus(pendingCancelJob.job_order_id, 'cancelled', undefined, undefined, undefined, reason);
+				await fetchJobOrders(dateStart, dateEnd);
+			}} />}
 
 			<ConfirmDialog
 				isOpen={isDeleteDialogOpen}

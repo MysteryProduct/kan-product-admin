@@ -10,6 +10,7 @@ import { formatThaiDate } from '@/lib/date-format';
 import { calculateVatSummary, VAT_TYPE_LABELS } from '@/lib/vat';
 import useVatRate from '@/hooks/useVatRate';
 import DocumentHistoryPanel from '@/components/document-history/DocumentHistoryPanel';
+import DocumentCancellationAction from '@/components/DocumentCancellationAction';
 
 
 interface PurchaseReceiptDetailModalProps {
@@ -241,6 +242,7 @@ export default function PurchaseReceiptDetailModal({
 					</div>
 
 					<DocumentHistoryPanel endpoint={`/purchase-receipt/${purchaseReceipt.purchase_receipt_id}/history`} />
+                    {can('purchase_receipt', 'reject') && ['pending', 'approved'].includes(purchaseReceipt.purchase_receipt_status) && <DocumentCancellationAction endpoint={`/purchase-receipt/${purchaseReceipt.purchase_receipt_id}/reject`} onSuccess={() => { onSuccess?.(); onClose(); }} />}
 
 					<div className="flex border-t border-[var(--color-border)] pt-6">
 						<button

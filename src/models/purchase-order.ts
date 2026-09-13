@@ -128,11 +128,11 @@ class PurchaseOrderModel {
     }
   }
 
-  async rejectPurchaseOrder(id: string): Promise<PurchaseOrder> {
+  async rejectPurchaseOrder(id: string, reason: string): Promise<PurchaseOrder> {
     try {
       const response = await axiosInstance.post<SinglePurchaseOrderResponse>(
         `/purchase-order/${id}/reject`,
-        { status: 'inactive' }
+        { reason }
       );
       return response.data.data;
     } catch (error) {

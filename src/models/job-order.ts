@@ -130,6 +130,7 @@ class JobOrderModel {
     updateBy?: string,
     jobOrderQty?: number,
     jobOrderDefectQty?: number,
+    reason?: string,
   ): Promise<JobOrder> {
     try {
       const response = await axiosInstance.patch<SingleJobOrderResponse>(`/job-order/${jobOrderId}/status`, {
@@ -137,6 +138,7 @@ class JobOrderModel {
         ...(typeof jobOrderQty === 'number' && { job_order_qty: jobOrderQty }),
         ...(typeof jobOrderDefectQty === 'number' && { job_order_defect_qty: jobOrderDefectQty }),
         ...(updateBy && { update_by: updateBy }),
+        ...(reason && { reason }),
       });
       return response.data.data;
     } catch (primaryError) {

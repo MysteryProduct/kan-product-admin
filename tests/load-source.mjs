@@ -33,6 +33,7 @@ export default function sourceLoader(mocks = {}, globals = {}) {
           module: ts.ModuleKind.CommonJS,
           target: ts.ScriptTarget.ES2020,
           esModuleInterop: true,
+          jsx: ts.JsxEmit.ReactJSX,
         },
         fileName: filename,
       },

@@ -93,6 +93,14 @@ class PurchaseReceiptModel {
       throw error;
     }
   }
+
+  async rejectPurchaseReceipt(id: string, reason: string): Promise<PurchaseReceipt> {
+    const response = await axiosInstance.post<SinglePurchaseReceiptResponse>(
+      `/purchase-receipt/${id}/reject`,
+      { reason },
+    );
+    return response.data.data;
+  }
   async updatePurchaseReceipt(data: UpdatePurchaseReceiptDto): Promise<PurchaseReceipt> {
     try {
       const response = await axiosInstance.patch<SinglePurchaseReceiptResponse>(

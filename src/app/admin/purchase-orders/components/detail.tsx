@@ -10,6 +10,7 @@ import { formatThaiDate } from '@/lib/date-format';
 import { calculateVatSummary, VAT_TYPE_LABELS } from '@/lib/vat';
 import useVatRate from '@/hooks/useVatRate';
 import DocumentHistoryPanel from '@/components/document-history/DocumentHistoryPanel';
+import DocumentCancellationAction from '@/components/DocumentCancellationAction';
 interface PurchaseOrderDetailModalProps {
 	isOpen: boolean;
 	onClose: () => void;
@@ -264,6 +265,7 @@ export default function PurchaseOrderDetailModal({
 					</div>
 
 					<DocumentHistoryPanel endpoint={`/purchase-order/${purchaseOrder.purchase_order_id}/history`} />
+                    {can('purchase_orders', 'reject') && ['pending', 'active'].includes(purchaseOrder.purchase_order_status) && <DocumentCancellationAction endpoint={`/purchase-order/${purchaseOrder.purchase_order_id}/reject`} onSuccess={() => { onSuccess?.(); onClose(); }} />}
 
 					<div className="flex border-t border-[var(--color-border)] pt-6">
 						<button

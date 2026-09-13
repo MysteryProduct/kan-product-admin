@@ -116,8 +116,8 @@ class SaleOrderModel {
     }
   }
 
-  async cancelSaleOrder(id: string): Promise<SaleOrder> {
-    const response = await axiosInstance.post<SaleOrder | SingleSaleOrderResponse>(`/sale-order/${id}/cancel`);
+  async cancelSaleOrder(id: string, reason: string): Promise<SaleOrder> {
+    const response = await axiosInstance.post<SaleOrder | SingleSaleOrderResponse>(`/sale-order/${id}/cancel`, { reason });
     return unwrapSaleOrder(response.data);
   }
 
