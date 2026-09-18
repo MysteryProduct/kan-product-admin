@@ -109,6 +109,7 @@ export default function Sidebar() {
       ),
       subItems: [
         { title: 'คำขอติดต่อกลับ', menu_name: 'contact_requests', href: '/admin/contact-requests' },
+        { title: 'จัดส่งพัสดุ', menu_name: 'store_fulfillment', href: '/admin/store-fulfillment' },
       ],
     },
     {
