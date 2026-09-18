@@ -15,6 +15,7 @@ import ActionResultDialog from '@/components/ActionResultDialog';
 import LoadingSkeletonProps from '@/components/LoadingSkeleton';
 import { formatThaiDate } from '@/lib/date-format';
 const productModel = new ProductModel();
+import StorePolicy from './components/store-policy';
 
 type SortField = 'adddate' | 'product_variant_price' | null;
 type SortOrder = 'ASC' | 'DESC';
@@ -122,6 +123,11 @@ export default function ProductsPage() {
 
   // Define DataTable columns
   const columns: DataTableColumn<Product>[] = [
+    {
+      key: 'product_id',
+      label: 'หน้าร้านออนไลน์',
+      render: (_, row) => <StorePolicy id={row.product_id} editable={canEditProduct} />,
+    },
     {
       key: 'product_name' as keyof Product,
       label: 'ชื่อสินค้า',
