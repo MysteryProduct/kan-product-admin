@@ -7,6 +7,8 @@ import { StoreOrderWithParcels } from '@/types/store-fulfillment';
 import { getApiErrorMessage } from '@/lib/api-error';
 import CreateParcelModal from './components/create-parcel-modal';
 import ParcelCard from './components/parcel-card';
+import PickupCard from './components/pickup-card';
+import CancellationCard from './components/cancellation-card';
 
 const storeFulfillmentModel = new StoreFulfillmentModel();
 
@@ -18,6 +20,7 @@ const statusLabels: Record<string, string> = {
   paid: 'ชำระเงินแล้ว',
   expired: 'หมดเวลา',
   awaiting_review: 'กำลังตรวจสอบ',
+  cancelled: 'ยกเลิกแล้ว',
 };
 
 export default function StoreFulfillmentPage() {
@@ -61,8 +64,16 @@ export default function StoreFulfillmentPage() {
   }
 
   const hasRemaining = order?.items.some((line) => line.remainingUnshipped > 0);
+  // A pending or approved cancellation holds fulfillment, so the API would
+  // refuse a new parcel anyway; the button is hidden rather than left to fail.
+  const cancellationHolds =
+    order?.cancellation?.status === 'pending' ||
+    order?.cancellation?.status === 'approved';
   const canCreateParcel =
-    canAdd && order?.status === 'paid' && order.fulfillmentMethod === 'delivery';
+    canAdd &&
+    order?.status === 'paid' &&
+    order.fulfillmentMethod === 'delivery' &&
+    !cancellationHolds;
 
   return (
     <div className="min-h-full bg-[#F5F7FA] p-2 dark:bg-slate-950 sm:p-4 md:p-6 lg:p-8">
@@ -148,8 +159,26 @@ export default function StoreFulfillmentPage() {
             </table>
           </div>
 
+          {order.cancellation && (
+            <CancellationCard
+              cancellation={order.cancellation}
+              canEdit={canEdit}
+              onChanged={() => void search(order.storeOrderId)}
+            />
+          )}
+
+          {order.fulfillmentMethod === 'pickup' && order.pickup && (
+            <PickupCard
+              storeOrderId={order.storeOrderId}
+              pickup={order.pickup}
+              orderPaid={order.status === 'paid'}
+              canEdit={canEdit}
+              onChanged={() => void search(order.storeOrderId)}
+            />
+          )}
+
           <div className="grid gap-3">
-            {order.parcels.length === 0 && (
+            {order.fulfillmentMethod === 'delivery' && order.parcels.length === 0 && (
               <p className="text-sm text-[var(--color-text-secondary)]">
                 ยังไม่มีพัสดุสำหรับคำสั่งซื้อนี้
               </p>

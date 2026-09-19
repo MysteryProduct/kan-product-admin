@@ -11,11 +11,13 @@ const statusLabels: Record<StoreParcel['status'], string> = {
   preparing: 'กำลังเตรียม',
   held: 'พักส่ง',
   shipped: 'จัดส่งแล้ว',
+  voided: 'ยกเลิกแล้ว',
 };
 const statusClassMap: Record<StoreParcel['status'], string> = {
   preparing: 'bg-blue-50 text-blue-700',
   held: 'bg-amber-50 text-amber-700',
   shipped: 'bg-green-50 text-green-700',
+  voided: 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]',
 };
 
 const inputClass =
@@ -33,6 +35,8 @@ export default function ParcelCard({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState(false);
+  const [voiding, setVoiding] = useState(false);
+  const [voidReason, setVoidReason] = useState('');
   const [history, setHistory] = useState<ParcelAddressHistoryEntry[] | null>(null);
   const [addressForm, setAddressForm] = useState({
     recipient_name: parcel.recipientName,
@@ -217,7 +221,7 @@ export default function ParcelCard({
         </div>
       )}
 
-      {canEdit && (
+      {canEdit && parcel.status !== 'voided' && (
         <div className="mt-3 flex flex-wrap gap-2">
           {parcel.status === 'preparing' && (
             <button
@@ -248,6 +252,17 @@ export default function ParcelCard({
               ยืนยันจัดส่งแล้ว
             </button>
           )}
+          {/* Only before it ships: once a parcel is on its way, undoing the
+              record here would not bring it back. */}
+          {parcel.status !== 'shipped' && !voiding && (
+            <button
+              type="button"
+              onClick={() => setVoiding(true)}
+              className="min-h-11 rounded-lg border border-red-300 px-3 py-2 text-sm text-red-700 hover:bg-red-50"
+            >
+              ยกเลิกพัสดุนี้
+            </button>
+          )}
           <button
             type="button"
             onClick={() => void toggleHistory()}
@@ -255,6 +270,54 @@ export default function ParcelCard({
           >
             {history ? 'ซ่อนประวัติที่อยู่' : 'ดูประวัติที่อยู่'}
           </button>
+        </div>
+      )}
+
+      {canEdit && voiding && (
+        <div className="mt-3 grid gap-2 border-t border-[var(--color-border)] pt-3">
+          <p className="text-sm">
+            ยกเลิกพัสดุนี้แล้วจำนวนสินค้าจะกลับไปเป็นยอดที่ยังไม่ได้ส่ง
+            เพื่อบันทึกใหม่ให้ถูกต้อง พัสดุใบนี้จะยังอยู่ในระบบเป็นประวัติ
+          </p>
+          <label className="grid gap-1 text-sm">
+            <span className="font-medium">เหตุผล</span>
+            <input
+              value={voidReason}
+              onChange={(e) => setVoidReason(e.target.value)}
+              maxLength={500}
+              placeholder="เช่น คีย์จำนวนผิด"
+              className={inputClass}
+            />
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={pending || voidReason.trim() === ''}
+              onClick={() =>
+                void run(async () => {
+                  await storeFulfillmentModel.voidParcel(
+                    parcel.parcelId,
+                    voidReason.trim(),
+                  );
+                  setVoiding(false);
+                  setVoidReason('');
+                })
+              }
+              className="min-h-11 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
+            >
+              ยืนยันยกเลิกพัสดุ
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setVoiding(false);
+                setVoidReason('');
+              }}
+              className="min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm hover:bg-[var(--color-bg-tertiary)]"
+            >
+              ไม่ยกเลิก
+            </button>
+          </div>
         </div>
       )}
 

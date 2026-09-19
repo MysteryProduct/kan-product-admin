@@ -1,4 +1,10 @@
-export type StoreParcelStatus = 'preparing' | 'held' | 'shipped';
+export type StoreParcelStatus =
+  | 'preparing'
+  | 'held'
+  | 'shipped'
+  // Recorded by mistake and undone before it shipped. Staff see it so the
+  // correction stays visible; customers never do.
+  | 'voided';
 
 export interface StoreOrderLine {
   saleOrderListId: string;
@@ -41,10 +47,84 @@ export interface StoreOrderDefaultAddress {
   postalCode: string | null;
 }
 
+export type StorePickupStatus =
+  | 'awaiting_ready'
+  | 'ready'
+  | 'rescheduled'
+  | 'overdue'
+  | 'pending_review'
+  | 'picked_up';
+
+export interface PickupContactLogEntry {
+  logId: string;
+  actorId: string;
+  channel: string;
+  outcome: string;
+  note: string | null;
+  createdAt: string;
+}
+
+export interface StorePickup {
+  status: StorePickupStatus;
+  readyAt: string | null;
+  dueAt: string | null;
+  holdUntil: string | null;
+  secondAppointmentAt: string | null;
+  secondAppointmentNote: string | null;
+  pickedUpAt: string | null;
+  recipientName: string | null;
+  contactLog: PickupContactLogEntry[];
+}
+
+export type StoreRefundStatus =
+  | 'pending'
+  | 'processing'
+  | 'confirmed'
+  | 'failed';
+
+export interface StoreRefund {
+  refundId: string;
+  status: StoreRefundStatus;
+  // True when the provider has returned the money but the order has not been
+  // reversed locally yet, so staff can finish that step. Derived by the API
+  // from the refund and the order, never stored.
+  reversalPending?: boolean;
+  amount: number;
+  confirmedAmount: number | null;
+  confirmedAt: string | null;
+  gatewayChargeId: string | null;
+  gatewayRefundId: string | null;
+  failureReason: string | null;
+  attempts: number;
+}
+
+export type StoreCancellationStatus = 'pending' | 'approved' | 'rejected';
+
+export interface StoreCancellation {
+  requestId: string;
+  status: StoreCancellationStatus;
+  reason: string;
+  requestedBy: 'customer' | 'guest';
+  decisionNote: string | null;
+  decidedAt: string | null;
+  decidedBy: string | null;
+  createdAt: string;
+  refund: StoreRefund | null;
+}
+
+export interface DecideCancellationDto {
+  decision: 'approve' | 'reject';
+  note?: string;
+}
+
 export interface StoreOrderWithParcels {
   storeOrderId: string;
   status: string;
   fulfillmentMethod: 'delivery' | 'pickup';
+  // Present only for pickup orders; delivery orders carry parcels instead.
+  pickup: StorePickup | null;
+  // Present once the customer has asked to cancel; null until then.
+  cancellation: StoreCancellation | null;
   items: StoreOrderLine[];
   parcels: StoreParcel[];
   defaultAddress: StoreOrderDefaultAddress | null;
@@ -72,6 +152,22 @@ export interface EditParcelAddressDto {
   province: string;
   postal_code: string;
   reason: string;
+}
+
+export interface SecondAppointmentDto {
+  scheduled_at: string;
+  note?: string;
+}
+
+export interface PickupContactLogDto {
+  channel: 'phone' | 'sms' | 'email' | 'in_person' | 'other';
+  outcome: 'reached' | 'unreachable' | 'other';
+  note?: string;
+}
+
+export interface HandoverDto {
+  phone: string;
+  recipient_name: string;
 }
 
 export interface ParcelAddressHistoryEntry {

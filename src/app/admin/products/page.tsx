@@ -124,7 +124,11 @@ export default function ProductsPage() {
   // Define DataTable columns
   const columns: DataTableColumn<Product>[] = [
     {
-      key: 'product_id',
+      // Display-only column, like 'category' and 'stock' below: the key is the
+      // column's identity in the table, so it must not repeat another column's.
+      // It previously reused 'product_id', which the actions column already
+      // uses, and React saw two children with the same key on every row.
+      key: 'store_policy' as keyof Product,
       label: 'หน้าร้านออนไลน์',
       render: (_, row) => <StorePolicy id={row.product_id} editable={canEditProduct} />,
     },

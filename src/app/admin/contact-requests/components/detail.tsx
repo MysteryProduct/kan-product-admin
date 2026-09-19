@@ -110,13 +110,18 @@ export default function ContactRequestDetailModal({
             onChange={(e) => setStatus(e.target.value as ContactRequestStatus)}
             className="min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2"
           >
-            {(Object.keys(statusLabels) as ContactRequestStatus[]).map(
-              (value) => (
+            {(Object.keys(statusLabels) as ContactRequestStatus[])
+              // R4: a closed request never returns to 'new', so the option is
+              // not offered rather than letting the API reject the save.
+              .filter(
+                (value) =>
+                  !(contactRequest.status === 'closed' && value === 'new'),
+              )
+              .map((value) => (
                 <option key={value} value={value}>
                   {statusLabels[value]}
                 </option>
-              ),
-            )}
+              ))}
           </select>
         </label>
 
