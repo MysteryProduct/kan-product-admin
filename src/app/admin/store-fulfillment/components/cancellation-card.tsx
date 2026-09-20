@@ -51,6 +51,11 @@ export default function CancellationCard({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const [note, setNote] = useState('');
+  const [transfer, setTransfer] = useState({
+    reference: '',
+    amount: '',
+    transferred_at: '',
+  });
 
   async function run(action: () => Promise<unknown>) {
     setPending(true);
@@ -66,6 +71,7 @@ export default function CancellationCard({
   }
 
   const refund = cancellation.refund;
+  const account = cancellation.refundAccount ?? null;
   const decidable = canEdit && cancellation.status === 'pending';
   // Whether another attempt is worth offering is the API's call, not this
   // screen's: it covers a confirmed refund whose reversal is still outstanding,
@@ -195,6 +201,96 @@ export default function CancellationCard({
           <p className="text-[var(--color-text-secondary)]">
             พยายามแล้ว {refund.attempts} ครั้ง
           </p>
+          {refund.manualRefundRequired && (
+            <div className="mt-3 grid gap-2 sm:max-w-xl">
+              <p className="text-amber-700">
+                คำสั่งซื้อนี้ชำระด้วยพร้อมเพย์ ผู้ให้บริการคืนเงินให้ไม่ได้
+                ต้องโอนคืนเข้าบัญชีลูกค้าแล้วบันทึกหลักฐานการโอนที่นี่
+              </p>
+              {account && (
+                <dl className="grid gap-1 rounded-lg bg-white p-3 dark:bg-slate-800">
+                  <div className="flex gap-2">
+                    <dt className="text-[var(--color-text-secondary)]">ชื่อบัญชี</dt>
+                    <dd>{account.name ?? '-'}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="text-[var(--color-text-secondary)]">ธนาคาร</dt>
+                    <dd>{account.bank ?? '-'}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="text-[var(--color-text-secondary)]">เลขที่บัญชี</dt>
+                    <dd className="font-medium">{account.number ?? '-'}</dd>
+                  </div>
+                </dl>
+              )}
+              {canEdit && (
+                <>
+                  <input
+                    value={transfer.reference}
+                    onChange={(e) =>
+                      setTransfer({ ...transfer, reference: e.target.value })
+                    }
+                    maxLength={120}
+                    placeholder="เลขอ้างอิงการโอน"
+                    className="min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2"
+                  />
+                  <input
+                    value={transfer.amount}
+                    onChange={(e) =>
+                      setTransfer({ ...transfer, amount: e.target.value })
+                    }
+                    inputMode="decimal"
+                    placeholder={`ยอดที่โอนคืน (บาท) เช่น ${refund.amount}`}
+                    className="min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2"
+                  />
+                  <input
+                    type="date"
+                    value={transfer.transferred_at}
+                    onChange={(e) =>
+                      setTransfer({ ...transfer, transferred_at: e.target.value })
+                    }
+                    className="min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2"
+                  />
+                  <button
+                    type="button"
+                    disabled={
+                      pending ||
+                      !transfer.reference.trim() ||
+                      !transfer.amount.trim() ||
+                      !transfer.transferred_at
+                    }
+                    onClick={() =>
+                      void run(() =>
+                        storeFulfillmentModel.recordManualRefund(
+                          refund.refundId,
+                          {
+                            reference: transfer.reference.trim(),
+                            amount: Number(transfer.amount),
+                            transferred_at: new Date(
+                              transfer.transferred_at,
+                            ).toISOString(),
+                          },
+                        ),
+                      )
+                    }
+                    className="min-h-11 rounded-lg bg-green-600 px-4 py-2 font-medium text-white hover:bg-green-700 disabled:opacity-60"
+                  >
+                    บันทึกว่าโอนคืนแล้ว
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
+          {refund.manualReference && (
+            <p className="text-[var(--color-text-secondary)]">
+              โอนคืนแล้ว อ้างอิง {refund.manualReference}
+              {refund.manualTransferredAt
+                ? ` · ${formatThaiDate(refund.manualTransferredAt)}`
+                : ''}
+            </p>
+          )}
+
           {attemptInFlight && (
             <p className="text-[var(--color-text-secondary)]">
               กำลังดำเนินการอยู่ ลองใหม่ได้อีกครั้งหากยังไม่มีผลภายในสองนาที

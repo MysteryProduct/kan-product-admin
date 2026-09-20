@@ -2,6 +2,7 @@ import axiosInstance from '@/lib/axios';
 import {
   CreateParcelDto,
   DecideCancellationDto,
+  RecordManualRefundDto,
   StoreRefund,
   EditParcelAddressDto,
   HandoverDto,
@@ -78,6 +79,19 @@ class StoreFulfillmentModel {
   async retryRefund(refundId: string): Promise<StoreRefund> {
     const response = await axiosInstance.post<StoreRefund>(
       `/fulfillment/cancellations/refunds/${refundId}/attempt`,
+    );
+    return response.data;
+  }
+
+  // Records a refund the shop transferred itself, for money the gateway
+  // cannot return. The evidence is required by the API, not just by the form.
+  async recordManualRefund(
+    refundId: string,
+    dto: RecordManualRefundDto,
+  ): Promise<StoreRefund> {
+    const response = await axiosInstance.post<StoreRefund>(
+      `/fulfillment/cancellations/refunds/${refundId}/manual`,
+      dto,
     );
     return response.data;
   }

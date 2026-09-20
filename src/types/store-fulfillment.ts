@@ -94,6 +94,12 @@ export interface StoreRefund {
   // flight holds a short lease, and an attempt that died leaves a lease that
   // has aged out and must be pickable up again.
   retryAvailable?: boolean;
+  // How this refund is meant to be paid back. 'manual_transfer' means the
+  // gateway cannot return this money (PromptPay) and the shop transfers it.
+  refundChannel?: 'gateway' | 'manual_transfer';
+  manualRefundRequired?: boolean;
+  manualReference?: string | null;
+  manualTransferredAt?: string | null;
   amount: number;
   confirmedAmount: number | null;
   confirmedAt: string | null;
@@ -115,11 +121,26 @@ export interface StoreCancellation {
   decidedBy: string | null;
   createdAt: string;
   refund: StoreRefund | null;
+  refundAccount?: StoreRefundAccount | null;
 }
 
 export interface DecideCancellationDto {
   decision: 'approve' | 'reject';
   note?: string;
+}
+
+export interface RecordManualRefundDto {
+  reference: string;
+  amount: number;
+  transferred_at: string;
+}
+
+// Where the shop must transfer a refund it cannot make through the gateway,
+// as the customer stated it. Staff-only; never part of a customer projection.
+export interface StoreRefundAccount {
+  name: string | null;
+  bank: string | null;
+  number: string | null;
 }
 
 export interface StoreOrderWithParcels {
