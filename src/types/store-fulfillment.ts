@@ -89,6 +89,11 @@ export interface StoreRefund {
   // reversed locally yet, so staff can finish that step. Derived by the API
   // from the refund and the order, never stored.
   reversalPending?: boolean;
+  // Whether another attempt would actually do something now. The API owns
+  // this rule because it is the same one its claim applies: an attempt in
+  // flight holds a short lease, and an attempt that died leaves a lease that
+  // has aged out and must be pickable up again.
+  retryAvailable?: boolean;
   amount: number;
   confirmedAmount: number | null;
   confirmedAt: string | null;

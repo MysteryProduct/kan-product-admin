@@ -67,16 +67,13 @@ export default function CancellationCard({
 
   const refund = cancellation.refund;
   const decidable = canEdit && cancellation.status === 'pending';
-  // A confirmed refund whose reversal is still outstanding is retryable too:
-  // pressing it finishes the stock and order side, and never asks the gateway
-  // for money again. 'processing' is excluded: the API leases that state
-  // while an attempt is genuinely in flight and no-ops a retry pressed before
-  // the lease expires, which would otherwise look like the button did nothing.
-  const retryable =
-    canEdit &&
-    refund !== null &&
-    refund.status !== 'processing' &&
-    (refund.status !== 'confirmed' || refund.reversalPending === true);
+  // Whether another attempt is worth offering is the API's call, not this
+  // screen's: it covers a confirmed refund whose reversal is still outstanding,
+  // and it hides the button only while an attempt genuinely holds its lease -
+  // an attempt that died leaves a lease that has aged out, and this is the
+  // only place staff can pick that up.
+  const retryable = canEdit && refund !== null && refund.retryAvailable === true;
+  const attemptInFlight = refund?.status === 'processing' && !retryable;
 
   return (
     <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10 sm:p-6">
@@ -198,6 +195,11 @@ export default function CancellationCard({
           <p className="text-[var(--color-text-secondary)]">
             พยายามแล้ว {refund.attempts} ครั้ง
           </p>
+          {attemptInFlight && (
+            <p className="text-[var(--color-text-secondary)]">
+              กำลังดำเนินการอยู่ ลองใหม่ได้อีกครั้งหากยังไม่มีผลภายในสองนาที
+            </p>
+          )}
           {retryable && (
             <button
               type="button"
