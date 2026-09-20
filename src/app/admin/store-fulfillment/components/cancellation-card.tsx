@@ -69,10 +69,13 @@ export default function CancellationCard({
   const decidable = canEdit && cancellation.status === 'pending';
   // A confirmed refund whose reversal is still outstanding is retryable too:
   // pressing it finishes the stock and order side, and never asks the gateway
-  // for money again.
+  // for money again. 'processing' is excluded: the API leases that state
+  // while an attempt is genuinely in flight and no-ops a retry pressed before
+  // the lease expires, which would otherwise look like the button did nothing.
   const retryable =
     canEdit &&
     refund !== null &&
+    refund.status !== 'processing' &&
     (refund.status !== 'confirmed' || refund.reversalPending === true);
 
   return (
