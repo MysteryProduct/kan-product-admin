@@ -44,9 +44,11 @@ export default function ContactRequestDetailModal({
     setPending(true);
     setError('');
     try {
+      // Sent even when blank: the API clears a recorded result on an empty
+      // value, which is how staff remove one typed onto the wrong request.
       const updated = await contactRequestModel.updateContactRequest(
         contactRequest.contactRequestId,
-        { status, contact_result: contactResult || undefined },
+        { status, contact_result: contactResult.trim() },
       );
       onSuccess?.(updated);
       onClose();
