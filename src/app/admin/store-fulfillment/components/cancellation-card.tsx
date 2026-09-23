@@ -51,9 +51,11 @@ export default function CancellationCard({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const [note, setNote] = useState('');
+  // No amount here: the refund is the whole outstanding figure or it is not
+  // recordable at all (R10 returns the full payment and does not deduct a
+  // transfer fee), so the only thing a free-text field could add is a typo.
   const [transfer, setTransfer] = useState({
     reference: '',
-    amount: '',
     transferred_at: '',
   });
 
@@ -234,15 +236,13 @@ export default function CancellationCard({
                     placeholder="เลขอ้างอิงการโอน"
                     className="min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2"
                   />
-                  <input
-                    value={transfer.amount}
-                    onChange={(e) =>
-                      setTransfer({ ...transfer, amount: e.target.value })
-                    }
-                    inputMode="decimal"
-                    placeholder={`ยอดที่โอนคืน (บาท) เช่น ${refund.amount}`}
-                    className="min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2"
-                  />
+                  <p>
+                    ยอดที่ต้องโอนคืน{' '}
+                    <span className="font-medium">
+                      {refund.amount.toLocaleString('th-TH')} บาท
+                    </span>{' '}
+                    เต็มจำนวน ไม่หักค่าธรรมเนียม
+                  </p>
                   <input
                     type="date"
                     value={transfer.transferred_at}
@@ -256,7 +256,6 @@ export default function CancellationCard({
                     disabled={
                       pending ||
                       !transfer.reference.trim() ||
-                      !transfer.amount.trim() ||
                       !transfer.transferred_at
                     }
                     onClick={() =>
@@ -265,7 +264,10 @@ export default function CancellationCard({
                           refund.refundId,
                           {
                             reference: transfer.reference.trim(),
-                            amount: Number(transfer.amount),
+                            // The API re-derives this from the receipts and
+                            // refuses anything else, so a stale figure is
+                            // refused with the real one rather than recorded.
+                            amount: refund.amount,
                             transferred_at: new Date(
                               transfer.transferred_at,
                             ).toISOString(),
