@@ -203,12 +203,18 @@ export default function CancellationCard({
           <p className="text-[var(--color-text-secondary)]">
             พยายามแล้ว {refund.attempts} ครั้ง
           </p>
-          {refund.manualRefundRequired && (
+          {/* The account stays on screen after the transfer is recorded: it is
+              where the money went, which is exactly what anyone checking the
+              refund afterwards needs to see. Only the prompt and the form
+              belong to the moment before it. */}
+          {refund.refundChannel === 'manual_transfer' && (
             <div className="mt-3 grid gap-2 sm:max-w-xl">
-              <p className="text-amber-700">
-                คำสั่งซื้อนี้ชำระด้วยพร้อมเพย์ ผู้ให้บริการคืนเงินให้ไม่ได้
-                ต้องโอนคืนเข้าบัญชีลูกค้าแล้วบันทึกหลักฐานการโอนที่นี่
-              </p>
+              {refund.manualRefundRequired && (
+                <p className="text-amber-700">
+                  คำสั่งซื้อนี้ชำระด้วยพร้อมเพย์ ผู้ให้บริการคืนเงินให้ไม่ได้
+                  ต้องโอนคืนเข้าบัญชีลูกค้าแล้วบันทึกหลักฐานการโอนที่นี่
+                </p>
+              )}
               {account && (
                 <dl className="grid gap-1 rounded-lg bg-white p-3 dark:bg-slate-800">
                   <div className="flex gap-2">
@@ -225,7 +231,7 @@ export default function CancellationCard({
                   </div>
                 </dl>
               )}
-              {canEdit && (
+              {refund.manualRefundRequired && canEdit && (
                 <>
                   <input
                     value={transfer.reference}
