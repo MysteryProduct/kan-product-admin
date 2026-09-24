@@ -4,7 +4,10 @@ export type StoreParcelStatus =
   | 'shipped'
   // Recorded by mistake and undone before it shipped. Staff see it so the
   // correction stays visible; customers never do.
-  | 'voided';
+  | 'voided'
+  // Shipped, then came back to the shop (TASK-0037). Its quantities were
+  // given back, so the resend is a new parcel.
+  | 'returned';
 
 export interface StoreOrderLine {
   saleOrderListId: string;
@@ -34,7 +37,53 @@ export interface StoreParcel {
   postalCode: string | null;
   createdAt: string;
   shippedAt: string | null;
+  returnedAt: string | null;
+  // Staff-only notes recorded with a return.
+  returnReason?: string | null;
+  returnContactOutcome?: 'reached' | 'unreachable' | 'other' | null;
+  returnContactNote?: string | null;
   items: StoreParcelItem[];
+}
+
+// Shipping owed after a pickup order became a delivery or a parcel came back
+// (TASK-0037). pending_review is derived by the API once the one-month hold
+// has run out; nothing happens to the order by itself.
+export type StoreShippingChargeStatus =
+  | 'awaiting_payment'
+  | 'paid'
+  | 'pending_review'
+  // No longer owed: the order's cancellation was approved.
+  | 'void';
+
+// One shipping payment the gateway confirmed. `excess` means it is not the
+// payment that settled its charge (paid twice, or after the charge was
+// voided); staff may refund those on their own.
+export interface StoreShippingPayment {
+  gatewayChargeId: string;
+  paymentMethod: 'promptpay' | 'card';
+  amount: string;
+  paidAt: string | null;
+  excess: boolean;
+  refund: StoreRefund | null;
+}
+
+export interface StoreShippingCharge {
+  shippingChargeId: string;
+  reason: 'conversion' | 'return';
+  amount: string;
+  status: StoreShippingChargeStatus;
+  issuedAt: string;
+  paidAt: string | null;
+  parcelId: string | null;
+  issuedBy: string;
+  holdUntil: string;
+  paidBy: string | null;
+}
+
+export interface StoreDeliveryConversion {
+  convertedAt: string;
+  convertedBy: string;
+  note: string | null;
 }
 
 export interface StoreOrderDefaultAddress {
@@ -85,6 +134,8 @@ export type StoreRefundStatus =
 export interface StoreRefund {
   refundId: string;
   status: StoreRefundStatus;
+  // 'shipping': a shipping payment returned through its own charge.
+  kind?: 'order' | 'shipping';
   // True when the provider has returned the money but the order has not been
   // reversed locally yet, so staff can finish that step. Derived by the API
   // from the refund and the order, never stored.
@@ -98,6 +149,12 @@ export interface StoreRefund {
   // gateway cannot return this money (PromptPay) and the shop transfers it.
   refundChannel?: 'gateway' | 'manual_transfer';
   manualRefundRequired?: boolean;
+  // Where a transfer goes: stated for this refund on the tracking page, or
+  // with the cancellation request. Staff-only.
+  refundAccount?: StoreRefundAccount | null;
+  // A transfer is due but the customer has not stated an account yet; it
+  // cannot be recorded until they do (TASK-0037).
+  accountRequired?: boolean;
   manualReference?: string | null;
   manualTransferredAt?: string | null;
   amount: number;
@@ -121,6 +178,8 @@ export interface StoreCancellation {
   decidedBy: string | null;
   createdAt: string;
   refund: StoreRefund | null;
+  // TASK-0037: each shipping payment the cancellation returns.
+  shippingRefunds?: StoreRefund[];
   refundAccount?: StoreRefundAccount | null;
 }
 
@@ -147,8 +206,11 @@ export interface StoreOrderWithParcels {
   storeOrderId: string;
   status: string;
   fulfillmentMethod: 'delivery' | 'pickup';
-  // Present only for pickup orders; delivery orders carry parcels instead.
+  // Present for pickup orders, and kept for one converted to delivery.
   pickup: StorePickup | null;
+  conversion: StoreDeliveryConversion | null;
+  shippingCharges: StoreShippingCharge[];
+  shippingPayments?: StoreShippingPayment[];
   // Present once the customer has asked to cancel; null until then.
   cancellation: StoreCancellation | null;
   items: StoreOrderLine[];
@@ -189,6 +251,23 @@ export interface PickupContactLogDto {
   channel: 'phone' | 'sms' | 'email' | 'in_person' | 'other';
   outcome: 'reached' | 'unreachable' | 'other';
   note?: string;
+}
+
+export interface ConvertToDeliveryDto {
+  recipient_name: string;
+  recipient_phone: string;
+  address_line1: string;
+  address_line2?: string;
+  district: string;
+  province: string;
+  postal_code: string;
+  note?: string;
+}
+
+export interface RecordParcelReturnDto {
+  reason: string;
+  contact_outcome: 'reached' | 'unreachable' | 'other';
+  contact_note?: string;
 }
 
 export interface HandoverDto {

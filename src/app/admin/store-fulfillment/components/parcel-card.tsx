@@ -1,7 +1,11 @@
 'use client';
 import { useState } from 'react';
 import StoreFulfillmentModel from '@/models/store-fulfillment';
-import { ParcelAddressHistoryEntry, StoreParcel } from '@/types/store-fulfillment';
+import {
+  ParcelAddressHistoryEntry,
+  RecordParcelReturnDto,
+  StoreParcel,
+} from '@/types/store-fulfillment';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { formatThaiDate } from '@/lib/date-format';
 
@@ -12,12 +16,19 @@ const statusLabels: Record<StoreParcel['status'], string> = {
   held: 'พักส่ง',
   shipped: 'จัดส่งแล้ว',
   voided: 'ยกเลิกแล้ว',
+  returned: 'ตีกลับ',
 };
 const statusClassMap: Record<StoreParcel['status'], string> = {
   preparing: 'bg-blue-50 text-blue-700',
   held: 'bg-amber-50 text-amber-700',
   shipped: 'bg-green-50 text-green-700',
   voided: 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]',
+  returned: 'bg-red-50 text-red-700',
+};
+const contactOutcomeLabels: Record<RecordParcelReturnDto['contact_outcome'], string> = {
+  reached: 'ติดต่อได้',
+  unreachable: 'ติดต่อไม่ได้',
+  other: 'อื่น ๆ',
 };
 
 const inputClass =
@@ -37,6 +48,12 @@ export default function ParcelCard({
   const [editing, setEditing] = useState(false);
   const [voiding, setVoiding] = useState(false);
   const [voidReason, setVoidReason] = useState('');
+  const [returning, setReturning] = useState(false);
+  const [returnForm, setReturnForm] = useState({
+    reason: '',
+    contact_outcome: 'reached' as RecordParcelReturnDto['contact_outcome'],
+    contact_note: '',
+  });
   const [history, setHistory] = useState<ParcelAddressHistoryEntry[] | null>(null);
   const [addressForm, setAddressForm] = useState({
     recipient_name: parcel.recipientName,
@@ -84,6 +101,7 @@ export default function ParcelCard({
           <p className="text-sm text-[var(--color-text-secondary)]">
             บันทึกเมื่อ {formatThaiDate(parcel.createdAt)}
             {parcel.shippedAt && ` · จัดส่งเมื่อ ${formatThaiDate(parcel.shippedAt)}`}
+            {parcel.returnedAt && ` · ตีกลับเมื่อ ${formatThaiDate(parcel.returnedAt)}`}
           </p>
         </div>
         <span
@@ -110,6 +128,15 @@ export default function ParcelCard({
           </p>
         )}
       </div>
+
+      {parcel.status === 'returned' && (
+        <p className="mt-2 text-sm">
+          เหตุผลที่ตีกลับ: {parcel.returnReason ?? '-'}
+          {parcel.returnContactOutcome &&
+            ` · ${contactOutcomeLabels[parcel.returnContactOutcome]}`}
+          {parcel.returnContactNote && ` — ${parcel.returnContactNote}`}
+        </p>
+      )}
 
       {editing && (
         <div className="mt-3 grid gap-3 rounded-lg border border-[var(--color-border)] p-3 sm:grid-cols-2">
@@ -221,7 +248,7 @@ export default function ParcelCard({
         </div>
       )}
 
-      {canEdit && parcel.status !== 'voided' && (
+      {canEdit && parcel.status !== 'voided' && parcel.status !== 'returned' && (
         <div className="mt-3 flex flex-wrap gap-2">
           {parcel.status === 'preparing' && (
             <button
@@ -240,6 +267,15 @@ export default function ParcelCard({
               className="min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm hover:bg-[var(--color-bg-tertiary)]"
             >
               แก้ที่อยู่
+            </button>
+          )}
+          {parcel.status === 'shipped' && !returning && (
+            <button
+              type="button"
+              onClick={() => setReturning(true)}
+              className="min-h-11 rounded-lg border border-red-300 px-3 py-2 text-sm text-red-700 hover:bg-red-50"
+            >
+              บันทึกพัสดุตีกลับ
             </button>
           )}
           {parcel.status !== 'shipped' && (
@@ -319,6 +355,86 @@ export default function ParcelCard({
             </button>
           </div>
         </div>
+      )}
+
+      {canEdit && returning && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void run(async () => {
+              await storeFulfillmentModel.recordParcelReturn(parcel.parcelId, {
+                reason: returnForm.reason.trim(),
+                contact_outcome: returnForm.contact_outcome,
+                contact_note: returnForm.contact_note.trim() || undefined,
+              });
+              setReturning(false);
+            });
+          }}
+          className="mt-3 grid gap-2 border-t border-[var(--color-border)] pt-3 sm:grid-cols-2"
+        >
+          <p className="text-sm sm:col-span-2">
+            จำนวนสินค้าจะกลับไปเป็นยอดที่ยังไม่ได้ส่ง และระบบจะเรียกเก็บค่าจัดส่ง
+            50 บาทก่อนส่งใหม่ แม้รอบแรกจะส่งฟรี
+          </p>
+          <label className="grid gap-1 text-sm sm:col-span-2">
+            <span className="font-medium">เหตุผลที่ตีกลับ</span>
+            <input
+              required
+              maxLength={500}
+              value={returnForm.reason}
+              onChange={(e) =>
+                setReturnForm((prev) => ({ ...prev, reason: e.target.value }))
+              }
+              className={inputClass}
+            />
+          </label>
+          <label className="grid gap-1 text-sm">
+            <span className="font-medium">ผลการติดต่อลูกค้า</span>
+            <select
+              value={returnForm.contact_outcome}
+              onChange={(e) =>
+                setReturnForm((prev) => ({
+                  ...prev,
+                  contact_outcome: e.target.value as RecordParcelReturnDto['contact_outcome'],
+                }))
+              }
+              className={inputClass}
+            >
+              {Object.entries(contactOutcomeLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="grid gap-1 text-sm">
+            <span className="font-medium">บันทึกเพิ่มเติม (ไม่บังคับ)</span>
+            <input
+              maxLength={500}
+              value={returnForm.contact_note}
+              onChange={(e) =>
+                setReturnForm((prev) => ({ ...prev, contact_note: e.target.value }))
+              }
+              className={inputClass}
+            />
+          </label>
+          <div className="flex flex-wrap gap-2 sm:col-span-2">
+            <button
+              type="submit"
+              disabled={pending || returnForm.reason.trim() === ''}
+              className="min-h-11 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
+            >
+              ยืนยันพัสดุตีกลับ
+            </button>
+            <button
+              type="button"
+              onClick={() => setReturning(false)}
+              className="min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm hover:bg-[var(--color-bg-tertiary)]"
+            >
+              ยกเลิก
+            </button>
+          </div>
+        </form>
       )}
 
       {history && (

@@ -9,6 +9,7 @@ import CreateParcelModal from './components/create-parcel-modal';
 import ParcelCard from './components/parcel-card';
 import PickupCard from './components/pickup-card';
 import CancellationCard from './components/cancellation-card';
+import DeliveryConversionCard from './components/delivery-conversion-card';
 
 const storeFulfillmentModel = new StoreFulfillmentModel();
 
@@ -74,6 +75,13 @@ export default function StoreFulfillmentPage() {
     order?.status === 'paid' &&
     order.fulfillmentMethod === 'delivery' &&
     !cancellationHolds;
+  // TASK-0037: no cash on delivery, so the API refuses a parcel while
+  // shipping is still owed; staff are told why instead of meeting the error.
+  const unpaidShipping = order?.shippingCharges.find(
+    (charge) =>
+      charge.status === 'awaiting_payment' ||
+      charge.status === 'pending_review',
+  );
 
   return (
     <div className="min-h-full bg-[#F5F7FA] p-2 dark:bg-slate-950 sm:p-4 md:p-6 lg:p-8">
@@ -129,13 +137,18 @@ export default function StoreFulfillmentPage() {
                 <button
                   type="button"
                   onClick={() => setShowCreateParcel(true)}
-                  disabled={!hasRemaining}
+                  disabled={!hasRemaining || !!unpaidShipping}
                   className="min-h-11 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
                 >
                   บันทึกพัสดุใหม่
                 </button>
               )}
             </div>
+            {canCreateParcel && unpaidShipping && (
+              <p className="mt-2 text-sm text-amber-700">
+                รอลูกค้าชำระค่าจัดส่ง {unpaidShipping.amount} บาท จึงจะบันทึกพัสดุได้
+              </p>
+            )}
 
             <table className="mt-4 w-full text-sm">
               <thead>
@@ -166,6 +179,13 @@ export default function StoreFulfillmentPage() {
               onChanged={() => void search(order.storeOrderId)}
             />
           )}
+
+          <DeliveryConversionCard
+            order={order}
+            canEdit={canEdit}
+            cancellationHolds={cancellationHolds}
+            onChanged={() => void search(order.storeOrderId)}
+          />
 
           {order.fulfillmentMethod === 'pickup' && order.pickup && (
             <PickupCard

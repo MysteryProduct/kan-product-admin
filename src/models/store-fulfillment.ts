@@ -1,5 +1,6 @@
 import axiosInstance from '@/lib/axios';
 import {
+  ConvertToDeliveryDto,
   CreateParcelDto,
   DecideCancellationDto,
   RecordManualRefundDto,
@@ -8,6 +9,7 @@ import {
   HandoverDto,
   ParcelAddressHistoryEntry,
   PickupContactLogDto,
+  RecordParcelReturnDto,
   SecondAppointmentDto,
   StoreOrderWithParcels,
 } from '@/types/store-fulfillment';
@@ -54,6 +56,28 @@ class StoreFulfillmentModel {
     });
   }
 
+  // TASK-0037: only after the second pickup appointment was missed. The API
+  // decides whether shipping is owed; the answer says how much.
+  async convertToDelivery(
+    storeOrderId: string,
+    dto: ConvertToDeliveryDto,
+  ): Promise<{ shippingFee: number }> {
+    const response = await axiosInstance.post<{ shippingFee: number }>(
+      `/fulfillment/orders/${storeOrderId}/convert-to-delivery`,
+      dto,
+    );
+    return response.data;
+  }
+
+  // A shipped parcel that came back. The API gives its quantities back and
+  // issues the shipping charge the resend must wait for.
+  async recordParcelReturn(
+    parcelId: string,
+    dto: RecordParcelReturnDto,
+  ): Promise<void> {
+    await axiosInstance.post(`/fulfillment/parcels/${parcelId}/return`, dto);
+  }
+
   async getAddressHistory(parcelId: string): Promise<ParcelAddressHistoryEntry[]> {
     const response = await axiosInstance.get<ParcelAddressHistoryEntry[]>(
       `/fulfillment/parcels/${parcelId}/address-history`,
@@ -94,6 +118,15 @@ class StoreFulfillmentModel {
       dto,
     );
     return response.data;
+  }
+
+  // A shipping payment the shop was not owed (TASK-0037). A card payment is
+  // refunded through the gateway at once; PromptPay waits for the transfer
+  // to be recorded through recordManualRefund().
+  async refundExcessShipping(gatewayChargeId: string): Promise<void> {
+    await axiosInstance.post(
+      `/fulfillment/cancellations/shipping-payments/${encodeURIComponent(gatewayChargeId)}/refund`,
+    );
   }
 
   async markPickupReady(storeOrderId: string): Promise<void> {
