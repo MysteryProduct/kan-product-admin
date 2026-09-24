@@ -53,7 +53,14 @@ const mapFetchToFormItem = (item: FetchSaleOrder): SaleOrderItemForm => ({
 });
 
 export default function UpdateSaleOrderForm({ isOpen, onClose, onSuccess, initialData }: UpdateSaleOrderFormProps) {
-    const vatRate = useVatRate();
+    const settingsVatRate = useVatRate();
+    // The API recalculates an edited order at its own stored rate and keeps
+    // its shipping (TASK-0038), so the preview uses the same figures.
+    const vatRate =
+        initialData.vat_rate !== undefined && initialData.vat_rate !== null
+            ? Number(initialData.vat_rate)
+            : settingsVatRate;
+    const shippingFee = Number(initialData.sale_order_shipping_fee ?? 0);
     const [saleOrderName, setSaleOrderName] = useState('');
     const [saleOrderDetail, setSaleOrderDetail] = useState('');
     const [shippingAddressName, setShippingAddressName] = useState('');
@@ -124,7 +131,8 @@ export default function UpdateSaleOrderForm({ isOpen, onClose, onSuccess, initia
     const calculateItemTotal = (item: SaleOrderItemForm) =>
         Number(item.sale_order_list_qty) * Number(item.sale_order_list_price);
 
-    const grandTotal = useMemo(() => items.reduce((sum, item) => sum + calculateItemTotal(item), 0), [items]);
+    const itemsTotal = useMemo(() => items.reduce((sum, item) => sum + calculateItemTotal(item), 0), [items]);
+    const grandTotal = itemsTotal + shippingFee;
     const vatSummary = useMemo(() => calculateVatSummary(grandTotal, vatType, vatRate), [grandTotal, vatType, vatRate]);
 
     const formatCurrency = (amount: number) =>
@@ -488,6 +496,18 @@ export default function UpdateSaleOrderForm({ isOpen, onClose, onSuccess, initia
                         {items.length > 0 && (
                             <div className="mt-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5 text-[var(--color-text-primary)]">
                                 <div className="space-y-2">
+                                    {shippingFee > 0 && (
+                                        <>
+                                            <div className="flex items-center justify-between text-sm md:text-base">
+                                                <span>ยอดสินค้า</span>
+                                                <span>฿{formatCurrency(itemsTotal)}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between text-sm md:text-base">
+                                                <span>ค่าจัดส่ง (รวม VAT)</span>
+                                                <span>฿{formatCurrency(shippingFee)}</span>
+                                            </div>
+                                        </>
+                                    )}
                                     <div className="flex items-center justify-between text-sm md:text-base">
                                         <span>ยอดก่อน VAT</span>
                                         <span>฿{formatCurrency(vatSummary.subtotal)}</span>

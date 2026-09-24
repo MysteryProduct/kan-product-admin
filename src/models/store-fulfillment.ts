@@ -12,9 +12,22 @@ import {
   RecordParcelReturnDto,
   SecondAppointmentDto,
   StoreOrderWithParcels,
+  StoreTaxInvoiceRequestList,
 } from '@/types/store-fulfillment';
 
 class StoreFulfillmentModel {
+  // TASK-0038: newest first, for staff to find orders waiting on a document.
+  async listTaxInvoiceRequests(
+    page = 1,
+    limit = 10,
+  ): Promise<StoreTaxInvoiceRequestList> {
+    const response = await axiosInstance.get<StoreTaxInvoiceRequestList>(
+      '/fulfillment/tax-invoices',
+      { params: { page, limit } },
+    );
+    return response.data;
+  }
+
   async getOrder(storeOrderId: string): Promise<StoreOrderWithParcels> {
     const response = await axiosInstance.get<StoreOrderWithParcels>(
       `/fulfillment/orders/${storeOrderId}`,

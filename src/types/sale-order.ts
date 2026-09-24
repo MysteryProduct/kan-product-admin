@@ -45,6 +45,8 @@ export interface SaleOrder {
   sale_order_vat_amount?: number;
   sale_order_subtotal?: number;
   sale_order_total: number;
+  // The part of sale_order_total that is shipping; Store orders only (TASK-0038).
+  sale_order_shipping_fee?: number;
   create_at?: Date;
   create_by?: string;
   update_at?: Date;

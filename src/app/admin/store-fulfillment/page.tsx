@@ -10,6 +10,8 @@ import ParcelCard from './components/parcel-card';
 import PickupCard from './components/pickup-card';
 import CancellationCard from './components/cancellation-card';
 import DeliveryConversionCard from './components/delivery-conversion-card';
+import TaxInvoiceCard from './components/tax-invoice-card';
+import TaxInvoiceRequestList from './components/tax-invoice-request-list';
 
 const storeFulfillmentModel = new StoreFulfillmentModel();
 
@@ -172,6 +174,8 @@ export default function StoreFulfillmentPage() {
             </table>
           </div>
 
+          {order.taxInvoice && <TaxInvoiceCard request={order.taxInvoice} />}
+
           {order.cancellation && (
             <CancellationCard
               cancellation={order.cancellation}
@@ -214,6 +218,14 @@ export default function StoreFulfillmentPage() {
           </div>
         </div>
       )}
+
+      <TaxInvoiceRequestList
+        onOpen={(storeOrderId) => {
+          setStoreOrderIdInput(storeOrderId);
+          void search(storeOrderId);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+      />
 
       {order && showCreateParcel && (
         <CreateParcelModal

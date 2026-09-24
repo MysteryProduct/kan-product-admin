@@ -22,7 +22,7 @@ interface SaleOrderDetailModalProps {
 const saleOrderModel = new SaleOrderModel();
 
 export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleOrder }: SaleOrderDetailModalProps) {
-    const vatRate = useVatRate();
+    const settingsVatRate = useVatRate();
     const { can } = usePermissions();
     const canApproveSaleOrder = can('sale_order', 'approve');
 
@@ -50,7 +50,24 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
 
     const grandTotal =
         saleOrder.sale_order_total || items.reduce((sum, item) => sum + calculateItemTotal(item), 0);
-    const vatSummary = calculateVatSummary(grandTotal, saleOrder.vat_type || 'none', vatRate);
+    // The order's own rate and amounts as the API booked them (TASK-0038): a
+    // later change to the VAT setting must not re-price an order already
+    // written, and a Store order's total includes its shipping.
+    const vatRate =
+        saleOrder.vat_rate !== undefined && saleOrder.vat_rate !== null
+            ? Number(saleOrder.vat_rate)
+            : settingsVatRate;
+    const computedVat = calculateVatSummary(grandTotal, saleOrder.vat_type || 'none', vatRate);
+    const vatSummary =
+        saleOrder.sale_order_subtotal !== undefined && saleOrder.sale_order_vat_amount !== undefined
+            ? {
+                  ...computedVat,
+                  subtotal: Number(saleOrder.sale_order_subtotal) - Number(saleOrder.sale_order_vat_amount),
+                  vatAmount: Number(saleOrder.sale_order_vat_amount),
+                  total: Number(saleOrder.sale_order_subtotal),
+              }
+            : computedVat;
+    const shippingFee = Number(saleOrder.sale_order_shipping_fee ?? 0);
 
     const formatCurrency = (amount: number) =>
         new Intl.NumberFormat('th-TH', {
@@ -232,6 +249,18 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
                     {/* VAT Summary */}
                     <div className="mt-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5 text-[var(--color-text-primary)]">
                         <div className="space-y-2">
+                            {shippingFee > 0 && (
+                                <>
+                                    <div className="flex items-center justify-between text-sm md:text-base">
+                                        <span>ยอดสินค้า</span>
+                                        <span>฿{formatCurrency(Number(grandTotal) - shippingFee)}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm md:text-base">
+                                        <span>ค่าจัดส่ง (รวม VAT)</span>
+                                        <span>฿{formatCurrency(shippingFee)}</span>
+                                    </div>
+                                </>
+                            )}
                             <div className="flex items-center justify-between text-sm md:text-base">
                                 <span>ยอดก่อน VAT</span>
                                 <span>฿{formatCurrency(vatSummary.subtotal)}</span>

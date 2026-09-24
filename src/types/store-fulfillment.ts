@@ -202,6 +202,28 @@ export interface StoreRefundAccount {
   number: string | null;
 }
 
+// TASK-0038: a customer's full tax invoice request. Staff issue the
+// document themselves from these details.
+export interface StoreTaxInvoiceRequest {
+  storeOrderId: string;
+  buyerName: string;
+  buyerAddress: string | null;
+  buyerTaxId: string;
+  branchType: 'head_office' | 'branch';
+  branchCode: string | null;
+  requestedStage: 'checkout' | 'after_payment';
+  requestedAt: string;
+}
+
+export interface StoreTaxInvoiceRequestListItem extends StoreTaxInvoiceRequest {
+  orderStatus: string;
+}
+
+export interface StoreTaxInvoiceRequestList {
+  data: StoreTaxInvoiceRequestListItem[];
+  meta: { total: number; page: number; limit: number; last_page: number };
+}
+
 export interface StoreOrderWithParcels {
   storeOrderId: string;
   status: string;
@@ -213,6 +235,7 @@ export interface StoreOrderWithParcels {
   shippingPayments?: StoreShippingPayment[];
   // Present once the customer has asked to cancel; null until then.
   cancellation: StoreCancellation | null;
+  taxInvoice: StoreTaxInvoiceRequest | null;
   items: StoreOrderLine[];
   parcels: StoreParcel[];
   defaultAddress: StoreOrderDefaultAddress | null;
