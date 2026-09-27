@@ -122,14 +122,15 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-300/40 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-6xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)] overlay-surface ">
-                <div className="bg-[var(--color-primary)] px-6 py-5 ">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
+            <div className="w-full max-w-6xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)] overlay-surface">
+                <div className="border-b border-[var(--border)] px-6 py-5">
                     <div className="flex items-center justify-between gap-3">
-                        <h2 className="text-2xl font-bold text-white">รายละเอียดใบขายสินค้า</h2>
+                        <h2 className="text-2xl font-bold text-[var(--ink)]">รายละเอียดใบขายสินค้า</h2>
                         <button
                             onClick={onClose}
-                            className="rounded-lg border border-white/60 bg-white/15 p-2 text-white transition-colors hover:bg-white/25 disabled:opacity-50"
+                            aria-label="ปิดหน้าต่าง"
+                            className="ka-btn ka-btn--icon"
                             type="button"
                         >
                             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,85 +146,85 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
                     {/* Info Section */}
                     <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
-                            <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">รหัสใบขายสินค้า</label>
-                            <div className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
+                            <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">รหัสใบขายสินค้า</label>
+                            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 text-[var(--ink)] shadow-sm">
                                 {saleOrder.sale_order_code || saleOrder.sale_order_id}
                             </div>
                         </div>
                         <div>
-                            <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">ชื่อใบขายสินค้า</label>
-                            <div className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
+                            <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">ชื่อใบขายสินค้า</label>
+                            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 text-[var(--ink)] shadow-sm">
                                 {saleOrder.sale_order_name}
                             </div>
                         </div>
                         <div>
-                            <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">ประเภท</label>
-                            <div className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
+                            <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">ประเภท</label>
+                            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 text-[var(--ink)] shadow-sm">
                                 {typeLabels[saleOrder.sale_order_type || ''] || saleOrder.sale_order_type || '-'}
                             </div>
                         </div>
                         <div>
-                            <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">รูปแบบ VAT</label>
-                            <div className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
+                            <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">รูปแบบ VAT</label>
+                            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 text-[var(--ink)] shadow-sm">
                                 {VAT_TYPE_LABELS[saleOrder.vat_type || 'none']}
                             </div>
                         </div>
                         <div>
-                            <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">สถานะ</label>
-                            <div className="flex min-h-[44px] items-center rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 shadow-sm dark:border-gray-600 dark:bg-gray-700">
+                            <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">สถานะ</label>
+                            <div className="flex min-h-[44px] items-center rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 shadow-sm">
                                 <StatusBadge tone={SALE_ORDER_STATUS_TONE[saleOrder.sale_order_status]}>{statusLabels[saleOrder.sale_order_status] || saleOrder.sale_order_status}</StatusBadge>
                             </div>
                         </div>
                         <div className="md:col-span-2">
-                            <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">ที่อยู่จัดส่ง</label>
-                            <div className="min-h-[76px] whitespace-pre-line rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
+                            <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">ที่อยู่จัดส่ง</label>
+                            <div className="min-h-[76px] whitespace-pre-line rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 text-[var(--ink)] shadow-sm">
                                 {saleOrder.shipping_address_name || '-'}
                             </div>
                         </div>
                         <div className="md:col-span-2">
-                            <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">รายละเอียด</label>
-                            <div className="min-h-[60px] whitespace-pre-line rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 text-gray-800 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
+                            <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">รายละเอียด</label>
+                            <div className="min-h-[60px] whitespace-pre-line rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 text-[var(--ink)] shadow-sm">
                                 {saleOrder.sale_order_detail || '-'}
                             </div>
                         </div>
                     </div>
 
                     {/* Items Section */}
-                    <h3 className="mb-3 text-base font-semibold text-gray-800 dark:text-gray-100">รายการสินค้า</h3>
+                    <h3 className="mb-3 text-base font-semibold text-[var(--ink)]">รายการสินค้า</h3>
                     <div className="space-y-3">
                         {items.length > 0 ? (
                             items.map((item, index) => (
                                 <div
                                     key={item.sale_order_list_id || `${item.product_name}-${index}`}
-                                    className="rounded-2xl border border-gray-200 bg-[var(--color-bg-secondary)] from-white p-4 dark:border-gray-700 "
+                                    className="rounded-2xl border border-[var(--border)] bg-[var(--color-bg-secondary)] p-4"
                                 >
                                     <div className="mb-3 flex items-center gap-2">
-                                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-soft)] text-sm font-bold text-[var(--brand-ink)]">
                                             {index + 1}
                                         </span>
                                     </div>
                                     <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
                                         <div>
-                                            <label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">ชื่อสินค้า</label>
-                                            <div className="rounded-xl border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
+                                            <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ชื่อสินค้า</label>
+                                            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--ink)]">
                                                 {item.product_name || '-'}
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">จำนวน</label>
-                                            <div className="rounded-xl border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
+                                            <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">จำนวน</label>
+                                            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--ink)]">
                                                 {item.sale_order_list_qty}
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">ราคา/หน่วย</label>
-                                            <div className="rounded-xl border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
+                                            <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ราคา/หน่วย</label>
+                                            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--ink)]">
                                                 ฿{formatCurrency(Number(item.sale_order_list_price))}
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">ยอดรวม</label>
-                                            <div className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                            <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ยอดรวม</label>
+                                            <div className="rounded-xl border border-[var(--brand-soft)] bg-[var(--brand-soft)] px-3 py-2 text-sm font-semibold text-[var(--brand-ink)]">
                                                 ฿{formatCurrency(calculateItemTotal(item))}
                                             </div>
                                         </div>
@@ -231,7 +232,7 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
                                 </div>
                             ))
                         ) : (
-                            <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center text-gray-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-400">
+                            <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--bg-subtle)] p-6 text-center text-[var(--ink-muted)]">
                                 ไม่พบรายการสินค้า
                             </div>
                         )}
@@ -268,11 +269,11 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
                     </div>
 
                     {/* Footer Buttons */}
-                    <div className="mt-6 flex gap-3 border-t border-gray-200 pt-6 dark:border-gray-700">
+                    <div className="mt-6 flex gap-3 border-t border-[var(--border)] pt-6">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 rounded-xl border-2 border-gray-200 bg-gray-100 px-6 py-3.5 font-semibold text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                            className="ka-btn flex-1"
                         >
                             ปิด
                         </button>
@@ -280,7 +281,7 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
                             <button
                                 type="button"
                                 onClick={() => setShowConfirmDialog(true)}
-                                className="flex-1 rounded-xl border-2 border-[var(--color-primary)] bg-[var(--color-primary)] px-6 py-3.5 font-semibold text-white transition-all hover:border-[var(--color-primary-hover)] hover:bg-[var(--color-primary-hover)]"
+                                className="ka-btn ka-btn--primary min-h-11 flex-1"
                             >
                                 อนุมัติ
                             </button>
@@ -296,7 +297,7 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
                     message="คุณแน่ใจหรือไม่ว่าต้องการอนุมัติใบขายสินค้านี้?"
                     onConfirm={handleApprove}
                     onCancel={() => setShowConfirmDialog(false)}
-                    bottom_className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-xl hover:bg-[var(--color-primary-hover)] transition-all font-semibold border-2 border-[var(--color-primary)] hover:border-[var(--color-primary-hover)]"
+                    bottom_className="ka-btn ka-btn--primary min-h-11"
                 />
             )}
 

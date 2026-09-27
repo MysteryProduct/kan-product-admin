@@ -247,7 +247,7 @@ export default function SaleOrderPage() {
                         setIsInsertOpen(true);
                     }}
                     disabled={!canAddSaleOrder}
-                    className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="ka-btn ka-btn--primary"
                     type="button"
                 >
                     สร้างใบขายสินค้า
@@ -310,7 +310,7 @@ export default function SaleOrderPage() {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => void openSaleOrderDetail(row)}
-                        className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-green-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-green-400"
+                        className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--success)]"
                         type="button"
                         title="ดูรายละเอียด"
                     >
@@ -323,7 +323,7 @@ export default function SaleOrderPage() {
                     {canEditSaleOrder && row.sale_order_status === 'pending' && (
                         <button
                             onClick={() => void openSaleOrderUpdate(row)}
-                            className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-blue-400"
+                            className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
                             type="button"
                             title="แก้ไข"
                         >
@@ -339,7 +339,7 @@ export default function SaleOrderPage() {
                                 setSaleOrderToDelete(row);
                                 setIsDeleteDialogOpen(true);
                             }}
-                            className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-red-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-red-400"
+                            className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--danger)]"
                             type="button"
                             title="ลบ"
                         >
@@ -358,16 +358,16 @@ export default function SaleOrderPage() {
     ];
 
     return (
-        <div className="bg-gray-50 p-2 dark:bg-gray-900 sm:p-4 md:p-6 lg:p-8">
+        <div className="bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
             {loading && <LoadingSkeletonProps />}
             <div className="space-y-6">
                 {/* Section 1: Fetch Sale Orders */}
-                <section className="rounded-2xl bg-white shadow-sm dark:bg-gray-800">
-                    <div className="border-b border-gray-100 p-4 dark:border-gray-700">
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                <section className="ka-card">
+                    <div className="border-b border-[var(--border)] p-4">
+                        <h2 className="text-lg font-semibold text-[var(--ink)]">
                             รายการสินค้าพร้อมขาย (สำหรับสร้างใบขายสินค้า)
                         </h2>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        <p className="mt-1 text-sm text-[var(--ink-muted)]">
                             เลือกรายการสินค้าจากตารางนี้ แล้วกดปุ่มสร้างใบขายสินค้า
                         </p>
                         <div className="mt-3 flex flex-col gap-2 sm:flex-row">
@@ -382,20 +382,20 @@ export default function SaleOrderPage() {
                                     }
                                 }}
                                 placeholder="ค้นหาสินค้าพร้อมขายด้วย keyword"
-                                className="h-10 flex-1 rounded-xl border border-gray-300 px-3 text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                className="ka-input h-10 flex-1"
                             />
                             <div className="flex gap-2">
                                 <button
                                     type="button"
                                     onClick={handleFetchSaleOrderSearch}
-                                    className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                                    className="ka-btn ka-btn--primary"
                                 >
                                     ค้นหา
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handleFetchSaleOrderClearSearch}
-                                    className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                                    className="ka-btn"
                                 >
                                     ล้าง
                                 </button>
@@ -407,7 +407,7 @@ export default function SaleOrderPage() {
                             data={fetchSaleOrders?.data || []}
                             columns={fetchSaleOrderColumns}
                             keyField="fetch_sale_order_id"
-                            className="bg-white dark:bg-gray-800"
+                            className="bg-[var(--bg-surface)]"
                             paginationMeta={fetchSaleOrderMeta}
                             currentPage={fetchSaleOrderPage}
                             onPageChange={setFetchSaleOrderPage}
@@ -416,10 +416,10 @@ export default function SaleOrderPage() {
                 </section>
 
                 {/* Section 2: Sale Orders */}
-                <section className="rounded-2xl bg-white shadow-sm dark:bg-gray-800">
-                    <div className="border-b border-gray-100 p-4 dark:border-gray-700">
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">รายการใบขายสินค้า</h2>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                <section className="ka-card">
+                    <div className="border-b border-[var(--border)] p-4">
+                        <h2 className="text-lg font-semibold text-[var(--ink)]">รายการใบขายสินค้า</h2>
+                        <p className="mt-1 text-sm text-[var(--ink-muted)]">
                             ตารางใบขายสินค้าทั้งหมด พร้อมดูรายละเอียด แก้ไข และลบ
                         </p>
                         <div className="mt-3 flex flex-col gap-2 sm:flex-row">
@@ -434,20 +434,20 @@ export default function SaleOrderPage() {
                                     }
                                 }}
                                 placeholder="ค้นหาใบขายสินค้าด้วย keyword"
-                                className="h-10 flex-1 rounded-xl border border-gray-300 px-3 text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                className="ka-input h-10 flex-1"
                             />
                             <div className="flex gap-2">
                                 <button
                                     type="button"
                                     onClick={handleSaleOrderSearch}
-                                    className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
+                                    className="ka-btn ka-btn--primary"
                                 >
                                     ค้นหา
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handleSaleOrderClearSearch}
-                                    className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                                    className="ka-btn"
                                 >
                                     ล้าง
                                 </button>
@@ -459,7 +459,7 @@ export default function SaleOrderPage() {
                             data={saleOrders?.data || []}
                             columns={saleOrderColumns}
                             keyField="sale_order_id"
-                            className="bg-white dark:bg-gray-800"
+                            className="bg-[var(--bg-surface)]"
                             paginationMeta={saleOrderMeta}
                             currentPage={saleOrderPage}
                             onPageChange={setSaleOrderPage}

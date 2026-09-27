@@ -24,8 +24,7 @@ interface UpdatePaymentReceiptFormProps {
 
 const paymentReceiptModel = new PaymentReceiptModel();
 const bankAccountModel = new BankAccountModel();
-const INPUT_CLASSNAME =
-	'h-11 w-full rounded-xl border border-gray-300 px-3 text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100';
+const INPUT_CLASSNAME = 'ka-input h-11 w-full';
 
 export default function UpdatePaymentReceiptForm({
 	isOpen,
@@ -173,27 +172,27 @@ export default function UpdatePaymentReceiptForm({
 
 	return (
 		<>
-			<div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4 backdrop-blur-sm">
-				<div className="w-full max-w-3xl rounded-2xl bg-[var(--color-bg-primary)] overlay-surface ">
-					<div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-						<h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">แก้ไขใบเสร็จรับเงิน</h2>
+			<div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
+				<div className="w-full max-w-3xl rounded-2xl bg-[var(--color-bg-primary)] overlay-surface">
+					<div className="border-b border-[var(--border)] px-6 py-4">
+						<h2 className="text-xl font-semibold text-[var(--ink)]">แก้ไขใบเสร็จรับเงิน</h2>
 					</div>
 
 					<form onSubmit={handleSubmit} className="space-y-4 p-6">
 						<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 							<div>
-								<label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">เลขที่ใบเสร็จรับเงิน</label>
+								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">เลขที่ใบเสร็จรับเงิน</label>
 								<input
 									type="text"
 									value={formData.payment_receipt_code}
 									onChange={(event) => setFormData((prev) => ({ ...prev, payment_receipt_code: event.target.value }))}
 									className={INPUT_CLASSNAME}
 								/>
-								{errors.payment_receipt_code && <p className="mt-1 text-xs text-red-500">{errors.payment_receipt_code}</p>}
+								{errors.payment_receipt_code && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.payment_receipt_code}</p>}
 							</div>
 
 							<div>
-								<label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">ประเภทรายการชำระ</label>
+								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">ประเภทรายการชำระ</label>
 								<select
 									value={formData.payment_receipt_type}
 									onChange={(event) =>
@@ -210,7 +209,7 @@ export default function UpdatePaymentReceiptForm({
 							</div>
 
 							<div>
-								<label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">วิธีชำระเงิน</label>
+								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">วิธีชำระเงิน</label>
 								<select
 									value={formData.payment_method}
 									onChange={(event) =>
@@ -227,7 +226,7 @@ export default function UpdatePaymentReceiptForm({
 							</div>
 
 							<div>
-								<label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">บัญชีรับเงิน</label>
+								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">บัญชีรับเงิน</label>
 								<select
 									value={formData.account_id}
 									disabled={formData.payment_method !== 'bank' || loadingAccounts}
@@ -241,11 +240,11 @@ export default function UpdatePaymentReceiptForm({
 										</option>
 									))}
 								</select>
-								{errors.account_id && <p className="mt-1 text-xs text-red-500">{errors.account_id}</p>}
+								{errors.account_id && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.account_id}</p>}
 							</div>
 
 							<div>
-								<label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">ยอดรับชำระ</label>
+								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">ยอดรับชำระ</label>
 								<input
 									type="number"
 									min={0}
@@ -254,22 +253,22 @@ export default function UpdatePaymentReceiptForm({
 									onChange={(event) => setFormData((prev) => ({ ...prev, amount_paid: event.target.value }))}
 									className={INPUT_CLASSNAME}
 								/>
-								{errors.amount_paid && <p className="mt-1 text-xs text-red-500">{errors.amount_paid}</p>}
+								{errors.amount_paid && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.amount_paid}</p>}
 							</div>
 
 							<div>
-								<label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">วันที่รับชำระ</label>
+								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">วันที่รับชำระ</label>
 								<input
 									type="date"
 									value={formData.payment_date}
 									onChange={(event) => setFormData((prev) => ({ ...prev, payment_date: event.target.value }))}
 									className={INPUT_CLASSNAME}
 								/>
-								{errors.payment_date && <p className="mt-1 text-xs text-red-500">{errors.payment_date}</p>}
+								{errors.payment_date && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.payment_date}</p>}
 							</div>
 
 							<div>
-								<label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">สถานะ</label>
+								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">สถานะ</label>
 								<select
 									value={formData.payment_status}
 									onChange={(event) =>
@@ -286,29 +285,29 @@ export default function UpdatePaymentReceiptForm({
 							</div>
 
 							<div className="md:col-span-2">
-								<label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">หมายเหตุ</label>
+								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">หมายเหตุ</label>
 								<textarea
 									rows={3}
 									value={formData.payment_receipt_remark}
 									onChange={(event) => setFormData((prev) => ({ ...prev, payment_receipt_remark: event.target.value }))}
-									className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+									className="ka-textarea w-full"
 								/>
 							</div>
 						</div>
 
-						<div className="flex justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700">
+						<div className="flex justify-end gap-2 border-t border-[var(--border)] pt-4">
 							<button
 								type="button"
 								onClick={onClose}
 								disabled={isSubmitting}
-								className="h-11 rounded-xl border border-gray-300 px-6 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-60 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+								className="ka-btn h-11"
 							>
 								ยกเลิก
 							</button>
 							<button
 								type="submit"
 								disabled={isSubmitting}
-								className="h-11 rounded-xl bg-[var(--color-primary)] px-6 text-sm font-semibold text-white hover:bg-[var(--color-primary-hover)] disabled:opacity-60"
+								className="ka-btn ka-btn--primary min-h-11 h-11"
 							>
 								{isSubmitting ? 'กำลังบันทึก...' : 'บันทึก'}
 							</button>

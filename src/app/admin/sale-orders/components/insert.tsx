@@ -297,15 +297,16 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
 
     return (
         <>
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-300/40 p-4 backdrop-blur-sm">
-                <div className="w-full max-w-6xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)] overlay-surface ">
-                    <div className="bg-[var(--color-primary)] px-6 py-5 ">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
+                <div className="w-full max-w-6xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)] overlay-surface">
+                    <div className="border-b border-[var(--border)] px-6 py-5">
                         <div className="flex items-center justify-between gap-3">
-                            <h2 className="text-2xl font-bold text-white">สร้างใบขายสินค้า</h2>
+                            <h2 className="text-2xl font-bold text-[var(--ink)]">สร้างใบขายสินค้า</h2>
                             <button
                                 onClick={resetAndClose}
                                 disabled={isSubmitting}
-                                className="rounded-lg border border-white/60 bg-white/15 p-2 text-white transition-colors hover:bg-white/25 disabled:opacity-50"
+                                aria-label="ปิดหน้าต่าง"
+                                className="ka-btn ka-btn--icon"
                                 type="button"
                             >
                                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -319,27 +320,27 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                         {/* Header Fields */}
                         <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div>
-                                <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">
-                                    ชื่อใบขายสินค้า <span className="text-red-500">*</span>
+                                <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">
+                                    ชื่อใบขายสินค้า <span className="text-[var(--danger)]">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     value={saleOrderName}
                                     onChange={(e) => setSaleOrderName(e.target.value)}
                                     placeholder="กรอกชื่อใบขายสินค้า"
-                                    className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                    className="ka-input h-11 w-full"
                                     disabled={isSubmitting}
                                 />
                                 {errors.sale_order_name && (
-                                    <p className="mt-1 text-xs text-red-500">{errors.sale_order_name}</p>
+                                    <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.sale_order_name}</p>
                                 )}
                             </div>
                             <div>
-                                <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">รูปแบบ VAT</label>
+                                <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">รูปแบบ VAT</label>
                                 <select
                                     value={vatType}
                                     onChange={(e) => setVatType(e.target.value as VatType)}
-                                    className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                    className="ka-input h-11 w-full"
                                     disabled={isSubmitting}
                                 >
                                     {VAT_TYPE_OPTIONS.map((option) => (
@@ -350,22 +351,22 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                                 </select>
                             </div>
                             <div className="md:col-span-2">
-                                <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">ที่อยู่จัดส่ง</label>
+                                <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">ที่อยู่จัดส่ง</label>
                                 <textarea
                                     value={shippingAddressName}
                                     onChange={(e) => setShippingAddressName(e.target.value)}
                                     placeholder="กรอกที่อยู่จัดส่ง"
                                     rows={3}
-                                    className="w-full resize-y rounded-xl border border-gray-300 px-4 py-2 text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                    className="ka-textarea w-full resize-y"
                                     disabled={isSubmitting}
                                 />
                             </div>
                             <div>
-                                <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">ประเภท</label>
+                                <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">ประเภท</label>
                                 <select
                                     value={saleOrderType}
                                     onChange={(e) => setSaleOrderType(e.target.value)}
-                                    className="h-11 w-full rounded-xl border border-gray-300 px-4 text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                    className="ka-input h-11 w-full"
                                     disabled={true}
                                 >
                                     <option value="online">ขายบนเว็บไซต์</option>
@@ -373,13 +374,13 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                                 </select>
                             </div>
                             <div className="md:col-span-2">
-                                <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">รายละเอียด</label>
+                                <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">รายละเอียด</label>
                                 <textarea
                                     value={saleOrderDetail}
                                     onChange={(e) => setSaleOrderDetail(e.target.value)}
                                     placeholder="กรอกรายละเอียด"
                                     rows={2}
-                                    className="w-full resize-y rounded-xl border border-gray-300 px-4 py-2 text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                    className="ka-textarea w-full resize-y"
                                     disabled={isSubmitting}
                                 />
                             </div>
@@ -387,12 +388,12 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
 
                         {/* Items Section */}
                         <div className="mb-4 flex items-center justify-between">
-                            <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">รายการสินค้า</h3>
+                            <h3 className="text-base font-semibold text-[var(--ink)]">รายการสินค้า</h3>
                             <button
                                 type="button"
                                 onClick={openSelectModal}
                                 disabled={isSubmitting}
-                                className="flex items-center gap-2 rounded-xl bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+                                className="ka-btn ka-btn--primary min-h-11 flex items-center gap-2"
                             >
                                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -402,7 +403,7 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                         </div>
 
                         {errors.items && (
-                            <p className="mb-3 text-sm text-red-500">{errors.items}</p>
+                            <p className="mb-3 text-sm text-[var(--danger)]">{errors.items}</p>
                         )}
 
                         <div className="space-y-3">
@@ -410,17 +411,17 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                                 items.map((item, index) => (
                                     <div
                                         key={item.id}
-                                        className="rounded-2xl border border-gray-200 bg-[var(--color-bg-secondary)] from-white p-4 dark:border-gray-700 "
+                                        className="rounded-2xl border border-[var(--border)] bg-[var(--color-bg-secondary)] p-4"
                                     >
                                         <div className="mb-3 flex items-center justify-between">
-                                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-soft)] text-sm font-bold text-[var(--brand-ink)]">
                                                 {index + 1}
                                             </span>
                                             <button
                                                 type="button"
                                                 onClick={() => handleRemoveItem(item.id)}
                                                 disabled={isSubmitting}
-                                                className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
+                                                className="ka-btn ka-btn--ghost ka-btn--icon hover:bg-[var(--danger-soft)] hover:text-[var(--danger)]"
                                                 title="ลบรายการ"
                                             >
                                                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
@@ -430,13 +431,13 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                                         </div>
                                         <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
                                             <div>
-                                                <label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">ชื่อสินค้า</label>
-                                                <div className="rounded-xl border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-800 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100">
+                                                <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ชื่อสินค้า</label>
+                                                <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--ink)]">
                                                     {item.product_name}
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">
+                                                <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">
                                                     จำนวน (สูงสุด {item.max_qty})
                                                 </label>
                                                 <input
@@ -445,31 +446,31 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                                                     max={item.max_qty}
                                                     value={item.sale_order_list_qty}
                                                     onChange={(e) => updateItem(item.id, 'sale_order_list_qty', e.target.valueAsNumber)}
-                                                    className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                                    className="ka-input w-full"
                                                     disabled={isSubmitting}
                                                 />
                                                 {errors[`item_${index}_qty`] && (
-                                                    <p className="mt-1 text-xs text-red-500">{errors[`item_${index}_qty`]}</p>
+                                                    <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`item_${index}_qty`]}</p>
                                                 )}
                                             </div>
                                             <div>
-                                                <label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">ราคา/หน่วย</label>
+                                                <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ราคา/หน่วย</label>
                                                 <input
                                                     type="number"
                                                     min={0}
                                                     step="0.01"
                                                     value={item.sale_order_list_price}
                                                     onChange={(e) => updateItem(item.id, 'sale_order_list_price', e.target.valueAsNumber)}
-                                                    className="w-full rounded-xl border border-gray-300 px-3 py-2 text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                                                    className="ka-input w-full"
                                                     disabled={isSubmitting}
                                                 />
                                                 {errors[`item_${index}_price`] && (
-                                                    <p className="mt-1 text-xs text-red-500">{errors[`item_${index}_price`]}</p>
+                                                    <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`item_${index}_price`]}</p>
                                                 )}
                                             </div>
                                             <div>
-                                                <label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">ยอดรวม</label>
-                                                <div className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                                                <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ยอดรวม</label>
+                                                <div className="rounded-xl border border-[var(--brand-soft)] bg-[var(--brand-soft)] px-3 py-2 text-sm font-semibold text-[var(--brand-ink)]">
                                                     ฿{formatCurrency(calculateItemTotal(item))}
                                                 </div>
                                             </div>
@@ -477,7 +478,7 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                                     </div>
                                 ))
                             ) : (
-                                <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-center text-gray-500 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-400">
+                                <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--bg-subtle)] p-6 text-center text-[var(--ink-muted)]">
                                     ยังไม่มีรายการสินค้า กรุณากดเพิ่มรายการสินค้า
                                 </div>
                             )}
@@ -504,19 +505,19 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                         )}
 
                         {/* Footer Buttons */}
-                        <div className="mt-6 flex gap-3 border-t border-gray-200 pt-6 dark:border-gray-700">
+                        <div className="mt-6 flex gap-3 border-t border-[var(--border)] pt-6">
                             <button
                                 type="button"
                                 onClick={resetAndClose}
                                 disabled={isSubmitting}
-                                className="flex-1 rounded-xl border-2 border-gray-200 bg-gray-100 px-6 py-3.5 font-semibold text-gray-700 transition-all hover:border-gray-300 hover:bg-gray-200 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                                className="ka-btn flex-1"
                             >
                                 ยกเลิก
                             </button>
                             <button
                                 type="submit"
                                 disabled={isSubmitting || items.length === 0}
-                                className="flex-1 rounded-xl bg-[var(--color-primary)] px-6 py-3.5 font-semibold text-white transition-all hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+                                className="ka-btn ka-btn--primary min-h-11 flex-1"
                             >
                                 {isSubmitting ? 'กำลังบันทึก...' : 'สร้างใบขายสินค้า'}
                             </button>
@@ -527,14 +528,15 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
 
             {/* Selection Modal */}
             {isSelectModalOpen && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gray-300/40 p-4 backdrop-blur-sm">
-                    <div className="w-full max-w-4xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)] overlay-surface ">
-                        <div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
+                    <div className="w-full max-w-4xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)] overlay-surface">
+                        <div className="border-b border-[var(--border)] px-6 py-4">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">เลือกสินค้า</h3>
+                                <h3 className="text-lg font-semibold text-[var(--ink)]">เลือกสินค้า</h3>
                                 <button
                                     onClick={() => setIsSelectModalOpen(false)}
-                                    className="rounded-xl p-2 text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+                                    aria-label="ปิดหน้าต่าง"
+                                    className="ka-btn ka-btn--ghost ka-btn--icon"
                                     type="button"
                                 >
                                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -550,11 +552,11 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                                     onChange={(e) => setSelectionSearch(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSelectionSearch()}
                                     placeholder="ค้นหาสินค้า..."
-                                    className="flex-1 rounded-xl border border-gray-300 px-4 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder-gray-400"
+                                    className="ka-input flex-1"
                                 />
                                 <button
                                     onClick={handleSelectionSearch}
-                                    className="rounded-xl bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)]"
+                                    className="ka-btn ka-btn--primary min-h-11"
                                     type="button"
                                 >
                                     ค้นหา
@@ -562,7 +564,7 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                                 {selectionAppliedSearch && (
                                     <button
                                         onClick={handleSelectionClearSearch}
-                                        className="rounded-xl border border-gray-300 px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
+                                        className="ka-btn"
                                         type="button"
                                     >
                                         ล้าง
@@ -573,34 +575,34 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
 
                         <div className="max-h-[400px] overflow-y-auto">
                             {isSelectionLoading ? (
-                                <div className="p-8 text-center text-gray-500 dark:text-gray-400">กำลังโหลด...</div>
+                                <div className="p-8 text-center text-[var(--ink-muted)]">กำลังโหลด...</div>
                             ) : selectionRows.length === 0 ? (
-                                <div className="p-8 text-center text-gray-500 dark:text-gray-400">ไม่พบรายการสินค้า</div>
+                                <div className="p-8 text-center text-[var(--ink-muted)]">ไม่พบรายการสินค้า</div>
                             ) : (
                                 <table className="w-full">
-                                    <thead className="sticky top-0 bg-gray-50 dark:bg-gray-700">
+                                    <thead className="sticky top-0 bg-[var(--bg-subtle)]">
                                         <tr>
                                             <th className="w-12 px-4 py-3 text-left">
                                                 <input
                                                     type="checkbox"
                                                     checked={allCurrentPageSelected}
                                                     onChange={toggleSelectAllCurrentPage}
-                                                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                    className="ka-check"
                                                 />
                                             </th>
-                                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">ชื่อสินค้า</th>
-                                            <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700 dark:text-gray-200">จำนวน</th>
-                                            <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700 dark:text-gray-200">ราคา/หน่วย</th>
+                                            <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--ink)]">ชื่อสินค้า</th>
+                                            <th className="px-4 py-3 text-right text-sm font-semibold text-[var(--ink)]">จำนวน</th>
+                                            <th className="px-4 py-3 text-right text-sm font-semibold text-[var(--ink)]">ราคา/หน่วย</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                                    <tbody className="divide-y divide-[var(--border)]">
                                         {selectionRows.map((row) => {
                                             const isSelected = !!selectedFetchItems[row.fetch_sale_order_id];
                                             return (
                                                 <tr
                                                     key={row.fetch_sale_order_id}
                                                     onClick={() => toggleFetchItemSelection(row)}
-                                                    className={`cursor-pointer transition-colors ${isSelected ? 'bg-blue-50 dark:bg-blue-900/20' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+                                                    className={`cursor-pointer transition-colors ${isSelected ? 'bg-[var(--brand-soft)] ' : 'hover:bg-[var(--bg-subtle)] '}`}
                                                 >
                                                     <td className="px-4 py-3">
                                                         <input
@@ -608,12 +610,12 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                                                             checked={isSelected}
                                                             onChange={() => toggleFetchItemSelection(row)}
                                                             onClick={(e) => e.stopPropagation()}
-                                                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                                            className="ka-check"
                                                         />
                                                     </td>
-                                                    <td className="px-4 py-3 text-sm text-gray-800 dark:text-gray-100">{row.fetch_sale_order_name}</td>
-                                                    <td className="px-4 py-3 text-right text-sm text-gray-800 dark:text-gray-100">{row.fetch_sale_order_qty}</td>
-                                                    <td className="px-4 py-3 text-right text-sm text-gray-800 dark:text-gray-100">฿{formatCurrency(Number(row.fetch_sale_order_price))}</td>
+                                                    <td className="px-4 py-3 text-sm text-[var(--ink)]">{row.fetch_sale_order_name}</td>
+                                                    <td className="px-4 py-3 text-right text-sm text-[var(--ink)]">{row.fetch_sale_order_qty}</td>
+                                                    <td className="px-4 py-3 text-right text-sm text-[var(--ink)]">฿{formatCurrency(Number(row.fetch_sale_order_price))}</td>
                                                 </tr>
                                             );
                                         })}
@@ -623,7 +625,7 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                         </div>
 
                         {showSelectionPagination && (
-                            <div className="border-t border-gray-200 p-3 dark:border-gray-700">
+                            <div className="border-t border-[var(--border)] p-3">
                                 <Pagination
                                     meta={selectionMeta!}
                                     currentPage={selectionPage}
@@ -632,14 +634,14 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                             </div>
                         )}
 
-                        <div className="flex items-center justify-between border-t border-gray-200 px-6 py-4 dark:border-gray-700">
-                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center justify-between border-t border-[var(--border)] px-6 py-4">
+                            <span className="text-sm text-[var(--ink-muted)]">
                                 เลือกแล้ว {selectedCount} รายการ
                             </span>
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setIsSelectModalOpen(false)}
-                                    className="rounded-xl border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                                    className="ka-btn"
                                     type="button"
                                 >
                                     ยกเลิก
@@ -647,7 +649,7 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                                 <button
                                     onClick={addSelectedItems}
                                     disabled={selectedCount === 0}
-                                    className="rounded-xl bg-[var(--color-primary)] px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="ka-btn ka-btn--primary min-h-11"
                                     type="button"
                                 >
                                     เพิ่ม {selectedCount > 0 ? `(${selectedCount})` : ''}
