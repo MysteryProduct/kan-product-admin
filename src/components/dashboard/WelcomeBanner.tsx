@@ -17,7 +17,7 @@ export default function WelcomeBanner() {
           </button>
         </div>
 
-        <div className="hidden h-28 w-28 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)] text-[var(--color-primary)] lg:flex" aria-hidden="true">
+        <div className="hidden h-28 w-28 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)] text-[var(--brand-ink)] lg:flex" aria-hidden="true">
           <svg className="h-14 w-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 19V9m5 10V5m5 14v-7m5 7V3" />
           </svg>

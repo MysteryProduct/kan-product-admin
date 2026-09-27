@@ -8,6 +8,8 @@ import {
 } from '@/types/store-fulfillment';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { formatThaiDate } from '@/lib/date-format';
+import { STORE_PARCEL_STATUS_TONE } from '@/lib/status-tones';
+import StatusBadge from '@/components/StatusBadge';
 
 const storeFulfillmentModel = new StoreFulfillmentModel();
 
@@ -18,13 +20,7 @@ const statusLabels: Record<StoreParcel['status'], string> = {
   voided: 'ยกเลิกแล้ว',
   returned: 'ตีกลับ',
 };
-const statusClassMap: Record<StoreParcel['status'], string> = {
-  preparing: 'bg-blue-50 text-blue-700',
-  held: 'bg-amber-50 text-amber-700',
-  shipped: 'bg-green-50 text-green-700',
-  voided: 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]',
-  returned: 'bg-red-50 text-red-700',
-};
+
 const contactOutcomeLabels: Record<RecordParcelReturnDto['contact_outcome'], string> = {
   reached: 'ติดต่อได้',
   unreachable: 'ติดต่อไม่ได้',
@@ -104,11 +100,7 @@ export default function ParcelCard({
             {parcel.returnedAt && ` · ตีกลับเมื่อ ${formatThaiDate(parcel.returnedAt)}`}
           </p>
         </div>
-        <span
-          className={`rounded-full px-2 py-1 text-xs font-medium ${statusClassMap[parcel.status]}`}
-        >
-          {statusLabels[parcel.status]}
-        </span>
+        <StatusBadge tone={STORE_PARCEL_STATUS_TONE[parcel.status]}>{statusLabels[parcel.status]}</StatusBadge>
       </div>
 
       <ul className="mt-3 grid gap-1 text-sm">

@@ -20,6 +20,8 @@ import PaymentReceiptDetailModal from './components/detail';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import { formatThaiDate } from '@/lib/date-format';
+import { PAYMENT_RECEIPT_STATUS_TONE, SALE_ORDER_STATUS_TONE } from '@/lib/status-tones';
+import StatusBadge from '@/components/StatusBadge';
 
 const saleOrderModel = new SaleOrderModel();
 const paymentReceiptModel = new PaymentReceiptModel();
@@ -242,16 +244,8 @@ export default function PaymentReceiptPage() {
 			label: 'สถานะ',
 			render: (_, row) => {
 				const status = row.sale_order_status || 'unknown';
-				const statusColors: Record<string, string> = {
-					pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300',
-					approved: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
-					rejected: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
-					completed: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
-				};
 				return (
-					<span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${statusColors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}>
-						{status}
-					</span>
+					<StatusBadge tone={SALE_ORDER_STATUS_TONE[status]}>{status}</StatusBadge>
 				);
 			},
 		},
@@ -308,15 +302,8 @@ export default function PaymentReceiptPage() {
 			label: 'สถานะ',
 			render: (value) => {
 				const status = value as PaymentReceipt['payment_status'];
-				const statusColors: Record<string, string> = {
-					pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300',
-					paid: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
-					cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
-				};
 				return (
-					<span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${statusColors[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'}`}>
-						{PAYMENT_RECEIPT_STATUS_LABELS[status] || status}
-					</span>
+					<StatusBadge tone={PAYMENT_RECEIPT_STATUS_TONE[status]}>{PAYMENT_RECEIPT_STATUS_LABELS[status] || status}</StatusBadge>
 				);
 			},
 		},

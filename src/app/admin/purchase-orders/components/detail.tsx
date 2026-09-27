@@ -11,6 +11,8 @@ import { calculateVatSummary, VAT_TYPE_LABELS } from '@/lib/vat';
 import useVatRate from '@/hooks/useVatRate';
 import DocumentHistoryPanel from '@/components/document-history/DocumentHistoryPanel';
 import DocumentCancellationAction from '@/components/DocumentCancellationAction';
+import { PURCHASE_ORDER_STATUS_TONE } from '@/lib/status-tones';
+import StatusBadge from '@/components/StatusBadge';
 interface PurchaseOrderDetailModalProps {
 	isOpen: boolean;
 	onClose: () => void;
@@ -62,13 +64,6 @@ export default function PurchaseOrderDetailModal({
 		}).format(amount);
 	};
 
-	const statusClassMap = {
-		pending: 'bg-[var(--color-bg-tertiary)] text-[var(--color-warning)]',
-		active: 'bg-[var(--color-bg-tertiary)] text-[var(--color-success)]',
-		inactive: 'bg-[var(--color-bg-tertiary)] text-[var(--color-error)]',
-		partial: 'bg-[var(--color-bg-tertiary)] text-[var(--color-info)]',
-		completed: 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]',
-	};
 	const statusText ={
 		pending: 'รออนุมัติ ',
 		active: 'ใช้งานอยู่',
@@ -116,7 +111,7 @@ export default function PurchaseOrderDetailModal({
 				<div className="border-b border-[var(--color-border)] px-6 py-5">
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-3">
-							<div className="rounded-lg bg-[var(--color-bg-tertiary)] p-2 text-[var(--color-primary)]">
+							<div className="rounded-lg bg-[var(--color-bg-tertiary)] p-2 text-[var(--brand-ink)]">
 								<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -162,9 +157,7 @@ export default function PurchaseOrderDetailModal({
 						<div>
 							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">สถานะ</label>
 							<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-								<span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${statusClassMap[purchaseOrder.purchase_order_status]}`}>
-									{statusText[purchaseOrder.purchase_order_status]}
-								</span>
+								<StatusBadge tone={PURCHASE_ORDER_STATUS_TONE[purchaseOrder.purchase_order_status]}>{statusText[purchaseOrder.purchase_order_status]}</StatusBadge>
 							</div>
 						</div>
 
@@ -186,7 +179,7 @@ export default function PurchaseOrderDetailModal({
 					<div className="mb-6">
 						<div className="flex items-center justify-between mb-5">
 							<h3 className="flex items-center gap-2 text-lg font-semibold text-[var(--color-text-primary)]">
-								<div className="rounded-lg bg-[var(--color-bg-tertiary)] p-2 text-[var(--color-primary)]">
+								<div className="rounded-lg bg-[var(--color-bg-tertiary)] p-2 text-[var(--brand-ink)]">
 									<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
 									</svg>
@@ -200,7 +193,7 @@ export default function PurchaseOrderDetailModal({
 								items.map((item, index) => (
 									<div key={item.purchase_order_list_id ?? `${item.material_id}-${index}`} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-5">
 										<div className="flex items-center gap-2 mb-4">
-											<div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)] text-sm font-semibold text-[var(--color-primary)]">
+											<div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)] text-sm font-semibold text-[var(--brand-ink)]">
 												{index + 1}
 											</div>
 											<h4 className="font-semibold text-[var(--color-text-primary)]">รายการที่ {index + 1}</h4>
@@ -259,7 +252,7 @@ export default function PurchaseOrderDetailModal({
 							</div>
 							<div className="flex items-center justify-between border-t border-[var(--color-border)] pt-3">
 								<span className="text-lg font-bold">ยอดรวมทั้งสิ้น</span>
-								<span className="numeric text-2xl font-semibold text-[var(--color-primary)]">฿{formatCurrency(vatSummary.total)}</span>
+								<span className="numeric text-2xl font-semibold text-[var(--brand-ink)]">฿{formatCurrency(vatSummary.total)}</span>
 							</div>
 						</div>
 					</div>

@@ -113,7 +113,7 @@ export default function DocumentHistoryPanel({ endpoint }: { endpoint: string })
             <strong className="block text-sm font-semibold text-[var(--color-text-primary)]">ประวัติการเปลี่ยนแปลง</strong>
             <span className="mt-1 block text-sm text-[var(--color-text-secondary)]">ดูผู้ดำเนินการ วันเวลา และรายละเอียดทั้งหมด</span>
           </span>
-          <span className="shrink-0 text-sm font-medium text-[var(--color-primary)]">ดูประวัติ</span>
+          <span className="shrink-0 text-sm font-medium text-[var(--brand-ink)]">ดูประวัติ</span>
         </button>
       </div>
 
@@ -130,7 +130,7 @@ export default function DocumentHistoryPanel({ endpoint }: { endpoint: string })
             return (
               <li key={entry.document_history_id} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-4">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <strong className="text-sm text-[var(--color-primary)]">{actions[entry.action] ?? entry.action}</strong>
+                  <strong className="text-sm text-[var(--brand-ink)]">{actions[entry.action] ?? entry.action}</strong>
                   <time className="numeric text-sm text-[var(--color-text-secondary)]">{formatThaiDateTime(entry.created_at)}</time>
                 </div>
                 <div className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
@@ -144,7 +144,7 @@ export default function DocumentHistoryPanel({ endpoint }: { endpoint: string })
                         <dt className="font-medium text-[var(--color-text-secondary)]">{change.label}</dt>
                         <dd className="break-words">
                           <span className="text-[var(--color-text-secondary)]">{change.before}</span>
-                          <span className="mx-2 text-[var(--color-primary)]" aria-hidden="true">→</span>
+                          <span className="mx-2 text-[var(--brand-ink)]" aria-hidden="true">→</span>
                           <strong>{change.after}</strong>
                         </dd>
                       </div>
@@ -180,7 +180,7 @@ export default function DocumentHistoryPanel({ endpoint }: { endpoint: string })
             type="button"
             onClick={() => void loadHistory(page + 1)}
             disabled={loading}
-            className="mt-4 w-full rounded-lg border border-[var(--color-border)] px-4 py-2.5 text-sm font-medium text-[var(--color-primary)] hover:border-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-4 w-full rounded-lg border border-[var(--color-border)] px-4 py-2.5 text-sm font-medium text-[var(--brand-ink)] hover:border-[var(--color-primary)] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? 'กำลังโหลด…' : 'โหลดประวัติเพิ่มเติม'}
           </button>

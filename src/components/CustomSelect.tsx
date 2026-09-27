@@ -75,8 +75,8 @@ export default function CustomSelect({
   return (
     <div ref={dropdownRef} className="relative">
       {label && (
-        <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
-          {label} {required && <span className="text-red-500">*</span>}
+        <label className="ka-label mb-1.5 block">
+          {label} {required && <span className="ka-req">*</span>}
         </label>
       )}
 
@@ -84,21 +84,23 @@ export default function CustomSelect({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-left text-sm focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        className="ka-select__trigger"
       >
         <span className="flex items-center gap-2">
           {showColor && selectedOption?.color && (
             <span
-              className="w-5 h-5 rounded border border-gray-300 flex-shrink-0"
+              className="h-5 w-5 flex-shrink-0 rounded border border-[var(--border-control)]"
               style={{ backgroundColor: selectedOption.color }}
             />
           )}
-          <span className={selectedOption ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 dark:text-gray-400'}>
+          <span className={selectedOption ? '' : 'ka-select__placeholder'}>
             {selectedOption ? selectedOption.label : placeholder}
           </span>
         </span>
         <svg
-          className={`w-5 h-5 text-gray-400 dark:text-gray-300 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className="flex-none" aria-hidden="true"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -109,22 +111,22 @@ export default function CustomSelect({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg">
+        <div className="ka-select__menu z-50">
           {/* Search input */}
-          <div className="p-2 border-b border-gray-200 dark:border-gray-700">
+          <div className="ka-select__search">
             <input
               ref={inputRef}
               type="text"
               value={searchQuery}
               onChange={handleSearchChange}
               placeholder="ค้นหา..."
-              className="w-full text-gray-700 dark:text-gray-100 px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="ka-input min-h-9 py-1.5 text-sm"
               autoFocus
             />
           </div>
 
           {/* Options list - max 5 items visible */}
-          <div className="max-h-[200px] overflow-y-auto">
+          <div className="max-h-[200px] overflow-y-auto overscroll-contain" role="listbox">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => (
                 <button
@@ -132,25 +134,20 @@ export default function CustomSelect({
                   type="button"
                   onClick={() => handleSelect(option.value, option.disabled)}
                   disabled={option.disabled}
-                  className={`flex w-full items-center gap-2 px-4 py-2 text-left ${option.disabled
-                    ? 'cursor-not-allowed bg-gray-50 text-gray-400 dark:bg-gray-700/50 dark:text-gray-500'
-                    : 'hover:bg-blue-50 dark:hover:bg-gray-700'} ${option.value.toString() === value.toString()
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300'
-                    : option.disabled
-                      ? ''
-                      : 'text-gray-900 dark:text-gray-100'
-                    }`}
+                  role="option"
+                  aria-selected={option.value.toString() === value.toString()}
+                  className={`ka-option w-full justify-start text-left ${option.disabled ? 'cursor-not-allowed opacity-50 hover:bg-transparent' : ''}`}
                 >
                   {showColor && option.color && (
                     <span
-                      className="w-5 h-5 rounded border border-gray-300 flex-shrink-0"
+                      className="h-5 w-5 flex-shrink-0 rounded border border-[var(--border-control)]"
                       style={{ backgroundColor: option.color }}
                     />
                   )}
                   <span>{option.label}</span>
                   {option.value.toString() === value.toString() && (
                     <svg
-                      className="w-5 h-5 ml-auto text-blue-600 dark:text-blue-300"
+                      className="ml-auto h-5 w-5"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -164,7 +161,7 @@ export default function CustomSelect({
                 </button>
               ))
             ) : (
-              <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400 text-sm">ไม่พบข้อมูล</div>
+              <div className="px-4 py-8 text-center text-sm text-[var(--ink-muted)]">ไม่พบข้อมูล</div>
             )}
           </div>
         </div>

@@ -11,6 +11,8 @@ import { calculateVatSummary, VAT_TYPE_LABELS } from '@/lib/vat';
 import useVatRate from '@/hooks/useVatRate';
 import DocumentHistoryPanel from '@/components/document-history/DocumentHistoryPanel';
 import DocumentCancellationAction from '@/components/DocumentCancellationAction';
+import { SALE_ORDER_STATUS_TONE } from '@/lib/status-tones';
+import StatusBadge from '@/components/StatusBadge';
 
 interface SaleOrderDetailModalProps {
     isOpen: boolean;
@@ -86,15 +88,6 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
         returned: 'คืนสินค้าทั้งหมด',
     };
 
-    const statusColors: Record<string, string> = {
-        pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300',
-        approved: 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300',
-        partial: 'bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300',
-        paid: 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
-        cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
-        partially_returned: 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300',
-        returned: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
-    };
 
     const typeLabels: Record<string, string> = {
         online: 'ขายบนเว็บไซต์',
@@ -178,9 +171,7 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
                         <div>
                             <label className="mb-2 block text-sm font-semibold text-gray-700 dark:text-gray-200">สถานะ</label>
                             <div className="flex min-h-[44px] items-center rounded-xl border border-gray-300 bg-gray-50 px-4 py-2 shadow-sm dark:border-gray-600 dark:bg-gray-700">
-                                <span className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${statusColors[saleOrder.sale_order_status] || 'bg-gray-100 text-gray-800'}`}>
-                                    {statusLabels[saleOrder.sale_order_status] || saleOrder.sale_order_status}
-                                </span>
+                                <StatusBadge tone={SALE_ORDER_STATUS_TONE[saleOrder.sale_order_status]}>{statusLabels[saleOrder.sale_order_status] || saleOrder.sale_order_status}</StatusBadge>
                             </div>
                         </div>
                         <div className="md:col-span-2">

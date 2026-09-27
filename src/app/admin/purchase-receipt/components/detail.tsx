@@ -180,7 +180,7 @@ export default function PurchaseReceiptDetailModal({
 									className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-4"
 								>
 									<div className="mb-3 flex items-center gap-2">
-										<span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)] text-sm font-semibold text-[var(--color-primary)]">
+										<span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)] text-sm font-semibold text-[var(--brand-ink)]">
 											{index + 1}
 										</span>
 									</div>
@@ -237,7 +237,7 @@ export default function PurchaseReceiptDetailModal({
 						</div>
 						<div className="flex items-center justify-between border-t border-[var(--color-border)] pt-3">
 							<span className="text-lg font-semibold">ยอดรวมทั้งสิ้น</span>
-							<span className="numeric text-2xl font-semibold text-[var(--color-primary)]">฿{formatCurrency(vatSummary.total)}</span>
+							<span className="numeric text-2xl font-semibold text-[var(--brand-ink)]">฿{formatCurrency(vatSummary.total)}</span>
 						</div>
 					</div>
 

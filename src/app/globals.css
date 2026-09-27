@@ -1,77 +1,153 @@
 @import "tailwindcss";
+@import "./components.css";
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Values follow the Kan Product Admin design system (TASK-0049). Light is :root; html.dark is set by ThemeContext. */
 :root {
-  --background: #f5f7fa;
-  --foreground: #1a1a2e;
-  
-  /* Light mode colors */
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f5f7fa;
-  --color-bg-tertiary: #eef2f6;
-  --color-text-primary: #1a1a2e;
-  --color-text-secondary: #687173;
-  --color-border: #cbd2d6;
-  --color-shadow: rgba(0, 0, 0, 0.1);
-  --color-focus: #003087;
-  --color-primary: #003087;
-  --color-primary-hover: #00246b;
-  --color-info: #009cde;
-  --color-success: #019c34;
-  --color-warning: #f5ba2e;
-  --color-error: #d20000;
-  --shadow-border: 0 0 0 1px rgba(0, 48, 135, 0.08), 0 1px 4px rgba(0, 48, 135, 0.06);
-  --shadow-overlay: 0 12px 32px rgba(0, 48, 135, 0.14), 0 0 0 1px rgba(0, 48, 135, 0.08);
+  --bg-page: #f7f5f3;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f3f0ed;
+  --bg-muted: #ebe7e3;
+  --bg-sidebar: #202833;
+  --bg-sidebar-hover: #2b3440;
+  --ink: #202833;
+  --ink-muted: #59616b;
+  --ink-subtle: #636b75;
+  --ink-on-sidebar: #c9ced4;
+  --ink-on-sidebar-active: #ffb299;
+  --border: #e3ded9;
+  --border-control: #7c848e;
+  --brand: #e4572e;
+  --action: #bd431d;
+  --action-hover: #a33917;
+  --on-action: #ffffff;
+  --brand-soft: #fdece5;
+  --brand-ink: #b23c1b;
+  --focus: #bd431d;
+  --success: #18794e;
+  --success-soft: #e7f4ec;
+  --warning: #8a5c00;
+  --warning-soft: #fcf1d8;
+  --danger: #b3261e;
+  --danger-soft: #fbeae8;
+  --info: #1d5f9b;
+  --info-soft: #e6eff9;
+  --neutral: #454d57;
+  --neutral-soft: #eceff2;
+  --scrim: rgba(17, 21, 27, 0.55);
+
+  --shadow-card: 0 0 0 1px rgba(32, 40, 51, 0.06), 0 1px 2px rgba(32, 40, 51, 0.05);
+  --shadow-raise: 0 1px 2px rgba(32, 40, 51, 0.06), 0 8px 20px rgba(32, 40, 51, 0.09);
+  --shadow-overlay: 0 2px 4px rgba(32, 40, 51, 0.06), 0 20px 48px rgba(32, 40, 51, 0.18);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-sm: 6px;
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius-panel: 16px;
+  --radius-pill: 999px;
+  --control-height: 40px;
+  --touch-target: 44px;
+  --header-height: 64px;
+  --sidebar-width: 264px;
+
+  --ka-font: var(--font-noto-sans-thai), Tahoma, Arial, sans-serif;
+  --ka-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ka-fast: 140ms;
+  --ka-base: 200ms;
+  --ka-slow: 320ms;
+
+  /* Names used by pages written before TASK-0049; they resolve to the tokens above. */
+  --background: var(--bg-page);
+  --foreground: var(--ink);
+  --color-bg-primary: var(--bg-surface);
+  --color-bg-secondary: var(--bg-page);
+  --color-bg-tertiary: var(--bg-subtle);
+  --color-text-primary: var(--ink);
+  --color-text-secondary: var(--ink-muted);
+  --color-border: var(--border);
+  --color-shadow: rgba(32, 40, 51, 0.1);
+  --color-focus: var(--focus);
+  /* Pages pair --color-primary with white text, so it stays a white-safe orange in both themes. */
+  --color-primary: #bd431d;
+  --color-primary-hover: #a33917;
+  --color-info: var(--info);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--danger);
+  --shadow-border: 0 0 0 1px var(--border), var(--shadow-card);
 }
 
 html.dark {
-  --background: #0b1324;
-  --foreground: #f8fafc;
-  
-  /* Dark mode colors */
-  --color-bg-primary: #1e293b;
-  --color-bg-secondary: #0f172a;
-  --color-bg-tertiary: #243247;
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #a8b3c7;
-  --color-border: #334155;
-  --color-shadow: rgba(2, 6, 23, 0.38);
-  --color-focus: #818cf8;
-  --color-primary: #6366f1;
-  --color-primary-hover: #818cf8;
-  --color-info: #38bdf8;
-  --color-success: #34d399;
-  --color-warning: #fbbf24;
-  --color-error: #fb7185;
-  --shadow-border: 0 0 0 1px rgba(148, 163, 184, 0.12), 0 8px 24px rgba(2, 6, 23, 0.18);
-  --shadow-overlay: 0 24px 64px rgba(2, 6, 23, 0.58), 0 0 0 1px rgba(148, 163, 184, 0.14);
+  color-scheme: dark;
+  --bg-page: #11151b;
+  --bg-surface: #181d25;
+  --bg-subtle: #1e242e;
+  --bg-muted: #262d38;
+  --bg-sidebar: #0c1015;
+  --bg-sidebar-hover: #1a2029;
+  --ink: #edf0f3;
+  --ink-muted: #a4adb9;
+  --ink-subtle: #8e98a5;
+  --ink-on-sidebar: #aab2bd;
+  --border: #2b333e;
+  --border-control: #6c7684;
+  --brand: #f0673f;
+  --action: #f0673f;
+  --action-hover: #ff835f;
+  --on-action: #1b0d07;
+  --brand-soft: #3a2119;
+  --brand-ink: #ff9c7c;
+  --focus: #ff8a66;
+  --success: #4cc38a;
+  --success-soft: #12301f;
+  --warning: #e5b451;
+  --warning-soft: #33280f;
+  --danger: #ff7a70;
+  --danger-soft: #3b1a18;
+  --info: #80b5ec;
+  --info-soft: #15263a;
+  --neutral: #c3cad3;
+  --neutral-soft: #252c36;
+  --scrim: rgba(0, 0, 0, 0.62);
+
+  --shadow-card: 0 0 0 1px rgba(148, 163, 184, 0.1), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-raise: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 24px rgba(0, 0, 0, 0.4);
+  --shadow-overlay: 0 2px 4px rgba(0, 0, 0, 0.4), 0 24px 64px rgba(0, 0, 0, 0.6);
+
+  --color-shadow: rgba(0, 0, 0, 0.38);
+  --color-primary: #c4461f;
+  --color-primary-hover: #a93b19;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-noto-sans-thai), Tahoma, Arial, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), "Noto Sans Thai", "Tahoma", sans-serif;
+  background: var(--bg-page);
+  color: var(--ink);
+  font-family: var(--font-noto-sans-thai), Tahoma, Arial, sans-serif;
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.625;
   text-rendering: optimizeLegibility;
 }
 
 button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.surface { background: var(--color-bg-primary); box-shadow: var(--shadow-border); }
+/* In the base layer so component rules (such as the sidebar's ring colour) can refine it. */
+@layer base {
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+}
+.surface { background: var(--bg-surface); box-shadow: var(--shadow-border); }
 .overlay-surface { box-shadow: var(--shadow-overlay); overscroll-behavior: contain; }
 .numeric { font-variant-numeric: tabular-nums; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; } }
-
-/* Debug: Show dark mode is active */
-html.dark {
-  color-scheme: dark;
-}
-

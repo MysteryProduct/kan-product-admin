@@ -31,7 +31,7 @@ export default function ActionResultDialog({
   const title = isSuccess ? 'ดำเนินการสำเร็จ' : 'ดำเนินการไม่สำเร็จ';
   const actionLabel = actionLabelMap[action];
   const defaultMessage = isSuccess ? `${actionLabel}สำเร็จ` : `${actionLabel}ไม่สำเร็จ`;
-  const statusColor = isSuccess ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]';
+  const iconClass = isSuccess ? 'ka-dialog__icon--success' : '';
 
   return (
     <Modal
@@ -42,16 +42,16 @@ export default function ActionResultDialog({
       size="sm"
       layer="elevated"
       footer={
-        <button type="button" onClick={onClose} className="min-h-11 rounded-lg bg-[var(--color-primary)] px-5 py-2 font-medium text-white hover:bg-[var(--color-primary-hover)]">
+        <button type="button" onClick={onClose} className="ka-btn ka-btn--primary min-h-11 px-5">
           {confirmText}
         </button>
       }
     >
       <div className="flex items-start gap-4">
-        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)] ${statusColor}`} aria-hidden="true">
+        <div className={`ka-dialog__icon h-12 w-12 shrink-0 ${iconClass}`} aria-hidden="true">
           {isSuccess ? (
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m5 13 4 4L19 7" />
+              <path className="ka-check-draw" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="m5 13 4 4L19 7" />
             </svg>
           ) : (
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,7 +59,7 @@ export default function ActionResultDialog({
             </svg>
           )}
         </div>
-        <p role={isSuccess ? 'status' : 'alert'} className="break-words whitespace-pre-line text-[var(--color-text-secondary)]">
+        <p role={isSuccess ? 'status' : 'alert'} className="break-words whitespace-pre-line pt-2.5 text-[var(--ink-muted)]">
           {message || defaultMessage}
         </p>
       </div>

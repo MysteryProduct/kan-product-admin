@@ -8,6 +8,8 @@ import {
 } from '@/types/store-fulfillment';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { formatThaiDate } from '@/lib/date-format';
+import { STORE_PICKUP_STATUS_TONE } from '@/lib/status-tones';
+import StatusBadge from '@/components/StatusBadge';
 
 const storeFulfillmentModel = new StoreFulfillmentModel();
 
@@ -18,14 +20,6 @@ const statusLabels: Record<StorePickupStatus, string> = {
   overdue: 'เกินกำหนดรับ',
   pending_review: 'รอพิจารณากรณีไม่รับสินค้า',
   picked_up: 'รับสินค้าแล้ว',
-};
-const statusClassMap: Record<StorePickupStatus, string> = {
-  awaiting_ready: 'bg-gray-100 text-gray-700',
-  ready: 'bg-blue-50 text-blue-700',
-  rescheduled: 'bg-indigo-50 text-indigo-700',
-  overdue: 'bg-amber-50 text-amber-700',
-  pending_review: 'bg-red-50 text-red-700',
-  picked_up: 'bg-green-50 text-green-700',
 };
 
 const channelLabels: Record<string, string> = {
@@ -88,11 +82,7 @@ export default function PickupCard({
     <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-medium">การรับสินค้าที่ร้าน</h2>
-        <span
-          className={`rounded-full px-3 py-1 text-sm ${statusClassMap[pickup.status]}`}
-        >
-          {statusLabels[pickup.status]}
-        </span>
+        <StatusBadge tone={STORE_PICKUP_STATUS_TONE[pickup.status]}>{statusLabels[pickup.status]}</StatusBadge>
       </div>
 
       <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">

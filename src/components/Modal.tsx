@@ -106,7 +106,7 @@ export default function Modal({
 
   return createPortal(
     <div
-      className={`fixed inset-0 ${layer === 'elevated' ? 'z-[80]' : 'z-[70]'} flex items-end justify-center bg-slate-950/55 p-0 backdrop-blur-[2px] sm:items-center sm:p-4`}
+      className={`ka-scrim ${layer === 'elevated' ? 'z-[80]' : 'z-[70]'}`}
       onMouseDown={(event) => {
         if (closeOnBackdrop && event.target === event.currentTarget) onClose();
       }}
@@ -118,21 +118,21 @@ export default function Modal({
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
-        className={`overlay-surface flex max-h-[calc(100dvh-1rem)] w-full flex-col overflow-hidden rounded-t-2xl bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] sm:max-h-[calc(100dvh-2rem)] sm:rounded-2xl ${sizeClasses[size]}`}
+        className={`ka-modal overscroll-contain ${sizeClasses[size]}`}
       >
-        <header className="flex shrink-0 items-start justify-between gap-4 border-b border-[var(--color-border)] px-5 py-4 sm:px-6">
+        <header className="ka-modal__head shrink-0 px-5 sm:px-6">
           <div className="min-w-0">
-            <h2 id={titleId} className="text-lg font-semibold sm:text-xl">{title}</h2>
-            {description && <p id={descriptionId} className="mt-1 text-sm text-[var(--color-text-secondary)]">{description}</p>}
+            <h2 id={titleId} className="ka-modal__title">{title}</h2>
+            {description && <p id={descriptionId} className="ka-modal__desc">{description}</p>}
           </div>
-          <button type="button" onClick={onClose} aria-label={closeLabel} className="shrink-0 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-2 text-[var(--color-text-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-bg-tertiary)]">
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+          <button type="button" onClick={onClose} aria-label={closeLabel} className="ka-btn ka-btn--icon shrink-0">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18 18 6M6 6l12 12" />
             </svg>
           </button>
         </header>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6">{children}</div>
-        {footer && <footer className="flex shrink-0 flex-col-reverse gap-3 border-t border-[var(--color-border)] bg-[var(--color-bg-primary)] px-5 py-4 sm:flex-row sm:justify-end sm:px-6">{footer}</footer>}
+        <div className="ka-modal__body px-5 py-5 sm:px-6">{children}</div>
+        {footer && <footer className="ka-modal__foot shrink-0 px-5 sm:px-6">{footer}</footer>}
       </div>
     </div>,
     document.body,

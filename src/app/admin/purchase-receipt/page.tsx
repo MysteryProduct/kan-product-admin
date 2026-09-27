@@ -15,6 +15,8 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import { formatThaiDate } from '@/lib/date-format';
 import { VAT_TYPE_LABELS } from '@/lib/vat';
+import { PURCHASE_ORDER_STATUS_TONE } from '@/lib/status-tones';
+import StatusBadge from '@/components/StatusBadge';
 
 const purchaseOrderModel = new PurchaseOrderModel();
 const purchaseReceiptModel = new PurchaseReceiptModel();
@@ -252,18 +254,8 @@ export default function PurchaseReceiptPage() {
             label: 'สถานะ',
             render: (_, row) => {
                 const status = row.purchase_order_status || 'unknown';
-                const statusColors: Record<string, string> = {
-                    pending: 'bg-yellow-100 text-yellow-800',
-                    active: 'bg-blue-100 text-blue-800',
-                    inactive: 'bg-gray-100 text-gray-800',
-                    completed: 'bg-green-100 text-green-800',
-                    partial: 'bg-orange-100 text-orange-800',
-                };
-                const colorClass = statusColors[status] || 'bg-gray-100 text-gray-800';
                 return (
-                    <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${colorClass}`}>
-                        {status}
-                    </span>
+                    <StatusBadge tone={PURCHASE_ORDER_STATUS_TONE[status]}>{status}</StatusBadge>
                 );
             },
         },

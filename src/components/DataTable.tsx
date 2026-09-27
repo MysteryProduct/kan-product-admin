@@ -195,16 +195,16 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
         onClick={() => setOpenFilterKey(null)}
       >
         {/* Table Container */}
-        <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-[#CBD2D6] dark:bg-slate-800 dark:ring-slate-700">
-          <div className="overflow-x-auto" ref={tableScrollRef}>
-            <table className="w-full text-[15px] leading-6">
+        <div className="ka-card ka-table-card">
+          <div className="ka-table-scroll" ref={tableScrollRef}>
+            <table className="w-full text-[15px] leading-6 text-[var(--ink)]">
               <thead>
-                <tr className={`border-b border-[#CBD2D6] bg-[#F5F7FA] dark:border-slate-700 dark:bg-slate-900 ${headerClassName}`}>
+                <tr className={`border-b border-[var(--border)] bg-[var(--bg-subtle)] ${headerClassName}`}>
                   {columns.map((col) => (
                     <th
                       key={String(col.key)}
                       data-filter-col={col.key}
-                      className="px-6 py-4 text-left align-middle"
+                      className="px-4 py-3 text-left align-middle"
                       style={col.width ? { minWidth: col.width } : undefined}
                     >
                       <div className="space-y-2.5">
@@ -218,11 +218,11 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                             className="flex items-center gap-2"
                             onClick={() => !disabled && col.sortable && handleSort(String(col.key))}
                           >
-                            <span className="text-sm font-semibold leading-5 text-[#1A1A2E] dark:text-slate-100">
+                            <span className="text-sm font-semibold leading-[22px] text-[var(--ink-muted)] transition-colors group-hover:text-[var(--ink)]">
                               {col.label}
                             </span>
                             {col.sortable && (
-                              <span className="inline-flex items-center text-slate-500 transition-colors group-hover:text-[#003087] dark:text-slate-400 dark:group-hover:text-white">
+                              <span className="inline-flex items-center text-[var(--ink-subtle)] transition-colors group-hover:text-[var(--brand-ink)]">
                                 {sortConfig?.key === col.key ? (
                                   sortConfig.direction === 'ASC' ? (
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -257,7 +257,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                                 setOpenFilterKey(null);
                               }}
                               disabled={disabled}
-                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-[#CBD2D6] text-[#687173] transition-colors hover:border-[#003087] hover:bg-white hover:text-[#003087] dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-white"
+                              className="ka-btn ka-btn--sm ka-btn--icon bg-[var(--bg-surface)] text-[var(--ink-muted)] hover:border-[var(--focus)] hover:text-[var(--brand-ink)]"
                               aria-label="Toggle column filter"
                               ref={(el) => {
                                 if (el) filterRefs.current[String(col.key)] = el;
@@ -276,7 +276,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                             {col.filterType === 'text' || !col.filterType ? (
                               <div className="relative">
                                 <svg
-                                  className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+                                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--ink-subtle)]"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -296,20 +296,20 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                                     handleFilter(String(col.key), e.target.value)
                                   }
                                   onClick={(e) => e.stopPropagation()}
-                                  className="w-full pl-10 pr-3.5 py-2 text-xs border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-800/70 text-white placeholder:text-slate-400 hover:border-slate-600 transition-all duration-200"
+                                  className="ka-input min-h-9 py-1.5 pl-9 text-sm"
                                 />
                               </div>
                             ) : (
                               <div className="relative">
                                 <div
-                                  className="fixed z-50 rounded-xl border border-slate-700 bg-slate-900 text-white shadow-2xl w-56"
+                                  className="fixed z-50 w-56 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg-surface)] text-[var(--ink)] shadow-[var(--shadow-raise)]"
                                   onClick={(e) => e.stopPropagation()}
                                   style={{
                                     top: `${dropdownPos.top}px`,
                                     left: `${dropdownPos.left}px`,
                                   }}
                                 >
-                                  <div className="flex items-center justify-between px-3 py-2 text-xs text-slate-300 border-b border-slate-700">
+                                  <div className="flex items-center justify-between border-b border-[var(--border)] px-3 py-2 text-[13px] text-[var(--ink-muted)]">
                                     <button
                                       onClick={() =>
                                         handleFilter(
@@ -317,13 +317,13 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                                           col.filterOptions?.map((opt) => opt.value) || []
                                         )
                                       }
-                                      className="hover:text-white"
+                                      className="hover:text-[var(--brand-ink)]"
                                     >
                                       Select all ({col.filterOptions?.length || 0})
                                     </button>
                                     <button
                                       onClick={() => handleFilter(String(col.key), [])}
-                                      className="hover:text-white"
+                                      className="hover:text-[var(--brand-ink)]"
                                     >
                                       Deselect
                                     </button>
@@ -331,7 +331,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                                   <div className="p-3">
                                     <div className="relative mb-3">
                                       <svg
-                                        className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
+                                        className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--ink-subtle)]"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -353,7 +353,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                                             [String(col.key)]: e.target.value,
                                           }))
                                         }
-                                        className="w-full pl-9 pr-3 py-2 rounded-lg bg-slate-800 text-white text-sm placeholder:text-slate-400 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        className="ka-input min-h-9 py-1.5 pl-9 text-sm"
                                       />
                                     </div>
                                     <div className="max-h-56 overflow-y-auto space-y-1">
@@ -374,7 +374,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                                           return (
                                             <label
                                               key={opt.value}
-                                              className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-slate-800 cursor-pointer text-sm"
+                                              className="ka-option cursor-pointer justify-start text-sm"
                                             >
                                               <input
                                                 type={
@@ -402,7 +402,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                                                     setShowFilterKey(null);
                                                   }
                                                 }}
-                                                className="h-4 w-4 rounded border-slate-500 text-blue-500 focus:ring-blue-500"
+                                                className="ka-check h-4 w-4"
                                               />
                                               <span className="truncate">{opt.label}</span>
                                             </label>
@@ -420,12 +420,12 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 bg-white dark:divide-slate-700 dark:bg-slate-800">
+              <tbody className="divide-y divide-[var(--border)] bg-[var(--bg-surface)]">
                 {processedData.length > 0 ? (
                   processedData.map((row, idx) => (
                     <tr
                       key={String(row[keyField]) || idx}
-                      className={`transition-colors duration-200 hover:bg-slate-50 dark:hover:bg-slate-800/80 border-l-4 border-transparent hover:border-blue-400 dark:hover:border-blue-500 ${
+                      className={`transition-[background-color,box-shadow] duration-150 hover:bg-[var(--bg-subtle)] hover:shadow-[inset_3px_0_0_var(--brand)] ${
                         onRowClick ? 'cursor-pointer' : ''
                       } ${rowClassName}`}
                       onClick={() => onRowClick?.(row)}
@@ -433,7 +433,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                       {columns.map((col) => (
                         <td
                           key={String(col.key)}
-                          className="px-6 py-[18px] text-slate-800 dark:text-slate-100"
+                          className="px-4 py-3 text-[var(--ink)]"
                           style={col.width ? { width: col.width } : undefined}
                         >
                           {col.render
@@ -445,11 +445,11 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={columns.length} className="px-6 py-20 text-center">
-                      <div className="flex flex-col items-center justify-center">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center mb-4">
+                    <td colSpan={columns.length} className="px-4 py-16 text-center">
+                      <div className="ka-empty p-0">
+                        <div className="ka-empty__art">
                           <svg
-                            className="w-8 h-8 text-blue-400 dark:text-blue-300"
+                            className="w-7 h-7"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -462,8 +462,8 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                             />
                           </svg>
                         </div>
-                        <p className="text-gray-600 dark:text-slate-200 font-semibold text-lg">No data found</p>
-                        <p className="text-gray-400 dark:text-slate-400 text-sm mt-1">Try adjusting your filters</p>
+                        <p className="text-base font-semibold text-[var(--ink)]">No data found</p>
+                        <p className="text-sm text-[var(--ink-muted)]">Try adjusting your filters</p>
                       </div>
                     </td>
                   </tr>
@@ -474,10 +474,10 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
         </div>
 
         {canShowPagination && (
-          <div className={`border-t border-slate-100 bg-slate-50 px-6 py-4 dark:border-slate-700 dark:bg-slate-900 ${footerClassName}`}>
+          <div className={`mt-3 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-3 ${footerClassName}`}>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               {showPaginationInfo ? (
-                <div className="text-sm text-slate-600 dark:text-slate-300">
+                <div className="text-sm text-[var(--ink-muted)] numeric">
                   Showing {paginationStart} to {paginationEnd} of {paginationMeta?.total} results
                 </div>
               ) : (

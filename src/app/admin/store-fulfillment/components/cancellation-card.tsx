@@ -10,6 +10,8 @@ import {
 } from '@/types/store-fulfillment';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { formatThaiDate } from '@/lib/date-format';
+import { STORE_CANCELLATION_STATUS_TONE } from '@/lib/status-tones';
+import StatusBadge from '@/components/StatusBadge';
 
 const storeFulfillmentModel = new StoreFulfillmentModel();
 
@@ -17,11 +19,6 @@ const statusLabels: Record<StoreCancellationStatus, string> = {
   pending: 'รอพิจารณา',
   approved: 'อนุมัติยกเลิก',
   rejected: 'ไม่อนุมัติ',
-};
-const statusClassMap: Record<StoreCancellationStatus, string> = {
-  pending: 'bg-amber-50 text-amber-700',
-  approved: 'bg-green-50 text-green-700',
-  rejected: 'bg-gray-100 text-gray-700',
 };
 
 // A refund is only ever "คืนเงินแล้ว" when the gateway confirmed it; an
@@ -76,11 +73,7 @@ export default function CancellationCard({
     <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-medium">คำขอยกเลิกจากลูกค้า</h2>
-        <span
-          className={`rounded-full px-3 py-1 text-sm ${statusClassMap[cancellation.status]}`}
-        >
-          {statusLabels[cancellation.status]}
-        </span>
+        <StatusBadge tone={STORE_CANCELLATION_STATUS_TONE[cancellation.status]}>{statusLabels[cancellation.status]}</StatusBadge>
       </div>
 
       <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">

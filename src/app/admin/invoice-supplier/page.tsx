@@ -18,12 +18,13 @@ import {
   InvoiceSupplierListResponse,
   InvoiceSupplierPayment,
   InvoiceSupplierRow,
-  INVOICE_STATUS_BADGE,
   INVOICE_STATUS_LABELS,
 } from '@/types/invoice-supplier';
 import InsertInvoiceSupplierForm from './components/insert';
 import UpdateInvoiceSupplierForm from './components/update';
 import InvoiceSupplierDetailModal from './components/detail';
+import { INVOICE_SUPPLIER_STATUS_TONE } from '@/lib/status-tones';
+import StatusBadge from '@/components/StatusBadge';
 
 const purchaseReceiptModel = new PurchaseReceiptModel();
 const supplierModel = new SupplierModel();
@@ -374,9 +375,7 @@ export default function InvoiceSupplierPage() {
       render: (value) => {
         const status = value as InvoiceSupplierRow['invoice_supplier_status'];
         return (
-          <span className={`rounded-full px-3 py-1 text-xs font-semibold ${INVOICE_STATUS_BADGE[status]}`}>
-            {INVOICE_STATUS_LABELS[status]}
-          </span>
+          <StatusBadge tone={INVOICE_SUPPLIER_STATUS_TONE[status]}>{INVOICE_STATUS_LABELS[status]}</StatusBadge>
         );
       },
     },

@@ -10,6 +10,8 @@ import LoadingSkeletonProps from '@/components/LoadingSkeleton';
 import { formatThaiDate } from '@/lib/date-format';
 import { getApiErrorMessage } from '@/lib/api-error';
 import ContactRequestDetailModal from './components/detail';
+import { CONTACT_REQUEST_STATUS_TONE } from '@/lib/status-tones';
+import StatusBadge from '@/components/StatusBadge';
 
 const contactRequestModel = new ContactRequestModel();
 
@@ -17,11 +19,6 @@ const statusLabels: Record<ContactRequestStatus, string> = {
   new: 'ใหม่',
   contacting: 'กำลังติดต่อ',
   closed: 'ปิดคำขอ',
-};
-const statusClassMap: Record<ContactRequestStatus, string> = {
-  new: 'bg-blue-50 text-blue-700',
-  contacting: 'bg-amber-50 text-amber-700',
-  closed: 'bg-gray-100 text-gray-600',
 };
 
 export default function ContactRequestsPage() {
@@ -73,11 +70,7 @@ export default function ContactRequestsPage() {
       render: (value) => {
         const status = value as ContactRequestStatus;
         return (
-          <span
-            className={`rounded-full px-2 py-1 text-xs font-medium ${statusClassMap[status]}`}
-          >
-            {statusLabels[status]}
-          </span>
+          <StatusBadge tone={CONTACT_REQUEST_STATUS_TONE[status]} live={status === 'new'}>{statusLabels[status]}</StatusBadge>
         );
       },
     },

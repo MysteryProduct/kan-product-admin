@@ -5,9 +5,10 @@ import { VAT_TYPE_LABELS } from '@/lib/vat';
 import {
   InvoiceSupplierRow,
   INVOICE_PAYMENT_METHOD_LABELS,
-  INVOICE_STATUS_BADGE,
   INVOICE_STATUS_LABELS,
 } from '@/types/invoice-supplier';
+import { INVOICE_SUPPLIER_STATUS_TONE } from '@/lib/status-tones';
+import StatusBadge from '@/components/StatusBadge';
 
 interface InvoiceSupplierDetailModalProps {
   isOpen: boolean;
@@ -82,9 +83,7 @@ export default function InvoiceSupplierDetailModal({ isOpen, onClose, invoice }:
             <div>
               <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">สถานะ</p>
               <div className="h-11 rounded-xl border border-slate-300 bg-slate-50 px-3 text-sm leading-[44px] text-slate-800 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100">
-                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${INVOICE_STATUS_BADGE[invoice.invoice_supplier_status]}`}>
-                  {INVOICE_STATUS_LABELS[invoice.invoice_supplier_status]}
-                </span>
+                <StatusBadge tone={INVOICE_SUPPLIER_STATUS_TONE[invoice.invoice_supplier_status]}>{INVOICE_STATUS_LABELS[invoice.invoice_supplier_status]}</StatusBadge>
               </div>
             </div>
 

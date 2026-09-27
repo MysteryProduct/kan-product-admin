@@ -1,113 +1,77 @@
 'use client';
 
 import React from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
 import ThemeToggle from '@/components/ThemeToggle';
+import { getMenuTrail } from '@/lib/admin-menu';
+
+const SearchIcon = () => (
+  <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+  </svg>
+);
 
 export default function Header() {
   const { toggleSidebar } = useSidebar();
   const { user, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const trail = getMenuTrail(pathname);
+  const pageTitle = trail[trail.length - 1];
 
   const handleLogout = () => {
     logout();
     router.push('/login');
   };
-  
+
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--color-border)] bg-[var(--color-bg-primary)]">
-      <div className="px-6 py-4 flex items-center justify-between">
-        {/* Left: Menu Button */}
-        <button 
-          onClick={toggleSidebar}
-          className="rounded-lg p-2 hover:bg-[var(--color-bg-tertiary)]"
-          aria-label="เปิดหรือปิดเมนูด้านข้าง"
-        >
-          <svg className="h-6 w-6 text-[var(--color-text-secondary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+    <header className="ka-header">
+      <button type="button" onClick={toggleSidebar} className="ka-btn ka-btn--ghost ka-btn--icon" aria-label="เปิดหรือปิดเมนูด้านข้าง">
+        <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      <div className="ka-header__title">
+        {trail.length > 1 && (
+          <ol className="ka-crumbs" aria-label="ตำแหน่งหน้า">
+            {trail.slice(0, -1).map((step) => <li key={step}>{step}</li>)}
+          </ol>
+        )}
+        {pageTitle && <p className="m-0 truncate text-[20px] font-bold leading-7">{pageTitle}</p>}
+      </div>
+
+      <div className="ka-input-wrap ka-header__search">
+        <SearchIcon />
+        <input type="search" aria-label="ค้นหา" placeholder="ค้นหา" className="ka-input" />
+      </div>
+      <button type="button" aria-label="ค้นหา" className="ka-btn ka-btn--ghost ka-btn--icon hidden sm:inline-flex lg:hidden">
+        <SearchIcon />
+      </button>
+
+      <ThemeToggle />
+
+      <button type="button" aria-label="การแจ้งเตือน" className="ka-btn ka-btn--ghost ka-btn--icon">
+        <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+      </button>
+
+      <div className="flex items-center gap-2">
+        <span className="ka-avatar" aria-hidden="true">
+          {user?.employee_username?.charAt(0).toUpperCase() || 'U'}
+        </span>
+        <span className="ka-user__text">
+          <strong>{user?.employee_username || 'User'}</strong>
+          <span>Admin</span>
+        </span>
+        <button type="button" onClick={handleLogout} className="ka-btn ka-btn--ghost ka-btn--icon" aria-label="ออกจากระบบ" title="ออกจากระบบ">
+          <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
         </button>
-
-        {/* Right: Actions */}
-        <div className="flex items-center gap-2 md:gap-4">
-          {/* Search - Hidden on mobile */}
-          <div className="relative hidden lg:block">
-            <input
-              type="text"
-              aria-label="ค้นหา"
-              placeholder="ค้นหา"
-              className="w-64 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] py-2 pl-10 pr-4 text-sm text-[var(--color-text-primary)] placeholder:text-[var(--color-text-secondary)]"
-            />
-            <svg
-              className="w-5 h-5 text-gray-400 dark:text-gray-500 absolute left-3 top-1/2 -translate-y-1/2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
-
-          {/* Search Icon for mobile */}
-          <button type="button" aria-label="ค้นหา" className="rounded-lg p-2 hover:bg-[var(--color-bg-tertiary)] lg:hidden">
-            <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </button>
-
-          {/* Language - Hidden on small screens */}
-          <button type="button" aria-label="เปลี่ยนภาษา" className="hidden rounded-lg p-2 hover:bg-[var(--color-bg-tertiary)] md:block">
-            <div className="w-6 h-6 rounded-full overflow-hidden">
-              <span className="text-lg">🇬🇧</span>
-            </div>
-          </button>
-
-          {/* Shopping Cart - Hidden on small screens */}
-          <button type="button" aria-label="ตะกร้าสินค้า" className="relative hidden rounded-lg p-2 hover:bg-[var(--color-bg-tertiary)] sm:block">
-            <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            <span className="absolute top-0 right-0 w-5 h-5 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">
-              2
-            </span>
-          </button>
-
-          {/* Theme Toggle */}
-          <ThemeToggle />
-
-          {/* Notifications */}
-          <button type="button" aria-label="การแจ้งเตือน" className="relative rounded-lg p-2 hover:bg-[var(--color-bg-tertiary)]">
-            <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-            <span className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full"></span>
-          </button>
-
-          {/* User Profile */}
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full overflow-hidden flex items-center justify-center">
-              <span className="text-white text-sm font-semibold">
-                {user?.employee_username?.charAt(0).toUpperCase() || 'U'}
-              </span>
-            </div>
-            <div className="text-left hidden sm:block">
-              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{user?.employee_username || 'User'}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Admin</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="ml-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-              aria-label="ออกจากระบบ"
-              title="ออกจากระบบ"
-            >
-              <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-            </button>
-          </div>
-        </div>
       </div>
     </header>
   );
