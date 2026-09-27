@@ -106,7 +106,7 @@ export default function PurchaseOrderDetailModal({
 	};
 	return (
 		<>
-		<div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-950/55 p-4 backdrop-blur-[2px]">
+		<div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[var(--scrim)] p-4 backdrop-blur-[2px]">
 			<div className="overlay-surface my-8 w-full max-w-5xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)]">
 				<div className="border-b border-[var(--color-border)] px-6 py-5">
 					<div className="flex items-center justify-between">
@@ -121,7 +121,7 @@ export default function PurchaseOrderDetailModal({
 						</div>
 						<button
 							onClick={onClose}
-							className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-2 text-[var(--color-text-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-bg-tertiary)]"
+							className="ka-btn ka-btn--icon"
 							aria-label="ปิดรายละเอียดใบสั่งซื้อ"
 						>
 							<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -264,7 +264,7 @@ export default function PurchaseOrderDetailModal({
 						<button
 							type="button"
 							onClick={onClose}
-							className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-6 py-3 font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]"
+							className="ka-btn w-full"
 						>
 							ปิด
 						</button>
@@ -272,7 +272,7 @@ export default function PurchaseOrderDetailModal({
 							<button
 								type="button"
 								onClick={() => setShowConfirmDialog(true)}
-								className="ml-4 w-full rounded-lg bg-[var(--color-primary)] px-6 py-3 font-semibold text-white hover:bg-[var(--color-primary-hover)]"
+								className="ka-btn ka-btn--primary min-h-11 ml-4 w-full"
 							>
 								อนุมัติ
 							</button>
@@ -284,7 +284,7 @@ export default function PurchaseOrderDetailModal({
 								message="คุณแน่ใจหรือไม่ว่าต้องการอนุมัติใบสั่งซื้อนี้?"
 								onConfirm={handleApprove}
 								onCancel={() => setShowConfirmDialog(false)}
-								bottom_className="rounded-lg bg-[var(--color-primary)] px-4 py-2 font-semibold text-white hover:bg-[var(--color-primary-hover)]"
+								bottom_className="ka-btn ka-btn--primary min-h-11"
 							/>
 						)}
 					</div>

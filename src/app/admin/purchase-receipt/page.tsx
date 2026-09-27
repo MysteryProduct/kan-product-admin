@@ -270,7 +270,7 @@ export default function PurchaseReceiptPage() {
                         setIsInsertOpen(true);
                     }}
                     disabled={!canAddPurchaseReceipt}
-                    className="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="ka-btn ka-btn--primary"
                     type="button"
                 >
                     เพิ่มใบรับสินค้า
@@ -321,7 +321,7 @@ export default function PurchaseReceiptPage() {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => void openReceiptDetail(row)}
-                        className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-green-600 dark:hover:bg-gray-700"
+                        className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--success)]"
                         type="button"
                         title="ดูรายละเอียด"
                     >
@@ -334,7 +334,7 @@ export default function PurchaseReceiptPage() {
                     {canEditPurchaseReceipt && row.purchase_receipt_status === 'pending' && (
                         <button
                             onClick={() => void openReceiptUpdate(row)}
-                            className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-blue-600 dark:hover:bg-gray-700"
+                            className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
                             type="button"
                             title="แก้ไข"
                         >
@@ -350,7 +350,7 @@ export default function PurchaseReceiptPage() {
                                 setPurchaseReceiptToDelete(row);
                                 setIsDeleteDialogOpen(true);
                             }}
-                            className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-red-600 dark:hover:bg-gray-700"
+                            className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--danger)]"
                             type="button"
                             title="ลบ"
                         >
@@ -369,15 +369,15 @@ export default function PurchaseReceiptPage() {
     ];
 
     return (
-        <div className="min-h-full bg-[#F5F7FA] p-2 dark:bg-slate-950 sm:p-4 md:p-6 lg:p-8">
+        <div className="min-h-full bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
             {loading && <LoadingSkeletonProps />}
             <div className="space-y-6">
-                <section className="rounded-2xl bg-white shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10">
-                    <div className="border-b border-gray-100 p-4 dark:border-gray-700">
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                <section className="rounded-2xl bg-[var(--bg-surface)] shadow-sm ring-1 ring-black/5">
+                    <div className="border-b border-[var(--border)] p-4">
+                        <h2 className="text-lg font-semibold text-[var(--ink)]">
                             รายการใบสั่งซื้อ (สำหรับสร้างใบรับสินค้า)
                         </h2>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        <p className="mt-1 text-sm text-[var(--ink-muted)]">
                             เลือกใบสั่งซื้อจากตารางนี้ แล้วกดปุ่มเพิ่มใบรับสินค้า
                         </p>
                     </div>
@@ -387,7 +387,7 @@ export default function PurchaseReceiptPage() {
                             data={purchaseOrders?.data || []}
                             columns={purchaseOrderColumns}
                             keyField="purchase_order_id"
-                            className="bg-white dark:bg-gray-800"
+                            className="bg-[var(--bg-surface)]"
                             paginationMeta={purchaseOrderMeta}
                             currentPage={purchaseOrderPage}
                             onPageChange={setPurchaseOrderPage}
@@ -396,10 +396,10 @@ export default function PurchaseReceiptPage() {
                     </div>
                 </section>
 
-                <section className="rounded-2xl bg-white shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10">
-                    <div className="border-b border-gray-100 p-4 dark:border-gray-700">
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">รายการใบรับสินค้า</h2>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                <section className="rounded-2xl bg-[var(--bg-surface)] shadow-sm ring-1 ring-black/5">
+                    <div className="border-b border-[var(--border)] p-4">
+                        <h2 className="text-lg font-semibold text-[var(--ink)]">รายการใบรับสินค้า</h2>
+                        <p className="mt-1 text-sm text-[var(--ink-muted)]">
                             ตารางใบรับสินค้าทั้งหมด พร้อมดูรายละเอียด แก้ไข และลบ
                         </p>
                     </div>
@@ -408,7 +408,7 @@ export default function PurchaseReceiptPage() {
                             data={purchaseReceipts?.data || []}
                             columns={purchaseReceiptColumns}
                             keyField="purchase_receipt_id"
-                            className="bg-white dark:bg-gray-800"
+                            className="bg-[var(--bg-surface)]"
                             paginationMeta={purchaseReceiptMeta}
                             currentPage={purchaseReceiptPage}
                             onPageChange={setPurchaseReceiptPage}

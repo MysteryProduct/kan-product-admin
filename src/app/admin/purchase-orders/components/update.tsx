@@ -322,23 +322,23 @@ export default function UpdatePurchaseOrderForm({
     
     return (
         <>
-        <div className="fixed inset-0 bg-gray-300/40 dark:bg-gray-950/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-            <div className="bg-[var(--color-bg-primary)]  rounded-2xl overlay-surface max-w-5xl w-full my-8 overflow-hidden">
+        <div className="fixed inset-0 bg-[var(--scrim)] backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+            <div className="bg-[var(--color-bg-primary)] rounded-2xl overlay-surface max-w-5xl w-full my-8 overflow-hidden">
                 {/* Header */}
-                <div className="bg-[var(--color-primary)] px-6 py-5">
+                <div className="border-b border-[var(--border)] px-6 py-5">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="bg-white bg-opacity-20 p-2 rounded-lg backdrop-blur-sm">
+                            <div className="bg-[var(--bg-surface)] bg-opacity-20 p-2 rounded-lg backdrop-blur-sm">
                                 <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                             </div>
-                            <h2 className="text-2xl font-bold text-white">แก้ไขใบสั่งซื้อ</h2>
+                            <h2 className="text-2xl font-bold text-[var(--ink)]">แก้ไขใบสั่งซื้อ</h2>
                         </div>
                         <button
                             onClick={handleClose}
                             disabled={isSubmitting}
-                            className="rounded-lg border border-white/60 bg-white/15 p-2 text-white transition-colors hover:bg-white/25 disabled:opacity-50"
+                            aria-label="ปิดหน้าต่าง" className="ka-btn ka-btn--icon"
                         >
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -351,25 +351,25 @@ export default function UpdatePurchaseOrderForm({
                     {/* Purchase Order Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            <label className="block text-sm font-semibold text-[var(--ink)] mb-2">
                                 <span className="flex items-center gap-2">
-                                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-4 h-4 text-[var(--brand-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
                                     </svg>
-                                    ชื่อใบสั่งซื้อ <span className="text-red-500">*</span>
+                                    ชื่อใบสั่งซื้อ <span className="text-[var(--danger)]">*</span>
                                 </span>
                             </label>
                             <input
                                 type="text"
                                 value={purchaseOrderName}
                                 onChange={(e) => setPurchaseOrderName(e.target.value)}
-                                className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-700 ${errors.purchaseOrderName ? 'border-red-500 bg-red-50 dark:bg-red-500/10' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'
+                                className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--focus)] shadow-sm transition-all text-[var(--ink)] ${errors.purchaseOrderName ? 'border-[var(--danger)] bg-[var(--danger-soft)] ' : 'border-[var(--border-control)] hover:border-[var(--focus)]'
                                     }`}
                                 placeholder="ระบุชื่อใบสั่งซื้อ..."
                                 disabled={isSubmitting}
                             />
                             {errors.purchaseOrderName && (
-                                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                                <p className="text-[var(--danger)] text-sm mt-1 flex items-center gap-1">
                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                     </svg>
@@ -379,9 +379,9 @@ export default function UpdatePurchaseOrderForm({
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            <label className="block text-sm font-semibold text-[var(--ink)] mb-2">
                                 <span className="flex items-center gap-2">
-                                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-4 h-4 text-[var(--brand-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                     วันที่สร้าง
@@ -390,7 +390,7 @@ export default function UpdatePurchaseOrderForm({
                             <input
                                 type="text"
                                 value={formatThaiDate(initialData.purchase_date)}
-                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm"
+                                className="ka-input w-full"
                                 disabled
                             />
                         </div>
@@ -409,7 +409,7 @@ export default function UpdatePurchaseOrderForm({
                                 placeholder="เลือกผู้จัดจำหน่าย..."
                             />
                             {errors.supplier && (
-                                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                                <p className="text-[var(--danger)] text-sm mt-1 flex items-center gap-1">
                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                     </svg>
@@ -419,13 +419,13 @@ export default function UpdatePurchaseOrderForm({
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                            <label className="block text-sm font-semibold text-[var(--ink)] mb-2">
                                 รูปแบบ VAT
                             </label>
                             <select
                                 value={vatType}
                                 onChange={(e) => setVatType(e.target.value as VatType)}
-                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="ka-input w-full"
                                 disabled={isSubmitting}
                             >
                                 {VAT_TYPE_OPTIONS.map((option) => (
@@ -438,25 +438,25 @@ export default function UpdatePurchaseOrderForm({
                     </div>
 
                     <div className="mb-6">
-                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-sm font-semibold text-[var(--ink)] mb-2">
                             <span className="flex items-center gap-2">
-                                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 text-[var(--brand-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
                                 </svg>
-                                รายละเอียด <span className="text-red-500">*</span>
+                                รายละเอียด <span className="text-[var(--danger)]">*</span>
                             </span>
                         </label>
                         <textarea
                             value={purchaseOrderDetail}
                             onChange={(e) => setPurchaseOrderDetail(e.target.value)}
                             rows={3}
-                            className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all resize-none text-gray-800 dark:text-gray-100 dark:bg-gray-700 ${errors.purchaseOrderDetail ? 'border-red-500 bg-red-50 dark:bg-red-500/10' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'
+                            className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--focus)] shadow-sm transition-all resize-none text-[var(--ink)] ${errors.purchaseOrderDetail ? 'border-[var(--danger)] bg-[var(--danger-soft)] ' : 'border-[var(--border-control)] hover:border-[var(--focus)]'
                                 }`}
                             placeholder="ระบุรายละเอียดใบสั่งซื้อ..."
                             disabled={isSubmitting}
                         />
                         {errors.purchaseOrderDetail && (
-                            <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                            <p className="text-[var(--danger)] text-sm mt-1 flex items-center gap-1">
                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                 </svg>
@@ -468,9 +468,9 @@ export default function UpdatePurchaseOrderForm({
                     {/* Items Section */}
                     <div className="mb-6">
                         <div className="flex items-center justify-between mb-5">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                                <div className="bg-blue-100 p-2 rounded-lg">
-                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <h3 className="text-lg font-bold text-[var(--ink)] flex items-center gap-2">
+                                <div className="bg-[var(--brand-soft)] p-2 rounded-lg">
+                                    <svg className="w-5 h-5 text-[var(--brand-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                                     </svg>
                                 </div>
@@ -480,7 +480,7 @@ export default function UpdatePurchaseOrderForm({
                                 type="button"
                                 onClick={addItem}
                                 disabled={isSubmitting}
-                                className="flex items-center gap-2 rounded-lg bg-[var(--color-primary)] px-5 py-2.5 font-medium text-white transition-colors hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+                                className="ka-btn ka-btn--primary min-h-11 flex items-center gap-2"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -494,17 +494,17 @@ export default function UpdatePurchaseOrderForm({
                                 <div key={item.id} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-5">
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="bg-blue-100 text-blue-600 font-bold text-sm w-8 h-8 rounded-full flex items-center justify-center">
+                                            <div className="bg-[var(--brand-soft)] text-[var(--brand-ink)] font-bold text-sm w-8 h-8 rounded-full flex items-center justify-center">
                                                 {index + 1}
                                             </div>
-                                            <h4 className="font-semibold text-gray-900 dark:text-gray-100">รายการที่ {index + 1}</h4>
+                                            <h4 className="font-semibold text-[var(--ink)]">รายการที่ {index + 1}</h4>
                                         </div>
                                         {items.length > 1 && (
                                             <button
                                                 type="button"
                                                 onClick={() => removeItem(item.id)}
                                                 disabled={isSubmitting}
-                                                className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all disabled:opacity-50"
+                                                className="text-[var(--danger)] hover:text-[var(--danger)] hover:bg-[var(--danger-soft)] p-2 rounded-lg transition-all disabled:opacity-50"
                                             >
                                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -525,7 +525,7 @@ export default function UpdatePurchaseOrderForm({
                                                 placeholder="เลือกวัตถุดิบ..."
                                             />
                                             {errors[`item_${index}_material`] && (
-                                                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                                                <p className="text-[var(--danger)] text-sm mt-1 flex items-center gap-1">
                                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                                     </svg>
@@ -535,20 +535,20 @@ export default function UpdatePurchaseOrderForm({
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                                จำนวน <span className="text-red-500">*</span>
+                                            <label className="block text-sm font-semibold text-[var(--ink)] mb-2">
+                                                จำนวน <span className="text-[var(--danger)]">*</span>
                                             </label>
                                             <input
                                                 type="number"
                                                 min="1"
                                                 value={item.purchase_order_list_qty}
                                                 onChange={(e) => updateItem(item.id, 'purchase_order_list_qty', Number(e.target.value))}
-                                                className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-700 ${errors[`item_${index}_qty`] ? 'border-red-500 bg-red-50 dark:bg-red-500/10' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'
+                                                className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--focus)] shadow-sm transition-all text-[var(--ink)] ${errors[`item_${index}_qty`] ? 'border-[var(--danger)] bg-[var(--danger-soft)] ' : 'border-[var(--border-control)] hover:border-[var(--focus)]'
                                                     }`}
                                                 disabled={isSubmitting}
                                             />
                                             {errors[`item_${index}_qty`] && (
-                                                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                                                <p className="text-[var(--danger)] text-sm mt-1 flex items-center gap-1">
                                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                                     </svg>
@@ -558,8 +558,8 @@ export default function UpdatePurchaseOrderForm({
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                                ราคา/หน่วย <span className="text-red-500">*</span>
+                                            <label className="block text-sm font-semibold text-[var(--ink)] mb-2">
+                                                ราคา/หน่วย <span className="text-[var(--danger)]">*</span>
                                             </label>
                                             <input
                                                 type="number"
@@ -567,12 +567,12 @@ export default function UpdatePurchaseOrderForm({
                                                 step="0.01"
                                                 value={item.purchase_order_list_price}
                                                 onChange={(e) => updateItem(item.id, 'purchase_order_list_price', Number(e.target.value))}
-                                                className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all text-gray-800 dark:text-gray-100 dark:bg-gray-700 ${errors[`item_${index}_price`] ? 'border-red-500 bg-red-50 dark:bg-red-500/10' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'
+                                                className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--focus)] shadow-sm transition-all text-[var(--ink)] ${errors[`item_${index}_price`] ? 'border-[var(--danger)] bg-[var(--danger-soft)] ' : 'border-[var(--border-control)] hover:border-[var(--focus)]'
                                                     }`}
                                                 disabled={isSubmitting}
                                             />
                                             {errors[`item_${index}_price`] && (
-                                                <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                                                <p className="text-[var(--danger)] text-sm mt-1 flex items-center gap-1">
                                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                                     </svg>
@@ -595,20 +595,20 @@ export default function UpdatePurchaseOrderForm({
                                                 placeholder="เลือกหน่วยสินค้า..."
                                             />
                                             {errors[`item_${index}_product_unit_id`] && (
-                                                <p className="text-red-500 text-sm mt-1">{errors[`item_${index}_product_unit_id`]}</p>
+                                                <p className="text-[var(--danger)] text-sm mt-1">{errors[`item_${index}_product_unit_id`]}</p>
                                             )}
                                         </div>
                                     </div>
 
-                                    <div className="mt-4 pt-4 border-t-2 border-gray-200">
+                                    <div className="mt-4 pt-4 border-t-2 border-[var(--border)]">
                                         <div className="flex items-center justify-between rounded-lg bg-[var(--color-bg-secondary)] p-3">
-                                            <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                                                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <span className="text-sm font-semibold text-[var(--ink)] flex items-center gap-2">
+                                                <svg className="w-4 h-4 text-[var(--brand-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                                                 </svg>
                                                 ยอดรวมรายการนี้:
                                             </span>
-                                            <span className="text-xl font-bold text-blue-600">
+                                            <span className="text-xl font-bold text-[var(--brand-ink)]">
                                                 ฿{formatCurrency(calculateItemTotal(item))}
                                             </span>
                                         </div>
@@ -637,19 +637,19 @@ export default function UpdatePurchaseOrderForm({
                     </div>
 
                     {/* Footer Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t-2 border-gray-200 dark:border-gray-600">
+                    <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t-2 border-[var(--border)]">
                         <button
                             type="button"
                             onClick={handleClose}
                             disabled={isSubmitting}
-                            className="flex-1 px-6 py-3.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all font-semibold disabled:opacity-50 border-2 border-gray-200 dark:border-gray-600 hover:border-gray-300"
+                            className="ka-btn flex-1"
                         >
                             ยกเลิก
                         </button>
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-[var(--color-primary)] px-6 py-3.5 font-semibold text-white transition-colors hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
+                            className="ka-btn ka-btn--primary min-h-11 flex flex-1 items-center justify-center gap-2"
                         >
                             {isSubmitting ? (
                                 <>

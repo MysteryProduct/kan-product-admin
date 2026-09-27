@@ -318,7 +318,7 @@ export default function InvoiceSupplierPage() {
           type="button"
           onClick={() => void openInsertModal(row)}
           disabled={!canAddInvoice}
-          className="h-10 rounded-lg bg-blue-600 px-3 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="ka-btn ka-btn--primary h-10"
         >
           เพิ่มใบชำระหนี้
         </button>
@@ -333,8 +333,8 @@ export default function InvoiceSupplierPage() {
       width: '190px',
       render: (_, row) => (
         <div>
-          <p className="font-semibold text-slate-800 dark:text-slate-100">{row.invoice_supplier_code}</p>
-          <p className="text-xs text-slate-500 dark:text-slate-300">{row.invoice_supplier_name}</p>
+          <p className="font-semibold text-[var(--ink)]">{row.invoice_supplier_code}</p>
+          <p className="text-[13px] text-[var(--ink-muted)]">{row.invoice_supplier_name}</p>
         </div>
       ),
     },
@@ -343,7 +343,7 @@ export default function InvoiceSupplierPage() {
       label: 'อ้างอิงใบรับสินค้า',
       render: (_, row) => (
         <div>
-            <p className="text-slate-800 dark:text-slate-100">{row.purchaseReceipt?.purchase_receipt_code || row.purchaseReceipt?.purchase_receipt_id}</p>
+            <p className="text-[var(--ink)]">{row.purchaseReceipt?.purchase_receipt_code || row.purchaseReceipt?.purchase_receipt_id}</p>
         </div>
       ),
     },
@@ -352,8 +352,8 @@ export default function InvoiceSupplierPage() {
       label: 'ผู้จัดจำหน่าย',
       render: (_, row) => (
         <div>
-          <p className="text-slate-800 dark:text-slate-100">{row.supplier?.supplier_name}</p>
-          <p className="text-xs text-slate-500 dark:text-slate-300">{row.supplier?.supplier_id}</p>
+          <p className="text-[var(--ink)]">{row.supplier?.supplier_name}</p>
+          <p className="text-[13px] text-[var(--ink-muted)]">{row.supplier?.supplier_id}</p>
         </div>
       ),
     },
@@ -387,8 +387,8 @@ export default function InvoiceSupplierPage() {
         const paid = (row.invoicePayments || []).reduce((sum, item) => sum + Number(item.invoice_payment_price || 0), 0);
         return (
           <div className="text-right">
-            <p className="font-semibold text-slate-800 dark:text-slate-100">฿{formatCurrency(Number(value || 0))}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-300">ชำระแล้ว ฿{formatCurrency(paid)}</p>
+            <p className="font-semibold text-[var(--ink)]">฿{formatCurrency(Number(value || 0))}</p>
+            <p className="text-[13px] text-[var(--ink-muted)]">ชำระแล้ว ฿{formatCurrency(paid)}</p>
           </div>
         );
       },
@@ -402,7 +402,7 @@ export default function InvoiceSupplierPage() {
           <button
             type="button"
             onClick={() => void openDetailModal(row)}
-            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-emerald-600 dark:hover:bg-slate-700"
+            className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--success)]"
             title="ดูรายละเอียด"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -415,7 +415,7 @@ export default function InvoiceSupplierPage() {
             <button
               type="button"
               onClick={() => void openUpdateModal(row)}
-              className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-blue-600 dark:hover:bg-slate-700"
+              className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
               title="แก้ไข"
             >
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
@@ -431,7 +431,7 @@ export default function InvoiceSupplierPage() {
                 setSelectedInvoice(row);
                 setIsDeleteOpen(true);
               }}
-              className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-rose-600 dark:hover:bg-slate-700"
+              className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--danger)]"
               title="ลบ"
             >
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
@@ -485,13 +485,13 @@ export default function InvoiceSupplierPage() {
   };
 
   return (
-    <div className="bg-gray-50 p-2 sm:p-4 md:p-6 lg:p-8 dark:bg-gray-900">
+    <div className="bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
       {loading && <LoadingSkeletonProps />}
 
       <div className="space-y-6">
-        <section className="rounded-2xl bg-white shadow-sm dark:bg-gray-800">
-          <div className="border-b border-gray-100 p-4 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">รายการใบรับสินค้าที่อนุมัติแล้ว</h2>
+        <section className="ka-card">
+          <div className="border-b border-[var(--border)] p-4">
+            <h2 className="text-lg font-semibold text-[var(--ink)]">รายการใบรับสินค้าที่อนุมัติแล้ว</h2>
           </div>
 
           <div className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-end">
@@ -506,7 +506,7 @@ export default function InvoiceSupplierPage() {
                 }
               }}
               placeholder="ค้นหาใบรับสินค้า..."
-              className="h-10 w-full rounded-lg border border-gray-300 px-3 text-sm text-gray-800 shadow-sm outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 sm:max-w-sm"
+              className="ka-input h-10 w-full sm:max-w-sm"
             />
             <button
               type="button"
@@ -514,7 +514,7 @@ export default function InvoiceSupplierPage() {
                 setApprovedPage(1);
                 setApprovedSearch(approvedSearchInput.trim());
               }}
-              className="h-10 rounded-lg bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700"
+              className="ka-btn ka-btn--primary h-10"
             >
               ค้นหา
             </button>
@@ -525,7 +525,7 @@ export default function InvoiceSupplierPage() {
                 setApprovedSearch('');
                 setApprovedPage(1);
               }}
-              className="h-10 rounded-lg border border-gray-300 px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+              className="ka-btn h-10"
             >
               ล้าง
             </button>
@@ -536,7 +536,7 @@ export default function InvoiceSupplierPage() {
               data={approvedRows}
               columns={approvedColumns}
               keyField="purchase_receipt_id"
-              className="bg-white dark:bg-gray-800"
+              className="bg-[var(--bg-surface)]"
               paginationMeta={approvedMeta}
               currentPage={approvedPage}
               onPageChange={setApprovedPage}
@@ -545,9 +545,9 @@ export default function InvoiceSupplierPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl bg-white shadow-sm dark:bg-gray-800">
-          <div className="border-b border-gray-100 p-4 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">รายการใบชำระหนี้ผู้จัดจำหน่าย</h2>
+        <section className="ka-card">
+          <div className="border-b border-[var(--border)] p-4">
+            <h2 className="text-lg font-semibold text-[var(--ink)]">รายการใบชำระหนี้ผู้จัดจำหน่าย</h2>
           </div>
           {invoiceLoading && <LoadingSkeletonProps />}
           <div className="p-2">
@@ -555,7 +555,7 @@ export default function InvoiceSupplierPage() {
               data={invoiceRows}
               columns={invoiceColumns}
               keyField="invoice_supplier_id"
-              className="bg-white dark:bg-gray-800"
+              className="bg-[var(--bg-surface)]"
               paginationMeta={invoiceMeta}
               currentPage={invoicePage}
               onPageChange={setInvoicePage}
@@ -563,7 +563,7 @@ export default function InvoiceSupplierPage() {
             />
 
             {invoiceRows.length === 0 && !invoiceLoading && (
-              <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center text-gray-600 dark:border-gray-600 dark:bg-gray-900/30 dark:text-gray-300">
+              <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--bg-subtle)] p-8 text-center text-[var(--ink-muted)]">
                 ยังไม่มีรายการใบชำระหนี้
               </div>
             )}

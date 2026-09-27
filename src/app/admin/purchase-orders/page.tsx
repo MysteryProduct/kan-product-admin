@@ -241,7 +241,9 @@ export default function PurchaseOrdersPage() {
                 setIsDetailFormOpen(true);
               }
             }}
-            className="text-gray-400 hover:text-green-500 transition-colors"
+            className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--success)]"
+            title="ดูรายละเอียด"
+            aria-label="ดูรายละเอียด"
             type="button"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -259,7 +261,9 @@ export default function PurchaseOrdersPage() {
                 }
 
               }}
-              className="text-gray-400 hover:text-blue-500 transition-colors"
+              className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
+              title="แก้ไข"
+              aria-label="แก้ไข"
               type="button"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -269,7 +273,9 @@ export default function PurchaseOrdersPage() {
           )}
           {canDeletePurchaseOrder && (
             <button
-              className="text-gray-400 hover:text-red-500 transition-colors"
+              className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--danger)]"
+              title="ลบ"
+              aria-label="ลบ"
               onClick={() => {
                 setPurchaseOrderToDelete(row);
                 setIsDeleteDialogOpen(true);
@@ -291,57 +297,57 @@ export default function PurchaseOrdersPage() {
   ];
 
   return (
-    <div className="min-h-full bg-[#F5F7FA] p-2 dark:bg-slate-950 sm:p-4 md:p-6 lg:p-8">
+    <div className="min-h-full bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
       {/* Statistics Cards */}
       {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm">
+        <div className="ka-card p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl sm:text-4xl font-bold text-blue-600 mb-1">
+              <div className="text-2xl sm:text-4xl font-bold text-[var(--brand-ink)] mb-1">
                 {totalOrders}
               </div>
-              <div className="text-xs sm:text-sm text-blue-700 font-medium">
+              <div className="text-[13px] sm:text-sm text-[var(--brand-ink)] font-medium">
                 ใบสั่งซื้อทั้งหมด
               </div>
             </div>
-            <div className="bg-blue-200 p-3 rounded-lg">
-              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-[var(--brand-soft)] p-3 rounded-lg">
+              <svg className="w-8 h-8 text-[var(--brand-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm">
+        <div className="ka-card p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl sm:text-4xl font-bold text-green-600 mb-1">
+              <div className="text-2xl sm:text-4xl font-bold text-[var(--success)] mb-1">
                 ฿{formatCurrency(totalAmount)}
               </div>
-              <div className="text-xs sm:text-sm text-green-700 font-medium">
+              <div className="text-[13px] sm:text-sm text-[var(--success)] font-medium">
                 มูลค่ารวม
               </div>
             </div>
-            <div className="bg-green-200 p-3 rounded-lg">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-[var(--success-soft)] p-3 rounded-lg">
+              <svg className="w-8 h-8 text-[var(--success)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm">
+        <div className="ka-card p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-2xl sm:text-4xl font-bold text-purple-600 mb-1">
+              <div className="text-2xl sm:text-4xl font-bold text-[var(--info)] mb-1">
                 {meta?.total || 0}
               </div>
-              <div className="text-xs sm:text-sm text-purple-700 font-medium">
+              <div className="text-[13px] sm:text-sm text-[var(--info)] font-medium">
                 รายการทั้งหมดในระบบ
               </div>
             </div>
-            <div className="bg-purple-200 p-3 rounded-lg">
-              <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-[var(--info-soft)] p-3 rounded-lg">
+              <svg className="w-8 h-8 text-[var(--info)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
               </svg>
             </div>
@@ -350,9 +356,9 @@ export default function PurchaseOrdersPage() {
       </div> */}
 
       {/* Main Content Card */}
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10 sm:rounded-2xl">
+      <div className="overflow-hidden rounded-xl bg-[var(--bg-surface)] shadow-sm ring-1 ring-black/5 sm:rounded-2xl">
         {/* Search Bar */}
-        <div className="p-3 sm:p-4 md:p-6 border-b border-gray-100 dark:border-gray-700">
+        <div className="p-3 sm:p-4 md:p-6 border-b border-[var(--border)]">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
             <div className="flex flex-col sm:flex-row items-stretch gap-1 w-full sm:w-auto sm:flex-1 sm:max-w-md">
               <div className="relative flex-1">
@@ -366,10 +372,10 @@ export default function PurchaseOrdersPage() {
                       handleSearch();
                     }
                   }}
-                  className="min-h-11 w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-gray-900 placeholder:text-gray-400 shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-50 dark:placeholder:text-slate-400"
+                  className="ka-input min-h-11 w-full"
                 />
                 <svg
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[var(--ink-subtle)]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -385,7 +391,7 @@ export default function PurchaseOrdersPage() {
               <button
                 type="button"
                 onClick={handleSearch}
-                className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors font-medium whitespace-nowrap"
+                className="ka-btn ka-btn--primary whitespace-nowrap"
               >
                 ค้นหา
               </button>
@@ -393,7 +399,7 @@ export default function PurchaseOrdersPage() {
                 <button
                   type="button"
                   onClick={handleClearSearch}
-                  className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
+                  className="ka-btn whitespace-nowrap"
                 >
                   ล้าง
                 </button>
@@ -403,7 +409,7 @@ export default function PurchaseOrdersPage() {
             {canAddPurchaseOrder && (
               <button
                 onClick={() => setIsInsertFormOpen(true)}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium whitespace-nowrap"
+                className="ka-btn ka-btn--primary flex items-center justify-center gap-2 whitespace-nowrap"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -422,9 +428,6 @@ export default function PurchaseOrdersPage() {
           columns={columns}
           keyField="purchase_order_id"
           disabled={loading}
-          className="bg-white dark:bg-gray-800 p-1"
-          headerClassName="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900"
-          rowClassName="border-b border-slate-100 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-700/60"
           paginationMeta={meta}
           currentPage={currentPage}
           onPageChange={setCurrentPage}

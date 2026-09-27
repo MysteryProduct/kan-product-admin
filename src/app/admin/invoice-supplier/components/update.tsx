@@ -17,8 +17,7 @@ interface UpdateInvoiceSupplierFormProps {
     invoice: InvoiceSupplierRow | null;
 }
 
-const INPUT_CLASSNAME =
-    'h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:focus:border-blue-400 dark:focus:ring-blue-900';
+const INPUT_CLASSNAME = 'ka-input h-11 w-full';
 
 const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('th-TH', {
@@ -155,12 +154,12 @@ export default function UpdateInvoiceSupplierForm({ isOpen, onClose, onSubmit, i
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-6xl overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface dark:border-[var(--color-border)] ">
-                <div className="bg-[var(--color-primary)] px-6 py-5 text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
+            <div className="w-full max-w-6xl overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface dark:border-[var(--color-border)]">
+                <div className="border-b border-[var(--border)] px-6 py-5">
                     <div className="flex items-center justify-between gap-4">
                         <h2 className="text-xl font-bold sm:text-2xl">แก้ไขใบชำระหนี้ผู้จัดจำหน่าย</h2>
-                        <button type="button" onClick={onClose} className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-2 text-[var(--color-text-primary)] transition-colors hover:border-[var(--color-primary)] hover:bg-[var(--color-bg-tertiary)]" aria-label="close">
+                        <button type="button" onClick={onClose} className="ka-btn ka-btn--icon" aria-label="ปิดหน้าต่าง">
                             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M6 6l12 12M18 6L6 18" />
                             </svg>
@@ -171,31 +170,31 @@ export default function UpdateInvoiceSupplierForm({ isOpen, onClose, onSubmit, i
                 <form onSubmit={handleSubmit} className="max-h-[80vh] space-y-5 overflow-y-auto p-6">
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                         <div>
-                            <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">เลขที่ใบชำระหนี้</label>
+                            <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">เลขที่ใบชำระหนี้</label>
                             <input value={invoiceCode} onChange={(event) => setInvoiceCode(event.target.value)} className={INPUT_CLASSNAME} />
-                            {errors.invoice_supplier_code && <p className="mt-1 text-xs text-rose-500">{errors.invoice_supplier_code}</p>}
+                            {errors.invoice_supplier_code && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.invoice_supplier_code}</p>}
                         </div>
 
                         <div>
-                            <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">ชื่อเอกสาร</label>
+                            <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">ชื่อเอกสาร</label>
                             <input value={invoiceName} onChange={(event) => setInvoiceName(event.target.value)} className={INPUT_CLASSNAME} />
-                            {errors.invoice_supplier_name && <p className="mt-1 text-xs text-rose-500">{errors.invoice_supplier_name}</p>}
+                            {errors.invoice_supplier_name && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.invoice_supplier_name}</p>}
                         </div>
 
                         <div>
-                            <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">วันที่เอกสาร</label>
+                            <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">วันที่เอกสาร</label>
                             <input type="date" value={invoiceDate} onChange={(event) => setInvoiceDate(event.target.value)} className={INPUT_CLASSNAME} />
-                            {errors.invoice_supplier_date && <p className="mt-1 text-xs text-rose-500">{errors.invoice_supplier_date}</p>}
+                            {errors.invoice_supplier_date && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.invoice_supplier_date}</p>}
                         </div>
 
                         <div>
-                            <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">วันที่ครบกำหนด</label>
+                            <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">วันที่ครบกำหนด</label>
                             <input type="date" value={invoiceDueDate} onChange={(event) => setInvoiceDueDate(event.target.value)} className={INPUT_CLASSNAME} />
-                            {errors.invoice_supplier_due_date && <p className="mt-1 text-xs text-rose-500">{errors.invoice_supplier_due_date}</p>}
+                            {errors.invoice_supplier_due_date && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.invoice_supplier_due_date}</p>}
                         </div>
 
                         <div>
-                            <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">สถานะเอกสาร</label>
+                            <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">สถานะเอกสาร</label>
                             <select value={invoiceStatus} onChange={(event) => setInvoiceStatus(event.target.value as 'pending' | 'partial' | 'paid' | 'cancelled')} className={INPUT_CLASSNAME}>
                                 {INVOICE_STATUS_OPTIONS.map((status) => (
                                     <option key={status.value} value={status.value}>
@@ -206,37 +205,37 @@ export default function UpdateInvoiceSupplierForm({ isOpen, onClose, onSubmit, i
                         </div>
 
                         <div>
-                            <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">ยอดใบชำระหนี้</label>
-                            <div className="h-11 rounded-xl border border-slate-300 bg-slate-100 px-3 text-sm leading-[44px] text-slate-700 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100">
+                            <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">ยอดใบชำระหนี้</label>
+                            <div className="h-11 rounded-xl border border-[var(--border-control)] bg-[var(--bg-muted)] px-3 text-sm leading-[44px] text-[var(--ink)]">
                                 ฿{formatCurrency(invoiceTotal)}
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-200">รายละเอียดเพิ่มเติม</label>
+                        <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">รายละเอียดเพิ่มเติม</label>
                         <textarea
                             rows={3}
                             value={invoiceDetail}
                             onChange={(event) => setInvoiceDetail(event.target.value)}
-                            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100 dark:focus:border-blue-400 dark:focus:ring-blue-900"
+                            className="ka-textarea w-full"
                         />
                     </div>
 
-                    <div className="rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
+                    <div className="rounded-2xl border border-[var(--border)] p-4">
                         <div className="mb-3 flex items-center justify-between">
-                            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">Invoice Payment (ชำระได้หลายครั้ง)</h3>
-                            <button type="button" onClick={addPaymentRow} className="h-10 rounded-lg bg-[var(--color-primary)] px-4 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)]">
+                            <h3 className="text-base font-semibold text-[var(--ink)]">Invoice Payment (ชำระได้หลายครั้ง)</h3>
+                            <button type="button" onClick={addPaymentRow} className="ka-btn ka-btn--primary min-h-11 h-10">
                                 เพิ่มรายการชำระ
                             </button>
                         </div>
 
                         <div className="space-y-3">
                             {invoicePayments.map((payment, index) => (
-                                <div key={payment.invoice_payment_id} className="rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900/40">
+                                <div key={payment.invoice_payment_id} className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] p-3">
                                     <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
                                         <div>
-                                            <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-300">วิธีชำระ</label>
+                                            <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">วิธีชำระ</label>
                                             <select
                                                 value={payment.payment_method}
                                                 onChange={(event) => {
@@ -258,7 +257,7 @@ export default function UpdateInvoiceSupplierForm({ isOpen, onClose, onSubmit, i
                                         </div>
 
                                         <div>
-                                            <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-300">บัญชีธนาคาร</label>
+                                            <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">บัญชีธนาคาร</label>
                                             <select
                                                 value={payment.payment_id || ''}
                                                 onChange={(event) => updatePaymentRow(payment.invoice_payment_id, (prev) => ({ ...prev, payment_id: event.target.value }))}
@@ -272,11 +271,11 @@ export default function UpdateInvoiceSupplierForm({ isOpen, onClose, onSubmit, i
                                                     </option>
                                                 ))}
                                             </select>
-                                            {errors[`payment_id_${index}`] && <p className="mt-1 text-xs text-rose-500">{errors[`payment_id_${index}`]}</p>}
+                                            {errors[`payment_id_${index}`] && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`payment_id_${index}`]}</p>}
                                         </div>
 
                                         <div>
-                                            <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-300">ยอดชำระ</label>
+                                            <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ยอดชำระ</label>
                                             <div className="flex gap-2">
                                                 <input
                                                     type="number"
@@ -291,34 +290,34 @@ export default function UpdateInvoiceSupplierForm({ isOpen, onClose, onSubmit, i
                                                 <button
                                                     type="button"
                                                     onClick={() => removePaymentRow(payment.invoice_payment_id)}
-                                                    className="h-11 rounded-lg border border-rose-300 px-3 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 dark:border-rose-700 dark:text-rose-300 dark:hover:bg-rose-900/30"
+                                                    className="ka-btn ka-btn--danger h-11"
                                                     disabled={invoicePayments.length <= 1}
                                                 >
                                                     ลบ
                                                 </button>
                                             </div>
-                                            {errors[`invoice_payment_price_${index}`] && <p className="mt-1 text-xs text-rose-500">{errors[`invoice_payment_price_${index}`]}</p>}
-                                            <p className="mt-1 text-xs text-slate-500 dark:text-slate-300">{INVOICE_PAYMENT_METHOD_LABELS[payment.payment_method]}</p>
+                                            {errors[`invoice_payment_price_${index}`] && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`invoice_payment_price_${index}`]}</p>}
+                                            <p className="mt-1 text-[13px] text-[var(--ink-muted)]">{INVOICE_PAYMENT_METHOD_LABELS[payment.payment_method]}</p>
                                         </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
 
-                        {errors.invoice_payments && <p className="mt-2 text-xs text-rose-500">{errors.invoice_payments}</p>}
+                        {errors.invoice_payments && <p className="mt-2 text-[13px] text-[var(--danger)]">{errors.invoice_payments}</p>}
 
-                        <div className="mt-4 grid grid-cols-1 gap-2 rounded-xl bg-slate-100 p-3 text-sm dark:bg-slate-700/60 sm:grid-cols-3">
-                            <p className="text-slate-700 dark:text-slate-100">ยอดเอกสาร: <span className="font-semibold">฿{formatCurrency(invoiceTotal)}</span></p>
-                            <p className="text-slate-700 dark:text-slate-100">ชำระแล้ว: <span className="font-semibold">฿{formatCurrency(paidTotal)}</span></p>
-                            <p className="text-slate-700 dark:text-slate-100">คงเหลือ: <span className="font-semibold">฿{formatCurrency(Math.max(invoiceTotal - paidTotal, 0))}</span></p>
+                        <div className="mt-4 grid grid-cols-1 gap-2 rounded-xl bg-[var(--bg-muted)] p-3 text-sm sm:grid-cols-3">
+                            <p className="text-[var(--ink)]">ยอดเอกสาร: <span className="font-semibold">฿{formatCurrency(invoiceTotal)}</span></p>
+                            <p className="text-[var(--ink)]">ชำระแล้ว: <span className="font-semibold">฿{formatCurrency(paidTotal)}</span></p>
+                            <p className="text-[var(--ink)]">คงเหลือ: <span className="font-semibold">฿{formatCurrency(Math.max(invoiceTotal - paidTotal, 0))}</span></p>
                         </div>
                     </div>
 
-                    <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end dark:border-slate-700">
-                        <button type="button" onClick={onClose} className="h-11 rounded-xl border border-slate-300 px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700">
+                    <div className="flex flex-col-reverse gap-3 border-t border-[var(--border)] pt-4 sm:flex-row sm:justify-end">
+                        <button type="button" onClick={onClose} className="ka-btn h-11">
                             ยกเลิก
                         </button>
-                        <button type="submit" className="h-11 rounded-xl bg-[var(--color-primary)] px-5 text-sm font-semibold text-white transition hover:bg-[var(--color-primary-hover)]">
+                        <button type="submit" className="ka-btn ka-btn--primary min-h-11 h-11">
                             บันทึกการแก้ไข
                         </button>
                     </div>

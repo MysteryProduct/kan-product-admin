@@ -111,14 +111,14 @@ export default function PurchaseReceiptDetailModal({
 		}
 	};
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-[2px]">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-[2px]">
 			<div className="overlay-surface w-full max-w-6xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)]">
 				<div className="border-b border-[var(--color-border)] px-6 py-5">
 					<div className="flex items-center justify-between gap-3">
 						<h2 className="text-xl font-semibold text-[var(--color-text-primary)]">รายละเอียดใบรับสินค้า</h2>
 						<button
 							onClick={onClose}
-							className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-2 text-[var(--color-text-primary)] hover:border-[var(--color-primary)] hover:bg-[var(--color-bg-tertiary)]"
+							className="ka-btn ka-btn--icon"
 							type="button"
 							aria-label="ปิดรายละเอียดใบรับสินค้า"
 						>
@@ -187,31 +187,31 @@ export default function PurchaseReceiptDetailModal({
 
 									<div className="grid grid-cols-1 gap-4 md:grid-cols-5">
 										<div>
-											<label className="mb-1 block text-xs font-medium text-[var(--color-text-secondary)]">วัตถุดิบ</label>
+											<label className="mb-1 block text-[13px] font-medium text-[var(--color-text-secondary)]">วัตถุดิบ</label>
 											<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)]">
 												{getMaterialDisplay(item)}
 											</div>
 										</div>
 										<div>
-											<label className="mb-1 block text-xs font-medium text-[var(--color-text-secondary)]">จำนวนรับ</label>
+											<label className="mb-1 block text-[13px] font-medium text-[var(--color-text-secondary)]">จำนวนรับ</label>
 											<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)]">
 												{item.purchase_receipt_list_qty}
 											</div>
 										</div>
 										<div>
-											<label className="mb-1 block text-xs font-medium text-[var(--color-text-secondary)]">ราคา/หน่วย</label>
+											<label className="mb-1 block text-[13px] font-medium text-[var(--color-text-secondary)]">ราคา/หน่วย</label>
 											<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)]">
 												฿{formatCurrency(item.purchase_receipt_list_price)}
 											</div>
 										</div>
 										<div>
-											<label className="mb-1 block text-xs font-medium text-[var(--color-text-secondary)]">หน่วย</label>
+											<label className="mb-1 block text-[13px] font-medium text-[var(--color-text-secondary)]">หน่วย</label>
 											<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)]">
 												{item.productUnit?.product_unit_name || item.product_unit_id || '-'}
 											</div>
 										</div>
 										<div>
-											<label className="mb-1 block text-xs font-medium text-[var(--color-text-secondary)]">ยอดรวม</label>
+											<label className="mb-1 block text-[13px] font-medium text-[var(--color-text-secondary)]">ยอดรวม</label>
 											<div className="numeric rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm font-semibold text-[var(--color-text-primary)]">
 												฿{formatCurrency(calculateItemTotal(item))}
 											</div>
@@ -248,7 +248,7 @@ export default function PurchaseReceiptDetailModal({
 						<button
 							type="button"
 							onClick={onClose}
-							className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-6 py-3 font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]"
+							className="ka-btn w-full"
 						>
 							ปิด
 						</button>
@@ -256,7 +256,7 @@ export default function PurchaseReceiptDetailModal({
 							<button
 								type="button"
 								onClick={() => setShowConfirmDialog(true)}
-								className="ml-4 w-full rounded-lg bg-[var(--color-primary)] px-6 py-3 font-semibold text-white hover:bg-[var(--color-primary-hover)]"
+								className="ka-btn ka-btn--primary min-h-11 ml-4 w-full"
 							>
 								อนุมัติ
 							</button>
@@ -268,7 +268,7 @@ export default function PurchaseReceiptDetailModal({
 								message="คุณแน่ใจหรือไม่ว่าต้องการอนุมัติใบรับสินค้านี้?"
 								onConfirm={handleApprove}
 								onCancel={() => setShowConfirmDialog(false)}
-								bottom_className="rounded-lg bg-[var(--color-primary)] px-4 py-2 font-semibold text-white hover:bg-[var(--color-primary-hover)]"
+								bottom_className="ka-btn ka-btn--primary min-h-11"
 							/>
 						)}
 					</div>
