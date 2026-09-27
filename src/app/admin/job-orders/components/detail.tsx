@@ -80,15 +80,16 @@ export default function JobOrderDetailModal({
 	const colorLabel = jobOrder.color?.color_name || jobOrder.productVariant?.color?.color_name || (jobOrder.color_id ? String(jobOrder.color_id) : '-');
 
 	return (
-		<div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm p-4 overflow-y-auto">
-			<div className="mx-auto max-w-3xl mt-6 rounded-2xl bg-[var(--color-bg-primary)]  border border-[var(--color-border)] dark:border-[var(--color-border)] overlay-surface overflow-hidden">
-				<div className="px-6 py-5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+		<div className="fixed inset-0 z-50 bg-[var(--scrim)] backdrop-blur-sm p-4 overflow-y-auto">
+			<div className="mx-auto max-w-3xl mt-6 rounded-2xl bg-[var(--color-bg-primary)] border border-[var(--color-border)] dark:border-[var(--color-border)] overlay-surface overflow-hidden">
+				<div className="px-6 py-5 border-b border-[var(--border)] bg-[var(--bg-subtle)]">
 					<div className="flex items-center justify-between gap-3">
-						<h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">รายละเอียดงานผลิต</h2>
+						<h2 className="text-xl font-bold text-[var(--ink)]">รายละเอียดงานผลิต</h2>
 						<button
 							type="button"
 							onClick={onClose}
-							className="rounded-lg p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 dark:text-slate-300"
+							className="ka-btn ka-btn--icon"
+							aria-label="ปิดหน้าต่าง"
 						>
 							<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -100,60 +101,60 @@ export default function JobOrderDetailModal({
 				<div className="p-6 space-y-4">
 					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 						<div>
-							<p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">ชื่องานผลิต</p>
-							<p className="text-slate-900 dark:text-slate-100 font-semibold">{jobOrder.job_order_name || '-'}</p>
+							<p className="text-[13px] uppercase tracking-wider text-[var(--ink-muted)]">ชื่องานผลิต</p>
+							<p className="text-[var(--ink)] font-semibold">{jobOrder.job_order_name || '-'}</p>
 						</div>
 						<div>
-							<p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">ผู้รับผิดชอบ</p>
-							<p className="text-slate-900 dark:text-slate-100 font-semibold">{assignee}</p>
+							<p className="text-[13px] uppercase tracking-wider text-[var(--ink-muted)]">ผู้รับผิดชอบ</p>
+							<p className="text-[var(--ink)] font-semibold">{assignee}</p>
 						</div>
 						<div>
-							<p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">ประเภท</p>
-							<p className="text-slate-900 dark:text-slate-100 font-semibold">{getTypeLabel(jobOrder.job_order_type)}</p>
+							<p className="text-[13px] uppercase tracking-wider text-[var(--ink-muted)]">ประเภท</p>
+							<p className="text-[var(--ink)] font-semibold">{getTypeLabel(jobOrder.job_order_type)}</p>
 						</div>
 						<div>
-							<p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">สถานะ</p>
-							<p className="text-slate-900 dark:text-slate-100 font-semibold">{getStatusLabel(jobOrder.job_order_status)}</p>
+							<p className="text-[13px] uppercase tracking-wider text-[var(--ink-muted)]">สถานะ</p>
+							<p className="text-[var(--ink)] font-semibold">{getStatusLabel(jobOrder.job_order_status)}</p>
 						</div>
 						<div>
-							<p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">Target Date</p>
-							<p className="text-slate-900 dark:text-slate-100 font-semibold">{formatThaiDate(jobOrder.target_date)}</p>
+							<p className="text-[13px] uppercase tracking-wider text-[var(--ink-muted)]">Target Date</p>
+							<p className="text-[var(--ink)] font-semibold">{formatThaiDate(jobOrder.target_date)}</p>
 						</div>
 						<div>
-							<p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">Product Variant</p>
-							<p className="text-slate-900 dark:text-slate-100 font-semibold">{jobOrder.product_variant_id || '-'}</p>
+							<p className="text-[13px] uppercase tracking-wider text-[var(--ink-muted)]">Product Variant</p>
+							<p className="text-[var(--ink)] font-semibold">{jobOrder.product_variant_id || '-'}</p>
 						</div>
 						<div>
-							<p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">Size</p>
-							<p className="text-slate-900 dark:text-slate-100 font-semibold">{sizeLabel}</p>
+							<p className="text-[13px] uppercase tracking-wider text-[var(--ink-muted)]">Size</p>
+							<p className="text-[var(--ink)] font-semibold">{sizeLabel}</p>
 						</div>
 						<div>
-							<p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">Color</p>
-							<p className="text-slate-900 dark:text-slate-100 font-semibold">{colorLabel}</p>
+							<p className="text-[13px] uppercase tracking-wider text-[var(--ink-muted)]">Color</p>
+							<p className="text-[var(--ink)] font-semibold">{colorLabel}</p>
 						</div>
 						<div>
-							<p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">จำนวนที่ผลิต</p>
-							<p className="text-slate-900 dark:text-slate-100 font-semibold">{jobOrder.job_order_qty ?? 0}</p>
+							<p className="text-[13px] uppercase tracking-wider text-[var(--ink-muted)]">จำนวนที่ผลิต</p>
+							<p className="text-[var(--ink)] font-semibold">{jobOrder.job_order_qty ?? 0}</p>
 						</div>
 						<div>
-							<p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">ราคาสินค้า (บาท)</p>
-							<p className="text-slate-900 dark:text-slate-100 font-semibold">{jobOrder.job_order_price ?? 0}</p>
+							<p className="text-[13px] uppercase tracking-wider text-[var(--ink-muted)]">ราคาสินค้า (บาท)</p>
+							<p className="text-[var(--ink)] font-semibold">{jobOrder.job_order_price ?? 0}</p>
 						</div>
 					</div>
 
 					<div>
-						<p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">รายละเอียด</p>
-						<p className="text-slate-800 dark:text-slate-200 whitespace-pre-wrap">{jobOrder.job_order_description || '-'}</p>
+						<p className="text-[13px] uppercase tracking-wider text-[var(--ink-muted)]">รายละเอียด</p>
+						<p className="text-[var(--ink)] whitespace-pre-wrap">{jobOrder.job_order_description || '-'}</p>
 					</div>
 
 					<div>
-						<p className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">วัตถุดิบที่ใช้</p>
-						<div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+						<p className="text-[13px] uppercase tracking-wider text-[var(--ink-muted)] mb-2">วัตถุดิบที่ใช้</p>
+						<div className="rounded-xl border border-[var(--border)] overflow-hidden">
 							{materials.length === 0 ? (
-								<div className="px-4 py-3 text-slate-500 dark:text-slate-400">ไม่มีข้อมูลวัตถุดิบ</div>
+								<div className="px-4 py-3 text-[var(--ink-muted)]">ไม่มีข้อมูลวัตถุดิบ</div>
 							) : (
 								<table className="w-full text-sm">
-									<thead className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+									<thead className="bg-[var(--bg-muted)] text-[var(--ink-muted)]">
 										<tr>
 											<th className="text-left px-4 py-2">วัตถุดิบ/ชิ้น</th>
 											<th className="text-right px-4 py-2">จำนวน</th>
@@ -161,7 +162,7 @@ export default function JobOrderDetailModal({
 									</thead>
 									<tbody>
 										{materials.map((item, index) => (
-											<tr key={item.job_order_material_id || `${item.material_id}-${index}`} className="border-t border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200">
+											<tr key={item.job_order_material_id || `${item.material_id}-${index}`} className="border-t border-[var(--border)] text-[var(--ink)]">
 												<td className="px-4 py-2">{item.material?.material_name || item.material_id || '-'}</td>
 												<td className="px-4 py-2 text-right">{item.material_qty}</td>
 											</tr>
@@ -173,33 +174,33 @@ export default function JobOrderDetailModal({
 					</div>
 
 					{isCompleteConfirm && (
-						<div className="rounded-xl border border-emerald-200 dark:border-emerald-700 bg-emerald-50/70 dark:bg-emerald-500/10 p-4">
-							<p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300 mb-2">ยืนยันปิดงานผลิต</p>
-							<label className="block text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">จำนวนที่ผลิตจริง</label>
+						<div className="rounded-xl border border-[var(--success)] bg-[var(--success-soft)]/70 p-4">
+							<p className="text-sm font-semibold text-[var(--success)] mb-2">ยืนยันปิดงานผลิต</p>
+							<label className="block text-[13px] uppercase tracking-wider text-[var(--ink-muted)] mb-2">จำนวนที่ผลิตจริง</label>
 							<input
 								type="number"
 								min={0}
 								step="0.01"
 								value={completionQty}
 								onChange={(event) => onCompletionQtyChange?.(event.target.value)}
-								className="w-full max-w-xs px-4 py-2.5 rounded-xl border border-emerald-300 dark:border-emerald-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+								className="ka-input w-full max-w-xs"
 							/>
-							<label className="block text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 mt-4 mb-2">จำนวนสินค้าเสียหาย</label>
+							<label className="block text-[13px] uppercase tracking-wider text-[var(--ink-muted)] mt-4 mb-2">จำนวนสินค้าเสียหาย</label>
 							<input
 								type="number"
 								min={0}
 								step="0.01"
 								value={completionDefectQty}
 								onChange={(event) => onCompletionDefectQtyChange?.(event.target.value)}
-								className="w-full max-w-xs px-4 py-2.5 rounded-xl border border-emerald-300 dark:border-emerald-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+								className="ka-input w-full max-w-xs"
 							/>
-							<p className="text-xs text-emerald-700/80 dark:text-emerald-300/80 mt-2">หลังยืนยัน งานจะถูกเปลี่ยนเป็นสถานะ ผลิตเสร็จแล้ว และจะไม่สามารถลากไปสถานะอื่นได้</p>
+							<p className="text-[13px] text-[var(--success)]/80 mt-2">หลังยืนยัน งานจะถูกเปลี่ยนเป็นสถานะ ผลิตเสร็จแล้ว และจะไม่สามารถลากไปสถานะอื่นได้</p>
 							<div className="mt-4 flex flex-col-reverse sm:flex-row justify-end gap-2">
 								<button
 									type="button"
 									onClick={onClose}
 									disabled={isConfirming}
-									className="px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+									className="ka-btn"
 								>
 									ยกเลิก
 								</button>
@@ -207,7 +208,7 @@ export default function JobOrderDetailModal({
 									type="button"
 									onClick={onConfirmComplete}
 									disabled={isConfirming}
-									className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] transition-colors disabled:opacity-60"
+									className="ka-btn ka-btn--primary min-h-11"
 								>
 									{isConfirming ? 'กำลังยืนยัน...' : 'ยืนยันปิดงาน'}
 								</button>

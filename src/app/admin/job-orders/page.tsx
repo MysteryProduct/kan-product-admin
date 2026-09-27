@@ -45,57 +45,57 @@ const BOARD_COLUMNS: BoardColumn[] = [
 	{
 		key: 'pending',
 		label: 'รอดำเนินการ',
-		headerClass: 'bg-blue-100 dark:bg-blue-900/40 border-b border-blue-300 dark:border-blue-700/60',
-		titleClass: 'text-blue-900 dark:text-blue-100',
-		countClass: 'bg-blue-200/80 dark:bg-blue-800/60 text-blue-900 dark:text-blue-100',
-		accentClass: 'border-blue-400/60 dark:border-blue-400/30',
+		headerClass: 'bg-[var(--warning-soft)] border-b border-[var(--border)]',
+		titleClass: 'text-[var(--warning)]',
+		countClass: 'bg-[var(--bg-surface)] text-[var(--warning)]',
+		accentClass: 'border-[var(--warning-soft)]',
 	},
 	{
 		key: 'in_progress',
 		label: 'กำลังผลิต',
-		headerClass: 'bg-amber-100 dark:bg-amber-900/35 border-b border-amber-300 dark:border-amber-700/60',
-		titleClass: 'text-amber-950 dark:text-amber-100',
-		countClass: 'bg-amber-200/80 dark:bg-amber-800/60 text-amber-950 dark:text-amber-100',
-		accentClass: 'border-amber-400/60 dark:border-amber-400/30',
+		headerClass: 'bg-[var(--info-soft)] border-b border-[var(--border)]',
+		titleClass: 'text-[var(--info)]',
+		countClass: 'bg-[var(--bg-surface)] text-[var(--info)]',
+		accentClass: 'border-[var(--info-soft)]',
 	},
 	{
 		key: 'completed',
 		label: 'ผลิตเสร็จแล้ว',
-		headerClass: 'bg-emerald-100 dark:bg-emerald-900/35 border-b border-emerald-300 dark:border-emerald-700/60',
-		titleClass: 'text-emerald-950 dark:text-emerald-100',
-		countClass: 'bg-emerald-200/80 dark:bg-emerald-800/60 text-emerald-950 dark:text-emerald-100',
-		accentClass: 'border-emerald-400/60 dark:border-emerald-400/30',
+		headerClass: 'bg-[var(--success-soft)] border-b border-[var(--border)]',
+		titleClass: 'text-[var(--success)]',
+		countClass: 'bg-[var(--bg-surface)] text-[var(--success)]',
+		accentClass: 'border-[var(--success-soft)]',
 	},
 	{
 		key: 'cancelled',
 		label: 'ยกเลิกการผลิต',
-		headerClass: 'bg-rose-100 dark:bg-rose-900/35 border-b border-rose-300 dark:border-rose-700/60',
-		titleClass: 'text-rose-950 dark:text-rose-100',
-		countClass: 'bg-rose-200/80 dark:bg-rose-800/60 text-rose-950 dark:text-rose-100',
-		accentClass: 'border-rose-400/60 dark:border-rose-400/30',
+		headerClass: 'bg-[var(--danger-soft)] border-b border-[var(--border)]',
+		titleClass: 'text-[var(--danger)]',
+		countClass: 'bg-[var(--bg-surface)] text-[var(--danger)]',
+		accentClass: 'border-[var(--danger-soft)]',
 	},
 ];
 
 const STATUS_STYLES: Record<BoardStatus, StatusStyle> = {
 	pending: {
 		label: 'รอดำเนินการ',
-		chipClass: 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-200',
-		dotClass: 'bg-blue-500',
+		chipClass: 'bg-[var(--warning-soft)] text-[var(--warning)]',
+		dotClass: 'bg-[var(--warning)]',
 	},
 	in_progress: {
 		label: 'กำลังผลิต',
-		chipClass: 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200',
-		dotClass: 'bg-amber-500',
+		chipClass: 'bg-[var(--info-soft)] text-[var(--info)]',
+		dotClass: 'bg-[var(--info)]',
 	},
 	completed: {
 		label: 'ผลิตเสร็จแล้ว',
-		chipClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200',
-		dotClass: 'bg-emerald-500',
+		chipClass: 'bg-[var(--success-soft)] text-[var(--success)]',
+		dotClass: 'bg-[var(--success)]',
 	},
 	cancelled: {
 		label: 'ยกเลิกการผลิต',
-		chipClass: 'bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-200',
-		dotClass: 'bg-rose-500',
+		chipClass: 'bg-[var(--danger-soft)] text-[var(--danger)]',
+		dotClass: 'bg-[var(--danger)]',
 	},
 };
 
@@ -192,7 +192,7 @@ const getDelayBadge = (job: JobOrder) => {
 	if (!targetDate) {
 		return {
 			label: 'ไม่พบ Target Date',
-			className: 'bg-slate-100 text-slate-600 dark:bg-slate-700/70 dark:text-slate-200',
+			className: 'bg-[var(--neutral-soft)] text-[var(--neutral)]',
 		};
 	}
 
@@ -201,7 +201,7 @@ const getDelayBadge = (job: JobOrder) => {
 		if (!finishDate) {
 			return {
 				label: 'ไม่พบ Finish Date',
-				className: 'bg-slate-100 text-slate-600 dark:bg-slate-700/70 dark:text-slate-200',
+				className: 'bg-[var(--neutral-soft)] text-[var(--neutral)]',
 			};
 		}
 
@@ -209,13 +209,13 @@ const getDelayBadge = (job: JobOrder) => {
 		if (delayedDays > 0) {
 			return {
 				label: `ล่าช้า ${delayedDays} วัน`,
-				className: 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-200',
+				className: 'bg-[var(--danger-soft)] text-[var(--danger)]',
 			};
 		}
 
 		return {
 			label: 'ไม่ล่าช้า',
-			className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200',
+			className: 'bg-[var(--success-soft)] text-[var(--success)]',
 		};
 	}
 
@@ -223,13 +223,13 @@ const getDelayBadge = (job: JobOrder) => {
 	if (delayedDays > 0) {
 		return {
 			label: `ล่าช้า ${delayedDays} วัน`,
-			className: 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-200',
+			className: 'bg-[var(--danger-soft)] text-[var(--danger)]',
 		};
 	}
 
 	return {
 		label: 'ไม่ล่าช้า',
-		className: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200',
+		className: 'bg-[var(--success-soft)] text-[var(--success)]',
 	};
 };
 
@@ -632,47 +632,47 @@ export default function JobOrdersPage() {
 	};
 
 	return (
-		<div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.08),transparent_40%),radial-gradient(circle_at_bottom_right,_rgba(56,189,248,0.08),transparent_35%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(251,191,36,0.10),transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(14,116,144,0.16),transparent_35%)] p-3 sm:p-5 lg:p-7">
+		<div className="min-h-screen bg-[var(--bg-page)] p-3 sm:p-5 lg:p-7">
 			<div className="max-w-[1700px] mx-auto space-y-4 sm:space-y-5">
 				<section className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-					<div className="rounded-2xl border border-blue-200/60 dark:border-blue-500/20 bg-white/90 dark:bg-slate-800/70 backdrop-blur px-4 py-3">
-						<p className="text-xs text-blue-700 dark:text-blue-300 font-semibold uppercase tracking-wider">งานทั้งหมด</p>
-						<p className="text-2xl font-black text-blue-700 dark:text-blue-200 mt-1">{totalCards}</p>
+					<div className="ka-card px-4 py-3">
+						<p className="text-[13px] text-[var(--brand-ink)] font-semibold uppercase tracking-wider">งานทั้งหมด</p>
+						<p className="text-2xl font-black text-[var(--brand-ink)] mt-1">{totalCards}</p>
 					</div>
-					<div className="rounded-2xl border border-sky-200/60 dark:border-sky-500/20 bg-white/90 dark:bg-slate-800/70 backdrop-blur px-4 py-3">
-						<p className="text-xs text-sky-700 dark:text-sky-300 font-semibold uppercase tracking-wider">รอดำเนินการ</p>
-						<p className="text-2xl font-black text-sky-700 dark:text-sky-200 mt-1">{pendingCards}</p>
+					<div className="ka-card px-4 py-3">
+						<p className="text-[13px] text-[var(--warning)] font-semibold uppercase tracking-wider">รอดำเนินการ</p>
+						<p className="text-2xl font-black text-[var(--warning)] mt-1">{pendingCards}</p>
 					</div>
-					<div className="rounded-2xl border border-amber-200/60 dark:border-amber-500/20 bg-white/90 dark:bg-slate-800/70 backdrop-blur px-4 py-3">
-						<p className="text-xs text-amber-700 dark:text-amber-300 font-semibold uppercase tracking-wider">กำลังผลิต</p>
-						<p className="text-2xl font-black text-amber-700 dark:text-amber-200 mt-1">{inProgressCards}</p>
+					<div className="ka-card px-4 py-3">
+						<p className="text-[13px] text-[var(--info)] font-semibold uppercase tracking-wider">กำลังผลิต</p>
+						<p className="text-2xl font-black text-[var(--info)] mt-1">{inProgressCards}</p>
 					</div>
-					<div className="rounded-2xl border border-emerald-200/60 dark:border-emerald-500/20 bg-white/90 dark:bg-slate-800/70 backdrop-blur px-4 py-3">
-						<p className="text-xs text-emerald-700 dark:text-emerald-300 font-semibold uppercase tracking-wider">ผลิตเสร็จแล้ว</p>
-						<p className="text-2xl font-black text-emerald-700 dark:text-emerald-200 mt-1">{doneCards}</p>
+					<div className="ka-card px-4 py-3">
+						<p className="text-[13px] text-[var(--success)] font-semibold uppercase tracking-wider">ผลิตเสร็จแล้ว</p>
+						<p className="text-2xl font-black text-[var(--success)] mt-1">{doneCards}</p>
 					</div>
 				</section>
 
-				<section className="rounded-3xl border border-slate-200/80 dark:border-slate-700 bg-white/90 dark:bg-slate-900/80 backdrop-blur overflow-hidden">
-					<div className="border-b border-slate-200 dark:border-slate-700 p-3 sm:p-4 lg:p-5 flex flex-col gap-3">
+				<section className="ka-card overflow-hidden">
+					<div className="border-b border-[var(--border)] p-3 sm:p-4 lg:p-5 flex flex-col gap-3">
 						<div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
 							<div>
-								<h1 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100">Production Board</h1>
-								<p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+								<h1 className="text-xl sm:text-2xl font-black text-[var(--ink)]">Production Board</h1>
+								<p className="text-sm text-[var(--ink-muted)] mt-1">
 									{viewMode === 'board'
 										? 'ลากการ์ดเพื่อเปลี่ยนสถานะงานผลิตให้ตรงกับกระบวนการจริง'
 										: 'ดูงานผลิตเป็นรายเดือน พร้อมแยกสีตามสถานะงานในแต่ละวัน'}
 								</p>
 							</div>
 							<div className="flex flex-wrap items-center gap-2">
-								<div className="inline-flex rounded-xl border border-slate-300 dark:border-slate-700 p-1 bg-white dark:bg-slate-800">
+								<div className="inline-flex rounded-xl border border-[var(--border-control)] p-1 bg-[var(--bg-surface)]">
 									<button
 										type="button"
 										onClick={() => setViewMode('board')}
-										className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+										className={`min-h-11 md:min-h-0 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
 											viewMode === 'board'
-												? 'bg-cyan-600 text-white shadow-sm'
-												: 'text-slate-600 dark:text-slate-300 hover:text-cyan-700 dark:hover:text-cyan-300'
+												? 'bg-[var(--action)] text-[var(--on-action)] shadow-sm'
+												: 'text-[var(--ink-muted)] hover:text-[var(--brand-ink)]'
 										}`}
 									>
 										โหมดงาน (Task)
@@ -680,10 +680,10 @@ export default function JobOrdersPage() {
 									<button
 										type="button"
 										onClick={() => setViewMode('calendar')}
-										className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+										className={`min-h-11 md:min-h-0 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
 											viewMode === 'calendar'
-												? 'bg-cyan-600 text-white shadow-sm'
-												: 'text-slate-600 dark:text-slate-300 hover:text-cyan-700 dark:hover:text-cyan-300'
+												? 'bg-[var(--action)] text-[var(--on-action)] shadow-sm'
+												: 'text-[var(--ink-muted)] hover:text-[var(--brand-ink)]'
 										}`}
 									>
 										โหมดปฏิทิน
@@ -697,7 +697,7 @@ export default function JobOrdersPage() {
 											setCopySeed(null);
 											setIsInsertOpen(true);
 										}}
-										className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold hover:from-blue-700 hover:to-cyan-600 transition-colors shadow-sm"
+										className="ka-btn ka-btn--primary inline-flex items-center justify-center gap-2"
 									>
 										<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -709,7 +709,7 @@ export default function JobOrdersPage() {
 						</div>
 
 						<div className="space-y-3">
-							<div className="rounded-2xl border border-slate-200/80 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/45 p-2.5 sm:p-3">
+							<div className="rounded-2xl border border-[var(--border)]/80 bg-[var(--bg-subtle)]/70 p-2.5 sm:p-3">
 								<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-2 sm:gap-3">
 									<div className="relative">
 										<input
@@ -717,9 +717,9 @@ export default function JobOrdersPage() {
 											value={searchText}
 											onChange={(e) => setSearchText(e.target.value)}
 											placeholder="Search"
-											className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 px-4 py-2.5 pr-10 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+											className="ka-input w-full pr-10"
 										/>
-										<svg className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<svg className="w-4 h-4 text-[var(--ink-subtle)] absolute right-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-4.35-4.35m1.85-5.15a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
 										</svg>
 									</div>
@@ -727,7 +727,7 @@ export default function JobOrdersPage() {
 									<select
 										value={selectedAssignee}
 										onChange={(e) => setSelectedAssignee(e.target.value)}
-										className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+										className="ka-input w-full"
 									>
 										<option value="all">Person (ทั้งหมด)</option>
 										{assigneeOptions.map((option) => (
@@ -740,7 +740,7 @@ export default function JobOrdersPage() {
 									<select
 										value={selectedType}
 										onChange={(e) => setSelectedType(e.target.value as typeof selectedType)}
-										className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+										className="ka-input w-full"
 									>
 										<option value="all">Filter (ทุกประเภท)</option>
 										<option value="website">ผลิตเพื่อขายบน website</option>
@@ -750,7 +750,7 @@ export default function JobOrdersPage() {
 									<select
 										value={sortDirection}
 										onChange={(e) => setSortDirection(e.target.value as 'ASC' | 'DESC')}
-										className="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+										className="ka-input w-full"
 									>
 										<option value="ASC">Sort: Target Date (เก่าไปใหม่)</option>
 										<option value="DESC">Sort: Target Date (ใหม่ไปเก่า)</option>
@@ -759,16 +759,16 @@ export default function JobOrdersPage() {
 							</div>
 
 							{viewMode !== 'calendar' && (
-								<div className="rounded-2xl border border-slate-200/80 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/45 p-2.5 sm:p-3">
+								<div className="rounded-2xl border border-[var(--border)]/80 bg-[var(--bg-subtle)]/70 p-2.5 sm:p-3">
 									<div className="flex items-center justify-between mb-2 px-1">
-										<p className="text-xs font-semibold tracking-wide text-slate-600 dark:text-slate-300 uppercase">ช่วงวันที่เป้าหมาย</p>
+										<p className="text-[13px] font-semibold tracking-wide text-[var(--ink-muted)] uppercase">ช่วงวันที่เป้าหมาย</p>
 										<button
 											type="button"
 											onClick={() => {
 												setDateStart('');
 												setDateEnd('');
 											}}
-											className="text-xs font-medium text-cyan-700 hover:text-cyan-800 dark:text-cyan-300 dark:hover:text-cyan-200"
+											className="text-[13px] font-medium text-[var(--brand-ink)] hover:underline"
 										>
 											ล้างช่วงวันที่
 										</button>
@@ -778,7 +778,7 @@ export default function JobOrdersPage() {
 										<button
 											type="button"
 											onClick={() => openNativeDatePicker(startDateInputRef.current)}
-											className="group relative text-left rounded-xl border border-slate-300 dark:border-slate-600 bg-white/90 dark:bg-slate-800/90 px-3 py-2.5 hover:border-cyan-400 dark:hover:border-cyan-400 transition-colors cursor-pointer"
+											className="group relative text-left rounded-xl border border-[var(--border-control)] bg-[var(--bg-surface)] px-3 py-2.5 hover:border-[var(--focus)] transition-colors cursor-pointer"
 										>
 											<input
 												ref={startDateInputRef}
@@ -789,18 +789,18 @@ export default function JobOrdersPage() {
 												className="absolute inset-0 h-full w-full opacity-0 pointer-events-none"
 											/>
 											<div className="flex items-center justify-between">
-												<span className="text-xs font-semibold text-slate-600 dark:text-slate-300">เริ่มวันที่</span>
-												<svg className="w-4 h-4 text-slate-400 group-hover:text-cyan-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<span className="text-[13px] font-semibold text-[var(--ink-muted)]">เริ่มวันที่</span>
+												<svg className="w-4 h-4 text-[var(--ink-subtle)] group-hover:text-[var(--brand-ink)] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" />
 												</svg>
 											</div>
-											<p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{dateStart ? formatThaiDateLong(dateStart) : 'เลือกวันที่เริ่มต้น'}</p>
+											<p className="mt-1 text-sm font-semibold text-[var(--ink)]">{dateStart ? formatThaiDateLong(dateStart) : 'เลือกวันที่เริ่มต้น'}</p>
 										</button>
 
 										<button
 											type="button"
 											onClick={() => openNativeDatePicker(endDateInputRef.current)}
-											className="group relative text-left rounded-xl border border-slate-300 dark:border-slate-600 bg-white/90 dark:bg-slate-800/90 px-3 py-2.5 hover:border-cyan-400 dark:hover:border-cyan-400 transition-colors cursor-pointer"
+											className="group relative text-left rounded-xl border border-[var(--border-control)] bg-[var(--bg-surface)] px-3 py-2.5 hover:border-[var(--focus)] transition-colors cursor-pointer"
 										>
 											<input
 												ref={endDateInputRef}
@@ -812,12 +812,12 @@ export default function JobOrdersPage() {
 												className="absolute inset-0 h-full w-full opacity-0 pointer-events-none"
 											/>
 											<div className="flex items-center justify-between">
-												<span className="text-xs font-semibold text-slate-600 dark:text-slate-300">สิ้นสุดวันที่</span>
-												<svg className="w-4 h-4 text-slate-400 group-hover:text-cyan-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<span className="text-[13px] font-semibold text-[var(--ink-muted)]">สิ้นสุดวันที่</span>
+												<svg className="w-4 h-4 text-[var(--ink-subtle)] group-hover:text-[var(--brand-ink)] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 													<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" />
 												</svg>
 											</div>
-											<p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{dateEnd ? formatThaiDateLong(dateEnd) : 'เลือกวันที่สิ้นสุด'}</p>
+											<p className="mt-1 text-sm font-semibold text-[var(--ink)]">{dateEnd ? formatThaiDateLong(dateEnd) : 'เลือกวันที่สิ้นสุด'}</p>
 										</button>
 									</div>
 								</div>
@@ -854,19 +854,19 @@ export default function JobOrdersPage() {
 													void handleDrop(column.key);
 												}}
 												className={`rounded-2xl border-2 transition-all ${column.accentClass} ${
-													isDragOver ? 'ring-2 ring-cyan-500/60 shadow-lg shadow-cyan-500/10 scale-[1.01]' : ''
-												} bg-slate-100/70 dark:bg-slate-800/60 flex flex-col h-[70vh] min-h-[430px]`}
+													isDragOver ? 'ring-2 ring-[var(--focus)] shadow-lg scale-[1.01]' : ''
+												} bg-[var(--bg-muted)]/70 flex flex-col h-[70vh] min-h-[430px]`}
 											>
 												<header className={`px-3 py-2 rounded-t-xl ${column.headerClass}`}>
 													<div className="flex items-center justify-between">
 														<h2 className={`font-bold text-sm ${column.titleClass}`}>{column.label}</h2>
-														<span className={`text-xs font-bold px-2 py-0.5 rounded-full ${column.countClass}`}>{cards.length}</span>
+														<span className={`text-[13px] font-bold px-2 py-0.5 rounded-full ${column.countClass}`}>{cards.length}</span>
 													</div>
 												</header>
 
 												<div className="p-2 space-y-1.5 overflow-y-auto flex-1 min-h-0">
 													{cards.length === 0 && (
-														<div className="rounded-lg border border-dashed border-slate-300 dark:border-slate-600 p-3 text-xs text-slate-500 dark:text-slate-400 text-center bg-white/50 dark:bg-slate-800/40">
+														<div className="rounded-lg border border-dashed border-[var(--border-control)] p-3 text-[13px] text-[var(--ink-muted)] text-center bg-[var(--bg-surface)]">
 															ไม่มีงานในสถานะนี้
 														</div>
 													)}
@@ -893,41 +893,41 @@ export default function JobOrdersPage() {
 																	setDraggingJobId(null);
 																	setDragOverColumn(null);
 																}}
-																className={`rounded-lg border border-slate-200/90 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 shadow-sm transition-all ${
+																className={`rounded-lg border border-[var(--border)]/90 bg-[var(--bg-surface)] p-2 shadow-sm transition-all ${
 																	isCompleted ? 'cursor-not-allowed opacity-95' : 'hover:shadow-md cursor-grab active:cursor-grabbing'
 																} ${draggingJobId === job.job_order_id ? 'opacity-60' : ''}`}
 															>
 																<div className="flex items-start gap-1.5">
-																	<h3 className="flex-1 text-xs font-semibold text-slate-800 dark:text-slate-100 line-clamp-1 leading-tight">{job.job_order_name}</h3>
-																	<span className="shrink-0 text-[9px] px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 leading-none">
+																	<h3 className="flex-1 text-[13px] font-semibold text-[var(--ink)] line-clamp-1 leading-tight">{job.job_order_name}</h3>
+																	<span className="shrink-0 text-[13px] px-1.5 py-0.5 rounded-full bg-[var(--bg-muted)] text-[var(--ink-muted)] leading-none">
 																		{job.job_order_type}
 																	</span>
 																</div>
 
-																<div className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 space-y-0.5">
-																	<p className="truncate font-medium text-slate-700 dark:text-slate-300">{assignee}</p>
+																<div className="mt-1 text-[13px] text-[var(--ink-muted)] space-y-0.5">
+																	<p className="truncate font-medium text-[var(--ink)]">{assignee}</p>
 																	<div className="flex items-center gap-2">
 																		<span>{formatThaiDate(job.target_date)}</span>
-																		<span className="text-slate-300 dark:text-slate-600">·</span>
+																		<span className="text-[var(--ink-subtle)]">·</span>
 																		<span>ผลิต {job.job_order_qty ?? 0}</span>
 																	</div>
 																	{delayBadge && (
 																		<div className="pt-0.5">
-																			<span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${delayBadge.className}`}>
+																			<span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[13px] font-semibold ${delayBadge.className}`}>
 																				{delayBadge.label}
 																			</span>
 																		</div>
 																	)}
 																</div>
 
-																<div className="mt-1.5 pt-1 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-1">
+																<div className="mt-1.5 pt-1 border-t border-[var(--border)] flex items-center justify-end gap-1">
 																	<button
 																		type="button"
 																		onClick={() => {
 																			setSelectedJobOrder(job);
 																			setIsDetailOpen(true);
 																		}}
-																		className="p-1 rounded-md text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-500/10 transition-colors"
+																		className="ka-btn ka-btn--ghost ka-btn--sm ka-btn--icon hover:text-[var(--brand-ink)]"
 																		title="ดูรายละเอียด"
 																	>
 																		<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -938,7 +938,7 @@ export default function JobOrdersPage() {
 																	<button
 																		type="button"
 																		onClick={() => handleCardCopy(job)}
-																		className="p-1 rounded-md text-slate-400 hover:text-violet-600 dark:hover:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-500/10 transition-colors"
+																		className="ka-btn ka-btn--ghost ka-btn--sm ka-btn--icon hover:text-[var(--info)]"
 																		title="Copy เป็นงานใหม่"
 																	>
 																		<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -952,7 +952,7 @@ export default function JobOrdersPage() {
 																				setSelectedJobOrder(job);
 																				setIsUpdateOpen(true);
 																			}}
-																			className="p-1 rounded-md text-slate-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-500/10 transition-colors"
+																			className="ka-btn ka-btn--ghost ka-btn--sm ka-btn--icon hover:text-[var(--warning)]"
 																			title="แก้ไขงานผลิต"
 																		>
 																			<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -967,7 +967,7 @@ export default function JobOrdersPage() {
 																				setJobOrderToDelete(job);
 																				setIsDeleteDialogOpen(true);
 																			}}
-																			className="p-1 rounded-md text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
+																			className="ka-btn ka-btn--ghost ka-btn--sm ka-btn--icon hover:bg-[var(--danger-soft)] hover:text-[var(--danger)]"
 																			title="ลบงานผลิต"
 																		>
 																			<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -988,7 +988,7 @@ export default function JobOrdersPage() {
 																	[column.key]: prev[column.key] + PAGE_SIZE,
 																}))
 															}
-															className="w-full py-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors"
+															className="ka-btn ka-btn--sm w-full border-dashed"
 														>
 															โหลดเพิ่ม ({remaining} งาน)
 														</button>
@@ -1001,13 +1001,13 @@ export default function JobOrdersPage() {
 							</div>
 						) : (
 							<div className="p-3 sm:p-4 lg:p-5 space-y-3 sm:space-y-4">
-								<div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/50 p-3">
+								<div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-subtle)]/80 p-3">
 									<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
 										<div className="flex items-center gap-2">
 											<button
 												type="button"
 												onClick={() => moveCalendarMonth(-1)}
-												className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-colors"
+												className="ka-btn ka-btn--icon"
 												aria-label="เดือนก่อนหน้า"
 											>
 												<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1015,13 +1015,13 @@ export default function JobOrdersPage() {
 												</svg>
 											</button>
 											<div>
-												<p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">เดือนที่แสดง</p>
-												<h2 className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100">{calendarTitle}</h2>
+												<p className="text-[13px] font-semibold uppercase tracking-wide text-[var(--ink-muted)]">เดือนที่แสดง</p>
+												<h2 className="text-lg sm:text-xl font-black text-[var(--ink)]">{calendarTitle}</h2>
 											</div>
 											<button
 												type="button"
 												onClick={() => moveCalendarMonth(1)}
-												className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition-colors"
+												className="ka-btn ka-btn--icon"
 												aria-label="เดือนถัดไป"
 											>
 												<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1035,7 +1035,7 @@ export default function JobOrdersPage() {
 												type="month"
 												value={calendarMonth}
 												onChange={(event) => setCalendarMonth(event.target.value)}
-												className="rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500"
+												className="ka-input"
 											/>
 											<button
 												type="button"
@@ -1043,7 +1043,7 @@ export default function JobOrdersPage() {
 													const now = new Date();
 													setCalendarMonth(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
 												}}
-												className="rounded-xl px-3 py-2 text-sm font-semibold border border-cyan-300 text-cyan-700 hover:bg-cyan-50 dark:border-cyan-500/40 dark:text-cyan-200 dark:hover:bg-cyan-500/10 transition-colors"
+												className="ka-btn"
 											>
 												เดือนปัจจุบัน
 											</button>
@@ -1054,7 +1054,7 @@ export default function JobOrdersPage() {
 										{BOARD_COLUMNS.map((column) => {
 											const style = STATUS_STYLES[column.key];
 											return (
-												<span key={column.key} className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${style.chipClass}`}>
+												<span key={column.key} className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[13px] font-semibold ${style.chipClass}`}>
 													<span className={`w-2 h-2 rounded-full ${style.dotClass}`} />
 													{style.label}
 												</span>
@@ -1063,11 +1063,11 @@ export default function JobOrdersPage() {
 									</div>
 								</div>
 
-								<div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700">
+								<div className="overflow-x-auto rounded-2xl border border-[var(--border)]">
 									<div className="min-w-[860px]">
-										<div className="grid grid-cols-7 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+										<div className="grid grid-cols-7 bg-[var(--bg-muted)] border-b border-[var(--border)]">
 											{WEEKDAY_LABELS.map((dayLabel) => (
-												<div key={dayLabel} className="px-2 py-2 text-center text-xs font-bold uppercase tracking-wide text-slate-600 dark:text-slate-300">
+												<div key={dayLabel} className="px-2 py-2 text-center text-[13px] font-bold uppercase tracking-wide text-[var(--ink-muted)]">
 													{dayLabel}
 												</div>
 											))}
@@ -1079,23 +1079,23 @@ export default function JobOrdersPage() {
 												return (
 													<div
 														key={cell.dateKey}
-														className={`min-h-[150px] border-b border-r border-slate-200 dark:border-slate-700 p-2 ${
-															cell.inCurrentMonth ? 'bg-white dark:bg-slate-900/70' : 'bg-slate-50 dark:bg-slate-900/35'
+														className={`min-h-[150px] border-b border-r border-[var(--border)] p-2 ${
+															cell.inCurrentMonth ? 'bg-[var(--bg-surface)] ' : 'bg-[var(--bg-subtle)] '
 														}`}
 													>
 														<div className="flex items-center justify-between mb-1.5">
 															<span
-																className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${
+																className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-[13px] font-bold ${
 																	isToday
-																		? 'bg-cyan-600 text-white'
+																		? 'bg-[var(--action)] text-[var(--on-action)]'
 																		: cell.inCurrentMonth
-																		? 'text-slate-700 dark:text-slate-200'
-																		: 'text-slate-400 dark:text-slate-500'
+																		? 'text-[var(--ink)] '
+																		: 'text-[var(--ink-subtle)] '
 																}`}
 															>
 																{cell.date.getDate()}
 															</span>
-															<span className="text-[11px] text-slate-400 dark:text-slate-500">{cell.jobs.length} งาน</span>
+															<span className="text-[13px] text-[var(--ink-subtle)]">{cell.jobs.length} งาน</span>
 														</div>
 
 														<div className="space-y-1">
@@ -1110,7 +1110,7 @@ export default function JobOrdersPage() {
 																			setSelectedJobOrder(job);
 																			setIsDetailOpen(true);
 																		}}
-																		className={`w-full flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] text-left truncate transition-colors hover:brightness-95 ${style.chipClass}`}
+																		className={`w-full flex items-center gap-1.5 rounded-md px-2 py-1 text-[13px] text-left truncate transition-colors hover:brightness-95 ${style.chipClass}`}
 																		title={`${job.job_order_name} (${style.label})`}
 																	>
 																		<span className={`w-2 h-2 rounded-full shrink-0 ${style.dotClass}`} />
@@ -1119,7 +1119,7 @@ export default function JobOrdersPage() {
 																);
 															})}
 															{cell.jobs.length > 3 && (
-																<p className="px-1 text-[11px] font-medium text-slate-500 dark:text-slate-400">+{cell.jobs.length - 3} งานเพิ่มเติม</p>
+																<p className="px-1 text-[13px] font-medium text-[var(--ink-muted)]">+{cell.jobs.length - 3} งานเพิ่มเติม</p>
 															)}
 														</div>
 													</div>

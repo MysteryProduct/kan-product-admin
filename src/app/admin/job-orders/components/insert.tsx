@@ -392,18 +392,18 @@ export default function InsertJobOrderForm({
 
 	return (
 		<>
-			<div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto">
-				<div className="mx-auto mt-3 sm:mt-8 max-w-4xl rounded-2xl border border-[var(--color-border)] dark:border-[var(--color-border)] bg-[var(--color-bg-primary)]  overlay-surface overflow-hidden">
-					<div className="bg-[var(--color-primary)] px-5 sm:px-8 py-5 sm:py-6">
+			<div className="fixed inset-0 z-50 bg-[var(--scrim)] backdrop-blur-sm p-3 sm:p-6 overflow-y-auto">
+				<div className="mx-auto mt-3 sm:mt-8 max-w-4xl rounded-2xl border border-[var(--color-border)] dark:border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface overflow-hidden">
+					<div className="border-b border-[var(--border)] px-5 sm:px-8 py-5 sm:py-6">
 						<div className="flex items-center justify-between gap-4">
 							<div>
-								<h2 className="text-xl sm:text-2xl font-black text-white">สร้างงานผลิตสินค้า</h2>
+								<h2 className="text-xl sm:text-2xl font-black text-[var(--ink)]">สร้างงานผลิตสินค้า</h2>
 							</div>
 							<button
 								type="button"
 								onClick={onClose}
 								disabled={isSubmitting}
-								className="rounded-lg border border-white/60 bg-white/15 p-2 text-white transition-colors hover:bg-white/25 disabled:opacity-50"
+								className="ka-btn ka-btn--icon"
 								aria-label="close"
 							>
 								<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -425,15 +425,15 @@ export default function InsertJobOrderForm({
 							/>
 
 							<div>
-								<label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">สถานะเริ่มต้น</label>
-								<div className="w-full px-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-600 bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-200 font-semibold">
+								<label className="block text-sm font-semibold text-[var(--ink)] mb-2">สถานะเริ่มต้น</label>
+								<div className="w-full px-4 py-2.5 rounded-xl border border-[var(--success)] bg-[var(--success-soft)] text-[var(--success)] font-semibold">
 									รอดำเนินการ
 								</div>
 							</div>
 
 							<div className="md:col-span-2">
-								<label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-									ชื่องานผลิต <span className="text-red-500">*</span>
+								<label className="block text-sm font-semibold text-[var(--ink)] mb-2">
+									ชื่องานผลิต <span className="text-[var(--danger)]">*</span>
 								</label>
 								<input
 									type="text"
@@ -441,9 +441,9 @@ export default function InsertJobOrderForm({
 									onChange={(e) => setJobOrderName(e.target.value)}
 									disabled={isSubmitting}
 									placeholder="ระบุชื่องานผลิต"
-									className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
+									className="ka-input w-full"
 								/>
-								{errors.job_order_name && <p className="text-red-500 text-sm mt-1">{errors.job_order_name}</p>}
+								{errors.job_order_name && <p className="text-[var(--danger)] text-sm mt-1">{errors.job_order_name}</p>}
 							</div>
 
 							{jobOrderType === 'website' && (
@@ -459,7 +459,7 @@ export default function InsertJobOrderForm({
 										options={variantOptions.map((item) => ({ value: item.value, label: item.label }))}
 										placeholder="เลือก product"
 									/>
-									{errors.product_variant_id && <p className="text-red-500 text-sm mt-1">{errors.product_variant_id}</p>}
+									{errors.product_variant_id && <p className="text-[var(--danger)] text-sm mt-1">{errors.product_variant_id}</p>}
 								</div>
 							)}
 
@@ -472,7 +472,7 @@ export default function InsertJobOrderForm({
 									options={sizeOptions.map((item) => ({ value: item.size_id, label: item.size_name }))}
 									placeholder="เลือกขนาด"
 								/>
-								{errors.size_id && <p className="text-red-500 text-sm mt-1">{errors.size_id}</p>}
+								{errors.size_id && <p className="text-[var(--danger)] text-sm mt-1">{errors.size_id}</p>}
 							</div>
 
 							<div>
@@ -485,34 +485,34 @@ export default function InsertJobOrderForm({
 									placeholder="เลือกสี"
 									showColor
 								/>
-								{errors.color_id && <p className="text-red-500 text-sm mt-1">{errors.color_id}</p>}
+								{errors.color_id && <p className="text-[var(--danger)] text-sm mt-1">{errors.color_id}</p>}
 							</div>
 
 							<div>
-								<label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+								<label className="block text-sm font-semibold text-[var(--ink)] mb-2">
 									ผู้รับผิดชอบ
 								</label>
-								<div className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
+								<div className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-[var(--ink)]">
 									{assigneeName}
 								</div>
 							</div>
 
 							<div>
-								<label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-									วันที่เป้าหมาย <span className="text-red-500">*</span>
+								<label className="block text-sm font-semibold text-[var(--ink)] mb-2">
+									วันที่เป้าหมาย <span className="text-[var(--danger)]">*</span>
 								</label>
 								<input
 									type="date"
 									value={targetDate}
 									onChange={(e) => setTargetDate(e.target.value)}
 									disabled={isSubmitting}
-									className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
+									className="ka-input w-full"
 								/>
-								{errors.target_date && <p className="text-red-500 text-sm mt-1">{errors.target_date}</p>}
+								{errors.target_date && <p className="text-[var(--danger)] text-sm mt-1">{errors.target_date}</p>}
 							</div>
 
 							<div>
-								<label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">จำนวนที่ผลิต</label>
+								<label className="block text-sm font-semibold text-[var(--ink)] mb-2">จำนวนที่ผลิต</label>
 								<input
 									type="number"
 									min={0}
@@ -520,13 +520,13 @@ export default function InsertJobOrderForm({
 									value={jobOrderQty}
 									onChange={(e) => setJobOrderQty(e.target.value)}
 									disabled={isSubmitting}
-									className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
+									className="ka-input w-full"
 								/>
-								{errors.job_order_qty && <p className="text-red-500 text-sm mt-1">{errors.job_order_qty}</p>}
+								{errors.job_order_qty && <p className="text-[var(--danger)] text-sm mt-1">{errors.job_order_qty}</p>}
 							</div>
 
 								<div>
-									<label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">ราคาสินค้า (บาท)</label>
+									<label className="block text-sm font-semibold text-[var(--ink)] mb-2">ราคาสินค้า (บาท)</label>
 									<input
 										type="number"
 										min={0}
@@ -534,21 +534,21 @@ export default function InsertJobOrderForm({
 										value={jobOrderPrice}
 										onChange={(e) => setJobOrderPrice(e.target.value)}
 										disabled={isSubmitting}
-										className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
+										className="ka-input w-full"
 									/>
-									{errors.job_order_price && <p className="text-red-500 text-sm mt-1">{errors.job_order_price}</p>}
+									{errors.job_order_price && <p className="text-[var(--danger)] text-sm mt-1">{errors.job_order_price}</p>}
 								</div>							</div>
-						<div className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/40 p-4 sm:p-5">
+						<div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-subtle)]/60 p-4 sm:p-5">
 							<div className="flex items-center justify-between mb-4 gap-3">
 								<div>
-									<h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100">วัตถุดิบ/ชิ้น</h3>
-									<p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400"></p>
+									<h3 className="text-base sm:text-lg font-bold text-[var(--ink)]">วัตถุดิบ/ชิ้น</h3>
+									<p className="text-[13px] sm:text-sm text-[var(--ink-muted)]"></p>
 								</div>
 								<button
 									type="button"
 									onClick={addMaterialRow}
 									disabled={isSubmitting}
-									className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-900 dark:bg-slate-700 text-white text-sm hover:bg-slate-700 dark:hover:bg-slate-600 transition-colors"
+									className="ka-btn inline-flex items-center gap-2"
 								>
 									<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -584,7 +584,7 @@ export default function InsertJobOrderForm({
 												/>
 											</div>
 											<div className="md:col-span-3">
-												<label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">จำนวน</label>
+												<label className="block text-sm font-medium text-[var(--ink)] mb-2">จำนวน</label>
 												<input
 													type="number"
 													min={0}
@@ -592,10 +592,10 @@ export default function InsertJobOrderForm({
 													value={item.material_qty}
 													onChange={(e) => updateMaterialRow(item.id, 'material_qty', Number(e.target.value))}
 													disabled={isSubmitting}
-													className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-sky-500"
+													className="ka-input w-full"
 												/>
 												{errors[`material_${index}_qty`] && (
-													<p className="text-red-500 text-sm mt-1">{errors[`material_${index}_qty`]}</p>
+													<p className="text-[var(--danger)] text-sm mt-1">{errors[`material_${index}_qty`]}</p>
 												)}
 											</div>
 											<div className="md:col-span-2">
@@ -603,7 +603,7 @@ export default function InsertJobOrderForm({
 													type="button"
 													onClick={() => removeMaterialRow(item.id)}
 													disabled={isSubmitting || materials.length === 1}
-													className="w-full px-3 py-2.5 rounded-xl border border-rose-300 dark:border-rose-700 text-rose-600 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-500/10 disabled:opacity-50 transition-colors"
+													className="ka-btn ka-btn--danger w-full"
 												>
 													ลบ
 												</button>
@@ -612,7 +612,7 @@ export default function InsertJobOrderForm({
 									);
 								})}
 							</div>
-							{errors.materials && <p className="text-red-500 text-sm mt-2">{errors.materials}</p>}
+							{errors.materials && <p className="text-[var(--danger)] text-sm mt-2">{errors.materials}</p>}
 						</div>
 
 						<div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
@@ -620,14 +620,14 @@ export default function InsertJobOrderForm({
 								type="button"
 								onClick={onClose}
 								disabled={isSubmitting}
-								className="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+								className="ka-btn"
 							>
 								ยกเลิก
 							</button>
 							<button
 								type="submit"
 								disabled={isSubmitting}
-								className="rounded-lg bg-[var(--color-primary)] px-5 py-2.5 font-semibold text-white transition-colors hover:bg-[var(--color-primary-hover)] disabled:opacity-60"
+								className="ka-btn ka-btn--primary min-h-11"
 							>
 								{isSubmitting ? 'กำลังบันทึก...' : 'บันทึกงานผลิต'}
 							</button>

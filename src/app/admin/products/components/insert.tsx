@@ -43,11 +43,9 @@ const MAX_VARIANT_FILES = 5;
 const MAX_FILE_SIZE = 30 * 1024 * 1024;
 const ACCEPTED_FILE_TYPES = 'image/*,video/*';
 
-const FORM_LABEL_CLASS = 'mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300';
-const FORM_INPUT_CLASS =
-  'w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-800 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100';
-const FORM_INPUT_COMPACT_CLASS =
-  'w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 focus:border-transparent focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100';
+const FORM_LABEL_CLASS = 'mb-2 block text-sm font-medium text-[var(--ink)]';
+const FORM_INPUT_CLASS = 'ka-input w-full';
+const FORM_INPUT_COMPACT_CLASS = 'ka-input w-full';
 
 const productModel = new ProductModel();
 const categoryModel = new CategoryModel();
@@ -507,12 +505,12 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
-        <div className="absolute inset-0 bg-gray-900/40 dark:bg-black/70" onClick={onClose} />
+        <div className="absolute inset-0 bg-[var(--scrim)]" onClick={onClose} />
 
-        <div className="relative max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface dark:border-[var(--color-border)] ">
-          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6 dark:border-gray-700 dark:bg-gray-800/95">
-            <h2 className="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-100">เพิ่มสินค้า</h2>
-            <button onClick={onClose} className="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-200">
+        <div className="relative max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface dark:border-[var(--color-border)]">
+          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border)] bg-[var(--bg-surface)] px-4 py-3 sm:px-6">
+            <h2 className="text-lg font-semibold text-[var(--ink)] sm:text-xl">เพิ่มสินค้า</h2>
+            <button onClick={onClose} className="ka-btn ka-btn--ghost ka-btn--icon" aria-label="ปิดหน้าต่าง">
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -521,17 +519,17 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
 
           <form onSubmit={handleSubmit} className="space-y-6 p-4 sm:p-6">
             {error && (
-              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
+              <div className="rounded-lg border border-[var(--danger)] bg-[var(--danger-soft)] px-4 py-3 text-[var(--danger)]">
                 {error}
               </div>
             )}
 
-            <section className="space-y-4 rounded-xl border border-gray-200 p-4 dark:border-gray-700">
-              <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">รายละเอียดสินค้า</h3>
+            <section className="space-y-4 rounded-xl border border-[var(--border)] p-4">
+              <h3 className="text-sm font-semibold text-[var(--ink)]">รายละเอียดสินค้า</h3>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="md:col-span-2">
                   <label className={FORM_LABEL_CLASS}>
-                    ชื่อสินค้า <span className="text-red-500">*</span>
+                    ชื่อสินค้า <span className="text-[var(--danger)]">*</span>
                   </label>
                   <input
                     type="text"
@@ -545,7 +543,7 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
 
                 <div className="md:col-span-2">
                   <label className={FORM_LABEL_CLASS}>
-                    คำอธิบายสินค้า <span className="text-red-500">*</span>
+                    คำอธิบายสินค้า <span className="text-[var(--danger)]">*</span>
                   </label>
                   <textarea
                     required
@@ -571,13 +569,13 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
               </div>
             </section>
 
-            <section className="space-y-4 rounded-xl border border-gray-200 p-4 dark:border-gray-700">
+            <section className="space-y-4 rounded-xl border border-[var(--border)] p-4">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100"></h3>
+                <h3 className="text-sm font-semibold text-[var(--ink)]"></h3>
                 <button
                   type="button"
                   onClick={addVariant}
-                  className="rounded-lg bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-primary-hover)]"
+                  className="ka-btn ka-btn--primary min-h-11"
                 >
                   + เพิ่มสินค้า
                 </button>
@@ -585,14 +583,14 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
 
               <div className="space-y-4">
                 {variants.map((variant, variantIndex) => (
-                  <div key={variant.client_variant_key} className="rounded-xl border border-gray-200 p-4 dark:border-gray-600">
+                  <div key={variant.client_variant_key} className="rounded-xl border border-[var(--border)] p-4">
                     <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-200">Variant #{variantIndex + 1}</p>
+                      <p className="text-sm font-semibold text-[var(--ink)]">Variant #{variantIndex + 1}</p>
                       <button
                         type="button"
                         onClick={() => removeVariant(variant.client_variant_key)}
                         disabled={variants.length === 1}
-                        className="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-400/30 dark:text-red-300 dark:hover:bg-red-500/10"
+                        className="ka-btn ka-btn--danger"
                       >
                         ลบสินค้า
                       </button>
@@ -600,7 +598,7 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                       <div>
-                        <label className={FORM_LABEL_CLASS}>ราคา <span className="text-red-500">*</span></label>
+                        <label className={FORM_LABEL_CLASS}>ราคา <span className="text-[var(--danger)]">*</span></label>
                         <input
                           type="number"
                           min="0"
@@ -658,13 +656,13 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
                       </div>
                     </div>
 
-                    <div className="mt-4 rounded-lg border border-gray-200 p-3 dark:border-gray-600">
+                    <div className="mt-4 rounded-lg border border-[var(--border)] p-3">
                       <div className="mb-2 flex items-center justify-between">
-                        <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">วัสดุของสินค้า</p>
+                        <p className="text-[13px] font-semibold text-[var(--ink)]">วัสดุของสินค้า</p>
                         <button
                           type="button"
                           onClick={() => addMaterial(variant.client_variant_key)}
-                          className="rounded-md bg-[var(--color-primary)] px-2.5 py-1 text-xs font-medium text-white hover:bg-[var(--color-primary-hover)]"
+                          className="ka-btn ka-btn--sm"
                         >
                           + เพิ่มวัตถุดิบ
                         </button>
@@ -672,7 +670,7 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
 
                       <div className="space-y-2">
                         {variant.materials.map((materialRow, materialIndex) => (
-                          <div key={materialRow.id} className="grid grid-cols-1 gap-2 rounded-lg border border-gray-200 p-2 md:grid-cols-12 dark:border-gray-600">
+                          <div key={materialRow.id} className="grid grid-cols-1 gap-2 rounded-lg border border-[var(--border)] p-2 md:grid-cols-12">
                             <div className="md:col-span-6">
                               <CustomSelect
                                 label={`วัสดุ #${materialIndex + 1}`}
@@ -706,7 +704,7 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
                                 type="button"
                                 onClick={() => removeMaterial(variant.client_variant_key, materialRow.id)}
                                 disabled={variant.materials.length === 1}
-                                className="w-full rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-400/30 dark:text-red-300 dark:hover:bg-red-500/10"
+                                className="ka-btn ka-btn--danger w-full"
                               >
                                 ลบ
                               </button>
@@ -716,8 +714,8 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
                       </div>
                     </div>
 
-                    <div className="mt-4 rounded-lg border border-dashed border-gray-300 p-3 dark:border-gray-600">
-                      <p className="mb-2 text-xs font-semibold text-gray-700 dark:text-gray-200">ไฟล์ของสินค้า</p>
+                    <div className="mt-4 rounded-lg border border-dashed border-[var(--border-control)] p-3">
+                      <p className="mb-2 text-[13px] font-semibold text-[var(--ink)]">ไฟล์ของสินค้า</p>
                       <input
                         id={`variant-file-${variant.client_variant_key}`}
                         type="file"
@@ -728,7 +726,7 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
                       />
                       <label
                         htmlFor={`variant-file-${variant.client_variant_key}`}
-                        className="inline-flex cursor-pointer rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                        className="inline-flex cursor-pointer rounded-lg bg-[var(--bg-muted)] px-3 py-1.5 text-[13px] font-medium text-[var(--ink)] transition-colors hover:bg-[var(--bg-muted)]"
                       >
                         + เพิ่มไฟล์สินค้า - สูงสุด {MAX_VARIANT_FILES} ไฟล์
                       </label>
@@ -736,7 +734,7 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
                       {(variantFiles[variant.client_variant_key] || []).length > 0 && (
                         <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                           {(variantFiles[variant.client_variant_key] || []).map((file, fileIndex) => (
-                            <div key={`${variant.client_variant_key}-${fileIndex}`} className="relative rounded-lg border border-gray-200 p-1 dark:border-gray-600">
+                            <div key={`${variant.client_variant_key}-${fileIndex}`} className="relative rounded-lg border border-[var(--border)] p-1">
                               {file.product_file_category === 'image' ? (
                                 <img src={file.preview} alt={file.product_file_name} className="h-24 w-full rounded object-cover" />
                               ) : (
@@ -745,7 +743,7 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
                               <button
                                 type="button"
                                 onClick={() => removeVariantFile(variant.client_variant_key, fileIndex)}
-                                className="absolute right-1 top-1 rounded bg-red-500 px-1 text-[10px] text-white"
+                                aria-label="ลบไฟล์นี้" className="ka-btn ka-btn--danger ka-btn--sm ka-btn--icon absolute right-1 top-1"
                               >
                                 x
                               </button>
@@ -759,9 +757,9 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
               </div>
             </section>
 
-            <section className="space-y-3 rounded-xl border border-gray-200 p-4 dark:border-gray-700">
-              <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-100">ไฟล์ Product หลัก</h3>
-              <div className="rounded-lg border-2 border-dashed border-gray-300 p-4 text-center transition-colors hover:border-blue-500 dark:border-gray-600 dark:hover:border-blue-400">
+            <section className="space-y-3 rounded-xl border border-[var(--border)] p-4">
+              <h3 className="text-sm font-semibold text-[var(--ink)]">ไฟล์ Product หลัก</h3>
+              <div className="rounded-lg border-2 border-dashed border-[var(--border-control)] p-4 text-center transition-colors hover:border-[var(--focus)]">
                 <input
                   id="product-main-file-upload"
                   type="file"
@@ -776,13 +774,13 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
                 >
                   เพิ่มไฟล์ Product หลัก
                 </label>
-                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">สูงสุด {MAX_PRODUCT_FILES} ไฟล์</p>
+                <p className="mt-2 text-[13px] text-[var(--ink-muted)]">สูงสุด {MAX_PRODUCT_FILES} ไฟล์</p>
               </div>
 
               {productFiles.length > 0 && (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                   {productFiles.map((file, index) => (
-                    <div key={index} className="relative rounded-lg border border-gray-200 p-1 dark:border-gray-600">
+                    <div key={index} className="relative rounded-lg border border-[var(--border)] p-1">
                       {file.product_file_category === 'image' ? (
                         <img src={file.preview} alt={file.product_file_name} className="h-24 w-full rounded object-cover" />
                       ) : (
@@ -791,7 +789,7 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
                       <button
                         type="button"
                         onClick={() => removeProductFile(index)}
-                        className="absolute right-1 top-1 rounded bg-red-500 px-1 text-[10px] text-white"
+                        aria-label="ลบไฟล์นี้" className="ka-btn ka-btn--danger ka-btn--sm ka-btn--icon absolute right-1 top-1"
                       >
                         x
                       </button>
@@ -801,18 +799,18 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
               )}
             </section>
 
-            <div className="flex flex-col-reverse gap-2 border-t border-gray-200 pt-4 sm:flex-row sm:justify-end dark:border-gray-700">
+            <div className="flex flex-col-reverse gap-2 border-t border-[var(--border)] pt-4 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-lg border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+                className="ka-btn"
               >
                 ยกเลิก
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="rounded-lg bg-[var(--color-primary)] px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+                className="ka-btn ka-btn--primary min-h-11"
               >
                 {loading ? 'กำลังบันทึก...' : 'บันทึกสินค้า'}
               </button>

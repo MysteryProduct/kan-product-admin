@@ -218,7 +218,8 @@ export default function ProductsPage() {
               setSelectedDetailProduct(row);
               setIsDetailFormOpen(true);
             }}
-            className="text-gray-400 hover:text-indigo-500 transition-colors"
+            className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
+            aria-label="ดูรายละเอียด"
             title="ดูรายละเอียด"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -242,7 +243,9 @@ export default function ProductsPage() {
                 setSelectedProduct(row);
                 setIsUpdateFormOpen(true);
               }}
-              className="text-gray-400 hover:text-blue-500 transition-colors"
+              className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
+              title="แก้ไข"
+              aria-label="แก้ไข"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 12v3h3l8.293-8.293-3-3L5 12z" />
@@ -251,7 +254,9 @@ export default function ProductsPage() {
           )}
           {canDeleteProduct && (
             <button
-              className="text-gray-400 hover:text-red-500 transition-colors"
+              className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--danger)]"
+              title="ลบ"
+              aria-label="ลบ"
               onClick={() => {
                 setProductToDelete(row);
                 setIsDeleteDialogOpen(true);
@@ -302,34 +307,34 @@ export default function ProductsPage() {
     }
   };
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 p-2 sm:p-4 md:p-6 lg:p-8">
+    <div className="bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
       {/* Statistics Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
-        <div className="bg-gradient-to-br from-blue-50 dark:from-blue-900 to-blue-100 dark:to-blue-800 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
-          <div className="text-2xl sm:text-4xl font-bold text-blue-600 dark:text-blue-300 mb-1 sm:mb-2">{totalProducts}</div>
-          <div className="text-xs sm:text-sm text-blue-700 dark:text-blue-300 font-medium">Total Products</div>
+        <div className="ka-card p-3 sm:p-6">
+          <div className="text-2xl sm:text-4xl font-bold text-[var(--brand-ink)] mb-1 sm:mb-2">{totalProducts}</div>
+          <div className="text-[13px] sm:text-sm text-[var(--brand-ink)] font-medium">Total Products</div>
         </div>
 
-        {/* <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
-          <div className="text-2xl sm:text-4xl font-bold text-orange-600 mb-1 sm:mb-2">{pendingProducts}</div>
-          <div className="text-xs sm:text-sm text-orange-700 font-medium">Pending Products</div>
+        {/* <div className="ka-card p-3 sm:p-6">
+          <div className="text-2xl sm:text-4xl font-bold text-[var(--warning)] mb-1 sm:mb-2">{pendingProducts}</div>
+          <div className="text-[13px] sm:text-sm text-[var(--warning)] font-medium">Pending Products</div>
         </div> */}
 
-        {/* <div className="bg-gradient-to-br from-green-50 dark:from-green-900 to-green-100 dark:to-green-800 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
-          <div className="text-2xl sm:text-4xl font-bold text-green-600 dark:text-green-300 mb-1 sm:mb-2">{inStock}</div>
-          <div className="text-xs sm:text-sm text-green-700 dark:text-green-300 font-medium">In Stock</div>
+        {/* <div className="ka-card p-3 sm:p-6">
+          <div className="text-2xl sm:text-4xl font-bold text-[var(--success)] mb-1 sm:mb-2">{inStock}</div>
+          <div className="text-[13px] sm:text-sm text-[var(--success)] font-medium">In Stock</div>
         </div>
 
-        <div className="bg-gradient-to-br from-red-50 dark:from-red-900 to-red-100 dark:to-red-800 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-sm">
-          <div className="text-2xl sm:text-4xl font-bold text-red-600 dark:text-red-300 mb-1 sm:mb-2">{outStock}</div>
-          <div className="text-xs sm:text-sm text-red-700 dark:text-red-300 font-medium">Out of Stock</div>
+        <div className="ka-card p-3 sm:p-6">
+          <div className="text-2xl sm:text-4xl font-bold text-[var(--danger)] mb-1 sm:mb-2">{outStock}</div>
+          <div className="text-[13px] sm:text-sm text-[var(--danger)] font-medium">Out of Stock</div>
         </div> */}
       </div>
 
       {/* Main Content Card */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-[var(--bg-surface)] rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
         {/* Search Bar */}
-        <div className="p-3 sm:p-4 md:p-6 border-b border-gray-100 dark:border-gray-700">
+        <div className="p-3 sm:p-4 md:p-6 border-b border-[var(--border)]">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
             <div className="flex flex-col sm:flex-row items-stretch gap-1 w-full sm:w-auto sm:flex-1 sm:max-w-md">
               <div className="relative flex-1">
@@ -343,10 +348,10 @@ export default function ProductsPage() {
                       handleSearch();
                     }
                   }}
-                  className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-700"
+                  className="ka-input w-full"
                 />
                 <svg
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[var(--ink-subtle)]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -362,7 +367,7 @@ export default function ProductsPage() {
               <button
                 type="button"
                 onClick={handleSearch}
-                className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors font-medium whitespace-nowrap"
+                className="ka-btn ka-btn--primary whitespace-nowrap"
               >
                 ค้นหา
               </button>
@@ -370,7 +375,7 @@ export default function ProductsPage() {
                 <button
                   type="button"
                   onClick={handleClearSearch}
-                  className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
+                  className="ka-btn whitespace-nowrap"
                 >
                   ล้าง
                 </button>
@@ -380,7 +385,7 @@ export default function ProductsPage() {
             {canAddProduct && (
               <button
                 onClick={() => setIsFormOpen(true)}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium whitespace-nowrap"
+                className="ka-btn ka-btn--primary flex items-center justify-center gap-2 whitespace-nowrap"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -397,9 +402,7 @@ export default function ProductsPage() {
           columns={columns}
           keyField="product_id"
           disabled={loading}
-          className="bg-white dark:bg-gray-800 p-1"
-          headerClassName="bg-gray-50 dark:bg-gray-700 border-b border-gray-100 dark:border-gray-600"
-          rowClassName="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+          className="bg-[var(--bg-surface)] p-1"
           paginationMeta={meta}
           currentPage={currentPage}
           onPageChange={setCurrentPage}

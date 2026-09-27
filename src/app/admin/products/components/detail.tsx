@@ -101,16 +101,16 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
   });
 
   const fieldClassName =
-    'rounded-lg border border-gray-300 bg-gray-100 px-4 py-2.5 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100';
+    'rounded-lg border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2.5 text-sm text-[var(--ink)]';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
-      <div className="absolute inset-0 bg-gray-900/40 dark:bg-black/70" onClick={onClose} />
+      <div className="absolute inset-0 bg-[var(--scrim)]" onClick={onClose} />
 
-      <div className="relative max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface dark:border-[var(--color-border)] ">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6 dark:border-gray-700 dark:bg-gray-800/95">
-          <h2 className="text-lg font-semibold text-gray-900 sm:text-xl dark:text-gray-100">รายละเอียดสินค้าแบบ ER</h2>
-          <button onClick={onClose} className="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-200">
+      <div className="relative max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface dark:border-[var(--color-border)]">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border)] bg-[var(--bg-surface)] px-4 py-3 sm:px-6">
+          <h2 className="text-lg font-semibold text-[var(--ink)] sm:text-xl">รายละเอียดสินค้าแบบ ER</h2>
+          <button onClick={onClose} className="ka-btn ka-btn--ghost ka-btn--icon" aria-label="ปิดหน้าต่าง">
             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -118,25 +118,25 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
         </div>
 
         <div className="space-y-6 p-4 sm:p-6">
-          <section className="rounded-xl border border-gray-200 p-4 dark:border-gray-700">
-            <h3 className="mb-4 text-sm font-semibold text-gray-800 dark:text-gray-200">Product หลัก</h3>
+          <section className="rounded-xl border border-[var(--border)] p-4">
+            <h3 className="mb-4 text-sm font-semibold text-[var(--ink)]">Product หลัก</h3>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <p className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">ชื่อสินค้า</p>
+                <p className="mb-2 text-sm font-medium text-[var(--ink)]">ชื่อสินค้า</p>
                 <div className={fieldClassName}>{currentProduct.product_name || '-'}</div>
               </div>
               <div>
-                <p className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">ประเภท</p>
+                <p className="mb-2 text-sm font-medium text-[var(--ink)]">ประเภท</p>
                 <div className={fieldClassName}>{currentProduct.category?.category_name || '-'}</div>
               </div>
             </div>
           </section>
 
-          <section className="rounded-xl border border-gray-200 p-4 dark:border-gray-700">
-            <h3 className="mb-3 text-sm font-semibold text-gray-800 dark:text-gray-200">คำอธิบายสินค้า</h3>
-            <div className="rounded-lg border border-gray-300 bg-gray-100 px-4 py-3 dark:border-gray-600 dark:bg-gray-700">
+          <section className="rounded-xl border border-[var(--border)] p-4">
+            <h3 className="mb-3 text-sm font-semibold text-[var(--ink)]">คำอธิบายสินค้า</h3>
+            <div className="rounded-lg border border-[var(--border-control)] bg-[var(--bg-muted)] px-4 py-3">
               {descriptions.length > 0 ? (
-                <ul className="space-y-2 text-sm text-gray-800 dark:text-gray-100">
+                <ul className="space-y-2 text-sm text-[var(--ink)]">
                   {descriptions.map((item, index) => (
                     <li key={index} className="flex items-start gap-2">
                       <span className="mt-0.5">{item.icon || '•'}</span>
@@ -145,15 +145,15 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-gray-500 dark:text-gray-400">-</p>
+                <p className="text-sm text-[var(--ink-muted)]">-</p>
               )}
             </div>
           </section>
 
-          <section className="rounded-xl border border-gray-200 p-4 dark:border-gray-700">
+          <section className="rounded-xl border border-[var(--border)] p-4">
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">Product Variants</h3>
-              <span className="text-sm text-gray-500 dark:text-gray-400">{variants.length} variants</span>
+              <h3 className="text-sm font-semibold text-[var(--ink)]">Product Variants</h3>
+              <span className="text-sm text-[var(--ink-muted)]">{variants.length} variants</span>
             </div>
 
             {variants.length > 0 ? (
@@ -163,11 +163,11 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                   const materials = variant.product_materials || variant.productMaterials || [];
 
                   return (
-                    <div key={variantId} className="rounded-lg border border-gray-200 p-3 dark:border-gray-600">
-                      <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="rounded bg-gray-100 px-2 py-1 dark:bg-gray-700">Variant #{index + 1}</span>
-                        <span className="rounded bg-blue-50 px-2 py-1 text-blue-700 dark:bg-blue-500/20 dark:text-blue-200">ID: {variant.product_variant_id || '-'}</span>
-                        <span className="rounded bg-green-50 px-2 py-1 text-green-700 dark:bg-green-500/20 dark:text-green-200">ไฟล์: {variantFileCountMap[String(variant.product_variant_id || '')] || 0}</span>
+                    <div key={variantId} className="rounded-lg border border-[var(--border)] p-3">
+                      <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-[var(--ink-muted)]">
+                        <span className="rounded bg-[var(--bg-muted)] px-2 py-1">Variant #{index + 1}</span>
+                        <span className="rounded bg-[var(--brand-soft)] px-2 py-1 text-[var(--brand-ink)]">ID: {variant.product_variant_id || '-'}</span>
+                        <span className="rounded bg-[var(--success-soft)] px-2 py-1 text-[var(--success)]">ไฟล์: {variantFileCountMap[String(variant.product_variant_id || '')] || 0}</span>
                       </div>
 
                       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
@@ -177,38 +177,38 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                         <div className={fieldClassName}>Unit: {variant.productUnit?.product_unit_name || variant.product_unit_id || '-'}</div>
                       </div>
 
-                      <div className="mt-3 rounded-lg border border-gray-200 p-3 dark:border-gray-600">
-                        <p className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">Product Material ของ Variant นี้</p>
+                      <div className="mt-3 rounded-lg border border-[var(--border)] p-3">
+                        <p className="mb-2 text-sm font-semibold text-[var(--ink)]">Product Material ของ Variant นี้</p>
                         {materials.length > 0 ? (
                           <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
-                              <thead className="bg-gray-100 dark:bg-gray-700">
+                            <table className="min-w-full divide-y divide-[var(--border)]">
+                              <thead className="bg-[var(--bg-muted)]">
                                 <tr>
-                                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">วัตถุดิบ</th>
-                                  <th className="px-3 py-2 text-left text-xs font-semibold text-gray-600 dark:text-gray-300">จำนวน</th>
+                                  <th className="px-3 py-2 text-left text-[13px] font-semibold text-[var(--ink-muted)]">วัตถุดิบ</th>
+                                  <th className="px-3 py-2 text-left text-[13px] font-semibold text-[var(--ink-muted)]">จำนวน</th>
                                 </tr>
                               </thead>
-                              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                              <tbody className="divide-y divide-[var(--border)]">
                                 {materials.map((material, materialIndex) => (
                                   <tr key={material.product_material_id || `${material.material_id}-${materialIndex}`}>
-                                    <td className="px-3 py-2 text-sm text-gray-800 dark:text-gray-100">{material.material?.material_name || material.material_id}</td>
-                                    <td className="px-3 py-2 text-sm text-gray-800 dark:text-gray-100">{material.material_qty}</td>
+                                    <td className="px-3 py-2 text-sm text-[var(--ink)]">{material.material?.material_name || material.material_id}</td>
+                                    <td className="px-3 py-2 text-sm text-[var(--ink)]">{material.material_qty}</td>
                                   </tr>
                                 ))}
                               </tbody>
                             </table>
                           </div>
                         ) : (
-                          <p className="text-sm text-gray-500 dark:text-gray-400">ไม่มี Product Material</p>
+                          <p className="text-sm text-[var(--ink-muted)]">ไม่มี Product Material</p>
                         )}
                       </div>
 
                       {variant.product_variant_id && (variantFiles[String(variant.product_variant_id)] || []).length > 0 && (
                         <div className="mt-3">
-                          <p className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">ไฟล์ของ Variant</p>
+                          <p className="mb-2 text-sm font-semibold text-[var(--ink)]">ไฟล์ของ Variant</p>
                           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                             {(variantFiles[String(variant.product_variant_id)] || []).map((file, fileIndex) => (
-                              <div key={`${variantId}-file-${fileIndex}`} className="overflow-hidden rounded-lg border border-gray-200 bg-gray-100 dark:border-gray-600 dark:bg-gray-700">
+                              <div key={`${variantId}-file-${fileIndex}`} className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--bg-muted)]">
                                 {file.product_file_category === 'image' ? (
                                   <img
                                     src={process.env.NEXT_PUBLIC_API_URL + file.product_file_name}
@@ -232,18 +232,18 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                 })}
               </div>
             ) : (
-              <div className="rounded-lg border border-dashed border-gray-300 px-4 py-4 text-sm text-gray-500 dark:border-gray-600 dark:text-gray-400">
+              <div className="rounded-lg border border-dashed border-[var(--border-control)] px-4 py-4 text-sm text-[var(--ink-muted)]">
                 ไม่พบข้อมูล Variant
               </div>
             )}
           </section>
 
-          <section className="rounded-xl border border-gray-200 p-4 dark:border-gray-700">
-            <h3 className="mb-3 text-sm font-semibold text-gray-800 dark:text-gray-200">ไฟล์ Product หลัก</h3>
+          <section className="rounded-xl border border-[var(--border)] p-4">
+            <h3 className="mb-3 text-sm font-semibold text-[var(--ink)]">ไฟล์ Product หลัก</h3>
             {productFiles.length > 0 ? (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                 {productFiles.map((file, index) => (
-                  <div key={file.product_file_id || index} className="overflow-hidden rounded-lg border border-gray-200 bg-gray-100 dark:border-gray-600 dark:bg-gray-700">
+                  <div key={file.product_file_id || index} className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--bg-muted)]">
                     {file.product_file_category === 'image' ? (
                       <img
                         src={process.env.NEXT_PUBLIC_API_URL + file.product_file_name}
@@ -261,17 +261,17 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                 ))}
               </div>
             ) : (
-              <div className="rounded-lg border border-dashed border-gray-300 px-4 py-4 text-sm text-gray-500 dark:border-gray-600 dark:text-gray-400">
+              <div className="rounded-lg border border-dashed border-[var(--border-control)] px-4 py-4 text-sm text-[var(--ink-muted)]">
                 ไม่มีไฟล์ Product หลัก
               </div>
             )}
           </section>
 
-          <div className="flex justify-end border-t border-gray-200 pt-4 dark:border-gray-700">
+          <div className="flex justify-end border-t border-[var(--border)] pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-gray-300 px-6 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+              className="ka-btn"
             >
               ปิด
             </button>
@@ -279,10 +279,10 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
         </div>
 
         {loading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-black/50">
-            <div className="flex flex-col items-center gap-4 rounded-lg bg-white p-6 dark:bg-gray-800">
-              <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
-              <p className="font-medium text-gray-700 dark:text-gray-200">กำลังโหลดรายละเอียดสินค้า...</p>
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-[var(--scrim)]">
+            <div className="flex flex-col items-center gap-4 rounded-lg bg-[var(--bg-surface)] p-6">
+              <div className="h-12 w-12 animate-spin rounded-full border-4 border-[var(--action)] border-t-transparent" />
+              <p className="font-medium text-[var(--ink)]">กำลังโหลดรายละเอียดสินค้า...</p>
             </div>
           </div>
         )}
