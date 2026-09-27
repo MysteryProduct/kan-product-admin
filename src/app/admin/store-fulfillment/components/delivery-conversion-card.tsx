@@ -9,6 +9,7 @@ import {
 import { getApiErrorMessage } from '@/lib/api-error';
 import { formatThaiDate } from '@/lib/date-format';
 import { RefundPanel } from './cancellation-card';
+import StatusBadge, { type BadgeTone } from '@/components/StatusBadge';
 
 const storeFulfillmentModel = new StoreFulfillmentModel();
 
@@ -18,11 +19,11 @@ const chargeStatusLabels: Record<StoreShippingChargeStatus, string> = {
   pending_review: 'รอพิจารณา (ครบกำหนดเก็บสินค้า)',
   void: 'ไม่ต้องชำระแล้ว (ยกเลิกคำสั่งซื้อ)',
 };
-const chargeStatusClassMap: Record<StoreShippingChargeStatus, string> = {
-  awaiting_payment: 'bg-amber-50 text-amber-700',
-  paid: 'bg-green-50 text-green-700',
-  pending_review: 'bg-red-50 text-red-700',
-  void: 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]',
+const chargeStatusTone: Record<StoreShippingChargeStatus, BadgeTone> = {
+  awaiting_payment: 'warning',
+  paid: 'success',
+  pending_review: 'danger',
+  void: 'neutral',
 };
 const methodLabels = { promptpay: 'พร้อมเพย์', card: 'บัตร' };
 const chargeReasonLabels = {
@@ -30,8 +31,7 @@ const chargeReasonLabels = {
   return: 'ส่งใหม่หลังพัสดุตีกลับ',
 };
 
-const inputClass =
-  'min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2';
+const inputClass = 'ka-input min-h-11';
 
 const emptyForm: Required<ConvertToDeliveryDto> = {
   recipient_name: '',
@@ -145,7 +145,7 @@ export default function DeliveryConversionCard({
   }
 
   return (
-    <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10 sm:p-6">
+    <div className="ka-card p-4 sm:p-6">
       {/* A delivery order from checkout reaches this card only through a
           returned parcel's charge, so it is titled for what it shows. */}
       <h2 className="font-medium">
@@ -170,7 +170,7 @@ export default function DeliveryConversionCard({
       )}
 
       {result && (
-        <p role="status" className="mt-3 text-sm text-green-700">
+        <p role="status" className="mt-3 text-sm text-[var(--success)]">
           {result}
         </p>
       )}
@@ -179,7 +179,7 @@ export default function DeliveryConversionCard({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="mt-4 min-h-11 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700"
+          className="mt-4 ka-btn ka-btn--primary min-h-11"
         >
           เปลี่ยนเป็นจัดส่ง
         </button>
@@ -213,14 +213,14 @@ export default function DeliveryConversionCard({
             <button
               type="submit"
               disabled={pending || !requiredFilled}
-              className="min-h-11 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+              className="ka-btn ka-btn--primary min-h-11"
             >
               {pending ? 'กำลังบันทึก...' : 'ยืนยันเปลี่ยนเป็นจัดส่ง'}
             </button>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="min-h-11 rounded-lg border border-[var(--color-border)] px-4 py-2 hover:bg-[var(--color-bg-tertiary)]"
+              className="ka-btn min-h-11"
             >
               ยกเลิก
             </button>
@@ -250,11 +250,9 @@ export default function DeliveryConversionCard({
                     ? ` · ชำระเมื่อ ${formatThaiDate(charge.paidAt)}`
                     : ` · เก็บสินค้าถึง ${formatThaiDate(charge.holdUntil)}`}
                 </span>
-                <span
-                  className={`rounded-full px-2 py-1 text-xs font-medium ${chargeStatusClassMap[charge.status]}`}
-                >
+                <StatusBadge tone={chargeStatusTone[charge.status]}>
                   {chargeStatusLabels[charge.status]}
-                </span>
+                </StatusBadge>
               </li>
             ))}
           </ul>
@@ -277,14 +275,12 @@ export default function DeliveryConversionCard({
                     </span>
                   </span>
                   {payment.excess && (
-                    <span className="rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
-                      รับเกิน
-                    </span>
+                    <StatusBadge tone="warning">รับเกิน</StatusBadge>
                   )}
                 </div>
                 {payment.excess && !payment.refund && (
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-amber-700">
+                    <p className="text-[var(--warning)]">
                       ลูกค้าชำระค่าจัดส่งนี้เกินจากที่ต้องชำระ
                       {payment.paymentMethod === 'promptpay'
                         ? ' ต้องโอนคืนและบันทึกหลักฐานการโอน'
@@ -295,7 +291,7 @@ export default function DeliveryConversionCard({
                         type="button"
                         disabled={pending}
                         onClick={() => void refundExcess(payment.gatewayChargeId)}
-                        className="min-h-11 rounded-lg border border-red-300 px-3 py-2 text-sm text-red-700 hover:bg-red-50 disabled:opacity-60"
+                        className="ka-btn ka-btn--danger min-h-11"
                       >
                         คืนเงินส่วนเกิน
                       </button>

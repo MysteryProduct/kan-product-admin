@@ -71,7 +71,7 @@ export default function ContactRequestDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="min-h-11 rounded-lg border border-[var(--color-border)] px-4 py-2 font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]"
+            className="ka-btn min-h-11"
           >
             ปิด
           </button>
@@ -80,7 +80,7 @@ export default function ContactRequestDetailModal({
               type="button"
               onClick={() => void handleSave()}
               disabled={pending}
-              className="min-h-11 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+              className="ka-btn ka-btn--primary min-h-11"
             >
               {pending ? 'กำลังบันทึก...' : 'บันทึก'}
             </button>
@@ -110,7 +110,7 @@ export default function ContactRequestDetailModal({
             value={status}
             disabled={!canEdit || pending}
             onChange={(e) => setStatus(e.target.value as ContactRequestStatus)}
-            className="min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2"
+            className="ka-input min-h-11"
           >
             {(Object.keys(statusLabels) as ContactRequestStatus[])
               // R4: a closed request never returns to 'new', so the option is
@@ -135,7 +135,7 @@ export default function ContactRequestDetailModal({
             onChange={(e) => setContactResult(e.target.value)}
             rows={3}
             maxLength={2000}
-            className="rounded-lg border border-[var(--color-border)] px-3 py-2"
+            className="ka-textarea"
           />
         </label>
 

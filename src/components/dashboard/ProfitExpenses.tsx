@@ -13,39 +13,39 @@ export default function ProfitExpenses() {
                 className="w-8 rounded-t bg-[var(--color-primary)]"
                 style={{ height: `${barHeights[index]}px` }}
               ></div>
-              <span className="mt-2 text-xs text-[var(--color-text-secondary)]">{month}</span>
+              <span className="mt-2 text-[13px] text-[var(--color-text-secondary)]">{month}</span>
             </div>
           ))}
         </div>
         
         <div className="grid grid-cols-1 gap-3 border-t border-[var(--color-border)] pt-3 sm:grid-cols-3 sm:gap-4 sm:pt-4">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[var(--brand-soft)] rounded-lg flex items-center justify-center">
               <span className="text-lg sm:text-xl">💰</span>
             </div>
             <div>
-              <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100">$63,489.50</p>
-              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Earning this year</p>
+              <p className="text-lg sm:text-2xl font-bold text-[var(--ink)]">$63,489.50</p>
+              <p className="text-[13px] sm:text-sm text-[var(--ink-muted)]">Earning this year</p>
             </div>
           </div>
           
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[var(--success-soft)] rounded-lg flex items-center justify-center">
               <span className="text-lg sm:text-xl">📊</span>
             </div>
             <div>
-              <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100">$48,820.00</p>
-              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Profit this year <span className="text-green-600">+23%</span></p>
+              <p className="text-lg sm:text-2xl font-bold text-[var(--ink)]">$48,820.00</p>
+              <p className="text-[13px] sm:text-sm text-[var(--ink-muted)]">Profit this year <span className="text-[var(--success)]">+23%</span></p>
             </div>
           </div>
           
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[var(--info-soft)] rounded-lg flex items-center justify-center">
               <span className="text-lg sm:text-xl">🌐</span>
             </div>
             <div>
-              <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-gray-100">$103,582.50</p>
-              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Overall earnings</p>
+              <p className="text-lg sm:text-2xl font-bold text-[var(--ink)]">$103,582.50</p>
+              <p className="text-[13px] sm:text-sm text-[var(--ink-muted)]">Overall earnings</p>
             </div>
           </div>
         </div>

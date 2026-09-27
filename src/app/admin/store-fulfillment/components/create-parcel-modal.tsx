@@ -10,8 +10,7 @@ import { getApiErrorMessage } from '@/lib/api-error';
 
 const storeFulfillmentModel = new StoreFulfillmentModel();
 
-const inputClass =
-  'min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2';
+const inputClass = 'ka-input min-h-11';
 
 interface CreateParcelModalProps {
   isOpen: boolean;
@@ -93,7 +92,7 @@ export default function CreateParcelModal({
           <button
             type="button"
             onClick={onClose}
-            className="min-h-11 rounded-lg border border-[var(--color-border)] px-4 py-2 font-medium text-[var(--color-text-primary)] hover:bg-[var(--color-bg-tertiary)]"
+            className="ka-btn min-h-11"
           >
             ยกเลิก
           </button>
@@ -101,7 +100,7 @@ export default function CreateParcelModal({
             type="button"
             onClick={() => void handleSubmit()}
             disabled={pending}
-            className="min-h-11 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+            className="ka-btn ka-btn--primary min-h-11"
           >
             {pending ? 'กำลังบันทึก...' : 'บันทึกพัสดุ'}
           </button>
@@ -160,7 +159,7 @@ export default function CreateParcelModal({
                     ),
                   }))
                 }
-                className="min-h-11 w-20 rounded-lg border border-[var(--color-border)] px-2 py-1 text-right"
+                className="ka-input min-h-11 w-20 text-right"
               />
             </div>
           ))}

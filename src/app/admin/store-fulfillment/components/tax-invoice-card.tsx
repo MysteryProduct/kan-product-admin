@@ -1,6 +1,7 @@
 'use client';
 import { StoreTaxInvoiceRequest } from '@/types/store-fulfillment';
 import { formatThaiDate } from '@/lib/date-format';
+import StatusBadge from '@/components/StatusBadge';
 
 const stageLabels: Record<StoreTaxInvoiceRequest['requestedStage'], string> = {
   checkout: 'ขอพร้อมคำสั่งซื้อ',
@@ -31,12 +32,10 @@ export default function TaxInvoiceCard({
   request: StoreTaxInvoiceRequest;
 }) {
   return (
-    <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10 sm:p-6">
+    <div className="ka-card p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-medium">คำขอใบกำกับภาษีเต็มรูป</h2>
-        <span className="rounded-full bg-blue-50 px-3 py-1 text-sm text-blue-700">
-          {stageLabels[request.requestedStage]}
-        </span>
+        <StatusBadge tone="info">{stageLabels[request.requestedStage]}</StatusBadge>
       </div>
       <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
         <div className="sm:col-span-2">

@@ -1,5 +1,6 @@
 import React from 'react';
 import ChartCard from './ChartCard';
+import StatusBadge, { type BadgeTone } from '@/components/StatusBadge';
 
 interface Employee {
   name: string;
@@ -7,15 +8,15 @@ interface Employee {
   rate: string;
   skill: string;
   status: string;
-  statusColor: string;
+  statusTone: BadgeTone;
 }
 
 const employees: Employee[] = [
-  { name: 'Mark J. Freeman', role: 'Developer', rate: '$80 / hour', skill: 'HTML', status: 'Available', statusColor: 'bg-green-100 text-green-700' },
-  { name: 'Nina R. Oldman', role: 'Designer', rate: '$70 / hour', skill: 'JavaScript', status: 'On Holiday', statusColor: 'bg-yellow-100 text-yellow-700' },
-  { name: 'Arya H. Shah', role: 'Developer', rate: '$40 / hour', skill: 'React', status: 'Absent', statusColor: 'bg-red-100 text-red-700' },
-  { name: 'June R. Smith', role: 'Designer', rate: '$20 / hour', skill: 'Vuejs', status: 'On Leave', statusColor: 'bg-orange-100 text-orange-700' },
-  { name: 'Deo K. Luis', role: 'Developer', rate: '$65 / hour', skill: 'Angular', status: 'Available', statusColor: 'bg-green-100 text-green-700' },
+  { name: 'Mark J. Freeman', role: 'Developer', rate: '$80 / hour', skill: 'HTML', status: 'Available', statusTone: 'success' },
+  { name: 'Nina R. Oldman', role: 'Designer', rate: '$70 / hour', skill: 'JavaScript', status: 'On Holiday', statusTone: 'info' },
+  { name: 'Arya H. Shah', role: 'Developer', rate: '$40 / hour', skill: 'React', status: 'Absent', statusTone: 'danger' },
+  { name: 'June R. Smith', role: 'Designer', rate: '$20 / hour', skill: 'Vuejs', status: 'On Leave', statusTone: 'warning' },
+  { name: 'Deo K. Luis', role: 'Developer', rate: '$65 / hour', skill: 'Angular', status: 'Available', statusTone: 'success' },
 ];
 
 export default function TopEmployees() {
@@ -24,37 +25,35 @@ export default function TopEmployees() {
       <div className="overflow-x-auto -mx-4 sm:mx-0">
         <table className="w-full min-w-[640px]">
           <thead>
-            <tr className="border-b border-gray-200 dark:border-gray-700">
-              <th className="text-left py-2 sm:py-3 px-2 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Employee</th>
-              <th className="text-left py-2 sm:py-3 px-2 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Rate</th>
-              <th className="text-left py-2 sm:py-3 px-2 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Skill</th>
-              <th className="text-left py-2 sm:py-3 px-2 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Status</th>
+            <tr className="border-b border-[var(--border)]">
+              <th className="text-left py-2 sm:py-3 px-2 text-[13px] sm:text-sm font-semibold text-[var(--ink)]">Employee</th>
+              <th className="text-left py-2 sm:py-3 px-2 text-[13px] sm:text-sm font-semibold text-[var(--ink)]">Rate</th>
+              <th className="text-left py-2 sm:py-3 px-2 text-[13px] sm:text-sm font-semibold text-[var(--ink)]">Skill</th>
+              <th className="text-left py-2 sm:py-3 px-2 text-[13px] sm:text-sm font-semibold text-[var(--ink)]">Status</th>
             </tr>
           </thead>
           <tbody>
             {employees.map((employee, index) => (
-              <tr key={index} className="border-b border-gray-200 dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+              <tr key={index} className="border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--bg-subtle)]">
                 <td className="py-3 sm:py-4 px-2">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-semibold">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[var(--bg-sidebar)] rounded-full flex items-center justify-center text-[var(--ink-on-sidebar-active)] text-[13px] sm:text-sm font-semibold">
                       {employee.name.split(' ').map(n => n[0]).join('')}
                     </div>
                     <div>
-                      <p className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-100">{employee.name}</p>
-                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{employee.role}</p>
+                      <p className="text-sm sm:text-base font-semibold text-[var(--ink)]">{employee.name}</p>
+                      <p className="text-[13px] sm:text-sm text-[var(--ink-muted)]">{employee.role}</p>
                     </div>
                   </div>
                 </td>
-                <td className="py-3 sm:py-4 px-2 text-sm sm:text-base text-gray-700 dark:text-gray-300">{employee.rate}</td>
+                <td className="py-3 sm:py-4 px-2 text-sm sm:text-base text-[var(--ink)]">{employee.rate}</td>
                 <td className="py-3 sm:py-4 px-2">
-                  <span className="px-2 sm:px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs sm:text-sm font-medium">
+                  <span className="px-2 sm:px-3 py-1 bg-[var(--brand-soft)] text-[var(--brand-ink)] rounded-full text-[13px] sm:text-sm font-medium">
                     {employee.skill}
                   </span>
                 </td>
                 <td className="py-3 sm:py-4 px-2">
-                  <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium ${employee.statusColor}`}>
-                    {employee.status}
-                  </span>
+                  <StatusBadge tone={employee.statusTone}>{employee.status}</StatusBadge>
                 </td>
               </tr>
             ))}

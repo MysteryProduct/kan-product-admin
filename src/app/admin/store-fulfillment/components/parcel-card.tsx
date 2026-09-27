@@ -27,8 +27,7 @@ const contactOutcomeLabels: Record<RecordParcelReturnDto['contact_outcome'], str
   other: 'อื่น ๆ',
 };
 
-const inputClass =
-  'min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2';
+const inputClass = 'ka-input min-h-11';
 
 export default function ParcelCard({
   parcel,
@@ -225,14 +224,14 @@ export default function ParcelCard({
                   setEditing(false);
                 })
               }
-              className="min-h-11 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+              className="ka-btn ka-btn--primary min-h-11"
             >
               บันทึกที่อยู่ใหม่
             </button>
             <button
               type="button"
               onClick={() => setEditing(false)}
-              className="min-h-11 rounded-lg border border-[var(--color-border)] px-4 py-2"
+              className="ka-btn min-h-11"
             >
               ยกเลิก
             </button>
@@ -247,7 +246,7 @@ export default function ParcelCard({
               type="button"
               disabled={pending}
               onClick={() => void run(() => storeFulfillmentModel.holdParcel(parcel.parcelId))}
-              className="min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm hover:bg-[var(--color-bg-tertiary)]"
+              className="ka-btn min-h-11"
             >
               พักส่งเพื่อแก้ที่อยู่
             </button>
@@ -256,7 +255,7 @@ export default function ParcelCard({
             <button
               type="button"
               onClick={() => setEditing(true)}
-              className="min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm hover:bg-[var(--color-bg-tertiary)]"
+              className="ka-btn min-h-11"
             >
               แก้ที่อยู่
             </button>
@@ -265,7 +264,7 @@ export default function ParcelCard({
             <button
               type="button"
               onClick={() => setReturning(true)}
-              className="min-h-11 rounded-lg border border-red-300 px-3 py-2 text-sm text-red-700 hover:bg-red-50"
+              className="ka-btn ka-btn--danger min-h-11"
             >
               บันทึกพัสดุตีกลับ
             </button>
@@ -275,7 +274,7 @@ export default function ParcelCard({
               type="button"
               disabled={pending}
               onClick={() => void run(() => storeFulfillmentModel.shipParcel(parcel.parcelId))}
-              className="min-h-11 rounded-lg bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-60"
+              className="ka-btn ka-btn--primary min-h-11"
             >
               ยืนยันจัดส่งแล้ว
             </button>
@@ -286,7 +285,7 @@ export default function ParcelCard({
             <button
               type="button"
               onClick={() => setVoiding(true)}
-              className="min-h-11 rounded-lg border border-red-300 px-3 py-2 text-sm text-red-700 hover:bg-red-50"
+              className="ka-btn ka-btn--danger min-h-11"
             >
               ยกเลิกพัสดุนี้
             </button>
@@ -294,7 +293,7 @@ export default function ParcelCard({
           <button
             type="button"
             onClick={() => void toggleHistory()}
-            className="min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm hover:bg-[var(--color-bg-tertiary)]"
+            className="ka-btn min-h-11"
           >
             {history ? 'ซ่อนประวัติที่อยู่' : 'ดูประวัติที่อยู่'}
           </button>
@@ -331,7 +330,7 @@ export default function ParcelCard({
                   setVoidReason('');
                 })
               }
-              className="min-h-11 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
+              className="ka-btn ka-btn--danger min-h-11"
             >
               ยืนยันยกเลิกพัสดุ
             </button>
@@ -341,7 +340,7 @@ export default function ParcelCard({
                 setVoiding(false);
                 setVoidReason('');
               }}
-              className="min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm hover:bg-[var(--color-bg-tertiary)]"
+              className="ka-btn min-h-11"
             >
               ไม่ยกเลิก
             </button>
@@ -414,14 +413,14 @@ export default function ParcelCard({
             <button
               type="submit"
               disabled={pending || returnForm.reason.trim() === ''}
-              className="min-h-11 rounded-lg bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-60"
+              className="ka-btn ka-btn--danger min-h-11"
             >
               ยืนยันพัสดุตีกลับ
             </button>
             <button
               type="button"
               onClick={() => setReturning(false)}
-              className="min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2 text-sm hover:bg-[var(--color-bg-tertiary)]"
+              className="ka-btn min-h-11"
             >
               ยกเลิก
             </button>

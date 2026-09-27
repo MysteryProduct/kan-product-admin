@@ -35,8 +35,7 @@ const outcomeLabels: Record<string, string> = {
   other: 'อื่น ๆ',
 };
 
-const inputClass =
-  'min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2';
+const inputClass = 'ka-input min-h-11';
 
 export default function PickupCard({
   storeOrderId,
@@ -79,7 +78,7 @@ export default function PickupCard({
   const actionable = canEdit && orderPaid && !collected;
 
   return (
-    <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10 sm:p-6">
+    <div className="ka-card p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-medium">การรับสินค้าที่ร้าน</h2>
         <StatusBadge tone={STORE_PICKUP_STATUS_TONE[pickup.status]}>{statusLabels[pickup.status]}</StatusBadge>
@@ -134,7 +133,7 @@ export default function PickupCard({
           type="button"
           disabled={pending}
           onClick={() => void run(() => storeFulfillmentModel.markPickupReady(storeOrderId))}
-          className="mt-4 min-h-11 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+          className="mt-4 ka-btn ka-btn--primary min-h-11"
         >
           แจ้งลูกค้าว่าพร้อมรับ (เริ่มนับ 7 วัน)
         </button>
@@ -175,7 +174,7 @@ export default function PickupCard({
             <button
               type="submit"
               disabled={pending}
-              className="min-h-11 rounded-lg border border-[var(--color-border)] px-4 py-2 font-medium hover:bg-[var(--color-bg-tertiary)] disabled:opacity-60"
+              className="ka-btn min-h-11"
             >
               บันทึกนัดครั้งที่สอง
             </button>
@@ -235,7 +234,7 @@ export default function PickupCard({
             <button
               type="submit"
               disabled={pending}
-              className="min-h-11 rounded-lg border border-[var(--color-border)] px-4 py-2 font-medium hover:bg-[var(--color-bg-tertiary)] disabled:opacity-60"
+              className="ka-btn min-h-11"
             >
               บันทึกการติดต่อ
             </button>
@@ -271,7 +270,7 @@ export default function PickupCard({
             <button
               type="submit"
               disabled={pending}
-              className="min-h-11 rounded-lg bg-green-600 px-4 py-2 font-medium text-white hover:bg-green-700 disabled:opacity-60"
+              className="ka-btn ka-btn--primary min-h-11"
             >
               ยืนยันส่งมอบสินค้า
             </button>

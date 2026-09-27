@@ -55,7 +55,7 @@ export default function TaxInvoiceRequestList({
   return (
     <section
       aria-labelledby="tax-invoice-requests-heading"
-      className="mt-4 rounded-xl bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10 sm:p-6"
+      className="mt-4 ka-card p-4 sm:p-6"
     >
       <h2 id="tax-invoice-requests-heading" className="font-medium">
         คำขอใบกำกับภาษี
@@ -92,7 +92,7 @@ export default function TaxInvoiceRequestList({
                 {result.data.map((row) => (
                   <tr
                     key={row.storeOrderId}
-                    className="border-b border-gray-50 dark:border-gray-700"
+                    className="border-b border-[var(--border)]"
                   >
                     <td className="py-2 pr-3 whitespace-nowrap">
                       {formatThaiDate(row.requestedAt)}
@@ -103,7 +103,7 @@ export default function TaxInvoiceRequestList({
                       <button
                         type="button"
                         onClick={() => onOpen(row.storeOrderId)}
-                        className="min-h-11 rounded-lg px-3 py-2 font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-700"
+                        className="ka-btn ka-btn--ghost min-h-11 text-[var(--brand-ink)]"
                       >
                         เปิดคำสั่งซื้อ
                       </button>

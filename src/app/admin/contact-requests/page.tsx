@@ -86,7 +86,7 @@ export default function ContactRequestsPage() {
         <button
           type="button"
           onClick={() => setSelected(row)}
-          className="text-blue-600 hover:underline"
+          className="text-[var(--brand-ink)] hover:underline"
         >
           ดู/จัดการ
         </button>
@@ -96,7 +96,7 @@ export default function ContactRequestsPage() {
 
   if (!canView) {
     return (
-      <div className="min-h-full bg-[#F5F7FA] p-4 dark:bg-slate-950 sm:p-6">
+      <div className="min-h-full bg-[var(--bg-page)] p-4 sm:p-6">
         <p className="text-[var(--color-text-secondary)]">
           คุณไม่มีสิทธิ์เข้าถึงคำขอติดต่อกลับ กรุณาติดต่อผู้ดูแลระบบ
         </p>
@@ -105,9 +105,9 @@ export default function ContactRequestsPage() {
   }
 
   return (
-    <div className="min-h-full bg-[#F5F7FA] p-2 dark:bg-slate-950 sm:p-4 md:p-6 lg:p-8">
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10 sm:rounded-2xl">
-        <div className="flex flex-col gap-3 border-b border-gray-100 p-3 dark:border-gray-700 sm:flex-row sm:items-center sm:justify-between sm:p-4 md:p-6">
+    <div className="min-h-full bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
+      <div className="ka-card overflow-hidden">
+        <div className="flex flex-col gap-3 border-b border-[var(--border)] p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4 md:p-6">
           <h1 className="text-lg font-semibold text-[var(--color-text-primary)]">
             คำขอติดต่อกลับ
           </h1>
@@ -117,7 +117,7 @@ export default function ContactRequestsPage() {
               setStatusFilter(e.target.value as ContactRequestStatus | '');
               setCurrentPage(1);
             }}
-            className="min-h-11 rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-50"
+            className="ka-input min-h-11"
           >
             <option value="">ทุกสถานะ</option>
             {(Object.keys(statusLabels) as ContactRequestStatus[]).map(
@@ -143,9 +143,6 @@ export default function ContactRequestsPage() {
           columns={columns}
           keyField="contactRequestId"
           disabled={loading}
-          className="bg-white dark:bg-gray-800 p-1"
-          headerClassName="border-b border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900"
-          rowClassName="border-b border-slate-100 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-700/60"
           paginationMeta={meta}
           currentPage={currentPage}
           onPageChange={setCurrentPage}

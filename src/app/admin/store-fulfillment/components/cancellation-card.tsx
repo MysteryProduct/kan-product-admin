@@ -70,7 +70,7 @@ export default function CancellationCard({
   const decidable = canEdit && cancellation.status === 'pending';
 
   return (
-    <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10 sm:p-6">
+    <div className="ka-card p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="font-medium">คำขอยกเลิกจากลูกค้า</h2>
         <StatusBadge tone={STORE_CANCELLATION_STATUS_TONE[cancellation.status]}>{statusLabels[cancellation.status]}</StatusBadge>
@@ -102,7 +102,7 @@ export default function CancellationCard({
       </dl>
 
       {cancellation.status === 'pending' && (
-        <p className="mt-3 text-sm text-amber-700">
+        <p className="mt-3 text-sm text-[var(--warning)]">
           ระหว่างรอพิจารณา ระบบพักการบันทึกพัสดุ การจัดส่ง และการส่งมอบไว้ก่อน
         </p>
       )}
@@ -115,7 +115,7 @@ export default function CancellationCard({
             rows={2}
             maxLength={500}
             placeholder="หมายเหตุถึงลูกค้า (ไม่บังคับ)"
-            className="rounded-lg border border-[var(--color-border)] px-3 py-2"
+            className="ka-textarea"
           />
           <div className="flex flex-wrap gap-2">
             <button
@@ -129,7 +129,7 @@ export default function CancellationCard({
                   ),
                 )
               }
-              className="min-h-11 rounded-lg bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-700 disabled:opacity-60"
+              className="ka-btn ka-btn--danger min-h-11"
             >
               อนุมัติยกเลิกและคืนเงินเต็มจำนวน
             </button>
@@ -144,7 +144,7 @@ export default function CancellationCard({
                   ),
                 )
               }
-              className="min-h-11 rounded-lg border border-[var(--color-border)] px-4 py-2 font-medium hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-60"
+              className="ka-btn min-h-11"
             >
               ไม่อนุมัติและปลดการพักส่ง
             </button>
@@ -242,7 +242,7 @@ export function RefundPanel({
   const attemptInFlight = refund.status === 'processing' && !retryable;
 
   return (
-    <div className="mt-4 rounded-lg bg-[#F5F7FA] p-3 text-sm dark:bg-slate-900">
+    <div className="mt-4 rounded-lg bg-[var(--bg-subtle)] p-3 text-sm">
       <p className="font-medium">
         {title} ·{' '}
         {refund.reversalPending
@@ -267,7 +267,7 @@ export function RefundPanel({
         </p>
       )}
       {refund.reversalPending && (
-        <p className="text-amber-700">
+        <p className="text-[var(--warning)]">
           เงินคืนให้ลูกค้าแล้ว เหลือคืนสต็อกและปิดคำสั่งซื้อในระบบ
         </p>
       )}
@@ -281,19 +281,19 @@ export function RefundPanel({
       {refund.refundChannel === 'manual_transfer' && (
         <div className="mt-3 grid gap-2 sm:max-w-xl">
           {refund.manualRefundRequired && (
-            <p className="text-amber-700">
+            <p className="text-[var(--warning)]">
               ยอดนี้ชำระด้วยพร้อมเพย์ ผู้ให้บริการคืนเงินให้ไม่ได้
               ต้องโอนคืนเข้าบัญชีลูกค้าแล้วบันทึกหลักฐานการโอนที่นี่
             </p>
           )}
           {refund.accountRequired && (
-            <p className="text-amber-700">
+            <p className="text-[var(--warning)]">
               ลูกค้ายังไม่ได้แจ้งบัญชีรับเงินคืน ให้ลูกค้าแจ้งผ่านหน้าติดตามคำสั่งซื้อ
               แล้วจึงโอนและบันทึกหลักฐาน
             </p>
           )}
           {transferAccount && (
-            <dl className="grid gap-1 rounded-lg bg-white p-3 dark:bg-slate-800">
+            <dl className="grid gap-1 rounded-lg bg-[var(--bg-surface)] p-3">
               <div className="flex gap-2">
                 <dt className="text-[var(--color-text-secondary)]">ชื่อบัญชี</dt>
                 <dd>{transferAccount.name ?? '-'}</dd>
@@ -317,7 +317,7 @@ export function RefundPanel({
                 }
                 maxLength={120}
                 placeholder="เลขอ้างอิงการโอน"
-                className="min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2"
+                className="ka-input min-h-11"
               />
               <p>
                 ยอดที่ต้องโอนคืน{' '}
@@ -332,7 +332,7 @@ export function RefundPanel({
                 onChange={(e) =>
                   setTransfer({ ...transfer, transferred_at: e.target.value })
                 }
-                className="min-h-11 rounded-lg border border-[var(--color-border)] px-3 py-2"
+                className="ka-input min-h-11"
               />
               <button
                 type="button"
@@ -358,7 +358,7 @@ export function RefundPanel({
                     ),
                   )
                 }
-                className="min-h-11 rounded-lg bg-green-600 px-4 py-2 font-medium text-white hover:bg-green-700 disabled:opacity-60"
+                className="ka-btn ka-btn--primary min-h-11"
               >
                 บันทึกว่าโอนคืนแล้ว
               </button>
@@ -388,7 +388,7 @@ export function RefundPanel({
           onClick={() =>
             void run(() => storeFulfillmentModel.retryRefund(refund.refundId))
           }
-          className="mt-2 min-h-11 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+          className="mt-2 ka-btn ka-btn--primary min-h-11"
         >
           {refund.reversalPending
             ? 'ทำการกลับรายการต่อ'

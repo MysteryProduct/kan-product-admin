@@ -58,7 +58,7 @@ export default function StoreFulfillmentPage() {
 
   if (!canView) {
     return (
-      <div className="min-h-full bg-[#F5F7FA] p-4 dark:bg-slate-950 sm:p-6">
+      <div className="min-h-full bg-[var(--bg-page)] p-4 sm:p-6">
         <p className="text-[var(--color-text-secondary)]">
           คุณไม่มีสิทธิ์เข้าถึงการจัดส่งพัสดุ กรุณาติดต่อผู้ดูแลระบบ
         </p>
@@ -86,9 +86,9 @@ export default function StoreFulfillmentPage() {
   );
 
   return (
-    <div className="min-h-full bg-[#F5F7FA] p-2 dark:bg-slate-950 sm:p-4 md:p-6 lg:p-8">
-      <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10 sm:rounded-2xl">
-        <div className="flex flex-col gap-3 border-b border-gray-100 p-3 dark:border-gray-700 sm:flex-row sm:items-center sm:justify-between sm:p-4 md:p-6">
+    <div className="min-h-full bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
+      <div className="ka-card overflow-hidden">
+        <div className="flex flex-col gap-3 border-b border-[var(--border)] p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4 md:p-6">
           <h1 className="text-lg font-semibold text-[var(--color-text-primary)]">
             จัดส่งพัสดุ
           </h1>
@@ -103,12 +103,12 @@ export default function StoreFulfillmentPage() {
               value={storeOrderIdInput}
               onChange={(e) => setStoreOrderIdInput(e.target.value)}
               placeholder="เลขคำสั่งซื้อ (store order id)"
-              className="min-h-11 w-80 rounded-lg border border-[var(--color-border)] px-3 py-2"
+              className="ka-input min-h-11 w-80 max-w-full"
             />
             <button
               type="submit"
               disabled={loading}
-              className="min-h-11 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+              className="ka-btn ka-btn--primary min-h-11"
             >
               {loading ? 'กำลังค้นหา...' : 'ค้นหา'}
             </button>
@@ -124,7 +124,7 @@ export default function StoreFulfillmentPage() {
 
       {order && (
         <div className="mt-4 grid gap-4">
-          <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-black/5 dark:bg-slate-800 dark:ring-white/10 sm:p-6">
+          <div className="ka-card p-4 sm:p-6">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <p className="text-sm text-[var(--color-text-secondary)]">
@@ -140,14 +140,14 @@ export default function StoreFulfillmentPage() {
                   type="button"
                   onClick={() => setShowCreateParcel(true)}
                   disabled={!hasRemaining || !!unpaidShipping}
-                  className="min-h-11 rounded-lg bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-60"
+                  className="ka-btn ka-btn--primary min-h-11"
                 >
                   บันทึกพัสดุใหม่
                 </button>
               )}
             </div>
             {canCreateParcel && unpaidShipping && (
-              <p className="mt-2 text-sm text-amber-700">
+              <p className="mt-2 text-sm text-[var(--warning)]">
                 รอลูกค้าชำระค่าจัดส่ง {unpaidShipping.amount} บาท จึงจะบันทึกพัสดุได้
               </p>
             )}
@@ -163,7 +163,7 @@ export default function StoreFulfillmentPage() {
               </thead>
               <tbody>
                 {order.items.map((line) => (
-                  <tr key={line.saleOrderListId} className="border-b border-gray-50 dark:border-gray-700">
+                  <tr key={line.saleOrderListId} className="border-b border-[var(--border)]">
                     <td className="py-2">{line.productName}</td>
                     <td className="py-2 text-right">{line.purchasedQty}</td>
                     <td className="py-2 text-right">{line.shippedQty}</td>

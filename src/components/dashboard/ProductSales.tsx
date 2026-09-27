@@ -10,7 +10,7 @@ export default function ProductSales() {
             <path
               d="M 0 120 Q 50 80, 100 90 T 200 70 T 300 80 T 400 60"
               fill="none"
-              stroke="#3b82f6"
+              className="stroke-[var(--brand)]"
               strokeWidth="3"
             />
             <path
@@ -20,24 +20,24 @@ export default function ProductSales() {
             />
             <defs>
               <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
+                <stop offset="0%" style={{ stopColor: 'var(--brand)' }} stopOpacity="0.4" />
+                <stop offset="100%" style={{ stopColor: 'var(--brand)' }} stopOpacity="0" />
               </linearGradient>
             </defs>
           </svg>
-          <div className="absolute bottom-0 left-0 right-0 flex justify-between px-4 text-xs text-gray-500 dark:text-gray-400">
+          <div className="absolute bottom-0 left-0 right-0 flex justify-between px-4 text-[13px] text-[var(--ink-muted)]">
             {['2016', '2017', '2018', '2019', '2020', '2021', '2022'].map((year) => (
               <span key={year}>{year}</span>
             ))}
           </div>
         </div>
         
-        <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-[var(--border)]">
           <div>
-            <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">36,436</p>
-            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">New Customer</p>
+            <p className="text-xl sm:text-2xl font-bold text-[var(--ink)]">36,436</p>
+            <p className="text-[13px] sm:text-sm text-[var(--ink-muted)]">New Customer</p>
           </div>
-          <span className="text-green-600 font-semibold">+23%</span>
+          <span className="text-[var(--success)] font-semibold">+23%</span>
         </div>
       </div>
     </ChartCard>
