@@ -389,6 +389,10 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
         return `Variant #${variantIndex + 1} ต้องมี Product Material อย่างน้อย 1 รายการ`;
       }
 
+      if (validMaterials.some((material) => !Number.isInteger(material.material_qty))) {
+        return `Variant #${variantIndex + 1} จำนวนวัตถุดิบต่อชิ้นต้องเป็นจำนวนเต็ม`;
+      }
+
       const duplicateMaterialIds = new Set<string>();
       for (const material of validMaterials) {
         if (duplicateMaterialIds.has(material.material_id)) {
@@ -691,8 +695,8 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
                               <input
                                 required
                                 type="number"
-                                min="0.01"
-                                step="0.01"
+                                min="1"
+                                step="1"
                                 value={materialRow.material_qty}
                                 onChange={(e) => updateMaterial(variant.client_variant_key, materialRow.id, 'material_qty', e.target.value)}
                                 className={FORM_INPUT_COMPACT_CLASS}

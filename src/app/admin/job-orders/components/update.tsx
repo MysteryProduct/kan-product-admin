@@ -289,8 +289,9 @@ export default function UpdateJobOrderForm({
 			nextErrors.target_date = 'กรุณาเลือกวันที่เป้าหมาย';
 		}
 
-		if (Number(jobOrderQty) < 0 || Number.isNaN(Number(jobOrderQty))) {
-			nextErrors.job_order_qty = 'จำนวนที่ผลิตต้องเป็นตัวเลขและต้องไม่ติดลบ';
+		const orderQty = Number(jobOrderQty);
+		if (!jobOrderQty.trim() || !Number.isInteger(orderQty) || orderQty < 1) {
+			nextErrors.job_order_qty = 'จำนวนที่ผลิตต้องเป็นจำนวนเต็มอย่างน้อย 1';
 		}
 
 		if (!sizeId) {
@@ -308,6 +309,8 @@ export default function UpdateJobOrderForm({
 		const hasValidMaterial = materials.some((item) => item.material_id && item.material_qty > 0);
 		if (!hasValidMaterial) {
 			nextErrors.materials = 'กรุณาเพิ่มวัตถุดิบอย่างน้อย 1 รายการ';
+		} else if (materials.some((item) => item.material_id && !Number.isInteger(item.material_qty))) {
+			nextErrors.materials = 'จำนวนวัตถุดิบต่อชิ้นต้องเป็นจำนวนเต็มอย่างน้อย 1';
 		}
 
 		setErrors(nextErrors);
@@ -488,7 +491,7 @@ export default function UpdateJobOrderForm({
 								<label className="block text-sm font-semibold text-[var(--ink)] mb-2">จำนวนที่ผลิต</label>
 								<input
 									type="number"
-									min={0}
+									min={1}
 									step="1"
 									value={jobOrderQty}
 									onChange={(e) => setJobOrderQty(e.target.value)}
@@ -567,8 +570,8 @@ export default function UpdateJobOrderForm({
 												<label className="block text-sm font-medium text-[var(--ink)] mb-2">จำนวน</label>
 												<input
 													type="number"
-													min={0}
-													step="0.01"
+													min={1}
+													step="1"
 													value={item.material_qty}
 													onChange={(e) => updateMaterialRow(item.id, 'material_qty', Number(e.target.value))}
 													disabled={isSubmitting}

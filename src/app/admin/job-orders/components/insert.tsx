@@ -103,7 +103,7 @@ export default function InsertJobOrderForm({
 	const [productVariantId, setProductVariantId] = useState('');
 	const [jobOrderName, setJobOrderName] = useState('');
 	const [jobOrderDescription, setJobOrderDescription] = useState('');
-	const [jobOrderQty, setJobOrderQty] = useState('0');
+	const [jobOrderQty, setJobOrderQty] = useState('1');
 	const [jobOrderPrice, setJobOrderPrice] = useState('0');
 	const [targetDate, setTargetDate] = useState(getDefaultTargetDate());
 	const [sizeId, setSizeId] = useState('');
@@ -210,7 +210,7 @@ export default function InsertJobOrderForm({
 		setProductVariantId(initialData?.product_variant_id ? String(initialData.product_variant_id) : '');
 		setJobOrderName(initialData?.job_order_name || '');
 		setJobOrderDescription(initialData?.job_order_description || '');
-		setJobOrderQty(typeof initialData?.job_order_qty === 'number' ? String(initialData.job_order_qty) : '0');
+		setJobOrderQty(typeof initialData?.job_order_qty === 'number' ? String(initialData.job_order_qty) : '1');
 		setJobOrderPrice(typeof initialData?.job_order_price === 'number' ? String(initialData.job_order_price) : '0');
 		setTargetDate(initialData?.target_date ? String(initialData.target_date).slice(0, 10) : getDefaultTargetDate());
 		setSizeId(initialData?.size_id ? String(initialData.size_id) : '');
@@ -308,8 +308,9 @@ export default function InsertJobOrderForm({
 			nextErrors.target_date = 'กรุณาเลือกวันที่เป้าหมาย';
 		}
 
-		if (Number(jobOrderQty) < 0 || Number.isNaN(Number(jobOrderQty))) {
-			nextErrors.job_order_qty = 'จำนวนที่ผลิตต้องเป็นตัวเลขและต้องไม่ติดลบ';
+		const orderQty = Number(jobOrderQty);
+		if (!jobOrderQty.trim() || !Number.isInteger(orderQty) || orderQty < 1) {
+			nextErrors.job_order_qty = 'จำนวนที่ผลิตต้องเป็นจำนวนเต็มอย่างน้อย 1';
 		}
 
 		if (!sizeId) {
@@ -330,8 +331,8 @@ export default function InsertJobOrderForm({
 		}
 
 		materials.forEach((item, index) => {
-			if (item.material_id && item.material_qty <= 0) {
-				nextErrors[`material_${index}_qty`] = 'จำนวนวัตถุดิบต้องมากกว่า 0';
+			if (item.material_id && (!Number.isInteger(item.material_qty) || item.material_qty < 1)) {
+				nextErrors[`material_${index}_qty`] = 'จำนวนวัตถุดิบต่อชิ้นต้องเป็นจำนวนเต็มอย่างน้อย 1';
 			}
 		});
 
@@ -532,7 +533,7 @@ export default function InsertJobOrderForm({
 								<label className="block text-sm font-semibold text-[var(--ink)] mb-2">จำนวนที่ผลิต</label>
 								<input
 									type="number"
-									min={0}
+									min={1}
 									step="1"
 									value={jobOrderQty}
 									onChange={(e) => setJobOrderQty(e.target.value)}
@@ -604,8 +605,8 @@ export default function InsertJobOrderForm({
 												<label className="block text-sm font-medium text-[var(--ink)] mb-2">จำนวน</label>
 												<input
 													type="number"
-													min={0}
-													step="0.01"
+													min={1}
+													step="1"
 													value={item.material_qty}
 													onChange={(e) => updateMaterialRow(item.id, 'material_qty', Number(e.target.value))}
 													disabled={isSubmitting}
