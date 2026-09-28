@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import Cookies from 'js-cookie';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -100,6 +100,39 @@ const STATUS_STYLES: Record<BoardStatus, StatusStyle> = {
 };
 
 const WEEKDAY_LABELS = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+
+// Same transitions the API enforces; completed and cancelled are final.
+const ALLOWED_TRANSITIONS: Record<BoardStatus, BoardStatus[]> = {
+	pending: ['in_progress', 'cancelled'],
+	in_progress: ['completed', 'cancelled'],
+	completed: [],
+	cancelled: [],
+};
+
+const PAGE_SIZE = 8;
+const DEFAULT_VISIBLE: Record<BoardStatus, number> = {
+	pending: PAGE_SIZE,
+	in_progress: PAGE_SIZE,
+	completed: PAGE_SIZE,
+	cancelled: PAGE_SIZE,
+};
+
+const toIsoDate = (value: Date) => {
+	return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
+};
+
+const parseCalendarMonth = (calendarMonth: string) => {
+	const [yearText, monthText] = calendarMonth.split('-');
+	const year = Number(yearText);
+	const month = Number(monthText);
+
+	if (Number.isNaN(year) || Number.isNaN(month) || month < 1 || month > 12) {
+		const now = new Date();
+		return new Date(now.getFullYear(), now.getMonth(), 1);
+	}
+
+	return new Date(year, month - 1, 1);
+};
 
 const normalizeStatus = (status?: string): BoardStatus => {
 	if (!status) {
@@ -233,16 +266,139 @@ const getDelayBadge = (job: JobOrder) => {
 	};
 };
 
+interface JobCardActions {
+	onView: (job: JobOrder) => void;
+	onCopy: (job: JobOrder) => void;
+	onEdit: (job: JobOrder) => void;
+	onDelete: (job: JobOrder) => void;
+	onDragStart: (jobId: string) => void;
+	onDragEnd: () => void;
+}
+
+// Memoised so a keystroke in the search box, or a drag entering a column, does not rebuild every card.
+const JobCard = memo(function JobCard({
+	job,
+	canEdit,
+	canDelete,
+	isDragging,
+	actions,
+}: {
+	job: JobOrder;
+	canEdit: boolean;
+	canDelete: boolean;
+	isDragging: boolean;
+	actions: JobCardActions;
+}) {
+	const assignee = getAssigneeName(job);
+	const jobStatus = normalizeStatus(job.job_order_status);
+	const canMove = ALLOWED_TRANSITIONS[jobStatus].length > 0;
+	const isClosed = jobStatus === 'completed' || jobStatus === 'cancelled';
+	const delayBadge = getDelayBadge(job);
+
+	return (
+		<article
+			draggable={canMove}
+			onDragStart={(event) => {
+				if (!canMove) {
+					event.preventDefault();
+					return;
+				}
+				event.dataTransfer.effectAllowed = 'move';
+				event.dataTransfer.setData('text/plain', job.job_order_id);
+				actions.onDragStart(job.job_order_id);
+			}}
+			onDragEnd={actions.onDragEnd}
+			className={`rounded-lg border border-[var(--border)]/90 bg-[var(--bg-surface)] p-2 shadow-sm transition-all ${
+				!canMove ? 'cursor-not-allowed opacity-95' : 'hover:shadow-md cursor-grab active:cursor-grabbing'
+			} ${isDragging ? 'opacity-60' : ''}`}
+		>
+			<div className="flex items-start gap-1.5">
+				<h3 className="flex-1 text-[13px] font-semibold text-[var(--ink)] line-clamp-1 leading-tight">{job.job_order_name}</h3>
+				<span className="shrink-0 text-[13px] px-1.5 py-0.5 rounded-full bg-[var(--bg-muted)] text-[var(--ink-muted)] leading-none">
+					{job.job_order_type}
+				</span>
+			</div>
+
+			<div className="mt-1 text-[13px] text-[var(--ink-muted)] space-y-0.5">
+				<p className="truncate font-medium text-[var(--ink)]">{assignee}</p>
+				<div className="flex items-center gap-2">
+					<span>{formatThaiDate(job.target_date)}</span>
+					<span className="text-[var(--ink-subtle)]">·</span>
+					<span>ผลิต {job.job_order_qty ?? 0}</span>
+				</div>
+				{delayBadge && (
+					<div className="pt-0.5">
+						<span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[13px] font-semibold ${delayBadge.className}`}>
+							{delayBadge.label}
+						</span>
+					</div>
+				)}
+			</div>
+
+			<div className="mt-1.5 pt-1 border-t border-[var(--border)] flex items-center justify-end gap-1">
+				<button
+					type="button"
+					onClick={() => actions.onView(job)}
+					className="ka-btn ka-btn--ghost ka-btn--sm ka-btn--icon hover:text-[var(--brand-ink)]"
+					title="ดูรายละเอียด"
+				>
+					<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S3.732 16.057 2.458 12Z" />
+					</svg>
+				</button>
+				<button
+					type="button"
+					onClick={() => actions.onCopy(job)}
+					className="ka-btn ka-btn--ghost ka-btn--sm ka-btn--icon hover:text-[var(--info)]"
+					title="Copy เป็นงานใหม่"
+				>
+					<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2m-4 4H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2Z" />
+					</svg>
+				</button>
+				{canEdit && !isClosed && (
+					<button
+						type="button"
+						onClick={() => actions.onEdit(job)}
+						className="ka-btn ka-btn--ghost ka-btn--sm ka-btn--icon hover:text-[var(--warning)]"
+						title="แก้ไขงานผลิต"
+					>
+						<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+						</svg>
+					</button>
+				)}
+				{canDelete && jobStatus !== 'completed' && (
+					<button
+						type="button"
+						onClick={() => actions.onDelete(job)}
+						className="ka-btn ka-btn--ghost ka-btn--sm ka-btn--icon hover:bg-[var(--danger-soft)] hover:text-[var(--danger)]"
+						title="ลบงานผลิต"
+					>
+						<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 7h12m-9 0V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-7 0h8m-9 4v6m4-6v6m4-6v6M5 7h14v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7Z" />
+						</svg>
+					</button>
+				)}
+			</div>
+		</article>
+	);
+});
+
 export default function JobOrdersPage() {
 	const { can } = usePermissions();
-	const canAdd = can('job_orders', 'add') || can('stock', 'add');
-	const canEdit = can('job_orders', 'edit') || can('stock', 'edit');
-	const canDelete = can('job_orders', 'delete') || can('stock', 'delete');
+	// The job order API checks job_orders only, so other menus' rights would only show buttons that fail.
+	const canAdd = can('job_orders', 'add');
+	const canEdit = can('job_orders', 'edit');
+	const canDelete = can('job_orders', 'delete');
 
 	const user = useMemo(() => getUserFromCookie(), []);
 
 	const [jobOrders, setJobOrders] = useState<JobOrder[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
+	const [hasLoaded, setHasLoaded] = useState(false);
+	const requestIdRef = useRef(0);
 	const [isInsertOpen, setIsInsertOpen] = useState(false);
 	const [isUpdateOpen, setIsUpdateOpen] = useState(false);
 	const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -268,13 +424,12 @@ export default function JobOrdersPage() {
 	const [sortDirection, setSortDirection] = useState<'ASC' | 'DESC'>('ASC');
 	const [draggingJobId, setDraggingJobId] = useState<string | null>(null);
 	const [dragOverColumn, setDragOverColumn] = useState<BoardStatus | null>(null);
-	const PAGE_SIZE = 8;
-	const [columnVisible, setColumnVisible] = useState<Record<BoardStatus, number>>({
-		pending: PAGE_SIZE,
-		in_progress: PAGE_SIZE,
-		completed: PAGE_SIZE,
-		cancelled: PAGE_SIZE,
-	});
+	// Typing stays immediate; the board catches up at lower priority.
+	const deferredSearchText = useDeferredValue(searchText);
+	// "Load more" counts belong to one filter set and fall back to the default when the filters change.
+	const filterKey = [deferredSearchText, selectedAssignee, selectedType, sortDirection, dateStart, dateEnd].join('|');
+	const [visibleByFilter, setVisibleByFilter] = useState({ key: filterKey, counts: DEFAULT_VISIBLE });
+	const columnVisible = visibleByFilter.key === filterKey ? visibleByFilter.counts : DEFAULT_VISIBLE;
 	const [pendingCompleteJob, setPendingCompleteJob] = useState<JobOrder | null>(null);
 	const [completionQty, setCompletionQty] = useState('');
 	const [completionDefectQty, setCompletionDefectQty] = useState('');
@@ -318,31 +473,37 @@ export default function JobOrdersPage() {
 		return Array.from(map.entries()).map(([value, label]) => ({ value, label }));
 	}, [jobOrders]);
 
+	// Searchable text per job, built once per fetch instead of on every keystroke.
+	// Fields are joined with a newline, which a search box cannot contain, so a match never spans two fields.
+	const searchTextByJob = useMemo(() => {
+		return new Map(
+			jobOrders.map((job) => [
+				job.job_order_id,
+				[
+					job.job_order_name || '',
+					getAssigneeName(job),
+					String(job.target_date || ''),
+					formatThaiDate(job.target_date),
+					mapStatusToLabel(normalizeStatus(job.job_order_status)),
+					String(job.job_order_qty ?? ''),
+				]
+					.join('\n')
+					.toLowerCase(),
+			]),
+		);
+	}, [jobOrders]);
+
 	const filteredJobOrders = useMemo(() => {
-		const q = searchText.trim().toLowerCase();
+		const q = deferredSearchText.trim().toLowerCase();
 
 		return jobOrders.filter((job) => {
-			const name = (job.job_order_name || '').toLowerCase();
-			const assignee = getAssigneeName(job).toLowerCase();
-			const targetDate = String(job.target_date || '').toLowerCase();
-			const targetDateThai = formatThaiDate(job.target_date).toLowerCase();
-			const qty = String(job.job_order_qty ?? '').toLowerCase();
-			const statusLabel = mapStatusToLabel(normalizeStatus(job.job_order_status)).toLowerCase();
-
-			const matchesSearch =
-				!q ||
-				name.includes(q) ||
-				assignee.includes(q) ||
-				targetDate.includes(q) ||
-				targetDateThai.includes(q) ||
-				statusLabel.includes(q) ||
-				qty.includes(q);
+			const matchesSearch = !q || (searchTextByJob.get(job.job_order_id) ?? '').includes(q);
 			const matchesPerson = selectedAssignee === 'all' || selectedAssignee === (job.employee_id || getAssigneeName(job));
 			const matchesType = selectedType === 'all' || selectedType === job.job_order_type;
 
 			return matchesSearch && matchesPerson && matchesType;
 		});
-	}, [jobOrders, searchText, selectedAssignee, selectedType]);
+	}, [jobOrders, searchTextByJob, deferredSearchText, selectedAssignee, selectedType]);
 
 	const grouped = useMemo(() => {
 		return BOARD_COLUMNS.reduce((acc, column) => {
@@ -351,18 +512,7 @@ export default function JobOrdersPage() {
 		}, {} as Record<BoardStatus, JobOrder[]>);
 	}, [filteredJobOrders]);
 
-	const calendarDate = useMemo(() => {
-		const [yearText, monthText] = calendarMonth.split('-');
-		const year = Number(yearText);
-		const month = Number(monthText);
-
-		if (Number.isNaN(year) || Number.isNaN(month) || month < 1 || month > 12) {
-			const now = new Date();
-			return new Date(now.getFullYear(), now.getMonth(), 1);
-		}
-
-		return new Date(year, month - 1, 1);
-	}, [calendarMonth]);
+	const calendarDate = useMemo(() => parseCalendarMonth(calendarMonth), [calendarMonth]);
 
 	const calendarTitle = useMemo(() => {
 		return calendarDate.toLocaleDateString('th-TH', {
@@ -372,6 +522,10 @@ export default function JobOrdersPage() {
 	}, [calendarDate]);
 
 	const calendarCells = useMemo<CalendarCell[]>(() => {
+		if (viewMode !== 'calendar') {
+			return [];
+		}
+
 		const currentYear = calendarDate.getFullYear();
 		const currentMonth = calendarDate.getMonth();
 		const monthStart = new Date(currentYear, currentMonth, 1);
@@ -404,38 +558,34 @@ export default function JobOrdersPage() {
 				jobs,
 			};
 		});
-	}, [calendarDate, filteredJobOrders]);
+	}, [viewMode, calendarDate, filteredJobOrders]);
 
-	useEffect(() => {
-		setColumnVisible({ pending: PAGE_SIZE, in_progress: PAGE_SIZE, completed: PAGE_SIZE, cancelled: PAGE_SIZE });
-	}, [searchText, selectedAssignee, selectedType, sortDirection, dateStart, dateEnd]);
-
-	useEffect(() => {
-		void fetchJobOrders(dateStart, dateEnd);
-	}, [dateStart, dateEnd, sortDirection]);
-
-	useEffect(() => {
+	// The board shows the chosen target-date range; the calendar shows its month. Whichever view is open
+	// decides what is loaded, so switching back to the board reloads the board's range.
+	const activeRange = useMemo(() => {
 		if (viewMode === 'calendar') {
-			const [yearText, monthText] = calendarMonth.split('-');
-			const year = Number(yearText);
-			const month = Number(monthText);
-
-			if (!Number.isNaN(year) && !Number.isNaN(month) && month >= 1 && month <= 12) {
-				const monthStart = new Date(year, month - 1, 1);
-				const monthEnd = new Date(year, month, 0);
-				const start = `${monthStart.getFullYear()}-${String(monthStart.getMonth() + 1).padStart(2, '0')}-${String(monthStart.getDate()).padStart(2, '0')}`;
-				const end = `${monthEnd.getFullYear()}-${String(monthEnd.getMonth() + 1).padStart(2, '0')}-${String(monthEnd.getDate()).padStart(2, '0')}`;
-				void fetchJobOrders(start, end);
-			}
+			const monthStart = parseCalendarMonth(calendarMonth);
+			const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
+			return { start: toIsoDate(monthStart), end: toIsoDate(monthEnd) };
 		}
-	}, [viewMode, calendarMonth]);
+		return { start: dateStart, end: dateEnd };
+	}, [viewMode, calendarMonth, dateStart, dateEnd]);
 
-	const fetchJobOrders = async (start?: string, end?: string) => {
+	const fetchJobOrders = useCallback(async () => {
+		// Only the latest request may update the board, so a slow earlier response cannot overwrite a newer range.
+		const requestId = ++requestIdRef.current;
+		setIsLoading(true);
 		try {
-			setIsLoading(true);
-			const response = await jobOrderModel.getJobOrders(1, 300, sortDirection, undefined, undefined, start || undefined, end || undefined);
+			const response = await jobOrderModel.getJobOrders(1, 300, sortDirection, undefined, undefined, activeRange.start || undefined, activeRange.end || undefined);
+			if (requestId !== requestIdRef.current) {
+				return;
+			}
 			setJobOrders(response.data || []);
+			setHasLoaded(true);
 		} catch (error) {
+			if (requestId !== requestIdRef.current) {
+				return;
+			}
 			console.error('Failed to fetch job orders:', error);
 			setResultDialog({
 				isOpen: true,
@@ -443,11 +593,17 @@ export default function JobOrdersPage() {
 				message: error instanceof Error ? error.message : 'ไม่สามารถดึงข้อมูลงานผลิตได้',
 			});
 		} finally {
-			setIsLoading(false);
+			if (requestId === requestIdRef.current) {
+				setIsLoading(false);
+			}
 		}
-	};
+	}, [activeRange, sortDirection]);
 
-	const updateJobStatus = async (jobId: string, targetStatus: BoardStatus, qty?: number, defectQty?: number, reason?: string) => {
+	useEffect(() => {
+		void fetchJobOrders();
+	}, [fetchJobOrders]);
+
+	const updateJobStatus = async (jobId: string, targetStatus: BoardStatus, qty?: number, defectQty?: number, reason?: string): Promise<boolean> => {
 		const targetLabel = mapStatusToLabel(targetStatus);
 		const previous = [...jobOrders];
 		setJobOrders((prev) =>
@@ -458,6 +614,7 @@ export default function JobOrdersPage() {
 							job_order_status: targetStatus,
 							...(typeof qty === 'number' ? { job_order_qty: qty } : {}),
 							...(typeof defectQty === 'number' ? { job_order_defect_qty: defectQty } : {}),
+							...(targetStatus === 'completed' ? { finish_date: new Date().toISOString() } : {}),
 						}
 					: job,
 			),
@@ -470,6 +627,7 @@ export default function JobOrdersPage() {
 				status: 'success',
 				message: `ย้ายสถานะงานเป็น ${targetLabel} สำเร็จ`,
 			});
+			return true;
 		} catch (error) {
 			setJobOrders(previous);
 			setResultDialog({
@@ -477,6 +635,7 @@ export default function JobOrdersPage() {
 				status: 'error',
 				message: error instanceof Error ? error.message : 'ไม่สามารถอัปเดตสถานะงานได้',
 			});
+			return false;
 		}
 	};
 
@@ -493,32 +652,43 @@ export default function JobOrdersPage() {
 			return;
 		}
 
+		// Quantities are stored as whole numbers.
 		const qty = Number(completionQty);
-		if (Number.isNaN(qty) || qty <= 0) {
+		if (!Number.isInteger(qty) || qty <= 0) {
 			setResultDialog({
 				isOpen: true,
 				status: 'error',
-				message: 'กรุณาระบุจำนวนที่ผลิตจริงให้มากกว่า 0 ก่อนยืนยันปิดงาน',
+				message: 'กรุณาระบุจำนวนที่ผลิตจริงเป็นจำนวนเต็มที่มากกว่า 0 ก่อนยืนยันปิดงาน',
 			});
 			return;
 		}
 
 		const defectQty = completionDefectQty.trim() === '' ? 0 : Number(completionDefectQty);
-		if (Number.isNaN(defectQty) || defectQty < 0) {
+		if (!Number.isInteger(defectQty) || defectQty < 0) {
 			setResultDialog({
 				isOpen: true,
 				status: 'error',
-				message: 'กรุณาระบุจำนวนสินค้าเสียหายให้ถูกต้อง (0 ขึ้นไป)',
+				message: 'กรุณาระบุจำนวนสินค้าเสียหายเป็นจำนวนเต็ม 0 ขึ้นไป',
+			});
+			return;
+		}
+
+		if (defectQty > qty) {
+			setResultDialog({
+				isOpen: true,
+				status: 'error',
+				message: 'จำนวนสินค้าเสียหายต้องไม่มากกว่าจำนวนที่ผลิตจริง',
 			});
 			return;
 		}
 
 		setIsConfirmingComplete(true);
 		try {
-			pendingCompleteJob.finish_date = new Date().toISOString();
-			await updateJobStatus(pendingCompleteJob.job_order_id, 'completed', qty, defectQty);
-
-			closeDetailModal();
+			const succeeded = await updateJobStatus(pendingCompleteJob.job_order_id, 'completed', qty, defectQty);
+			// Keep the dialog and the entered quantities when the server refuses, so they can be corrected.
+			if (succeeded) {
+				closeDetailModal();
+			}
 		} finally {
 			setIsConfirmingComplete(false);
 		}
@@ -537,13 +707,7 @@ export default function JobOrdersPage() {
 		}
 
 		const currentStatus = normalizeStatus(current.job_order_status);
-		const allowedTransitions: Record<BoardStatus, BoardStatus[]> = {
-			pending: ['in_progress', 'cancelled'],
-			in_progress: ['completed', 'cancelled'],
-			completed: [],
-			cancelled: [],
-		};
-		if (!allowedTransitions[currentStatus].includes(column)) {
+		if (!ALLOWED_TRANSITIONS[currentStatus].includes(column)) {
 			setDraggingJobId(null);
 			setDragOverColumn(null);
 			return;
@@ -569,7 +733,8 @@ export default function JobOrdersPage() {
 		setDragOverColumn(null);
 	};
 
-	const handleCardCopy = (jobOrder: JobOrder) => {
+	// Only state setters are used here, so the functions stay the same between renders and memoised cards can skip.
+	const handleCardCopy = useCallback((jobOrder: JobOrder) => {
 		const materials = (jobOrder.jobOrderMaterials || jobOrder.job_order_materials || []).map((item) => ({
 			material_id: item.material_id,
 			material_qty: item.material_qty,
@@ -588,7 +753,31 @@ export default function JobOrdersPage() {
 			job_order_status: 'pending',
 		});
 		setIsInsertOpen(true);
-	};
+	}, []);
+
+	const cardActions = useMemo<JobCardActions>(
+		() => ({
+			onView: (job) => {
+				setSelectedJobOrder(job);
+				setIsDetailOpen(true);
+			},
+			onCopy: handleCardCopy,
+			onEdit: (job) => {
+				setSelectedJobOrder(job);
+				setIsUpdateOpen(true);
+			},
+			onDelete: (job) => {
+				setJobOrderToDelete(job);
+				setIsDeleteDialogOpen(true);
+			},
+			onDragStart: (jobId) => setDraggingJobId(jobId),
+			onDragEnd: () => {
+				setDraggingJobId(null);
+				setDragOverColumn(null);
+			},
+		}),
+		[handleCardCopy],
+	);
 
 	const handleDeleteJobOrder = async () => {
 		if (!jobOrderToDelete) {
@@ -597,7 +786,7 @@ export default function JobOrdersPage() {
 
 		try {
 			await jobOrderModel.deleteJobOrder(jobOrderToDelete.job_order_id);
-			await fetchJobOrders(dateStart, dateEnd);
+			await fetchJobOrders();
 			setResultDialog({
 				isOpen: true,
 				status: 'success',
@@ -653,7 +842,8 @@ export default function JobOrdersPage() {
 					</div>
 				</section>
 
-				<section className="ka-card overflow-hidden">
+				<section className="ka-card relative overflow-hidden" aria-busy={isLoading}>
+					<p role="status" className="sr-only">{isLoading && hasLoaded ? 'กำลังโหลดงานผลิต' : ''}</p>
 					<div className="border-b border-[var(--border)] p-3 sm:p-4 lg:p-5 flex flex-col gap-3">
 						<div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
 							<div>
@@ -825,13 +1015,13 @@ export default function JobOrdersPage() {
 						</div>
 					</div>
 
-					{isLoading ? (
+					{isLoading && !hasLoaded ? (
 						<div className="p-3 sm:p-4">
 							<LoadingSkeletonProps />
 						</div>
 					) : (
 						viewMode === 'board' ? (
-							<div className="p-3 sm:p-4 lg:p-5 overflow-x-auto">
+							<div className={`p-3 sm:p-4 lg:p-5 overflow-x-auto transition-opacity ${isLoading ? 'opacity-60' : ''}`}>
 								<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 min-w-[940px] md:min-w-0 items-start">
 									{BOARD_COLUMNS.map((column) => {
 										const cards = grouped[column.key] || [];
@@ -848,7 +1038,13 @@ export default function JobOrdersPage() {
 													event.preventDefault();
 													setDragOverColumn(column.key);
 												}}
-												onDragLeave={() => setDragOverColumn(null)}
+												onDragLeave={(event) => {
+													// dragleave also fires when the pointer moves onto a card inside the column; only clear on leaving the column.
+													if (event.currentTarget.contains(event.relatedTarget as Node | null)) {
+														return;
+													}
+													setDragOverColumn(null);
+												}}
 												onDrop={(event) => {
 													event.preventDefault();
 													void handleDrop(column.key);
@@ -871,122 +1067,24 @@ export default function JobOrdersPage() {
 														</div>
 													)}
 
-													{visibleCards.map((job) => {
-														const assignee = getAssigneeName(job);
-														const isCompleted = normalizeStatus(job.job_order_status) === 'completed';
-														const delayBadge = getDelayBadge(job);
-
-														return (
-															<article
-																key={job.job_order_id}
-																draggable={!isCompleted}
-																onDragStart={(event) => {
-																	if (isCompleted) {
-																		event.preventDefault();
-																		return;
-																	}
-																	event.dataTransfer.effectAllowed = 'move';
-																	event.dataTransfer.setData('text/plain', job.job_order_id);
-																	setDraggingJobId(job.job_order_id);
-																}}
-																onDragEnd={() => {
-																	setDraggingJobId(null);
-																	setDragOverColumn(null);
-																}}
-																className={`rounded-lg border border-[var(--border)]/90 bg-[var(--bg-surface)] p-2 shadow-sm transition-all ${
-																	isCompleted ? 'cursor-not-allowed opacity-95' : 'hover:shadow-md cursor-grab active:cursor-grabbing'
-																} ${draggingJobId === job.job_order_id ? 'opacity-60' : ''}`}
-															>
-																<div className="flex items-start gap-1.5">
-																	<h3 className="flex-1 text-[13px] font-semibold text-[var(--ink)] line-clamp-1 leading-tight">{job.job_order_name}</h3>
-																	<span className="shrink-0 text-[13px] px-1.5 py-0.5 rounded-full bg-[var(--bg-muted)] text-[var(--ink-muted)] leading-none">
-																		{job.job_order_type}
-																	</span>
-																</div>
-
-																<div className="mt-1 text-[13px] text-[var(--ink-muted)] space-y-0.5">
-																	<p className="truncate font-medium text-[var(--ink)]">{assignee}</p>
-																	<div className="flex items-center gap-2">
-																		<span>{formatThaiDate(job.target_date)}</span>
-																		<span className="text-[var(--ink-subtle)]">·</span>
-																		<span>ผลิต {job.job_order_qty ?? 0}</span>
-																	</div>
-																	{delayBadge && (
-																		<div className="pt-0.5">
-																			<span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[13px] font-semibold ${delayBadge.className}`}>
-																				{delayBadge.label}
-																			</span>
-																		</div>
-																	)}
-																</div>
-
-																<div className="mt-1.5 pt-1 border-t border-[var(--border)] flex items-center justify-end gap-1">
-																	<button
-																		type="button"
-																		onClick={() => {
-																			setSelectedJobOrder(job);
-																			setIsDetailOpen(true);
-																		}}
-																		className="ka-btn ka-btn--ghost ka-btn--sm ka-btn--icon hover:text-[var(--brand-ink)]"
-																		title="ดูรายละเอียด"
-																	>
-																		<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-																			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S3.732 16.057 2.458 12Z" />
-																		</svg>
-																	</button>
-																	<button
-																		type="button"
-																		onClick={() => handleCardCopy(job)}
-																		className="ka-btn ka-btn--ghost ka-btn--sm ka-btn--icon hover:text-[var(--info)]"
-																		title="Copy เป็นงานใหม่"
-																	>
-																		<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																			<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2m-4 4H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2Z" />
-																		</svg>
-																	</button>
-																	{canEdit && job.job_order_status !== 'completed' && (
-																		<button
-																			type="button"
-																			onClick={() => {
-																				setSelectedJobOrder(job);
-																				setIsUpdateOpen(true);
-																			}}
-																			className="ka-btn ka-btn--ghost ka-btn--sm ka-btn--icon hover:text-[var(--warning)]"
-																			title="แก้ไขงานผลิต"
-																		>
-																			<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-																			</svg>
-																		</button>
-																	)}
-																	{canDelete && job.job_order_status !== 'completed' && (
-																		<button
-																			type="button"
-																			onClick={() => {
-																				setJobOrderToDelete(job);
-																				setIsDeleteDialogOpen(true);
-																			}}
-																			className="ka-btn ka-btn--ghost ka-btn--sm ka-btn--icon hover:bg-[var(--danger-soft)] hover:text-[var(--danger)]"
-																			title="ลบงานผลิต"
-																		>
-																			<svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-																				<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 7h12m-9 0V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-7 0h8m-9 4v6m4-6v6m4-6v6M5 7h14v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7Z" />
-																			</svg>
-																		</button>
-																	)}
-																</div>
-															</article>
-														);
-													})}
+													{visibleCards.map((job) => (
+														<JobCard
+															key={job.job_order_id}
+															job={job}
+															canEdit={canEdit}
+															canDelete={canDelete}
+															isDragging={draggingJobId === job.job_order_id}
+															actions={cardActions}
+														/>
+													))}
 													{hasMore && (
 														<button
 															type="button"
 															onClick={() =>
-																setColumnVisible((prev) => ({
-																	...prev,
-																	[column.key]: prev[column.key] + PAGE_SIZE,
-																}))
+																setVisibleByFilter({
+																	key: filterKey,
+																	counts: { ...columnVisible, [column.key]: columnVisible[column.key] + PAGE_SIZE },
+																})
 															}
 															className="ka-btn ka-btn--sm w-full border-dashed"
 														>
@@ -1000,7 +1098,7 @@ export default function JobOrdersPage() {
 								</div>
 							</div>
 						) : (
-							<div className="p-3 sm:p-4 lg:p-5 space-y-3 sm:space-y-4">
+							<div className={`p-3 sm:p-4 lg:p-5 space-y-3 sm:space-y-4 transition-opacity ${isLoading ? 'opacity-60' : ''}`}>
 								<div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-subtle)]/80 p-3">
 									<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
 										<div className="flex items-center gap-2">
@@ -1141,7 +1239,7 @@ export default function JobOrdersPage() {
 					setCopySeed(null);
 				}}
 				onSuccess={() => {
-					void fetchJobOrders(dateStart, dateEnd);
+					void fetchJobOrders();
 					setCopySeed(null);
 				}}
 				initialData={copySeed}
@@ -1154,7 +1252,7 @@ export default function JobOrdersPage() {
 					setSelectedJobOrder(null);
 				}}
 				onSuccess={() => {
-					void fetchJobOrders(dateStart, dateEnd);
+					void fetchJobOrders();
 					setSelectedJobOrder(null);
 				}}
 				jobOrder={selectedJobOrder}
@@ -1175,7 +1273,7 @@ export default function JobOrdersPage() {
 
 			{pendingCancelJob && <CancellationDialog title="ยืนยันการยกเลิกงานผลิต" onClose={() => setPendingCancelJob(null)} onConfirm={async reason => {
 				await jobOrderModel.updateJobOrderStatus(pendingCancelJob.job_order_id, 'cancelled', undefined, undefined, undefined, reason);
-				await fetchJobOrders(dateStart, dateEnd);
+				await fetchJobOrders();
 			}} />}
 
 			<ConfirmDialog

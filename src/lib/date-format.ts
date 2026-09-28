@@ -41,13 +41,26 @@ const parseDateInput = (value: DateInput): Date | null => {
 	return Number.isNaN(date.getTime()) ? null : date;
 };
 
+// Building an Intl.DateTimeFormat costs far more than formatting with one, and lists format a date per row.
+const formatterCache = new Map<string, Intl.DateTimeFormat>();
+
+const getThaiFormatter = (options: Intl.DateTimeFormatOptions) => {
+	const key = JSON.stringify(options);
+	let formatter = formatterCache.get(key);
+	if (!formatter) {
+		formatter = new Intl.DateTimeFormat('th-TH', options);
+		formatterCache.set(key, formatter);
+	}
+	return formatter;
+};
+
 export const formatThaiDate = (value: DateInput, options: ThaiDateOptions = {}) => {
 	const date = parseDateInput(value);
 	if (!date) {
 		return options.fallback ?? DEFAULT_FALLBACK;
 	}
 
-	return new Intl.DateTimeFormat('th-TH', {
+	return getThaiFormatter({
 		year: options.year ?? 'numeric',
 		month: options.month ?? 'short',
 		day: options.day ?? 'numeric',
@@ -67,7 +80,7 @@ export const formatThaiDateTime = (value: DateInput, fallback = DEFAULT_FALLBACK
 	const date = parseDateInput(value);
 	if (!date) return fallback;
 
-	return new Intl.DateTimeFormat('th-TH', {
+	return getThaiFormatter({
 		year: 'numeric',
 		month: 'short',
 		day: 'numeric',

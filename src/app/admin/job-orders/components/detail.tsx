@@ -179,8 +179,8 @@ export default function JobOrderDetailModal({
 							<label className="block text-[13px] uppercase tracking-wider text-[var(--ink-muted)] mb-2">จำนวนที่ผลิตจริง</label>
 							<input
 								type="number"
-								min={0}
-								step="0.01"
+								min={1}
+								step="1"
 								value={completionQty}
 								onChange={(event) => onCompletionQtyChange?.(event.target.value)}
 								className="ka-input w-full max-w-xs"
@@ -189,7 +189,7 @@ export default function JobOrderDetailModal({
 							<input
 								type="number"
 								min={0}
-								step="0.01"
+								step="1"
 								value={completionDefectQty}
 								onChange={(event) => onCompletionDefectQtyChange?.(event.target.value)}
 								className="ka-input w-full max-w-xs"

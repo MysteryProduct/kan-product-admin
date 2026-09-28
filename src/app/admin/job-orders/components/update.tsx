@@ -102,6 +102,7 @@ export default function UpdateJobOrderForm({
 	const [products, setProducts] = useState<Product[]>([]);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [errors, setErrors] = useState<Record<string, string>>({});
+	const [loadError, setLoadError] = useState('');
 	const [resultDialog, setResultDialog] = useState<{
 		isOpen: boolean;
 		status: 'success' | 'error';
@@ -154,19 +155,28 @@ export default function UpdateJobOrderForm({
 		}
 
 		const loadData = async () => {
-			try {
-				const [materialResponse, productResponse, colorResponse, sizeResponse] = await Promise.all([
-					materialModel.getMaterials(1, 300),
-					productModel.getProducts(1, 200),
-					colorModel.getColors(1, 200),
-					sizeModel.getSizes(1, 200),
-				]);
-				setMaterialOptions(materialResponse.data || []);
-				setProducts(productResponse.data || []);
-				setColorOptions(colorResponse.data || []);
-				setSizeOptions(sizeResponse.data || []);
-			} catch (error) {
-				console.error('Failed to load update form data:', error);
+			// One failing list must not empty the others, and the person needs to know which one is missing.
+			setLoadError('');
+			const [materialResult, productResult, colorResult, sizeResult] = await Promise.allSettled([
+				materialModel.getMaterials(1, 300),
+				productModel.getProducts(1, 200),
+				colorModel.getColors(1, 200),
+				sizeModel.getSizes(1, 200),
+			]);
+			if (materialResult.status === 'fulfilled') setMaterialOptions(materialResult.value.data || []);
+			if (productResult.status === 'fulfilled') setProducts(productResult.value.data || []);
+			if (colorResult.status === 'fulfilled') setColorOptions(colorResult.value.data || []);
+			if (sizeResult.status === 'fulfilled') setSizeOptions(sizeResult.value.data || []);
+
+			const failed = [
+				materialResult.status === 'rejected' && 'วัตถุดิบ',
+				productResult.status === 'rejected' && 'สินค้า',
+				colorResult.status === 'rejected' && 'สี',
+				sizeResult.status === 'rejected' && 'ขนาด',
+			].filter(Boolean);
+			if (failed.length > 0) {
+				console.error('Failed to load update form data:', [materialResult, productResult, colorResult, sizeResult]);
+				setLoadError(`โหลดรายการ${failed.join(', ')}ไม่สำเร็จ ปิดแล้วเปิดฟอร์มใหม่อีกครั้ง`);
 			}
 		};
 
@@ -396,6 +406,11 @@ export default function UpdateJobOrderForm({
 					</div>
 
 					<form onSubmit={handleSubmit} className="p-4 sm:p-6 md:p-8 space-y-5 sm:space-y-6 max-h-[calc(100vh-100px)] overflow-y-auto">
+						{loadError && (
+							<div role="alert" className="ka-banner ka-banner--danger">
+								{loadError}
+							</div>
+						)}
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
 							<CustomSelect
 								label="ประเภทงานผลิต"

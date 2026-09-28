@@ -19,7 +19,7 @@ export default function StorePolicy({id,editable}:{id:string;editable:boolean}) 
   catch {setMessage('บันทึกไม่สำเร็จ กรุณาลองอีกครั้ง');}
   finally{setPending(false);}
  }
- return <fieldset aria-busy={pending} className="min-w-48 space-y-2 text-sm">
+ return <fieldset aria-busy={pending} className="relative min-w-48 space-y-2 text-sm">
   <legend className="sr-only">ช่องทางหน้าร้าน</legend>
   {policy?labels.map(([key,label])=><label key={key} className="flex min-h-11 items-center gap-2 text-[var(--color-text-primary)]">
     <input type="checkbox" disabled={!editable||pending} checked={policy[key]} onChange={e=>void toggle(key,e.target.checked)} />{label}

@@ -74,7 +74,8 @@ class JobOrderModel {
           ...(filters && Object.keys(filters).length > 0 && { filters: JSON.stringify(filters) }),
           ...(dateStart && { date_start: dateStart }),
           ...(dateEnd && { date_end: dateEnd }),
-          ...(sortOrder && { sort_order: sortOrder }),
+          // The API reads sortField/sortOrder; the board sorts by target date.
+          ...(sortOrder && { sortField: 'target_date', sortOrder }),
         },
       });
 
