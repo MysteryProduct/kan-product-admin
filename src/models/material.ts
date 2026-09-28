@@ -19,7 +19,7 @@ class MaterialModel {
     search?: string,
     sortField?: 'adddate' | 'material_price' | null,
     sortOrder?: 'ASC' | 'DESC',
-    filters?: Record<string, string>,
+    filters?: { color?: string[]; size?: string[] },
   ): Promise<ApiMaterialResponse> {
     try {
       const response = await axiosInstance.get<ApiMaterialResponse>('/materials', {
@@ -29,7 +29,7 @@ class MaterialModel {
           ...(search && { search }),
           ...(sortField && { sortField }),
           ...(sortOrder && { sortOrder }),
-          ...(filters && { filters: JSON.stringify(filters) }),
+          ...(filters && Object.keys(filters).length > 0 && { filters: JSON.stringify(filters) }),
         },
       });
       return response.data;

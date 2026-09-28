@@ -34,7 +34,6 @@ export default function SupplierPage() {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [sortField, setSortField] = useState<SortField>(null);
     const [sortOrder, setSortOrder] = useState<SortOrder>('ASC');
-    const [filters, setFilters] = useState<Record<string, string>>({});
     const [isFormOpen, setIsFormOpen] = useState<boolean>(false);
     const [isUpdateFormOpen, setIsUpdateFormOpen] = useState<boolean>(false);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
@@ -66,11 +65,11 @@ export default function SupplierPage() {
         setCurrentPage(1);
     };
 
-    const fetchSuppliers = async (page = currentPage, activeFilters = filters) => {
+    const fetchSuppliers = async (page = currentPage) => {
         setLoading(true);
         try {
             const supplierModel = new SupplierModel();
-            const result = await supplierModel.getSuppliers(page, 10, appliedSearchQuery, sortField, sortOrder, activeFilters);
+            const result = await supplierModel.getSuppliers(page, 10, appliedSearchQuery, sortField, sortOrder);
             setSuppliers(result.data);
             setMeta(result.meta);
         } catch (err: any) {
@@ -115,24 +114,6 @@ export default function SupplierPage() {
         setSortField(nextField);
         setSortOrder(sort.direction);
         setCurrentPage(1);
-    };
-
-    const handleDataTableFilterChange = (tableFilters: Record<string, string | string[]>) => {
-        const updatedFilters: Record<string, string> = {};
-
-        for (const columnKey in tableFilters) {
-            const value = tableFilters[columnKey];
-            if (Array.isArray(value)) {
-                if (value.length > 0) {
-                    updatedFilters[columnKey] = JSON.stringify(value);
-                }
-            } else if (value.trim()) {
-                updatedFilters[columnKey] = value;
-            }
-        }
-
-        setCurrentPage(1);
-        setFilters(updatedFilters);
     };
 
     const handleEdit = (supplier: SupplierWithPayment) => {
@@ -497,7 +478,6 @@ export default function SupplierPage() {
                     paginationMeta={meta}
                     currentPage={currentPage}
                     onPageChange={handlePageChange}
-                    onFilterChange={handleDataTableFilterChange}
                     onSortChange={handleSortChange}
                 />
             </div>

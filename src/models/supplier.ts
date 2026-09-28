@@ -51,7 +51,6 @@ export default class SupplierModel {
         search?: string,
         sortField?: 'supplier_name' | 'supplier_contact' | 'supplier_phone' | 'tax_id' | null,
         sortOrder?: 'ASC' | 'DESC',
-        filters?: Record<string, string>,
     ): Promise<ApiSupplierResponse> => {
         try {
             const response = await axiosInstance.get<ApiSupplierResponse>('/supplier/', {
@@ -61,7 +60,6 @@ export default class SupplierModel {
                     ...(search && { search }),
                     ...(sortField && { sortField }),
                     ...(sortOrder && { sortOrder }),
-                    ...(filters && { filters: JSON.stringify(filters) }),
                 },
             });
             return response.data;

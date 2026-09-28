@@ -20,6 +20,20 @@ const materialModel = new MaterialModel();
 const colorModel = new ColorModel();
 const sizeModel = new SizeModel();
 
+/**
+ * The API filters materials by colour and size name, and the DataTable
+ * compares filter values in lower case, so names that differ only by case
+ * would be one option. Names are not unique in the database: keep one each.
+ */
+const toNameOptions = (names: string[]) => {
+	const byKey = new Map<string, string>();
+	for (const name of names) {
+		const key = name.toLowerCase();
+		if (!byKey.has(key)) byKey.set(key, name);
+	}
+	return Array.from(byKey.values(), (name) => ({ label: name, value: name }));
+};
+
 type SortField = 'adddate' | 'material_price' | null;
 type SortOrder = 'ASC' | 'DESC';
 
@@ -36,6 +50,7 @@ export default function MaterialsPage() {
 	const [meta, setMeta] = useState<PaginationMeta | null>(null);
 	const [sortField, setSortField] = useState<SortField>(null);
 	const [sortOrder, setSortOrder] = useState<SortOrder>('ASC');
+	const [filters, setFilters] = useState<{ color?: string[]; size?: string[] }>({});
 	const [loading, setLoading] = useState(true);
 
 	const [isInsertOpen, setIsInsertOpen] = useState(false);
@@ -60,9 +75,9 @@ export default function MaterialsPage() {
 		// Fetch color and size options
 		const fetchOptions = async () => {
 			try {
-				const [colors, sizes] = await Promise.all([colorModel.getColors(), sizeModel.getSizes()]);
-				setColorOptions(colors.data.map((color) => ({ label: color.color_name, value: color.color_id.toString() })));
-				setSizeOptions(sizes.data.map((size) => ({ label: size.size_name, value: size.size_id.toString() })));
+				const [colors, sizes] = await Promise.all([colorModel.getColors(1, 200), sizeModel.getSizes(1, 200)]);
+				setColorOptions(toNameOptions(colors.data.map((color) => color.color_name)));
+				setSizeOptions(toNameOptions(sizes.data.map((size) => size.size_name)));
 			} catch (error) {
 				console.error('Failed to fetch color or size options:', error);
 			}
@@ -72,7 +87,7 @@ export default function MaterialsPage() {
 	const fetchMaterials = useCallback(async (targetPage = currentPage) => {
 		try {
 			setLoading(true);
-			const response = await materialModel.getMaterials(targetPage, 10, appliedSearchQuery, sortField, sortOrder);
+			const response = await materialModel.getMaterials(targetPage, 10, appliedSearchQuery, sortField, sortOrder, filters);
 			setMaterials(response);
 			setMeta(response.meta);
 		} catch (error) {
@@ -80,7 +95,7 @@ export default function MaterialsPage() {
 		} finally {
 			setLoading(false);
 		}
-	}, [appliedSearchQuery, currentPage, sortField, sortOrder]);
+	}, [appliedSearchQuery, currentPage, sortField, sortOrder, filters]);
 
 	useEffect(() => {
 		void fetchMaterials();
@@ -113,6 +128,18 @@ export default function MaterialsPage() {
 
 		setSortField(nextField);
 		setSortOrder(sort.direction);
+	};
+
+	const handleFilterChange = (tableFilters: Record<string, string | string[]>) => {
+		const nextFilters: { color?: string[]; size?: string[] } = {};
+		for (const key of ['color', 'size'] as const) {
+			const value = tableFilters[key];
+			if (Array.isArray(value) && value.length > 0) {
+				nextFilters[key] = value;
+			}
+		}
+		setCurrentPage(1);
+		setFilters(nextFilters);
 	};
 
 	const handleRefreshMaterials = async (checkPageAfterDelete = false) => {
@@ -340,6 +367,7 @@ export default function MaterialsPage() {
 					currentPage={currentPage}
 					onPageChange={setCurrentPage}
 					onSortChange={handleSortChange}
+					onFilterChange={handleFilterChange}
 				/>
 
 			</div>
