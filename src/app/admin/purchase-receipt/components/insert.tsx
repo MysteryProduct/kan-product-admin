@@ -308,6 +308,9 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 			if (!item.purchase_order_list_id) {
 				nextErrors[`item_${index}_material`] = 'กรุณาเลือกรายการวัตถุดิบ';
 			}
+			if (!Number.isInteger(item.purchase_receipt_list_qty)) {
+				nextErrors[`item_${index}_qty`] = 'จำนวนรับต้องเป็นจำนวนเต็ม';
+			}
 			if (item.purchase_receipt_list_qty <= 0) {
 				nextErrors[`item_${index}_qty`] = 'จำนวนรับต้องมากกว่า 0';
 			}
@@ -524,7 +527,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 													type="number"
 													min={0}
 													max={item.ordered_qty}
-													step="0.01"
+													step="1"
 													value={item.purchase_receipt_list_qty}
 													onChange={(e) => updateItem(item.id, 'purchase_receipt_list_qty', Number(e.target.value))}
 													className="ka-input w-full"

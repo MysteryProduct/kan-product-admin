@@ -275,6 +275,9 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 			if (!item.purchase_order_list_id || !item.material_id) {
 				nextErrors[`item_${index}_material`] = 'กรุณาเลือกรายการวัตถุดิบ';
 			}
+			if (!Number.isInteger(item.purchase_receipt_list_qty)) {
+				nextErrors[`item_${index}_qty`] = 'จำนวนรับต้องเป็นจำนวนเต็ม';
+			}
 			if (item.purchase_receipt_list_qty <= 0) {
 				nextErrors[`item_${index}_qty`] = 'จำนวนรับต้องมากกว่า 0';
 			}
@@ -427,7 +430,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 										<div><label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">วัตถุดิบ</label><div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--ink)]">{item.material_name || item.material_id || '-'}</div>{errors[`item_${index}_material`] && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`item_${index}_material`]}</p>}</div>
 										<div>
 											<label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">จำนวนรับ</label>
-											<input type="number" min={0} max={item.ordered_qty} step="0.01" value={item.purchase_receipt_list_qty} onChange={(e) => updateItem(item.id, 'purchase_receipt_list_qty', Number(e.target.value))} className="ka-input w-full" disabled={isSubmitting} />
+											<input type="number" min={0} max={item.ordered_qty} step="1" value={item.purchase_receipt_list_qty} onChange={(e) => updateItem(item.id, 'purchase_receipt_list_qty', Number(e.target.value))} className="ka-input w-full" disabled={isSubmitting} />
 											<p className="mt-1 text-[11px] text-[var(--ink-muted)]">จำนวนสั่งซื้อ: {item.ordered_qty}</p>
 											{errors[`item_${index}_qty`] && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`item_${index}_qty`]}</p>}
 										</div>
