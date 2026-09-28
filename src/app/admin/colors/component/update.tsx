@@ -88,14 +88,15 @@ export default function UpdateColorForm({ isOpen, onClose, onSuccess, initialDat
 
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 bg-gray-300/40 bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
+        <div className="fixed inset-0 bg-[var(--scrim)] z-50 flex items-center justify-center p-4">
+            <div className="bg-[var(--bg-surface)] rounded-lg shadow-lg w-full max-w-md">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                    <h2 className="text-lg font-semibold text-gray-900">แก้ไขสี</h2>
+                <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
+                    <h2 className="text-lg font-semibold text-[var(--ink)]">แก้ไขสี</h2>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 transition-colors"
+                        className="ka-btn ka-btn--ghost ka-btn--icon"
+                        aria-label="ปิดหน้าต่าง"
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -107,14 +108,14 @@ export default function UpdateColorForm({ isOpen, onClose, onSuccess, initialDat
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     {/* Error Message */}
                     {error && (
-                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                            <p className="text-sm text-red-800">{error}</p>
+                        <div className="p-4 bg-[var(--danger-soft)] border border-[var(--danger)] rounded-lg">
+                            <p className="text-sm text-[var(--danger)]">{error}</p>
                         </div>
                     )}
 
                     {/* Color Name Field */}
                     <div>
-                        <label htmlFor="color_name" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="color_name" className="block text-sm font-medium text-[var(--ink)] mb-2">
                             ชื่อสี
                         </label>
                         <input
@@ -124,14 +125,14 @@ export default function UpdateColorForm({ isOpen, onClose, onSuccess, initialDat
                             value={formData.color_name}
                             onChange={handleChange}
                             placeholder="เช่น สีแดง, สีน้ำเงิน"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder:text-gray-400"
+                            className="ka-input"
                             disabled={loading}
                         />
                     </div>
 
                     {/* Color Picker Field */}
                     <div>
-                        <label htmlFor="hexCode" className="block text-sm font-medium text-gray-700 mb-2">
+                        <label htmlFor="hexCode" className="block text-sm font-medium text-[var(--ink)] mb-2">
                             รหัสสี (HEX)
                         </label>
                         <div className="flex gap-3">
@@ -141,7 +142,7 @@ export default function UpdateColorForm({ isOpen, onClose, onSuccess, initialDat
                                 name="color_hex"
                                 value={formData.color_hex}
                                 onChange={handleChange}
-                                className="w-14 h-10 border border-gray-300 rounded-lg cursor-pointer"
+                                className="w-14 h-10 border border-[var(--border-control)] bg-[var(--bg-surface)] rounded-lg cursor-pointer"
                                 disabled={loading}
                             />
                             <input
@@ -150,41 +151,41 @@ export default function UpdateColorForm({ isOpen, onClose, onSuccess, initialDat
                                 value={formData.color_hex}
                                 onChange={handleChange}
                                 placeholder="#000000"
-                                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder:text-gray-400 font-mono text-sm"
+                                className="ka-input min-w-0 flex-1 font-mono"
                                 disabled={loading}
                             />
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-[13px] text-[var(--ink-muted)] mt-1">
                             ตัวอย่าง: #FF0000 (สีแดง), #0000FF (สีน้ำเงิน), #00FF00 (สีเขียว)
                         </p>
                     </div>
 
                     {/* Preview */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-[var(--ink)] mb-2">
                             ตัวอย่างสี
                         </label>
                         <div
-                            className="w-full h-20 rounded-lg border-2 border-gray-300 shadow-sm transition-colors"
+                            className="w-full h-20 rounded-lg border-2 border-[var(--border-control)] shadow-sm transition-colors"
                             style={{ backgroundColor: formData.color_hex }}
                         ></div>
                     </div>
                 </form>
 
                 {/* Footer */}
-                <div className="flex gap-3 p-6 border-t border-gray-200">
+                <div className="flex gap-3 p-6 border-t border-[var(--border)]">
                     <button
                         type="button"
                         onClick={onClose}
                         disabled={loading}
-                        className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="ka-btn flex-1"
                     >
                         ยกเลิก
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={loading}
-                        className="flex-1 px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="ka-btn ka-btn--primary flex-1"
                     >
                         {loading ? (
                             <>

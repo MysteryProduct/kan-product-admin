@@ -16,15 +16,16 @@ export default function SizeDetailModal({ isOpen, onClose, size }: SizeDetailMod
 	const categories = size.category ?? [];
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
-			<div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface dark:border-[var(--color-border)] ">
-				<div className="bg-[var(--color-primary)] px-6 py-5">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
+			<div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface">
+				<div className="border-b border-[var(--border)] bg-[var(--bg-surface)] px-6 py-5">
 					<div className="flex items-center justify-between gap-3">
-						<h2 className="text-xl font-bold text-white sm:text-2xl">รายละเอียดขนาดสินค้า</h2>
+						<h2 className="text-xl font-bold text-[var(--ink)] sm:text-2xl">รายละเอียดขนาดสินค้า</h2>
 						<button
 							type="button"
 							onClick={onClose}
-							className="rounded-lg border border-white/60 bg-white/15 p-2 text-white transition-colors hover:bg-white/25 disabled:opacity-50"
+							className="ka-btn ka-btn--ghost ka-btn--icon"
+							aria-label="ปิดหน้าต่าง"
 						>
 							<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -36,23 +37,23 @@ export default function SizeDetailModal({ isOpen, onClose, size }: SizeDetailMod
 				<div className="space-y-6 p-6">
 					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 						<div>
-							<label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">Size ID</label>
-							<div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-slate-800 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100">
+							<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">Size ID</label>
+							<div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2.5 text-[var(--ink)]">
 								{size.size_id}
 							</div>
 						</div>
 						<div>
-							<label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">ชื่อขนาดสินค้า</label>
-							<div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-slate-800 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100">
+							<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">ชื่อขนาดสินค้า</label>
+							<div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2.5 text-[var(--ink)]">
 								{size.size_name}
 							</div>
 						</div>
 					</div>
 
-					<div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900/40">
+					<div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-subtle)] p-4">
 						<div className="mb-3 flex items-center justify-between gap-3">
-							<h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">Category ที่เชื่อมโยง</h3>
-							<span className="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+							<h3 className="text-base font-semibold text-[var(--ink)]">Category ที่เชื่อมโยง</h3>
+							<span className="rounded-full bg-[var(--neutral-soft)] px-3 py-1 text-[13px] font-semibold text-[var(--neutral)]">
 								ทั้งหมด {categories.length}
 							</span>
 						</div>
@@ -62,22 +63,22 @@ export default function SizeDetailModal({ isOpen, onClose, size }: SizeDetailMod
 								{categories.map((category) => (
 									<span
 										key={category.category_id}
-										className="rounded-full border border-indigo-200 bg-white px-3 py-1 text-sm font-medium text-indigo-700 dark:border-indigo-700/50 dark:bg-slate-800 dark:text-indigo-300"
+										className="rounded-full border border-[var(--border)] bg-[var(--bg-surface)] px-3 py-1 text-sm font-medium text-[var(--ink)]"
 									>
 										{category.category_name}
 									</span>
 								))}
 							</div>
 						) : (
-							<p className="text-sm text-slate-500 dark:text-slate-400">ยังไม่มี Category ที่เชื่อมโยง</p>
+							<p className="text-sm text-[var(--ink-muted)]">ยังไม่มี Category ที่เชื่อมโยง</p>
 						)}
 					</div>
 
-					<div className="border-t border-slate-200 pt-4 dark:border-slate-700">
+					<div className="border-t border-[var(--border)] pt-4">
 						<button
 							type="button"
 							onClick={onClose}
-							className="w-full rounded-xl border border-slate-300 bg-slate-100 px-6 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
+							className="ka-btn w-full"
 						>
 							ปิด
 						</button>

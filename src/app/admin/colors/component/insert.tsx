@@ -187,7 +187,7 @@ export default function ColorForm({ isOpen, onClose, onSuccess }: ColorFormProps
                 disabled={loading}
               />
             </div>
-            <p className="mt-1 text-xs text-[var(--color-text-secondary)]">
+            <p className="mt-1 text-[13px] text-[var(--color-text-secondary)]">
               ตัวอย่าง: #FF0000 (สีแดง), #0000FF (สีน้ำเงิน), #00FF00 (สีเขียว)
             </p>
           </div>

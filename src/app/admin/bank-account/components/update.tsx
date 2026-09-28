@@ -16,7 +16,7 @@ interface UpdateBankAccountFormProps {
 
 const bankAccountModel = new BankAccountModel();
 const INPUT_CLASSNAME =
-	'h-11 w-full rounded-xl border border-gray-300 px-3 text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100';
+	'ka-input';
 
 export default function UpdateBankAccountForm({ isOpen, onClose, onSuccess, initialData }: UpdateBankAccountFormProps) {
 	const [formData, setFormData] = useState({
@@ -111,38 +111,38 @@ export default function UpdateBankAccountForm({ isOpen, onClose, onSuccess, init
 
 	return (
 		<>
-			<div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4 backdrop-blur-sm">
+			<div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
 				<div className="w-full max-w-2xl rounded-2xl bg-[var(--color-bg-primary)] overlay-surface ">
-					<div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
-						<h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">แก้ไขบัญชีรับเงิน</h2>
+					<div className="border-b border-[var(--border)] px-6 py-4">
+						<h2 className="text-xl font-semibold text-[var(--ink)]">แก้ไขบัญชีรับเงิน</h2>
 					</div>
 
 					<form onSubmit={handleSubmit} className="space-y-4 p-6">
 						<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 							<div>
-								<label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">เลขที่บัญชี</label>
+								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">เลขที่บัญชี</label>
 								<input
 									type="text"
 									value={formData.account_number}
 									onChange={(event) => setFormData((prev) => ({ ...prev, account_number: event.target.value }))}
 									className={INPUT_CLASSNAME}
 								/>
-								{errors.account_number && <p className="mt-1 text-xs text-red-500">{errors.account_number}</p>}
+								{errors.account_number && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.account_number}</p>}
 							</div>
 
 							<div>
-								<label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">ชื่อบัญชี</label>
+								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">ชื่อบัญชี</label>
 								<input
 									type="text"
 									value={formData.account_name}
 									onChange={(event) => setFormData((prev) => ({ ...prev, account_name: event.target.value }))}
 									className={INPUT_CLASSNAME}
 								/>
-								{errors.account_name && <p className="mt-1 text-xs text-red-500">{errors.account_name}</p>}
+								{errors.account_name && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.account_name}</p>}
 							</div>
 
 							<div>
-								<label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">ธนาคาร</label>
+								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">ธนาคาร</label>
 								<select
 									value={formData.bank_name}
 									onChange={(event) => setFormData((prev) => ({ ...prev, bank_name: event.target.value }))}
@@ -154,11 +154,11 @@ export default function UpdateBankAccountForm({ isOpen, onClose, onSuccess, init
 										</option>
 									))}
 								</select>
-								{errors.bank_name && <p className="mt-1 text-xs text-red-500">{errors.bank_name}</p>}
+								{errors.bank_name && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.bank_name}</p>}
 							</div>
 
 							<div>
-								<label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-200">สาขา</label>
+								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">สาขา</label>
 								<input
 									type="text"
 									value={formData.branch_name}
@@ -168,19 +168,19 @@ export default function UpdateBankAccountForm({ isOpen, onClose, onSuccess, init
 							</div>
 						</div>
 
-						<div className="flex justify-end gap-2 border-t border-gray-200 pt-4 dark:border-gray-700">
+						<div className="flex justify-end gap-2 border-t border-[var(--border)] pt-4">
 							<button
 								type="button"
 								onClick={onClose}
 								disabled={isSubmitting}
-								className="h-11 rounded-xl border border-gray-300 px-6 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-60 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+								className="ka-btn"
 							>
 								ยกเลิก
 							</button>
 							<button
 								type="submit"
 								disabled={isSubmitting}
-								className="h-11 rounded-xl bg-[var(--color-primary)] px-6 text-sm font-semibold text-white hover:bg-[var(--color-primary-hover)] disabled:opacity-60"
+								className="ka-btn ka-btn--primary"
 							>
 								{isSubmitting ? 'กำลังบันทึก...' : 'บันทึก'}
 							</button>

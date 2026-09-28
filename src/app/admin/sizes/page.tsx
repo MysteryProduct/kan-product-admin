@@ -186,16 +186,16 @@ export default function SizesPage() {
 	};
 
 	return (
-		<div className="flex-1 bg-slate-50 p-2 sm:p-4 md:p-6 lg:p-8 dark:bg-slate-900">
+		<div className="flex-1 bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
 			<div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-				<div className="rounded-2xl border border-sky-200/80 bg-gradient-to-br from-sky-100 via-white to-cyan-100 p-5 shadow-sm dark:border-sky-900/50 dark:from-sky-950 dark:via-slate-900 dark:to-cyan-950">
-					<p className="text-sm font-medium text-sky-700 dark:text-sky-300">ขนาดสินค้าทั้งหมด</p>
-					<p className="mt-2 text-4xl font-black tracking-tight text-slate-900 dark:text-slate-100">{totalSizes}</p>
+				<div className="ka-card p-5">
+					<p className="text-sm font-medium text-[var(--brand-ink)]">ขนาดสินค้าทั้งหมด</p>
+					<p className="mt-2 text-4xl font-black tracking-tight text-[var(--ink)]">{totalSizes}</p>
 				</div>
 			</div>
 
-			<div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
-				<div className="border-b border-slate-100 p-3 dark:border-slate-700 sm:p-4 md:p-6">
+			<div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] shadow-sm">
+				<div className="border-b border-[var(--border)] p-3 sm:p-4 md:p-6">
 					<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 						<div className="flex w-full flex-col gap-2 sm:max-w-xl sm:flex-row">
 							<div className="relative flex-1">
@@ -209,16 +209,16 @@ export default function SizesPage() {
 											handleSearch();
 										}
 									}}
-									className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+									className="ka-input w-full pr-10"
 								/>
-								<svg className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<svg className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--ink-subtle)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
 								</svg>
 							</div>
 							<button
 								type="button"
 								onClick={handleSearch}
-								className="rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-700"
+								className="ka-btn ka-btn--primary"
 							>
 								ค้นหา
 							</button>
@@ -226,7 +226,7 @@ export default function SizesPage() {
 								<button
 									type="button"
 									onClick={handleClearSearch}
-									className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
+									className="ka-btn"
 								>
 									ล้าง
 								</button>
@@ -236,7 +236,7 @@ export default function SizesPage() {
 						{canAddSize && (
 							<button
 								onClick={() => setIsInsertOpen(true)}
-								className="inline-flex items-center justify-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-700"
+								className="ka-btn ka-btn--primary"
 							>
 								<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -248,48 +248,49 @@ export default function SizesPage() {
 				</div>
 
 				<div className="overflow-x-auto p-3">
-					<table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+					<table className="min-w-full divide-y divide-[var(--border)]">
 						<thead>
-							<tr className="bg-slate-50 dark:bg-slate-700/50">
-								<th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300 sm:table-cell">Size ID</th>
-								<th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">ชื่อขนาด</th>
-								<th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">Category ที่ผูก</th>
-								<th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">Action</th>
+							<tr className="bg-[var(--bg-subtle)]">
+								<th className="hidden px-4 py-3 text-left text-[13px] font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:table-cell">Size ID</th>
+								<th className="px-4 py-3 text-left text-[13px] font-semibold uppercase tracking-wide text-[var(--ink-muted)]">ชื่อขนาด</th>
+								<th className="px-4 py-3 text-left text-[13px] font-semibold uppercase tracking-wide text-[var(--ink-muted)]">Category ที่ผูก</th>
+								<th className="px-4 py-3 text-left text-[13px] font-semibold uppercase tracking-wide text-[var(--ink-muted)]">Action</th>
 							</tr>
 						</thead>
-						<tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+						<tbody className="divide-y divide-[var(--border)]">
 							{sizes.length > 0 ? (
 								sizes.map((size) => {
 									const relation = relationsBySizeId[size.size_id];
 									const relationCategories = relation?.category ?? size.category ?? [];
 
 									return (
-										<tr key={size.size_id} className="bg-white transition hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700/70">
-											<td className="hidden px-4 py-4 text-sm text-slate-600 dark:text-slate-300 sm:table-cell">{size.size_id}</td>
-											<td className="px-4 py-4 text-sm font-medium text-slate-900 dark:text-slate-100">{size.size_name}</td>
+										<tr key={size.size_id} className="bg-[var(--bg-surface)] transition hover:bg-[var(--bg-subtle)]">
+											<td className="hidden px-4 py-4 text-sm text-[var(--ink-muted)] sm:table-cell">{size.size_id}</td>
+											<td className="px-4 py-4 text-sm font-medium text-[var(--ink)]">{size.size_name}</td>
 											<td className="px-4 py-4">
 												{relationCategories.length > 0 ? (
 													<div className="flex flex-wrap gap-2">
 														{relationCategories.slice(0, 3).map((category) => (
-															<span key={category.category_id} className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-700/40 dark:bg-emerald-900/20 dark:text-emerald-300">
+															<span key={category.category_id} className="rounded-full border border-[var(--border)] bg-[var(--neutral-soft)] px-2.5 py-1 text-[13px] font-semibold text-[var(--neutral)]">
 																{category.category_name}
 															</span>
 														))}
 														{relationCategories.length > 3 && (
-															<span className="rounded-full border border-slate-300 bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200">
+															<span className="rounded-full border border-[var(--border-control)] bg-[var(--bg-subtle)] px-2.5 py-1 text-[13px] font-semibold text-[var(--ink)]">
 																+{relationCategories.length - 3}
 															</span>
 														)}
 													</div>
 												) : (
-													<span className="text-sm text-slate-400 dark:text-slate-500">ยังไม่ผูก Category</span>
+													<span className="text-sm text-[var(--ink-subtle)]">ยังไม่ผูก Category</span>
 												)}
 											</td>
 											<td className="px-4 py-4">
-												<div className="flex items-center gap-3">
+												<div className="flex items-center gap-1">
 													<button
 														onClick={() => handleOpenDetail(size)}
-														className="text-slate-400 transition hover:text-indigo-500"
+														className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
+														aria-label="ดูรายละเอียด"
 														title="ดูรายละเอียด"
 													>
 														<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -301,7 +302,8 @@ export default function SizesPage() {
 													{canEditSize && (
 														<button
 															onClick={() => handleOpenUpdate(size)}
-															className="text-slate-400 transition hover:text-sky-500"
+															className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
+															aria-label="แก้ไข"
 															title="แก้ไข"
 														>
 															<svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
@@ -316,7 +318,8 @@ export default function SizesPage() {
 																setSizeToDelete(size);
 																setIsDeleteDialogOpen(true);
 															}}
-															className="text-slate-400 transition hover:text-rose-500"
+															className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--danger)]"
+															aria-label="ลบ"
 															title="ลบ"
 														>
 															<svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
@@ -335,7 +338,7 @@ export default function SizesPage() {
 								})
 							) : (
 								<tr>
-									<td colSpan={4} className="px-4 py-10 text-center text-sm text-slate-500 dark:text-slate-400">
+									<td colSpan={4} className="px-4 py-10 text-center text-sm text-[var(--ink-muted)]">
 										ไม่พบข้อมูลขนาดสินค้า
 									</td>
 								</tr>
@@ -345,9 +348,9 @@ export default function SizesPage() {
 				</div>
 
 				{meta && meta.last_page > 1 && (
-					<div className="border-t border-slate-100 bg-slate-50 px-6 py-4 dark:border-slate-700 dark:bg-slate-800">
+					<div className="border-t border-[var(--border)] bg-[var(--bg-subtle)] px-6 py-4">
 						<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-							<div className="text-sm text-slate-600 dark:text-slate-300">
+							<div className="text-sm text-[var(--ink-muted)]">
 								Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, meta.total)} of {meta.total} results
 							</div>
 							<Pagination currentPage={currentPage} meta={meta} onPageChange={setCurrentPage} />

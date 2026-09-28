@@ -32,7 +32,7 @@ const shopIdentityFrom = (settings: AppSettings | null) => ({
 });
 
 const inputClass =
-	'h-11 w-full rounded-xl border border-gray-300 px-3 text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100';
+	'ka-input';
 
 export default function SettingsPage() {
 	const { can } = usePermissions();
@@ -172,27 +172,27 @@ export default function SettingsPage() {
 
 	if (loading) {
 		return (
-			<div className="bg-gray-50 p-2 dark:bg-gray-900 sm:p-4 md:p-6 lg:p-8">
+			<div className="bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
 				<LoadingSkeletonProps />
 			</div>
 		);
 	}
 
 	return (
-		<div className="bg-gray-50 p-2 dark:bg-gray-900 sm:p-4 md:p-6 lg:p-8">
-			<section className="rounded-2xl bg-white shadow-sm dark:bg-gray-800">
-				<div className="border-b border-gray-100 p-4 dark:border-gray-700">
-					<h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">ตั้งค่าพื้นฐานระบบ</h2>
+		<div className="bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
+			<section className="rounded-2xl bg-[var(--bg-surface)] shadow-sm">
+				<div className="border-b border-[var(--border)] p-4">
+					<h2 className="text-lg font-semibold text-[var(--ink)]">ตั้งค่าพื้นฐานระบบ</h2>
 				</div>
 
 				<form onSubmit={handleSubmit} className="space-y-6 p-4 sm:p-6">
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 						<div>
-							<label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">บัญชีรับเงินเริ่มต้น</label>
+							<label className="mb-2 block text-sm font-medium text-[var(--ink)]">บัญชีรับเงินเริ่มต้น</label>
 							<select
 								value={formData.account_id}
 								onChange={(event) => setFormData((prev) => ({ ...prev, account_id: event.target.value }))}
-								className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+								className="ka-input"
 								disabled={!canEditSettings || saving}
 							>
 								<option value="">เลือกบัญชี</option>
@@ -202,11 +202,11 @@ export default function SettingsPage() {
 									</option>
 								))}
 							</select>
-							{errors.account_id && <p className="mt-1 text-xs text-red-500">{errors.account_id}</p>}
+							{errors.account_id && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.account_id}</p>}
 						</div>
 
 						<div>
-							<label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">อัตรา VAT (%)</label>
+							<label className="mb-2 block text-sm font-medium text-[var(--ink)]">อัตรา VAT (%)</label>
 							<input
 								type="number"
 								min={0}
@@ -214,21 +214,21 @@ export default function SettingsPage() {
 								step="0.01"
 								value={formData.vat_rate}
 								onChange={(event) => setFormData((prev) => ({ ...prev, vat_rate: event.target.value }))}
-								className="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+								className="ka-input"
 								disabled={!canEditSettings || saving}
 							/>
-							{errors.vat_rate && <p className="mt-1 text-xs text-red-500">{errors.vat_rate}</p>}
+							{errors.vat_rate && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.vat_rate}</p>}
 						</div>
 					</div>
 
 					<fieldset className="space-y-4">
-						<legend className="text-sm font-semibold text-gray-700 dark:text-gray-200">ข้อมูลร้านสำหรับใบกำกับภาษี</legend>
-						<p className="text-xs text-gray-500 dark:text-gray-400">
+						<legend className="text-sm font-semibold text-[var(--ink)]">ข้อมูลร้านสำหรับใบกำกับภาษี</legend>
+						<p className="text-[13px] text-[var(--ink-muted)]">
 							เว้นว่างได้จนกว่าร้านจะจดทะเบียน VAT
 						</p>
 						<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 							<div className="md:col-span-2">
-								<label htmlFor="shop_name" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">ชื่อร้านหรือบริษัท</label>
+								<label htmlFor="shop_name" className="mb-2 block text-sm font-medium text-[var(--ink)]">ชื่อร้านหรือบริษัท</label>
 								<input
 									id="shop_name"
 									type="text"
@@ -240,7 +240,7 @@ export default function SettingsPage() {
 								/>
 							</div>
 							<div className="md:col-span-2">
-								<label htmlFor="shop_address" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">ที่อยู่</label>
+								<label htmlFor="shop_address" className="mb-2 block text-sm font-medium text-[var(--ink)]">ที่อยู่</label>
 								<textarea
 									id="shop_address"
 									rows={3}
@@ -252,7 +252,7 @@ export default function SettingsPage() {
 								/>
 							</div>
 							<div>
-								<label htmlFor="shop_tax_id" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">เลขประจำตัวผู้เสียภาษี</label>
+								<label htmlFor="shop_tax_id" className="mb-2 block text-sm font-medium text-[var(--ink)]">เลขประจำตัวผู้เสียภาษี</label>
 								<input
 									id="shop_tax_id"
 									type="text"
@@ -265,10 +265,10 @@ export default function SettingsPage() {
 									aria-describedby={errors.shop_tax_id ? 'shop_tax_id_error' : undefined}
 									disabled={!canEditSettings || saving}
 								/>
-								{errors.shop_tax_id && <p id="shop_tax_id_error" className="mt-1 text-xs text-red-500">{errors.shop_tax_id}</p>}
+								{errors.shop_tax_id && <p id="shop_tax_id_error" className="mt-1 text-[13px] text-[var(--danger)]">{errors.shop_tax_id}</p>}
 							</div>
 							<div>
-								<label htmlFor="shop_branch_type" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">สำนักงานใหญ่/สาขา</label>
+								<label htmlFor="shop_branch_type" className="mb-2 block text-sm font-medium text-[var(--ink)]">สำนักงานใหญ่/สาขา</label>
 								<select
 									id="shop_branch_type"
 									value={formData.shop_branch_type}
@@ -283,7 +283,7 @@ export default function SettingsPage() {
 							</div>
 							{formData.shop_branch_type === 'branch' && (
 								<div>
-									<label htmlFor="shop_branch_code" className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">ชื่อหรือเลขที่สาขา</label>
+									<label htmlFor="shop_branch_code" className="mb-2 block text-sm font-medium text-[var(--ink)]">ชื่อหรือเลขที่สาขา</label>
 									<input
 										id="shop_branch_code"
 										type="text"
@@ -298,14 +298,14 @@ export default function SettingsPage() {
 						</div>
 					</fieldset>
 
-					<div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/40">
-						<h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">ข้อมูลตั้งค่าปัจจุบัน</h3>
-						<div className="mt-2 grid grid-cols-1 gap-2 text-sm text-gray-600 dark:text-gray-300 md:grid-cols-2">
+					<div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] p-4">
+						<h3 className="text-sm font-semibold text-[var(--ink)]">ข้อมูลตั้งค่าปัจจุบัน</h3>
+						<div className="mt-2 grid grid-cols-1 gap-2 text-sm text-[var(--ink-muted)] md:grid-cols-2">
 							<p>
-								บัญชีที่ใช้งาน: <span className="font-medium text-gray-800 dark:text-gray-100">{selectedBankLabel}</span>
+								บัญชีที่ใช้งาน: <span className="font-medium text-[var(--ink)]">{selectedBankLabel}</span>
 							</p>
 							<p>
-								VAT ปัจจุบัน: <span className="font-medium text-gray-800 dark:text-gray-100">{settings?.vat_rate ?? Number(formData.vat_rate)}%</span>
+								VAT ปัจจุบัน: <span className="font-medium text-[var(--ink)]">{settings?.vat_rate ?? Number(formData.vat_rate)}%</span>
 							</p>
 						</div>
 					</div>
@@ -314,7 +314,7 @@ export default function SettingsPage() {
 						<button
 							type="submit"
 							disabled={!canEditSettings || saving}
-							className="h-11 rounded-xl bg-blue-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+							className="ka-btn ka-btn--primary"
 						>
 							{saving ? 'กำลังบันทึก...' : 'บันทึกการตั้งค่า'}
 						</button>

@@ -126,12 +126,12 @@ export default function UpdateMaterialForm({ isOpen, onClose, onSuccess, initial
 	return (
 		<>
 			<div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-				<div className="absolute inset-0 bg-gray-300/40 dark:bg-gray-900/60" onClick={onClose} />
+				<div className="absolute inset-0 bg-[var(--scrim)]" onClick={onClose} />
 
-				<div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white shadow-xl dark:bg-gray-800">
-					<div className="sticky top-0 flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-800">
-						<h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">แก้ไขวัตถุดิบ</h2>
-						<button onClick={onClose} className="text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300" type="button">
+				<div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-[var(--bg-surface)] shadow-xl">
+					<div className="sticky top-0 flex items-center justify-between border-b border-[var(--border)] bg-[var(--bg-surface)] px-6 py-4">
+						<h2 className="text-xl font-semibold text-[var(--ink)]">แก้ไขวัตถุดิบ</h2>
+						<button onClick={onClose} className="ka-btn ka-btn--ghost ka-btn--icon" type="button" aria-label="ปิดหน้าต่าง">
 							<svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
 							</svg>
@@ -140,42 +140,42 @@ export default function UpdateMaterialForm({ isOpen, onClose, onSuccess, initial
 
 					<form onSubmit={handleSubmit} className="space-y-6 p-6">
 						{error && (
-							<div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300">
+							<div className="rounded-lg border border-[var(--danger)] bg-[var(--danger-soft)] px-4 py-3 text-[var(--danger)]">
 								{error}
 							</div>
 						)}
 
 						<div>
-							<label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">
-								ชื่อวัตถุดิบ <span className="text-red-500">*</span>
+							<label className="mb-2 block text-sm font-medium text-[var(--ink)]">
+								ชื่อวัตถุดิบ <span className="text-[var(--danger)]">*</span>
 							</label>
 							<input
 								type="text"
 								value={materialName}
 								onChange={(e) => setMaterialName(e.target.value)}
-								className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-800 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500"
+								className="ka-input"
 								placeholder="กรอกชื่อวัตถุดิบ"
 								disabled={isSubmitting}
 							/>
 						</div>
 
 						<div>
-							<label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">
-								รายละเอียดวัตถุดิบ <span className="text-red-500">*</span>
+							<label className="mb-2 block text-sm font-medium text-[var(--ink)]">
+								รายละเอียดวัตถุดิบ <span className="text-[var(--danger)]">*</span>
 							</label>
 							<textarea
 								rows={5}
 								value={materialDescription}
 								onChange={(e) => setMaterialDescription(e.target.value)}
-								className="w-full resize-none rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-800 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500"
+								className="ka-textarea resize-none"
 								placeholder="กรอกรายละเอียดวัตถุดิบ"
 								disabled={isSubmitting}
 							/>
 						</div>
 
 						<div>
-							<label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">
-								ราคา <span className="text-red-500">*</span>
+							<label className="mb-2 block text-sm font-medium text-[var(--ink)]">
+								ราคา <span className="text-[var(--danger)]">*</span>
 							</label>
 							<input
 								type="number"
@@ -183,7 +183,7 @@ export default function UpdateMaterialForm({ isOpen, onClose, onSuccess, initial
 								step="0.01"
 								value={materialPrice}
 								onChange={(e) => setMaterialPrice(e.target.value)}
-								className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-800 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500"
+								className="ka-input"
 								placeholder="0.00"
 								disabled={isSubmitting}
 							/>
@@ -215,11 +215,11 @@ export default function UpdateMaterialForm({ isOpen, onClose, onSuccess, initial
 								placeholder="เลือกหน่วยสินค้า"
 							/>
 						</div>
-						<div className="flex justify-end gap-3 border-t border-gray-200 pt-4 dark:border-gray-700">
+						<div className="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
 							<button
 								type="button"
 								onClick={onClose}
-								className="rounded-lg border border-gray-300 px-6 py-2 font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+								className="ka-btn"
 								disabled={isSubmitting}
 							>
 								ยกเลิก
@@ -227,7 +227,7 @@ export default function UpdateMaterialForm({ isOpen, onClose, onSuccess, initial
 							<button
 								type="submit"
 								disabled={isSubmitting}
-								className="rounded-lg bg-[var(--color-primary)] px-6 py-2 font-medium text-white transition-colors hover:bg-[var(--color-primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+								className="ka-btn ka-btn--primary"
 							>
 								{isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}
 							</button>

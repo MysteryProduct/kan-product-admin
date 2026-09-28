@@ -94,13 +94,13 @@ export default function ColorsPage() {
 
 
   return (
-    <div className="flex-1 bg-gray-50 dark:bg-gray-900 p-2 sm:p-4 md:p-6 lg:p-8">
+    <div className="flex-1 bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
       {/* Statistics Cards */}
 
       {/* Main Content Card */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-[var(--bg-surface)] rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
         {/* Search Bar and Add Button */}
-        <div className="p-3 sm:p-4 md:p-6 border-b border-gray-100 dark:border-gray-700">
+        <div className="p-3 sm:p-4 md:p-6 border-b border-[var(--border)]">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
             <div className="flex flex-col sm:flex-row items-stretch gap-1 w-full sm:w-auto sm:flex-1 sm:max-w-md">
               <div className="relative flex-1">
@@ -114,10 +114,10 @@ export default function ColorsPage() {
                       handleSearch();
                     }
                   }}
-                  className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 bg-white dark:bg-gray-700"
+                  className="ka-input w-full"
                 />
                 <svg
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[var(--ink-subtle)]"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -133,7 +133,7 @@ export default function ColorsPage() {
               <button
                 type="button"
                 onClick={handleSearch}
-                className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors font-medium whitespace-nowrap"
+                className="ka-btn ka-btn--primary whitespace-nowrap"
               >
                 ค้นหา
               </button>
@@ -141,7 +141,7 @@ export default function ColorsPage() {
                 <button
                   type="button"
                   onClick={handleClearSearch}
-                  className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors whitespace-nowrap"
+                  className="ka-btn whitespace-nowrap"
                 >
                   ล้าง
                 </button>
@@ -151,7 +151,7 @@ export default function ColorsPage() {
             {canAddColor && (
               <button
                 onClick={() => setIsFormOpen(true)}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium whitespace-nowrap"
+                className="ka-btn ka-btn--primary flex items-center justify-center gap-2 whitespace-nowrap"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -166,29 +166,29 @@ export default function ColorsPage() {
             <div className="overflow-x-auto -mx-2 sm:mx-0 p-3">
               <table className="w-full">
                 <thead>
-                <tr className="bg-gray-50 dark:bg-gray-700 border-b border-gray-100 dark:border-gray-600">
-                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 hidden sm:table-cell">Color Id</th>
-                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <tr className="bg-[var(--bg-subtle)] border-b border-[var(--border)]">
+                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-[13px] sm:text-sm font-semibold text-[var(--ink)] hidden sm:table-cell">Color Id</th>
+                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-[13px] sm:text-sm font-semibold text-[var(--ink)]">
                       Color Name
                     </th>
-                    <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-[13px] sm:text-sm font-semibold text-[var(--ink)]">
                       Color
                     </th>
-                    <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 lg:w-50 md:w-40 ">Action</th>
+                    <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-[13px] sm:text-sm font-semibold text-[var(--ink)] lg:w-50 md:w-40 ">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {colors.map((color, index) => (
                     <tr
                       key={color.color_id}
-                      className="bg-white dark:bg-gray-800 border-b border-gray-50 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      className="bg-[var(--bg-surface)] border-b border-[var(--border)] hover:bg-[var(--bg-subtle)] transition-colors"
                     >
-                  <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-600 dark:text-gray-400 hidden sm:table-cell">{color.color_id}</td>
-                  <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-gray-900 dark:text-gray-100">{color.color_name}</td>
+                  <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-[var(--ink-muted)] hidden sm:table-cell">{color.color_id}</td>
+                  <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-[var(--ink)]">{color.color_name}</td>
                       <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4">
                         <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
                           <div
-                            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg shadow-sm border-2 border-gray-200 flex-shrink-0"
+                            className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg shadow-sm border-2 border-[var(--border)] flex-shrink-0"
                             style={{ backgroundColor: color.color_hex }}
                             title={color.color_hex}
                           />
@@ -202,7 +202,9 @@ export default function ColorsPage() {
                               setSelectedColor(color);
                               setIsUpdateFormOpen(true);
                             }}
-                            className="text-gray-400 hover:text-blue-500 transition-colors mr-4"
+                            className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
+                            title="แก้ไข"
+                            aria-label="แก้ไข"
                           >
                             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 12v3h3l8.293-8.293-3-3L5 12z" />
@@ -210,7 +212,9 @@ export default function ColorsPage() {
                           </button>
                         )}
                         {canDeleteColor && (
-                          <button className="text-gray-400 hover:text-red-500 transition-colors"
+                          <button className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--danger)]"
+                            title="ลบ"
+                            aria-label="ลบ"
                             onClick={() => {
                               setColorToDelete(color);
                               setIsDeleteDialogOpen(true);
@@ -235,9 +239,9 @@ export default function ColorsPage() {
           </>
         
         {meta && meta.last_page > 1 && (
-          <div className="px-6 py-4 bg-gradient-to-r from-gray-50 dark:from-gray-800 to-blue-50 dark:to-gray-700 border-t border-gray-100 dark:border-gray-700">
+          <div className="px-6 py-4 bg-[var(--bg-subtle)] border-t border-[var(--border)]">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-sm text-[var(--ink-muted)]">
                 Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, meta.total)} of {meta.total} results
               </div>
               <Pagination

@@ -239,9 +239,10 @@ export default function MaterialsPage() {
 							setSelectedMaterial(row);
 							setIsDetailOpen(true);
 						}}
-						className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-green-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-green-400"
+						className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
 						type="button"
 						title="ดูรายละเอียด"
+						aria-label="ดูรายละเอียด"
 					>
 						<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -255,9 +256,10 @@ export default function MaterialsPage() {
 								setSelectedMaterial(row);
 								setIsUpdateOpen(true);
 							}}
-							className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-blue-400"
+							className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
 							type="button"
 							title="แก้ไข"
+							aria-label="แก้ไข"
 						>
 							<svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
 								<path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 12v3h3l8.293-8.293-3-3L5 12z" />
@@ -271,9 +273,10 @@ export default function MaterialsPage() {
 								setMaterialToDelete(row);
 								setIsDeleteDialogOpen(true);
 							}}
-							className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-red-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-red-400"
+							className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--danger)]"
 							type="button"
 							title="ลบ"
+							aria-label="ลบ"
 						>
 							<svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
 								<path
@@ -290,9 +293,9 @@ export default function MaterialsPage() {
 	];
 
 	return (
-		<div className="bg-gray-50 p-2 sm:p-4 md:p-6 lg:p-8 dark:bg-gray-900">
-			<div className="overflow-hidden rounded-xl bg-white shadow-sm sm:rounded-2xl dark:bg-gray-800">
-				<div className="border-b border-gray-100 p-3 sm:p-4 md:p-6 dark:border-gray-700">
+		<div className="bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
+			<div className="overflow-hidden rounded-xl bg-[var(--bg-surface)] shadow-sm sm:rounded-2xl">
+				<div className="border-b border-[var(--border)] p-3 sm:p-4 md:p-6">
 					<div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">
 						<div className="flex w-full flex-col items-stretch gap-1 sm:w-auto sm:max-w-md sm:flex-1 sm:flex-row">
 							<div className="relative flex-1">
@@ -306,10 +309,10 @@ export default function MaterialsPage() {
 											handleSearch();
 										}
 									}}
-									className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-500"
+									className="ka-input w-full"
 								/>
 								<svg
-									className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-gray-400 dark:text-gray-500"
+									className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 transform text-[var(--ink-subtle)]"
 									fill="none"
 									stroke="currentColor"
 									viewBox="0 0 24 24"
@@ -325,7 +328,7 @@ export default function MaterialsPage() {
 							<button
 								type="button"
 								onClick={handleSearch}
-								className="whitespace-nowrap rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+								className="ka-btn ka-btn--primary whitespace-nowrap"
 							>
 								ค้นหา
 							</button>
@@ -333,7 +336,7 @@ export default function MaterialsPage() {
 								<button
 									type="button"
 									onClick={handleClearSearch}
-									className="whitespace-nowrap rounded-lg border border-gray-200 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+									className="ka-btn whitespace-nowrap"
 								>
 									ล้าง
 								</button>
@@ -343,7 +346,7 @@ export default function MaterialsPage() {
 						{canAddMaterial && (
 							<button
 								onClick={() => setIsInsertOpen(true)}
-								className="flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-blue-600 px-4 py-2 font-medium text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+								className="ka-btn ka-btn--primary flex items-center justify-center gap-2 whitespace-nowrap"
 							>
 								<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -360,14 +363,12 @@ export default function MaterialsPage() {
 					columns={columns}
 					keyField="material_id"
 					disabled={loading}
-					className="bg-white p-1 dark:bg-gray-800"
-					headerClassName="border-b border-gray-100 bg-gray-50 dark:border-gray-600 dark:bg-gray-700"
-					rowClassName="border-b border-gray-100 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700"
+					className="bg-[var(--bg-surface)] p-1"
 					paginationMeta={meta}
 					currentPage={currentPage}
 					onPageChange={setCurrentPage}
-					onSortChange={handleSortChange}
 					onFilterChange={handleFilterChange}
+					onSortChange={handleSortChange}
 				/>
 
 			</div>

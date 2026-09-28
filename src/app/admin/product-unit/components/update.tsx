@@ -85,12 +85,12 @@ export default function UpdateProductUnitForm({ isOpen, onClose, initialData, on
     };
     if (!isOpen) return null;
     return (
-        <div className="fixed  inset-0 flex items-center justify-center bg-gray-400/40 bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded shadow-md w-full max-w-md">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">แก้ไขหน่วยสินค้า</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4">
+            <div className="w-full max-w-md rounded-2xl bg-[var(--bg-surface)] p-6 overlay-surface">
+                <h2 className="text-xl font-semibold text-[var(--ink)] mb-4">แก้ไขหน่วยสินค้า</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
-                        <label htmlFor="product_unit_name" className="block text-gray-700 font-medium mb-2">
+                        <label htmlFor="product_unit_name" className="block text-sm font-medium text-[var(--ink)] mb-2">
                             ชื่อหน่วยสินค้า
                         </label>
                         <input
@@ -99,28 +99,28 @@ export default function UpdateProductUnitForm({ isOpen, onClose, initialData, on
                             name="product_unit_name"
                             value={formData.product_unit_name}
                             onChange={handleChange}
-                            className="w-full px-4 py-2 text-gray-900 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="ka-input"
                             disabled={loading}
                         />
                     </div>
                     {/* Error Message */}
                     {error && (
-                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg mt-3 mb-2">
-                            <p className="text-sm text-red-800">{error}</p>
+                        <div className="p-4 bg-[var(--danger-soft)] border border-[var(--danger)] rounded-lg mt-3 mb-2">
+                            <p className="text-sm text-[var(--danger)]">{error}</p>
                         </div>
                     )}
-                    <div className="flex justify-end space-x-4">
+                    <div className="flex justify-end gap-3">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                            className="ka-btn"
                             disabled={loading}
                         >
                             ยกเลิก
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors"
+                            className="ka-btn ka-btn--primary"
                             disabled={loading}
                         >
                             {loading ? 'กำลังบันทึก...' : 'บันทึก'}

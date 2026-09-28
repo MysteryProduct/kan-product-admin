@@ -122,12 +122,12 @@ export default function UpdateCategoryForm({ isOpen, onClose, onSuccess, initial
     };
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
             <div className="w-full max-w-2xl rounded-2xl bg-[var(--color-bg-primary)] p-6 overlay-surface ">
-                <h2 className="mb-4 text-xl font-semibold text-gray-700 dark:text-gray-100">อัปเดตประเภทสินค้า</h2>
+                <h2 className="mb-4 text-xl font-semibold text-[var(--ink)]">อัปเดตประเภทสินค้า</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="mb-2 block text-gray-700 dark:text-gray-200" htmlFor="category_name">
+                        <label className="mb-2 block text-sm font-medium text-[var(--ink)]" htmlFor="category_name">
                             ชื่อประเภทสินค้า
                         </label>
                         <input
@@ -136,41 +136,42 @@ export default function UpdateCategoryForm({ isOpen, onClose, onSuccess, initial
                             name="category_name"
                             value={formData.category_name}
                             onChange={handleChange}
-                            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-gray-700 focus:border-blue-300 focus:outline-none focus:ring dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                            className="ka-input"
                             disabled={loading}
                             required
                         />
                     </div>
 
                     <div>
-                        <label className="mb-2 block text-gray-700 dark:text-gray-200">
+                        <label className="mb-2 block text-sm font-medium text-[var(--ink)]">
                             Size ที่เชื่อมโยง
                         </label>
-                        <div className="grid max-h-52 grid-cols-1 gap-2 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900/30 sm:grid-cols-2">
+                        <div className="grid max-h-52 grid-cols-1 gap-2 overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--bg-subtle)] p-3 sm:grid-cols-2">
                             {sizes.length > 0 ? (
                                 sizes.map((size) => (
                                     <label
                                         key={size.size_id}
-                                        className="flex items-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+                                        className="flex items-center gap-2 rounded-md border border-[var(--border)] bg-[var(--bg-surface)] px-3 py-2 text-sm text-[var(--ink)]"
                                     >
                                         <input
                                             type="checkbox"
                                             checked={Boolean(formData.size_ids?.includes(size.size_id))}
                                             onChange={() => toggleSize(size.size_id)}
+                                            className="ka-check"
                                             disabled={loading}
                                         />
                                         {size.size_name}
                                     </label>
                                 ))
                             ) : (
-                                <span className="text-sm text-gray-500 dark:text-gray-400">ไม่พบรายการ Size</span>
+                                <span className="text-sm text-[var(--ink-muted)]">ไม่พบรายการ Size</span>
                             )}
                         </div>
                     </div>
 
                     {error && (
-                        <div className="p-4 bg-red-50 border border-red-200 rounded-lg mt-3 mb-2">
-                            <p className="text-sm text-red-800">{error}</p>
+                        <div className="p-4 bg-[var(--danger-soft)] border border-[var(--danger)] rounded-lg mt-3 mb-2">
+                            <p className="text-sm text-[var(--danger)]">{error}</p>
                         </div>
                     )}
 
@@ -178,14 +179,14 @@ export default function UpdateCategoryForm({ isOpen, onClose, onSuccess, initial
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                            className="ka-btn"
                             disabled={loading}
                         >
                             ยกเลิก
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-md hover:bg-[var(--color-primary-hover)]"
+                            className="ka-btn ka-btn--primary"
                             disabled={loading}
                         >
                             {loading ? 'กำลังบันทึก...' : 'บันทึก'}

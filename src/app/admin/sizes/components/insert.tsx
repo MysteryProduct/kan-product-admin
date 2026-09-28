@@ -117,15 +117,16 @@ export default function InsertSizeForm({ isOpen, onClose, onSuccess }: InsertSiz
 	}
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
-			<div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface dark:border-[var(--color-border)] ">
-				<div className="bg-[var(--color-primary)] px-6 py-5">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
+			<div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface">
+				<div className="border-b border-[var(--border)] bg-[var(--bg-surface)] px-6 py-5">
 					<div className="flex items-center justify-between gap-3">
-						<h2 className="text-xl font-bold text-white sm:text-2xl">เพิ่มขนาดสินค้า</h2>
+						<h2 className="text-xl font-bold text-[var(--ink)] sm:text-2xl">เพิ่มขนาดสินค้า</h2>
 						<button
 							type="button"
 							onClick={onClose}
-							className="rounded-lg border border-white/60 bg-white/15 p-2 text-white transition-colors hover:bg-white/25 disabled:opacity-50"
+							className="ka-btn ka-btn--ghost ka-btn--icon"
+							aria-label="ปิดหน้าต่าง"
 						>
 							<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -136,7 +137,7 @@ export default function InsertSizeForm({ isOpen, onClose, onSuccess }: InsertSiz
 
 				<form onSubmit={handleSubmit} className="space-y-6 p-6">
 					<div>
-						<label htmlFor="size_name" className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-200">
+						<label htmlFor="size_name" className="mb-2 block text-sm font-semibold text-[var(--ink)]">
 							ชื่อขนาดสินค้า
 						</label>
 						<input
@@ -145,20 +146,20 @@ export default function InsertSizeForm({ isOpen, onClose, onSuccess }: InsertSiz
 							value={sizeName}
 							onChange={(e) => setSizeName(e.target.value)}
 							placeholder="เช่น S, M, L หรือ 37, 38, 39"
-							className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-slate-900 outline-none transition focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-100"
+							className="ka-input"
 							disabled={loading}
 						/>
 					</div>
 
 					<div>
 						<div className="mb-2 flex items-center justify-between">
-							<label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Category ที่ต้องการผูก</label>
-							<span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+							<label className="text-sm font-semibold text-[var(--ink)]">Category ที่ต้องการผูก</label>
+							<span className="rounded-full bg-[var(--bg-subtle)] px-2.5 py-1 text-[13px] font-semibold text-[var(--ink-muted)]">
 								เลือกแล้ว {selectedCount}
 							</span>
 						</div>
 
-						<div className="grid max-h-64 grid-cols-1 gap-2 overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-600 dark:bg-slate-900/30 sm:grid-cols-2">
+						<div className="grid max-h-64 grid-cols-1 gap-2 overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] p-3 sm:grid-cols-2">
 							{categories.length > 0 ? (
 								categories.map((category) => {
 									const checked = selectedCategoryIds.includes(category.category_id);
@@ -168,15 +169,15 @@ export default function InsertSizeForm({ isOpen, onClose, onSuccess }: InsertSiz
 											key={category.category_id}
 											className={`flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 text-sm transition ${
 												checked
-													? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700/40 dark:bg-emerald-900/20 dark:text-emerald-300'
-													: 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700'
+													? 'border-[var(--action)] bg-[var(--brand-soft)] text-[var(--brand-ink)]'
+													: 'border-[var(--border)] bg-[var(--bg-surface)] text-[var(--ink)] hover:bg-[var(--bg-subtle)]'
 											}`}
 										>
 											<input
 												type="checkbox"
 												checked={checked}
 												onChange={() => toggleCategory(category.category_id)}
-												className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+												className="ka-check"
 												disabled={loading}
 											/>
 											<span>{category.category_name}</span>
@@ -184,29 +185,29 @@ export default function InsertSizeForm({ isOpen, onClose, onSuccess }: InsertSiz
 									);
 								})
 							) : (
-								<p className="col-span-full text-sm text-slate-500 dark:text-slate-400">ไม่พบรายการ Category</p>
+								<p className="col-span-full text-sm text-[var(--ink-muted)]">ไม่พบรายการ Category</p>
 							)}
 						</div>
 					</div>
 
 					{error && (
-						<div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-800/40 dark:bg-rose-900/30 dark:text-rose-300">
+						<div className="rounded-xl border border-[var(--danger)] bg-[var(--danger-soft)] px-4 py-3 text-sm text-[var(--danger)]">
 							{error}
 						</div>
 					)}
 
-					<div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-4 dark:border-slate-700 sm:flex-row sm:justify-end">
+					<div className="flex flex-col-reverse gap-3 border-t border-[var(--border)] pt-4 sm:flex-row sm:justify-end">
 						<button
 							type="button"
 							onClick={onClose}
-							className="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
+							className="ka-btn"
 							disabled={loading}
 						>
 							ยกเลิก
 						</button>
 						<button
 							type="submit"
-							className="rounded-xl bg-sky-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
+							className="ka-btn ka-btn--primary"
 							disabled={loading}
 						>
 							{loading ? 'กำลังบันทึก...' : 'บันทึกข้อมูล'}
