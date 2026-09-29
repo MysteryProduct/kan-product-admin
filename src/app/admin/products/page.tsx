@@ -211,12 +211,11 @@ export default function ProductsPage() {
       label: 'ราคา',
       sortable: true,
       render: (value, row) => {
-        const displayPrice =
-          typeof value === 'number'
-            ? value
-            : getPrimaryVariant(row)?.product_variant_price;
+        // The API returns the decimal price as a string ("390.00").
+        const rawPrice = value ?? getPrimaryVariant(row)?.product_variant_price;
+        const displayPrice = rawPrice === '' || rawPrice === null ? NaN : Number(rawPrice);
 
-        if (typeof displayPrice !== 'number') {
+        if (!Number.isFinite(displayPrice)) {
           return '-';
         }
 
