@@ -35,6 +35,10 @@ export interface DataTableProps<T> {
   disabled?: boolean;
 }
 
+// The filter menu is `w-56` (14rem = 224px); the margin keeps it off the screen edge.
+const FILTER_MENU_WIDTH = 224;
+const FILTER_MENU_MARGIN = 8;
+
 interface SortConfig<T> {
   key: keyof T;
   direction: 'ASC' | 'DESC';
@@ -82,9 +86,15 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
       const element = filterRefs.current[String(colKey)];
       if (element) {
         const rect = element.getBoundingClientRect();
+        // Align the menu's right edge with the button, then keep it on screen:
+        // near the left edge of a narrow viewport it would be clipped.
+        const left = Math.min(
+          Math.max(FILTER_MENU_MARGIN, rect.right - FILTER_MENU_WIDTH),
+          window.innerWidth - FILTER_MENU_WIDTH - FILTER_MENU_MARGIN,
+        );
         setDropdownPos({
           top: rect.bottom + window.scrollY + 8,
-          left: rect.right - 200 + window.scrollX, // 224px = w-56 (14rem * 16px)
+          left: left + window.scrollX,
         });
       }
     };
