@@ -14,7 +14,12 @@ import { usePermissions } from '@/hooks/usePermissions';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import LoadingSkeletonProps from '@/components/LoadingSkeleton';
 import { formatThaiDate } from '@/lib/date-format';
+import { toNameOptions } from '@/lib/filter-options';
+import CategoryModel from '@/models/category';
+import ColorModel from '@/models/color';
 const productModel = new ProductModel();
+const categoryModel = new CategoryModel();
+const colorModel = new ColorModel();
 import StorePolicy from './components/store-policy';
 
 type SortField = 'adddate' | 'product_variant_price' | null;
@@ -46,6 +51,8 @@ export default function ProductsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [filters, setFilters] = useState<Record<string, string>>({});
+  const [categoryOptions, setCategoryOptions] = useState<{ label: string; value: string }[]>([]);
+  const [colorOptions, setColorOptions] = useState<{ label: string; value: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [resultDialog, setResultDialog] = useState<{
     isOpen: boolean;
@@ -56,6 +63,22 @@ export default function ProductsPage() {
     status: 'success',
     message: '',
   });
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const [categories, colors] = await Promise.all([
+          categoryModel.getCategories(1, 200),
+          colorModel.getColors(1, 200),
+        ]);
+        setCategoryOptions(toNameOptions(categories.data.map((category) => category.category_name)));
+        setColorOptions(toNameOptions(colors.data.map((color) => color.color_name)));
+      } catch (error) {
+        console.error('Failed to fetch category or color options:', error);
+      }
+    };
+    void fetchOptions();
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -142,10 +165,7 @@ export default function ProductsPage() {
       label: 'ประเภทสินค้า',
       filterable: true,
       filterType: 'multi-select',
-      filterOptions: [
-        { label: 'แม่นือ', value: 'แม่นือ' },
-        { label: 'เม็ดแนว', value: 'เม็ดแนว' },
-      ],
+      filterOptions: categoryOptions,
       filterValue: (row) => row.category?.category_name || '',
       render: (value) => (value as Product['category'])?.category_name,
     },
@@ -154,11 +174,7 @@ export default function ProductsPage() {
       label: 'สีสินค้า',
       filterable: true,
       filterType: 'multi-select',
-      filterOptions: [
-        { label: 'สีขาว', value: 'สีขาว' },
-        { label: 'สีดำ', value: 'สีดำ' },
-        { label: 'สีแดง', value: 'สีแดง' },
-      ],
+      filterOptions: colorOptions,
       filterValue: (row) => row.color?.color_name || getPrimaryVariant(row)?.color?.color_name || '',
       render: (value, row) =>
         (value as Product['color'])?.color_name ||
@@ -193,11 +209,10 @@ export default function ProductsPage() {
       label: 'สถานะสินค้า',
       filterable: true,
       filterType: 'multi-select',
+      // The statuses the API writes; it matches 'in stock' to 'available' as well.
       filterOptions: [
         { label: 'มีสินค้า', value: 'in stock' },
         { label: 'สินค้าหมด', value: 'out stock' },
-        { label: 'test', value: 'test' },
-
       ],
       filterValue: (row) => row.stock?.stock_status || '',
       render: (value) => {

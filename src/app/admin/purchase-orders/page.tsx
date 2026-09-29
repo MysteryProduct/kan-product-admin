@@ -19,6 +19,16 @@ const purchaseOrderModel = new PurchaseOrderModel();
 type SortField = 'purchase_date' | 'purchase_order_total' | null;
 type SortOrder = 'ASC' | 'DESC';
 
+// Every status the API writes: pending by default, active on approval,
+// partial/completed from receipts and inactive on rejection.
+const PURCHASE_ORDER_STATUS_LABELS: Record<string, string> = {
+  pending: 'รออนุมัติ',
+  active: 'ใช้งานอยู่',
+  partial: 'รับสินค้าบางส่วน',
+  completed: 'รับสินค้าครบแล้ว',
+  inactive: 'ยกเลิก',
+};
+
 export default function PurchaseOrdersPage() {
   const { can } = usePermissions();
   const canAddPurchaseOrder = can('purchase_orders', 'add');
@@ -193,22 +203,11 @@ export default function PurchaseOrdersPage() {
       label: 'สถานะใบสั่งซื้อ',
       filterable: true,
       filterType: 'multi-select',
-      filterOptions: [
-        { label: "pending", value: 'pending' },
-        { label: 'active', value: 'active' },
-        { label: 'inactive', value: 'inactive' },
-        { label: 'completed', value: 'completed' },
-        { label: 'partial', value: 'partial' },
-      ],
+      filterOptions: Object.entries(PURCHASE_ORDER_STATUS_LABELS).map(([value, label]) => ({ label, value })),
       filterValue: (row) => row.purchase_order_status || '',
       render: (value) => {
-        const status = value as PurchaseOrder['purchase_order_status'] | undefined;
-        if (status === 'pending') return 'รออนุมัติ';
-        if (status === 'active') return 'ใช้งานอยู่';
-        if (status === 'inactive') return 'ยกเลิก';
-        if (status === 'partial') return 'รับสินค้าบางส่วน';
-        if (status === 'completed') return 'รับสินค้าครบแล้ว';
-        return status;
+        const status = value as string | undefined;
+        return (status && PURCHASE_ORDER_STATUS_LABELS[status]) || status;
       },
     },
     {

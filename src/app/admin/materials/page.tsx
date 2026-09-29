@@ -15,24 +15,11 @@ import MaterialDetailModal from './components/detail';
 import ColorModel from '@/models/color';
 import SizeModel from '@/models/size';
 import { formatThaiDate } from '@/lib/date-format';
+import { toNameOptions } from '@/lib/filter-options';
 
 const materialModel = new MaterialModel();
 const colorModel = new ColorModel();
 const sizeModel = new SizeModel();
-
-/**
- * The API filters materials by colour and size name, and the DataTable
- * compares filter values in lower case, so names that differ only by case
- * would be one option. Names are not unique in the database: keep one each.
- */
-const toNameOptions = (names: string[]) => {
-	const byKey = new Map<string, string>();
-	for (const name of names) {
-		const key = name.toLowerCase();
-		if (!byKey.has(key)) byKey.set(key, name);
-	}
-	return Array.from(byKey.values(), (name) => ({ label: name, value: name }));
-};
 
 type SortField = 'adddate' | 'material_price' | null;
 type SortOrder = 'ASC' | 'DESC';
