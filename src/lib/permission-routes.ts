@@ -26,3 +26,9 @@ export function getMenuNameFromPath(pathname: string): string | null {
 
   return ROUTE_MENU_MAP[matchedPrefix];
 }
+
+/** Admin routes that require view on this menu (case-insensitive, as permissions match). */
+export function getPathsForMenu(menuName: string): string[] {
+  const menu = menuName.toLowerCase();
+  return Object.keys(ROUTE_MENU_MAP).filter((path) => ROUTE_MENU_MAP[path].toLowerCase() === menu);
+}
