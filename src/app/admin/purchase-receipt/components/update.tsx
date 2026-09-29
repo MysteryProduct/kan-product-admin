@@ -491,7 +491,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 							<table className="w-full text-sm">
 								<thead>
 									<tr className="bg-[var(--bg-muted)] text-left text-[var(--ink)]">
-										<th className="w-14 px-3 py-2"><input type="checkbox" checked={allCurrentPageSelected} onChange={toggleSelectAllCurrentPage} /></th>
+										<th className="w-14 px-3 py-2"><label className="ka-check-hit"><input type="checkbox" className="ka-check" aria-label="เลือกทั้งหมดในหน้านี้" checked={allCurrentPageSelected} onChange={toggleSelectAllCurrentPage} /></label></th>
 										<th className="px-3 py-2">วัตถุดิบ</th>
 										<th className="px-3 py-2">จำนวนสั่งซื้อ</th>
 										<th className="px-3 py-2"><button type="button" className="flex items-center gap-1 font-semibold" onClick={() => handleSelectionSort('purchase_order_list_price')}>ราคา/หน่วย{selectionSortField === 'purchase_order_list_price' && <span>{selectionSortOrder === 'ASC' ? '↑' : '↓'}</span>}</button></th>
@@ -509,7 +509,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 										const total = Number(orderItem.purchase_order_list_qty || 0) * Number(orderItem.purchase_order_list_price || 0);
 										return (
 											<tr key={itemId} className="border-b border-[var(--border)]">
-												<td className="px-3 py-2"><input type="checkbox" checked={Boolean(selectedOrderItems[itemId])} onChange={() => toggleOrderItemSelection(orderItem)} /></td>
+												<td className="px-3 py-2"><label className="ka-check-hit"><input type="checkbox" className="ka-check" aria-label={`เลือก ${orderItem.material?.material_name || orderItem.material_id}`} checked={Boolean(selectedOrderItems[itemId])} onChange={() => toggleOrderItemSelection(orderItem)} /></label></td>
 												<td className="px-3 py-2 text-[var(--ink)]">{orderItem.material?.material_name || orderItem.material_id}</td>
 												<td className="px-3 py-2">{orderItem.purchase_order_list_qty}</td>
 												<td className="px-3 py-2">฿{formatCurrency(Number(orderItem.purchase_order_list_price || 0))}</td>

@@ -348,7 +348,10 @@ button.ka-theme { flex: none; }
 @media (max-width: 767px) {
   .ka-select__trigger { min-height: var(--touch-target); }
   label:has(> input.ka-check) { min-height: var(--touch-target); }
+  .ka-check-hit { min-width: var(--touch-target); min-height: var(--touch-target); }
 }
+/* Wraps a bare checkbox in a table cell so its tap area can grow without changing the box. */
+.ka-check-hit { display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
 
 /* The header keeps its 44px controls on a phone; tighter spacing and a narrower switch leave the title room. */
 @media (max-width: 639px) {

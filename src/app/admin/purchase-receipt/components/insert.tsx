@@ -629,7 +629,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 								<thead>
 									<tr className="bg-[var(--bg-muted)] text-left text-[var(--ink)]">
 										<th className="w-14 px-3 py-2">
-											<input type="checkbox" checked={allCurrentPageSelected} onChange={toggleSelectAllCurrentPage} />
+											<label className="ka-check-hit"><input type="checkbox" className="ka-check" aria-label="เลือกทั้งหมดในหน้านี้" checked={allCurrentPageSelected} onChange={toggleSelectAllCurrentPage} /></label>
 										</th>
 										<th className="px-3 py-2">วัตถุดิบ</th>
 										<th className="px-3 py-2">จำนวนสั่งซื้อ</th>
@@ -664,11 +664,15 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 											return (
 												<tr key={itemId} className="border-b border-[var(--border)]">
 													<td className="px-3 py-2">
-														<input
-															type="checkbox"
-															checked={Boolean(selectedOrderItems[itemId])}
-															onChange={() => toggleOrderItemSelection(orderItem)}
-														/>
+														<label className="ka-check-hit">
+															<input
+																type="checkbox"
+																className="ka-check"
+																aria-label={`เลือก ${orderItem.material?.material_name || orderItem.material_id}`}
+																checked={Boolean(selectedOrderItems[itemId])}
+																onChange={() => toggleOrderItemSelection(orderItem)}
+															/>
+														</label>
 													</td>
 													<td className="px-3 py-2 text-[var(--ink)]">{orderItem.material?.material_name || orderItem.material_id}</td>
 													<td className="px-3 py-2">{orderItem.purchase_order_list_qty}</td>
