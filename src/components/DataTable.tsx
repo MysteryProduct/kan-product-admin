@@ -267,7 +267,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                                 setOpenFilterKey(null);
                               }}
                               disabled={disabled}
-                              className="ka-btn ka-btn--sm ka-btn--icon bg-[var(--bg-surface)] text-[var(--ink-muted)] hover:border-[var(--focus)] hover:text-[var(--brand-ink)]"
+                              className="ka-btn ka-btn--sm ka-btn--icon ka-btn--touch bg-[var(--bg-surface)] text-[var(--ink-muted)] hover:border-[var(--focus)] hover:text-[var(--brand-ink)]"
                               aria-label="Toggle column filter"
                               ref={(el) => {
                                 if (el) filterRefs.current[String(col.key)] = el;

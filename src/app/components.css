@@ -34,6 +34,7 @@
 .ka-btn--icon { width: var(--control-height); padding: 0; }
 .ka-btn--sm { min-height: 32px; padding: 0 var(--space-3); font-size: 14px; }
 .ka-btn--sm.ka-btn--icon { width: 32px; border-radius: var(--radius-sm); }
+.ka-btn--touch { min-width: var(--touch-target); min-height: var(--touch-target); }
 .ka-btn:disabled, .ka-btn[aria-disabled="true"] { cursor: not-allowed; opacity: 0.5; transform: none; }
 .ka-btn[aria-busy="true"] { color: transparent; pointer-events: none; }
 .ka-btn[aria-busy="true"]::after {
@@ -295,17 +296,17 @@ a.ka-card:hover, .ka-card--link:hover { transform: translateY(-2px); box-shadow:
 
 /* ---------- ThemeToggle ---------- */
 .ka-theme {
-  position: relative; display: inline-flex; align-items: center; width: 64px; height: 34px; padding: 3px;
+  position: relative; display: inline-flex; align-items: center; width: 80px; height: var(--touch-target); padding: 3px;
   border: 1px solid var(--border-control); border-radius: var(--radius-pill); background: var(--bg-subtle); cursor: pointer;
 }
 .ka-theme input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
 .ka-theme__knob {
-  display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--bg-surface); color: var(--brand-ink);
+  display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--bg-surface); color: var(--brand-ink);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); transition: transform var(--ka-slow) var(--ka-ease), background-color var(--ka-slow) var(--ka-ease);
 }
-.ka-theme__knob svg { position: absolute; width: 16px; height: 16px; transition: opacity var(--ka-base) var(--ka-ease), rotate var(--ka-slow) var(--ka-ease); }
+.ka-theme__knob svg { position: absolute; width: 20px; height: 20px; transition: opacity var(--ka-base) var(--ka-ease), rotate var(--ka-slow) var(--ka-ease); }
 .ka-theme .ka-moon { opacity: 0; rotate: -90deg; }
-.ka-theme input:checked + .ka-theme__knob { transform: translateX(30px); background: var(--bg-sidebar); color: var(--ink-on-sidebar-active); }
+.ka-theme input:checked + .ka-theme__knob { transform: translateX(36px); background: var(--bg-sidebar); color: var(--ink-on-sidebar-active); }
 .ka-theme input:checked + .ka-theme__knob .ka-sun { opacity: 0; rotate: 90deg; }
 .ka-theme input:checked + .ka-theme__knob .ka-moon { opacity: 1; rotate: 0deg; }
 .ka-theme:has(input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
@@ -330,7 +331,7 @@ a.ka-card:hover, .ka-card--link:hover { transform: translateY(-2px); box-shadow:
 
 /* ---------- Theme toggle as a button[role=switch] ---------- */
 button.ka-theme { flex: none; }
-.ka-theme[aria-checked="true"] .ka-theme__knob { transform: translateX(30px); background: var(--bg-sidebar); color: var(--ink-on-sidebar-active); }
+.ka-theme[aria-checked="true"] .ka-theme__knob { transform: translateX(36px); background: var(--bg-sidebar); color: var(--ink-on-sidebar-active); }
 .ka-theme[aria-checked="true"] .ka-sun { opacity: 0; rotate: 90deg; }
 .ka-theme[aria-checked="true"] .ka-moon { opacity: 1; rotate: 0deg; }
 
