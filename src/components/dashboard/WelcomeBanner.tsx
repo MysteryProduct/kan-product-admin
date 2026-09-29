@@ -12,7 +12,7 @@ export default function WelcomeBanner() {
           <p className="mb-4 text-sm text-[var(--color-text-secondary)] sm:text-base">
             ตรวจสอบข้อมูลสำคัญและสถานะการดำเนินงาน
           </p>
-          <button type="button" className="rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)] sm:px-5 sm:py-2.5">
+          <button type="button" className="min-h-[44px] rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white hover:bg-[var(--color-primary-hover)] md:min-h-0 sm:px-5 sm:py-2.5">
             ดูรายงาน
           </button>
         </div>

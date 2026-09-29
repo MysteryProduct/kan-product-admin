@@ -31,7 +31,7 @@
 .ka-btn--ghost:hover { --btn-bg: var(--bg-subtle); --btn-ink: var(--ink); }
 .ka-btn--danger { --btn-bg: var(--danger-soft); --btn-ink: var(--danger); --btn-edge: var(--danger); }
 .ka-btn--danger:hover { --btn-bg: var(--danger); --btn-ink: var(--bg-surface); }
-.ka-btn--icon { width: var(--control-height); padding: 0; }
+.ka-btn--icon { flex: none; width: var(--control-height); padding: 0; }
 .ka-btn--sm { min-height: 32px; padding: 0 var(--space-3); font-size: 14px; }
 .ka-btn--sm.ka-btn--icon { width: 32px; border-radius: var(--radius-sm); }
 .ka-btn--touch { min-width: var(--touch-target); min-height: var(--touch-target); }
@@ -48,7 +48,6 @@
 }
 @keyframes ka-spin { to { transform: rotate(360deg); } }
 @media (max-width: 767px) { .ka-btn { min-height: var(--touch-target); } .ka-btn--icon { width: var(--touch-target); } }
-
 /* ---------- Field ---------- */
 .ka-field { display: grid; gap: 6px; min-width: 0; }
 .ka-label { font: 500 14px/22px var(--ka-font); color: var(--ink); }
@@ -343,4 +342,17 @@ button.ka-theme { flex: none; }
   .ka-drawer-scrim { display: none; }
 }
 @keyframes ka-drawer { from { transform: translateX(-100%); } }
+}
+
+/* Selects and checkbox rows are tapped as often as buttons, so they get the same 44px target on small screens. */
+@media (max-width: 767px) {
+  .ka-select__trigger { min-height: var(--touch-target); }
+  label:has(> input.ka-check) { min-height: var(--touch-target); }
+}
+
+/* The header keeps its 44px controls on a phone; tighter spacing and a narrower switch leave the title room. */
+@media (max-width: 639px) {
+  .ka-header { gap: var(--space-1); padding: 0 var(--space-2); }
+  .ka-theme { width: 64px; }
+  .ka-theme[aria-checked="true"] .ka-theme__knob, .ka-theme input:checked + .ka-theme__knob { transform: translateX(20px); }
 }

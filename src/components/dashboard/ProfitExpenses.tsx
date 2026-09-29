@@ -50,7 +50,7 @@ export default function ProfitExpenses() {
           </div>
         </div>
         
-        <button type="button" className="w-full rounded-lg py-2 text-center font-semibold text-[var(--brand-ink)] hover:bg-[var(--color-bg-secondary)]">
+        <button type="button" className="min-h-[44px] w-full rounded-lg py-2 text-center font-semibold text-[var(--brand-ink)] hover:bg-[var(--color-bg-secondary)] md:min-h-0">
           View Full Report
         </button>
       </div>
