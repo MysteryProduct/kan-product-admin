@@ -32,7 +32,8 @@ const getPrimaryVariant = (product: Product) => {
 
 // The API writes 'in stock' (job order closed) or 'available' (sale order stock
 // change) when quantity remains, and 'out stock' when none does. A product is
-// in stock when any of its variants has such a row.
+// in stock when any of its variants has such a row. Stock rows only exist once
+// a job order has been closed, so a product without any has nothing in stock.
 const STOCK_STATUS_LABELS: Record<string, string> = {
   'in stock': 'มีสินค้า',
   'out stock': 'สินค้าหมด',
@@ -42,7 +43,6 @@ const getStockStatus = (product: Product): string => {
   const rows = (product.product_variants || product.productVariants || []).flatMap(
     (variant) => variant.stockProducts || [],
   );
-  if (rows.length === 0) return '';
   const inStock = rows.some((row) =>
     ['in stock', 'available'].includes((row.stock_product_status || '').toLowerCase()),
   );
