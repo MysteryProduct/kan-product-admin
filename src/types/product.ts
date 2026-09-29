@@ -56,6 +56,11 @@ export interface ProductVariant {
         stock_product_cost?: number;
         stock_product_status?: string;
     };
+    stockProducts?: {
+        stock_product_id?: number;
+        stock_product_remain_qty?: number;
+        stock_product_status?: string;
+    }[];
     product_materials?: ProductVariantMaterial[];
     productMaterials?: ProductVariantMaterial[];
     files?: ProductFile[];
