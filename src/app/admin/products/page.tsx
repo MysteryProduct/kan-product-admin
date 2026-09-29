@@ -30,6 +30,25 @@ const getPrimaryVariant = (product: Product) => {
   return variants[0];
 };
 
+// The API writes 'in stock' (job order closed) or 'available' (sale order stock
+// change) when quantity remains, and 'out stock' when none does. A product is
+// in stock when any of its variants has such a row. Stock rows only exist once
+// a job order has been closed, so a product without any has nothing in stock.
+const STOCK_STATUS_LABELS: Record<string, string> = {
+  'in stock': 'มีสินค้า',
+  'out stock': 'สินค้าหมด',
+};
+
+const getStockStatus = (product: Product): string => {
+  const rows = (product.product_variants || product.productVariants || []).flatMap(
+    (variant) => variant.stockProducts || [],
+  );
+  const inStock = rows.some((row) =>
+    ['in stock', 'available'].includes((row.stock_product_status || '').toLowerCase()),
+  );
+  return inStock ? 'in stock' : 'out stock';
+};
+
 export default function ProductsPage() {
   const { can } = usePermissions();
   const canAddProduct = can('products', 'add');
@@ -192,12 +211,11 @@ export default function ProductsPage() {
       label: 'ราคา',
       sortable: true,
       render: (value, row) => {
-        const displayPrice =
-          typeof value === 'number'
-            ? value
-            : getPrimaryVariant(row)?.product_variant_price;
+        // The API returns the decimal price as a string ("390.00").
+        const rawPrice = value ?? getPrimaryVariant(row)?.product_variant_price;
+        const displayPrice = rawPrice === '' || rawPrice === null ? NaN : Number(rawPrice);
 
-        if (typeof displayPrice !== 'number') {
+        if (!Number.isFinite(displayPrice)) {
           return '-';
         }
 
@@ -214,14 +232,8 @@ export default function ProductsPage() {
         { label: 'มีสินค้า', value: 'in stock' },
         { label: 'สินค้าหมด', value: 'out stock' },
       ],
-      filterValue: (row) => row.stock?.stock_status || '',
-      render: (value) => {
-        const stockValue = value as Product['stock'] | undefined;
-        if (stockValue?.stock_status === 'in stock') return 'มีสินค้า';
-        if (stockValue?.stock_status === 'out stock') return 'สินค้าหมด';
-        if (stockValue?.stock_status === 'test') return 'test';
-        return stockValue?.stock_status;
-      },
+      filterValue: (row) => getStockStatus(row),
+      render: (_value, row) => STOCK_STATUS_LABELS[getStockStatus(row)] ?? '-',
     },
     {
       key: 'product_id' as keyof Product,

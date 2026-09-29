@@ -958,7 +958,7 @@ export default function JobOrdersPage() {
 												setDateStart('');
 												setDateEnd('');
 											}}
-											className="text-[13px] font-medium text-[var(--brand-ink)] hover:underline"
+											className="inline-flex min-h-[44px] items-center px-2 text-[13px] font-medium text-[var(--brand-ink)] hover:underline md:min-h-0 md:px-0"
 										>
 											ล้างช่วงวันที่
 										</button>

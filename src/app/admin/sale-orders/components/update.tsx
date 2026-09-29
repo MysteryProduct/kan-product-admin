@@ -603,12 +603,15 @@ export default function UpdateSaleOrderForm({ isOpen, onClose, onSuccess, initia
                                     <thead className="sticky top-0 bg-[var(--bg-subtle)]">
                                         <tr>
                                             <th className="w-12 px-4 py-3 text-left">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={allCurrentPageSelected}
-                                                    onChange={toggleSelectAllCurrentPage}
-                                                    className="ka-check"
-                                                />
+                                                <label className="ka-check-hit">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={allCurrentPageSelected}
+                                                        onChange={toggleSelectAllCurrentPage}
+                                                        className="ka-check"
+                                                        aria-label="เลือกทั้งหมดในหน้านี้"
+                                                    />
+                                                </label>
                                             </th>
                                             <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--ink)]">ชื่อสินค้า</th>
                                             <th className="px-4 py-3 text-right text-sm font-semibold text-[var(--ink)]">จำนวน</th>

@@ -40,7 +40,7 @@ export default function Header() {
             {trail.slice(0, -1).map((step) => <li key={step}>{step}</li>)}
           </ol>
         )}
-        {pageTitle && <p className="m-0 truncate text-[20px] font-bold leading-7">{pageTitle}</p>}
+        {pageTitle && <p className="m-0 line-clamp-2 text-base font-bold leading-5 sm:line-clamp-none sm:truncate sm:text-[20px] sm:leading-7">{pageTitle}</p>}
       </div>
 
       <div className="ka-input-wrap ka-header__search">
