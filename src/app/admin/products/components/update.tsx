@@ -14,6 +14,7 @@ import { Product, ProductFile, ProductVariant } from '@/types/product';
 import { ProductUnit } from '@/types/product-unit';
 import { Size } from '@/types/size';
 import CustomSelect from '@/components/CustomSelect';
+import Modal from '@/components/Modal';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import LoadErrorBanner, { failedLabels, loadErrorText, partialLoadText } from '@/components/LoadErrorBanner';
 
@@ -618,365 +619,361 @@ export default function UpdateProductForm({ isOpen, onClose, onSuccess, initialD
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
-        <div className="absolute inset-0 bg-[var(--scrim)]" onClick={onClose} />
-
-        <div className="relative max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface dark:border-[var(--color-border)]">
-          <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border)] bg-[var(--bg-surface)] px-4 py-3 sm:px-6">
-            <h2 className="text-lg font-semibold text-[var(--ink)] sm:text-xl">แก้ไขสินค้า</h2>
-            <button onClick={onClose} className="ka-btn ka-btn--ghost ka-btn--icon" aria-label="ปิดหน้าต่าง">
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+      <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title="แก้ไขสินค้า"
+        size="xl"
+        closeOnBackdrop={!loading && !showDialog}
+        closeOnEscape={!loading && !showDialog}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={onClose}
+              className="ka-btn"
+            >
+              ยกเลิก
             </button>
-          </div>
+            <button
+              type="submit"
+              form="products-update-form"
+              disabled={loading}
+              className="ka-btn ka-btn--primary min-h-11"
+            >
+              {loading ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}
+            </button>
+          </>
+        }
+      >
+        <form id="products-update-form" onSubmit={handleSubmit} className="space-y-6">
+          <LoadErrorBanner message={lookupError} />
+          {error && (
+            <div className="rounded-lg border border-[var(--danger)] bg-[var(--danger-soft)] px-4 py-3 text-[var(--danger)]">
+              {error}
+            </div>
+          )}
 
-          <form onSubmit={handleSubmit} className="space-y-6 p-4 sm:p-6">
-            <LoadErrorBanner message={lookupError} />
-            {error && (
-              <div className="rounded-lg border border-[var(--danger)] bg-[var(--danger-soft)] px-4 py-3 text-[var(--danger)]">
-                {error}
-              </div>
-            )}
-
-            <section className="space-y-4 rounded-xl border border-[var(--border)] p-4">
-              <h3 className="text-sm font-semibold text-[var(--ink)]">รายละเอียดสินค้า</h3>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="md:col-span-2">
-                  <label className={FORM_LABEL_CLASS}>
-                    ชื่อสินค้า <span className="text-[var(--danger)]">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.product_name}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, product_name: e.target.value }))}
-                    className={FORM_INPUT_CLASS}
-                    placeholder="กรอกชื่อสินค้า"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className={FORM_LABEL_CLASS}>
-                    คำอธิบายสินค้า <span className="text-[var(--danger)]">*</span>
-                  </label>
-                  <textarea
-                    required
-                    rows={4}
-                    value={formData.product_description}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, product_description: e.target.value }))}
-                    className={FORM_INPUT_CLASS}
-                    placeholder="อธิบายสินค้า"
-                  />
-                </div>
-
-                <CustomSelect
-                  label="ประเภทสินค้า"
+          <section className="space-y-4 rounded-xl border border-[var(--border)] p-4">
+            <h3 className="text-sm font-semibold text-[var(--ink)]">รายละเอียดสินค้า</h3>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="md:col-span-2">
+                <label className={FORM_LABEL_CLASS}>
+                  ชื่อสินค้า <span className="text-[var(--danger)]">*</span>
+                </label>
+                <input
+                  type="text"
                   required
-                  value={formData.category_id}
-                  onChange={(value) => setFormData((prev) => ({ ...prev, category_id: value }))}
-                  options={categories.map((category) => ({ value: category.category_id, label: category.category_name }))}
-                  placeholder="เลือกประเภทสินค้า"
+                  value={formData.product_name}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, product_name: e.target.value }))}
+                  className={FORM_INPUT_CLASS}
+                  placeholder="กรอกชื่อสินค้า"
                 />
               </div>
-            </section>
 
-            <section className="space-y-4 rounded-xl border border-[var(--border)] p-4">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <h3 className="text-sm font-semibold text-[var(--ink)]"></h3>
-                <button
-                  type="button"
-                  onClick={addVariant}
-                  className="ka-btn ka-btn--primary min-h-11"
-                >
-                  + เพิ่มสินค้า
-                </button>
+              <div className="md:col-span-2">
+                <label className={FORM_LABEL_CLASS}>
+                  คำอธิบายสินค้า <span className="text-[var(--danger)]">*</span>
+                </label>
+                <textarea
+                  required
+                  rows={4}
+                  value={formData.product_description}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, product_description: e.target.value }))}
+                  className={FORM_INPUT_CLASS}
+                  placeholder="อธิบายสินค้า"
+                />
               </div>
 
-              <div className="space-y-4">
-                {variants.map((variant, variantIndex) => (
-                  <div key={variant.key} className="rounded-xl border border-[var(--border)] p-4">
-                    <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <p className="text-sm font-semibold text-[var(--ink)]">Variant #{variantIndex + 1}</p>
-                        <p className="text-[13px] text-[var(--ink-muted)]">{variant.product_variant_id ? `ID: ${variant.product_variant_id}` : 'ยังไม่บันทึก ID (Variant ใหม่)'}</p>
-                      </div>
+              <CustomSelect
+                label="ประเภทสินค้า"
+                required
+                value={formData.category_id}
+                onChange={(value) => setFormData((prev) => ({ ...prev, category_id: value }))}
+                options={categories.map((category) => ({ value: category.category_id, label: category.category_name }))}
+                placeholder="เลือกประเภทสินค้า"
+              />
+            </div>
+          </section>
+
+          <section className="space-y-4 rounded-xl border border-[var(--border)] p-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <h3 className="text-sm font-semibold text-[var(--ink)]"></h3>
+              <button
+                type="button"
+                onClick={addVariant}
+                className="ka-btn ka-btn--primary min-h-11"
+              >
+                + เพิ่มสินค้า
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {variants.map((variant, variantIndex) => (
+                <div key={variant.key} className="rounded-xl border border-[var(--border)] p-4">
+                  <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-[var(--ink)]">Variant #{variantIndex + 1}</p>
+                      <p className="text-[13px] text-[var(--ink-muted)]">{variant.product_variant_id ? `ID: ${variant.product_variant_id}` : 'ยังไม่บันทึก ID (Variant ใหม่)'}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeVariant(variant.key)}
+                      disabled={variants.length === 1}
+                      className="ka-btn ka-btn--danger"
+                    >
+                      ลบสินค้า
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    <div>
+                      <label className={FORM_LABEL_CLASS}>ราคา <span className="text-[var(--danger)]">*</span></label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        required
+                        value={variant.product_variant_price}
+                        onChange={(e) => updateVariant(variant.key, 'product_variant_price', e.target.value)}
+                        className={FORM_INPUT_COMPACT_CLASS}
+                        placeholder="0.00"
+                      />
+                    </div>
+
+                    <CustomSelect
+                      label="ขนาด (Size)"
+                      required
+                      value={variant.size_id}
+                      onChange={(value) => updateVariant(variant.key, 'size_id', value)}
+                      options={selectedCategorySizes.map((size) => ({ value: size.size_id, label: size.size_name }))}
+                      placeholder="เลือก Size"
+                    />
+
+                    <CustomSelect
+                      label="สี (Color)"
+                      required
+                      value={variant.color_id}
+                      onChange={(value) => updateVariant(variant.key, 'color_id', value)}
+                      options={colors.map((color) => ({
+                        value: color.color_id,
+                        label: color.color_name,
+                        color: color.color_hex,
+                      }))}
+                      placeholder="เลือก Color"
+                      showColor
+                    />
+
+                    <CustomSelect
+                      label="หน่วยสินค้า (Product Unit)"
+                      required
+                      value={variant.product_unit_id}
+                      onChange={(value) => updateVariant(variant.key, 'product_unit_id', value)}
+                      options={productUnits.map((unit) => ({ value: unit.product_unit_id, label: unit.product_unit_name }))}
+                      placeholder="เลือก Unit"
+                    />
+
+                    <div>
+                      <label className={FORM_LABEL_CLASS}>สถานะสินค้า</label>
+                      <select
+                        value={variant.product_variant_status}
+                        onChange={(e) => updateVariant(variant.key, 'product_variant_status', e.target.value)}
+                        className={FORM_INPUT_COMPACT_CLASS}
+                      >
+                        <option value="active">active</option>
+                        <option value="inactive">inactive</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 rounded-lg border border-[var(--border)] p-3">
+                    <div className="mb-2 flex items-center justify-between">
+                      <p className="text-[13px] font-semibold text-[var(--ink)]">วัตถุดิบของสินค้า</p>
                       <button
                         type="button"
-                        onClick={() => removeVariant(variant.key)}
-                        disabled={variants.length === 1}
-                        className="ka-btn ka-btn--danger"
+                        onClick={() => addMaterial(variant.key)}
+                        className="ka-btn ka-btn--sm"
                       >
-                        ลบสินค้า
+                        + เพิ่มวัตถุดิบ
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                      <div>
-                        <label className={FORM_LABEL_CLASS}>ราคา <span className="text-[var(--danger)]">*</span></label>
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          required
-                          value={variant.product_variant_price}
-                          onChange={(e) => updateVariant(variant.key, 'product_variant_price', e.target.value)}
-                          className={FORM_INPUT_COMPACT_CLASS}
-                          placeholder="0.00"
-                        />
-                      </div>
+                    <div className="space-y-2">
+                      {variant.materials.map((materialRow, materialIndex) => (
+                        <div key={materialRow.id} className="grid grid-cols-1 gap-2 rounded-lg border border-[var(--border)] p-2 md:grid-cols-12">
+                          <div className="md:col-span-6">
+                            <CustomSelect
+                              label={`วัสดุ #${materialIndex + 1}`}
+                              required
+                              value={materialRow.material_id}
+                              onChange={(value) => updateMaterial(variant.key, materialRow.id, 'material_id', value)}
+                              options={getMaterialOptionsForVariant(variant.key, materialRow.id).map((material) => ({
+                                value: material.material_id,
+                                label: material.material_name,
+                                disabled: material.disabled,
+                              }))}
+                              placeholder="เลือกวัตถุดิบ"
+                            />
+                          </div>
 
-                      <CustomSelect
-                        label="ขนาด (Size)"
-                        required
-                        value={variant.size_id}
-                        onChange={(value) => updateVariant(variant.key, 'size_id', value)}
-                        options={selectedCategorySizes.map((size) => ({ value: size.size_id, label: size.size_name }))}
-                        placeholder="เลือก Size"
-                      />
+                          <div className="md:col-span-4">
+                            <label className={FORM_LABEL_CLASS}>จำนวนที่ใช้</label>
+                            <input
+                              required
+                              type="number"
+                              min="1"
+                              step="1"
+                              value={materialRow.material_qty}
+                              onChange={(e) => updateMaterial(variant.key, materialRow.id, 'material_qty', e.target.value)}
+                              className={FORM_INPUT_COMPACT_CLASS}
+                            />
+                          </div>
 
-                      <CustomSelect
-                        label="สี (Color)"
-                        required
-                        value={variant.color_id}
-                        onChange={(value) => updateVariant(variant.key, 'color_id', value)}
-                        options={colors.map((color) => ({
-                          value: color.color_id,
-                          label: color.color_name,
-                          color: color.color_hex,
-                        }))}
-                        placeholder="เลือก Color"
-                        showColor
-                      />
-
-                      <CustomSelect
-                        label="หน่วยสินค้า (Product Unit)"
-                        required
-                        value={variant.product_unit_id}
-                        onChange={(value) => updateVariant(variant.key, 'product_unit_id', value)}
-                        options={productUnits.map((unit) => ({ value: unit.product_unit_id, label: unit.product_unit_name }))}
-                        placeholder="เลือก Unit"
-                      />
-
-                      <div>
-                        <label className={FORM_LABEL_CLASS}>สถานะสินค้า</label>
-                        <select
-                          value={variant.product_variant_status}
-                          onChange={(e) => updateVariant(variant.key, 'product_variant_status', e.target.value)}
-                          className={FORM_INPUT_COMPACT_CLASS}
-                        >
-                          <option value="active">active</option>
-                          <option value="inactive">inactive</option>
-                        </select>
-                      </div>
+                          <div className="flex items-end md:col-span-2">
+                            <button
+                              type="button"
+                              onClick={() => removeMaterial(variant.key, materialRow.id)}
+                              disabled={variant.materials.length === 1}
+                              className="ka-btn ka-btn--danger w-full"
+                            >
+                              ลบ
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
+                  </div>
 
-                    <div className="mt-4 rounded-lg border border-[var(--border)] p-3">
-                      <div className="mb-2 flex items-center justify-between">
-                        <p className="text-[13px] font-semibold text-[var(--ink)]">วัตถุดิบของสินค้า</p>
-                        <button
-                          type="button"
-                          onClick={() => addMaterial(variant.key)}
-                          className="ka-btn ka-btn--sm"
-                        >
-                          + เพิ่มวัตถุดิบ
-                        </button>
-                      </div>
+                  <div className="mt-4 rounded-lg border border-dashed border-[var(--border-control)] p-3">
+                    <p className="mb-2 text-[13px] font-semibold text-[var(--ink)]">ไฟล์ของสินค้า (optional)</p>
 
-                      <div className="space-y-2">
-                        {variant.materials.map((materialRow, materialIndex) => (
-                          <div key={materialRow.id} className="grid grid-cols-1 gap-2 rounded-lg border border-[var(--border)] p-2 md:grid-cols-12">
-                            <div className="md:col-span-6">
-                              <CustomSelect
-                                label={`วัสดุ #${materialIndex + 1}`}
-                                required
-                                value={materialRow.material_id}
-                                onChange={(value) => updateMaterial(variant.key, materialRow.id, 'material_id', value)}
-                                options={getMaterialOptionsForVariant(variant.key, materialRow.id).map((material) => ({
-                                  value: material.material_id,
-                                  label: material.material_name,
-                                  disabled: material.disabled,
-                                }))}
-                                placeholder="เลือกวัตถุดิบ"
-                              />
-                            </div>
-
-                            <div className="md:col-span-4">
-                              <label className={FORM_LABEL_CLASS}>จำนวนที่ใช้</label>
-                              <input
-                                required
-                                type="number"
-                                min="1"
-                                step="1"
-                                value={materialRow.material_qty}
-                                onChange={(e) => updateMaterial(variant.key, materialRow.id, 'material_qty', e.target.value)}
-                                className={FORM_INPUT_COMPACT_CLASS}
-                              />
-                            </div>
-
-                            <div className="flex items-end md:col-span-2">
-                              <button
-                                type="button"
-                                onClick={() => removeMaterial(variant.key, materialRow.id)}
-                                disabled={variant.materials.length === 1}
-                                className="ka-btn ka-btn--danger w-full"
-                              >
-                                ลบ
-                              </button>
-                            </div>
+                    {(existingVariantFiles[variant.key] || []).length > 0 && (
+                      <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                        {(existingVariantFiles[variant.key] || []).map((file, fileIndex) => (
+                          <div key={`existing-${variant.key}-${fileIndex}`} className="relative rounded-lg border border-[var(--border)] p-1">
+                            {file.product_file_category === 'image' ? (
+                              <img src={process.env.NEXT_PUBLIC_API_URL + file.product_file_name} alt={file.product_file_name} className="h-24 w-full rounded object-cover" />
+                            ) : (
+                              <video src={process.env.NEXT_PUBLIC_API_URL + file.product_file_name} className="h-24 w-full rounded object-cover" controls />
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removeExistingVariantFile(variant.key, fileIndex)}
+                              aria-label="ลบไฟล์นี้" className="ka-btn ka-btn--danger ka-btn--sm ka-btn--icon absolute right-1 top-1"
+                            >
+                              x
+                            </button>
                           </div>
                         ))}
                       </div>
-                    </div>
+                    )}
 
-                    <div className="mt-4 rounded-lg border border-dashed border-[var(--border-control)] p-3">
-                      <p className="mb-2 text-[13px] font-semibold text-[var(--ink)]">ไฟล์ของสินค้า (optional)</p>
+                    <input
+                      id={`variant-update-file-${variant.key}`}
+                      type="file"
+                      multiple
+                      accept={ACCEPTED_FILE_TYPES}
+                      onChange={(e) => handleVariantFileChange(variant.key, e)}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor={`variant-update-file-${variant.key}`}
+                      className="inline-flex cursor-pointer rounded-lg bg-[var(--bg-muted)] px-3 py-1.5 text-[13px] font-medium text-[var(--ink)] transition-colors hover:bg-[var(--bg-muted)]"
+                    >
+                      + เพิ่มไฟล์สินค้า
+                    </label>
 
-                      {(existingVariantFiles[variant.key] || []).length > 0 && (
-                        <div className="mb-3 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                          {(existingVariantFiles[variant.key] || []).map((file, fileIndex) => (
-                            <div key={`existing-${variant.key}-${fileIndex}`} className="relative rounded-lg border border-[var(--border)] p-1">
-                              {file.product_file_category === 'image' ? (
-                                <img src={process.env.NEXT_PUBLIC_API_URL + file.product_file_name} alt={file.product_file_name} className="h-24 w-full rounded object-cover" />
-                              ) : (
-                                <video src={process.env.NEXT_PUBLIC_API_URL + file.product_file_name} className="h-24 w-full rounded object-cover" controls />
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => removeExistingVariantFile(variant.key, fileIndex)}
-                                aria-label="ลบไฟล์นี้" className="ka-btn ka-btn--danger ka-btn--sm ka-btn--icon absolute right-1 top-1"
-                              >
-                                x
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                    {(newVariantFiles[variant.key] || []).length > 0 && (
+                      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                        {(newVariantFiles[variant.key] || []).map((file, fileIndex) => (
+                          <div key={`new-${variant.key}-${fileIndex}`} className="relative rounded-lg border border-[var(--border)] p-1">
+                            {file.product_file_category === 'image' ? (
+                              <img src={file.preview} alt={file.product_file_name} className="h-24 w-full rounded object-cover" />
+                            ) : (
+                              <video src={file.preview} className="h-24 w-full rounded object-cover" controls />
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => removeNewVariantFile(variant.key, fileIndex)}
+                              aria-label="ลบไฟล์นี้" className="ka-btn ka-btn--danger ka-btn--sm ka-btn--icon absolute right-1 top-1"
+                            >
+                              x
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
 
-                      <input
-                        id={`variant-update-file-${variant.key}`}
-                        type="file"
-                        multiple
-                        accept={ACCEPTED_FILE_TYPES}
-                        onChange={(e) => handleVariantFileChange(variant.key, e)}
-                        className="hidden"
-                      />
-                      <label
-                        htmlFor={`variant-update-file-${variant.key}`}
-                        className="inline-flex cursor-pointer rounded-lg bg-[var(--bg-muted)] px-3 py-1.5 text-[13px] font-medium text-[var(--ink)] transition-colors hover:bg-[var(--bg-muted)]"
-                      >
-                        + เพิ่มไฟล์สินค้า
-                      </label>
+          <section className="space-y-3 rounded-xl border border-[var(--border)] p-4">
+            <h3 className="text-sm font-semibold text-[var(--ink)]">ไฟล์ Product หลัก </h3>
 
-                      {(newVariantFiles[variant.key] || []).length > 0 && (
-                        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                          {(newVariantFiles[variant.key] || []).map((file, fileIndex) => (
-                            <div key={`new-${variant.key}-${fileIndex}`} className="relative rounded-lg border border-[var(--border)] p-1">
-                              {file.product_file_category === 'image' ? (
-                                <img src={file.preview} alt={file.product_file_name} className="h-24 w-full rounded object-cover" />
-                              ) : (
-                                <video src={file.preview} className="h-24 w-full rounded object-cover" controls />
-                              )}
-                              <button
-                                type="button"
-                                onClick={() => removeNewVariantFile(variant.key, fileIndex)}
-                                aria-label="ลบไฟล์นี้" className="ka-btn ka-btn--danger ka-btn--sm ka-btn--icon absolute right-1 top-1"
-                              >
-                                x
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+            {existingProductFiles.length > 0 && (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                {existingProductFiles.map((file, index) => (
+                  <div key={`existing-product-${index}`} className="relative rounded-lg border border-[var(--border)] p-1">
+                    {file.product_file_category === 'image' ? (
+                      <img src={process.env.NEXT_PUBLIC_API_URL + file.product_file_name} alt={file.product_file_name} className="h-24 w-full rounded object-cover" />
+                    ) : (
+                      <video src={process.env.NEXT_PUBLIC_API_URL + file.product_file_name} className="h-24 w-full rounded object-cover" controls />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeExistingProductFile(index)}
+                      aria-label="ลบไฟล์นี้" className="ka-btn ka-btn--danger ka-btn--sm ka-btn--icon absolute right-1 top-1"
+                    >
+                      x
+                    </button>
                   </div>
                 ))}
               </div>
-            </section>
+            )}
 
-            <section className="space-y-3 rounded-xl border border-[var(--border)] p-4">
-              <h3 className="text-sm font-semibold text-[var(--ink)]">ไฟล์ Product หลัก </h3>
-
-              {existingProductFiles.length > 0 && (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                  {existingProductFiles.map((file, index) => (
-                    <div key={`existing-product-${index}`} className="relative rounded-lg border border-[var(--border)] p-1">
-                      {file.product_file_category === 'image' ? (
-                        <img src={process.env.NEXT_PUBLIC_API_URL + file.product_file_name} alt={file.product_file_name} className="h-24 w-full rounded object-cover" />
-                      ) : (
-                        <video src={process.env.NEXT_PUBLIC_API_URL + file.product_file_name} className="h-24 w-full rounded object-cover" controls />
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => removeExistingProductFile(index)}
-                        aria-label="ลบไฟล์นี้" className="ka-btn ka-btn--danger ka-btn--sm ka-btn--icon absolute right-1 top-1"
-                      >
-                        x
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="rounded-lg border-2 border-dashed border-[var(--border-control)] p-4 text-center transition-colors hover:border-[var(--focus)]">
-                <input
-                  id="product-main-update-file-upload"
-                  type="file"
-                  multiple
-                  accept={ACCEPTED_FILE_TYPES}
-                  onChange={handleProductFileChange}
-                  className="hidden"
-                />
-                <label
-                  htmlFor="product-main-update-file-upload"
-                  className="inline-flex cursor-pointer rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-primary-hover)]"
-                >
-                  เพิ่มไฟล์ Product หลัก
-                </label>
-                <p className="mt-2 text-[13px] text-[var(--ink-muted)]">สูงสุด {MAX_PRODUCT_FILES} ไฟล์</p>
-              </div>
-
-              {newProductFiles.length > 0 && (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                  {newProductFiles.map((file, index) => (
-                    <div key={`new-product-${index}`} className="relative rounded-lg border border-[var(--border)] p-1">
-                      {file.product_file_category === 'image' ? (
-                        <img src={file.preview} alt={file.product_file_name} className="h-24 w-full rounded object-cover" />
-                      ) : (
-                        <video src={file.preview} className="h-24 w-full rounded object-cover" controls />
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => removeNewProductFile(index)}
-                        aria-label="ลบไฟล์นี้" className="ka-btn ka-btn--danger ka-btn--sm ka-btn--icon absolute right-1 top-1"
-                      >
-                        x
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-
-            <div className="flex flex-col-reverse gap-2 border-t border-[var(--border)] pt-4 sm:flex-row sm:justify-end">
-              <button
-                type="button"
-                onClick={onClose}
-                className="ka-btn"
+            <div className="rounded-lg border-2 border-dashed border-[var(--border-control)] p-4 text-center transition-colors hover:border-[var(--focus)]">
+              <input
+                id="product-main-update-file-upload"
+                type="file"
+                multiple
+                accept={ACCEPTED_FILE_TYPES}
+                onChange={handleProductFileChange}
+                className="hidden"
+              />
+              <label
+                htmlFor="product-main-update-file-upload"
+                className="inline-flex cursor-pointer rounded-lg bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--color-primary-hover)]"
               >
-                ยกเลิก
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="ka-btn ka-btn--primary min-h-11"
-              >
-                {loading ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}
-              </button>
+                เพิ่มไฟล์ Product หลัก
+              </label>
+              <p className="mt-2 text-[13px] text-[var(--ink-muted)]">สูงสุด {MAX_PRODUCT_FILES} ไฟล์</p>
             </div>
-          </form>
-        </div>
-      </div>
+
+            {newProductFiles.length > 0 && (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                {newProductFiles.map((file, index) => (
+                  <div key={`new-product-${index}`} className="relative rounded-lg border border-[var(--border)] p-1">
+                    {file.product_file_category === 'image' ? (
+                      <img src={file.preview} alt={file.product_file_name} className="h-24 w-full rounded object-cover" />
+                    ) : (
+                      <video src={file.preview} className="h-24 w-full rounded object-cover" controls />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeNewProductFile(index)}
+                      aria-label="ลบไฟล์นี้" className="ka-btn ka-btn--danger ka-btn--sm ka-btn--icon absolute right-1 top-1"
+                    >
+                      x
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </form>
+      </Modal>
 
       <ActionResultDialog
         isOpen={showDialog}

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Cookies from 'js-cookie';
+import Modal from '@/components/Modal';
 import ActionResultDialog, { ActionResultDialogAction } from '@/components/ActionResultDialog';
 import CustomSelect from '@/components/CustomSelect';
 import MaterialModel from '@/models/material';
@@ -403,254 +404,242 @@ export default function InsertJobOrderForm({
 
 	return (
 		<>
-			<div className="fixed inset-0 z-50 bg-[var(--scrim)] backdrop-blur-sm p-3 sm:p-6 overflow-y-auto">
-				<div className="mx-auto mt-3 sm:mt-8 max-w-4xl rounded-2xl border border-[var(--color-border)] dark:border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface overflow-hidden">
-					<div className="border-b border-[var(--border)] px-5 sm:px-8 py-5 sm:py-6">
-						<div className="flex items-center justify-between gap-4">
-							<div>
-								<h2 className="text-xl sm:text-2xl font-black text-[var(--ink)]">สร้างงานผลิตสินค้า</h2>
-							</div>
-							<button
-								type="button"
-								onClick={onClose}
-								disabled={isSubmitting}
-								className="ka-btn ka-btn--icon"
-								aria-label="close"
-							>
-								<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-								</svg>
-							</button>
+			<Modal
+				isOpen={isOpen}
+				onClose={() => { if (!isSubmitting) onClose(); }}
+				title="สร้างงานผลิตสินค้า"
+				size="xl"
+				closeOnBackdrop={!isSubmitting && !resultDialog.isOpen}
+				closeOnEscape={!isSubmitting && !resultDialog.isOpen}
+				footer={
+					<>
+						<button
+							type="button"
+							onClick={onClose}
+							disabled={isSubmitting}
+							className="ka-btn"
+						>
+							ยกเลิก
+						</button>
+						<button
+							type="submit"
+							form="job-orders-insert-form"
+							disabled={isSubmitting}
+							className="ka-btn ka-btn--primary min-h-11"
+						>
+							{isSubmitting ? 'กำลังบันทึก...' : 'บันทึกงานผลิต'}
+						</button>
+					</>
+				}
+			>
+				<form id="job-orders-insert-form" onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
+					{loadError && (
+						<div role="alert" className="ka-banner ka-banner--danger">
+							{loadError}
 						</div>
-					</div>
+					)}
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+						<CustomSelect
+							label="ประเภทงานผลิต"
+							required
+							value={jobOrderType}
+							onChange={handleTypeChange}
+							options={JOB_ORDER_TYPES}
+							placeholder="เลือกประเภทงาน"
+						/>
 
-					<form onSubmit={handleSubmit} className="p-4 sm:p-6 md:p-8 space-y-5 sm:space-y-6 max-h-[calc(100vh-100px)] overflow-y-auto">
-						{loadError && (
-							<div role="alert" className="ka-banner ka-banner--danger">
-								{loadError}
+						<div>
+							<label className="block text-sm font-semibold text-[var(--ink)] mb-2">สถานะเริ่มต้น</label>
+							<div className="w-full px-4 py-2.5 rounded-xl border border-[var(--success)] bg-[var(--success-soft)] text-[var(--success)] font-semibold">
+								รอดำเนินการ
+							</div>
+						</div>
+
+						<div className="md:col-span-2">
+							<label className="block text-sm font-semibold text-[var(--ink)] mb-2">
+								ชื่องานผลิต <span className="text-[var(--danger)]">*</span>
+							</label>
+							<input
+								type="text"
+								value={jobOrderName}
+								onChange={(e) => setJobOrderName(e.target.value)}
+								disabled={isSubmitting}
+								placeholder="ระบุชื่องานผลิต"
+								className="ka-input w-full"
+							/>
+							{errors.job_order_name && <p className="text-[var(--danger)] text-sm mt-1">{errors.job_order_name}</p>}
+						</div>
+
+						{jobOrderType === 'website' && (
+							<div className="md:col-span-2">
+								<CustomSelect
+									label="Product Variant"
+									required
+									value={productVariantId}
+									onChange={(value) => {
+										setProductVariantId(value);
+										syncDefaultsFromVariant(value);
+									}}
+									options={variantOptions.map((item) => ({ value: item.value, label: item.label }))}
+									placeholder="เลือก product"
+								/>
+								{errors.product_variant_id && <p className="text-[var(--danger)] text-sm mt-1">{errors.product_variant_id}</p>}
 							</div>
 						)}
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+
+						<div>
 							<CustomSelect
-								label="ประเภทงานผลิต"
+								label="ขนาด"
 								required
-								value={jobOrderType}
-								onChange={handleTypeChange}
-								options={JOB_ORDER_TYPES}
-								placeholder="เลือกประเภทงาน"
+								value={sizeId}
+								onChange={setSizeId}
+								options={sizeOptions.map((item) => ({ value: item.size_id, label: item.size_name }))}
+								placeholder="เลือกขนาด"
 							/>
+							{errors.size_id && <p className="text-[var(--danger)] text-sm mt-1">{errors.size_id}</p>}
+						</div>
+
+						<div>
+							<CustomSelect
+								label="สี"
+								required
+								value={colorId}
+								onChange={setColorId}
+								options={colorOptions.map((item) => ({ value: item.color_id, label: item.color_name, color: item.color_hex }))}
+								placeholder="เลือกสี"
+								showColor
+							/>
+							{errors.color_id && <p className="text-[var(--danger)] text-sm mt-1">{errors.color_id}</p>}
+						</div>
+
+						<div>
+							<label className="block text-sm font-semibold text-[var(--ink)] mb-2">
+								ผู้รับผิดชอบ
+							</label>
+							<div className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-[var(--ink)]">
+								{assigneeName}
+							</div>
+						</div>
+
+						<div>
+							<label className="block text-sm font-semibold text-[var(--ink)] mb-2">
+								วันที่เป้าหมาย <span className="text-[var(--danger)]">*</span>
+							</label>
+							<input
+								type="date"
+								value={targetDate}
+								onChange={(e) => setTargetDate(e.target.value)}
+								disabled={isSubmitting}
+								className="ka-input w-full"
+							/>
+							{errors.target_date && <p className="text-[var(--danger)] text-sm mt-1">{errors.target_date}</p>}
+						</div>
+
+						<div>
+							<label className="block text-sm font-semibold text-[var(--ink)] mb-2">จำนวนที่ผลิต</label>
+							<input
+								type="number"
+								min={1}
+								step="1"
+								value={jobOrderQty}
+								onChange={(e) => setJobOrderQty(e.target.value)}
+								disabled={isSubmitting}
+								className="ka-input w-full"
+							/>
+							{errors.job_order_qty && <p className="text-[var(--danger)] text-sm mt-1">{errors.job_order_qty}</p>}
+						</div>
 
 							<div>
-								<label className="block text-sm font-semibold text-[var(--ink)] mb-2">สถานะเริ่มต้น</label>
-								<div className="w-full px-4 py-2.5 rounded-xl border border-[var(--success)] bg-[var(--success-soft)] text-[var(--success)] font-semibold">
-									รอดำเนินการ
-								</div>
-							</div>
-
-							<div className="md:col-span-2">
-								<label className="block text-sm font-semibold text-[var(--ink)] mb-2">
-									ชื่องานผลิต <span className="text-[var(--danger)]">*</span>
-								</label>
-								<input
-									type="text"
-									value={jobOrderName}
-									onChange={(e) => setJobOrderName(e.target.value)}
-									disabled={isSubmitting}
-									placeholder="ระบุชื่องานผลิต"
-									className="ka-input w-full"
-								/>
-								{errors.job_order_name && <p className="text-[var(--danger)] text-sm mt-1">{errors.job_order_name}</p>}
-							</div>
-
-							{jobOrderType === 'website' && (
-								<div className="md:col-span-2">
-									<CustomSelect
-										label="Product Variant"
-										required
-										value={productVariantId}
-										onChange={(value) => {
-											setProductVariantId(value);
-											syncDefaultsFromVariant(value);
-										}}
-										options={variantOptions.map((item) => ({ value: item.value, label: item.label }))}
-										placeholder="เลือก product"
-									/>
-									{errors.product_variant_id && <p className="text-[var(--danger)] text-sm mt-1">{errors.product_variant_id}</p>}
-								</div>
-							)}
-
-							<div>
-								<CustomSelect
-									label="ขนาด"
-									required
-									value={sizeId}
-									onChange={setSizeId}
-									options={sizeOptions.map((item) => ({ value: item.size_id, label: item.size_name }))}
-									placeholder="เลือกขนาด"
-								/>
-								{errors.size_id && <p className="text-[var(--danger)] text-sm mt-1">{errors.size_id}</p>}
-							</div>
-
-							<div>
-								<CustomSelect
-									label="สี"
-									required
-									value={colorId}
-									onChange={setColorId}
-									options={colorOptions.map((item) => ({ value: item.color_id, label: item.color_name, color: item.color_hex }))}
-									placeholder="เลือกสี"
-									showColor
-								/>
-								{errors.color_id && <p className="text-[var(--danger)] text-sm mt-1">{errors.color_id}</p>}
-							</div>
-
-							<div>
-								<label className="block text-sm font-semibold text-[var(--ink)] mb-2">
-									ผู้รับผิดชอบ
-								</label>
-								<div className="w-full px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] text-[var(--ink)]">
-									{assigneeName}
-								</div>
-							</div>
-
-							<div>
-								<label className="block text-sm font-semibold text-[var(--ink)] mb-2">
-									วันที่เป้าหมาย <span className="text-[var(--danger)]">*</span>
-								</label>
-								<input
-									type="date"
-									value={targetDate}
-									onChange={(e) => setTargetDate(e.target.value)}
-									disabled={isSubmitting}
-									className="ka-input w-full"
-								/>
-								{errors.target_date && <p className="text-[var(--danger)] text-sm mt-1">{errors.target_date}</p>}
-							</div>
-
-							<div>
-								<label className="block text-sm font-semibold text-[var(--ink)] mb-2">จำนวนที่ผลิต</label>
+								<label className="block text-sm font-semibold text-[var(--ink)] mb-2">ราคาสินค้า (บาท)</label>
 								<input
 									type="number"
-									min={1}
-									step="1"
-									value={jobOrderQty}
-									onChange={(e) => setJobOrderQty(e.target.value)}
+									min={0}
+									step="0.01"
+									value={jobOrderPrice}
+									onChange={(e) => setJobOrderPrice(e.target.value)}
 									disabled={isSubmitting}
 									className="ka-input w-full"
 								/>
-								{errors.job_order_qty && <p className="text-[var(--danger)] text-sm mt-1">{errors.job_order_qty}</p>}
+								{errors.job_order_price && <p className="text-[var(--danger)] text-sm mt-1">{errors.job_order_price}</p>}
+							</div>							</div>
+					<div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-subtle)]/60 p-4 sm:p-5">
+						<div className="flex items-center justify-between mb-4 gap-3">
+							<div>
+								<h3 className="text-base sm:text-lg font-bold text-[var(--ink)]">วัตถุดิบ/ชิ้น</h3>
+								<p className="text-[13px] sm:text-sm text-[var(--ink-muted)]"></p>
 							</div>
-
-								<div>
-									<label className="block text-sm font-semibold text-[var(--ink)] mb-2">ราคาสินค้า (บาท)</label>
-									<input
-										type="number"
-										min={0}
-										step="0.01"
-										value={jobOrderPrice}
-										onChange={(e) => setJobOrderPrice(e.target.value)}
-										disabled={isSubmitting}
-										className="ka-input w-full"
-									/>
-									{errors.job_order_price && <p className="text-[var(--danger)] text-sm mt-1">{errors.job_order_price}</p>}
-								</div>							</div>
-						<div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-subtle)]/60 p-4 sm:p-5">
-							<div className="flex items-center justify-between mb-4 gap-3">
-								<div>
-									<h3 className="text-base sm:text-lg font-bold text-[var(--ink)]">วัตถุดิบ/ชิ้น</h3>
-									<p className="text-[13px] sm:text-sm text-[var(--ink-muted)]"></p>
-								</div>
-								<button
-									type="button"
-									onClick={addMaterialRow}
-									disabled={isSubmitting}
-									className="ka-btn inline-flex items-center gap-2"
-								>
-									<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-									</svg>
-									เพิ่มวัตถุดิบ
-								</button>
-							</div>
-
-							<div className="space-y-3">
-								{materials.map((item, index) => {
-									const selectedInOtherRows = new Set(
-										materials
-											.filter((row) => row.id !== item.id && row.material_id)
-											.map((row) => row.material_id),
-									);
-
-									const options = materialOptions
-										.filter((material) => !selectedInOtherRows.has(material.material_id))
-										.map((material) => ({
-											value: material.material_id,
-											label: material.material_name,
-										}));
-
-									return (
-										<div key={item.id} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-											<div className="md:col-span-7">
-												<CustomSelect
-													label={`วัตถุดิบ #${index + 1}`}
-													value={item.material_id}
-													onChange={(value) => handleMaterialSelect(item.id, value)}
-													options={options}
-													placeholder="เลือกวัตถุดิบ"
-												/>
-											</div>
-											<div className="md:col-span-3">
-												<label className="block text-sm font-medium text-[var(--ink)] mb-2">จำนวน</label>
-												<input
-													type="number"
-													min={1}
-													step="1"
-													value={item.material_qty}
-													onChange={(e) => updateMaterialRow(item.id, 'material_qty', Number(e.target.value))}
-													disabled={isSubmitting}
-													className="ka-input w-full"
-												/>
-												{errors[`material_${index}_qty`] && (
-													<p className="text-[var(--danger)] text-sm mt-1">{errors[`material_${index}_qty`]}</p>
-												)}
-											</div>
-											<div className="md:col-span-2">
-												<button
-													type="button"
-													onClick={() => removeMaterialRow(item.id)}
-													disabled={isSubmitting || materials.length === 1}
-													className="ka-btn ka-btn--danger w-full"
-												>
-													ลบ
-												</button>
-											</div>
-										</div>
-									);
-								})}
-							</div>
-							{errors.materials && <p className="text-[var(--danger)] text-sm mt-2">{errors.materials}</p>}
-						</div>
-
-						<div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
 							<button
 								type="button"
-								onClick={onClose}
+								onClick={addMaterialRow}
 								disabled={isSubmitting}
-								className="ka-btn"
+								className="ka-btn inline-flex items-center gap-2"
 							>
-								ยกเลิก
-							</button>
-							<button
-								type="submit"
-								disabled={isSubmitting}
-								className="ka-btn ka-btn--primary min-h-11"
-							>
-								{isSubmitting ? 'กำลังบันทึก...' : 'บันทึกงานผลิต'}
+								<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+								</svg>
+								เพิ่มวัตถุดิบ
 							</button>
 						</div>
-					</form>
-				</div>
-			</div>
+
+						<div className="space-y-3">
+							{materials.map((item, index) => {
+								const selectedInOtherRows = new Set(
+									materials
+										.filter((row) => row.id !== item.id && row.material_id)
+										.map((row) => row.material_id),
+								);
+
+								const options = materialOptions
+									.filter((material) => !selectedInOtherRows.has(material.material_id))
+									.map((material) => ({
+										value: material.material_id,
+										label: material.material_name,
+									}));
+
+								return (
+									<div key={item.id} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+										<div className="md:col-span-7">
+											<CustomSelect
+												label={`วัตถุดิบ #${index + 1}`}
+												value={item.material_id}
+												onChange={(value) => handleMaterialSelect(item.id, value)}
+												options={options}
+												placeholder="เลือกวัตถุดิบ"
+											/>
+										</div>
+										<div className="md:col-span-3">
+											<label className="block text-sm font-medium text-[var(--ink)] mb-2">จำนวน</label>
+											<input
+												type="number"
+												min={1}
+												step="1"
+												value={item.material_qty}
+												onChange={(e) => updateMaterialRow(item.id, 'material_qty', Number(e.target.value))}
+												disabled={isSubmitting}
+												className="ka-input w-full"
+											/>
+											{errors[`material_${index}_qty`] && (
+												<p className="text-[var(--danger)] text-sm mt-1">{errors[`material_${index}_qty`]}</p>
+											)}
+										</div>
+										<div className="md:col-span-2">
+											<button
+												type="button"
+												onClick={() => removeMaterialRow(item.id)}
+												disabled={isSubmitting || materials.length === 1}
+												className="ka-btn ka-btn--danger w-full"
+											>
+												ลบ
+											</button>
+										</div>
+									</div>
+								);
+							})}
+						</div>
+						{errors.materials && <p className="text-[var(--danger)] text-sm mt-2">{errors.materials}</p>}
+					</div>
+				</form>
+			</Modal>
 
 			<ActionResultDialog
 				isOpen={resultDialog.isOpen}

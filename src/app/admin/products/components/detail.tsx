@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Modal from '@/components/Modal';
 import ProductModel from '@/models/product';
 import { Product, ProductFile, ProductVariant } from '@/types/product';
 
@@ -104,20 +105,19 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
     'rounded-lg border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2.5 text-sm text-[var(--ink)]';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
-      <div className="absolute inset-0 bg-[var(--scrim)]" onClick={onClose} />
-
-      <div className="relative max-h-[92vh] w-full max-w-6xl overflow-y-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface dark:border-[var(--color-border)]">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border)] bg-[var(--bg-surface)] px-4 py-3 sm:px-6">
-          <h2 className="text-lg font-semibold text-[var(--ink)] sm:text-xl">รายละเอียดสินค้าแบบ ER</h2>
-          <button onClick={onClose} className="ka-btn ka-btn--ghost ka-btn--icon" aria-label="ปิดหน้าต่าง">
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <div className="space-y-6 p-4 sm:p-6">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="รายละเอียดสินค้าแบบ ER"
+      size="xl"
+      footer={
+        <button type="button" onClick={onClose} className="ka-btn">
+          ปิด
+        </button>
+      }
+    >
+      <div className="relative">
+        <div className="space-y-6">
           <section className="rounded-xl border border-[var(--border)] p-4">
             <h3 className="mb-4 text-sm font-semibold text-[var(--ink)]">Product หลัก</h3>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -266,20 +266,10 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
               </div>
             )}
           </section>
-
-          <div className="flex justify-end border-t border-[var(--border)] pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="ka-btn"
-            >
-              ปิด
-            </button>
-          </div>
         </div>
 
         {loading && (
-          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-2xl bg-[var(--scrim)]">
+          <div className="absolute inset-0 z-10 flex items-start justify-center pt-24 rounded-lg bg-[var(--scrim)]">
             <div className="flex flex-col items-center gap-4 rounded-lg bg-[var(--bg-surface)] p-6">
               <div className="h-12 w-12 animate-spin rounded-full border-4 border-[var(--action)] border-t-transparent" />
               <p className="font-medium text-[var(--ink)]">กำลังโหลดรายละเอียดสินค้า...</p>
@@ -287,6 +277,6 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
           </div>
         )}
       </div>
-    </div>
+    </Modal>
   );
 }
