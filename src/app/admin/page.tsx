@@ -7,6 +7,7 @@ import SalesSummary from '@/components/dashboard/SalesSummary';
 import PendingWork from '@/components/dashboard/PendingWork';
 import StockOut from '@/components/dashboard/StockOut';
 import Operations from '@/components/dashboard/Operations';
+import { unavailableText } from '@/components/dashboard/blockLabels';
 import type { DashboardSummary } from '@/types/dashboard';
 
 const dashboardModel = new DashboardModel();
@@ -32,7 +33,10 @@ export default function Home() {
     void load();
   }, [load]);
 
-  const hasContent = Boolean(summary?.sales || summary?.pending_work || summary?.stock_out || summary?.operations);
+  const partialError = unavailableText(summary?.unavailable);
+  const hasContent = Boolean(
+    summary?.sales || summary?.pending_work || summary?.stock_out || summary?.operations || partialError,
+  );
 
   return (
     <div className="flex-1">
@@ -44,7 +48,7 @@ export default function Home() {
           </p>
         </header>
 
-        <LoadErrorBanner message={error} onRetry={() => void load()} className="mb-4" />
+        <LoadErrorBanner message={error ?? partialError} onRetry={() => void load()} className="mb-4" />
 
         {summary?.pending_work && <PendingWork work={summary.pending_work} />}
         {summary?.stock_out && <StockOut stock={summary.stock_out} />}

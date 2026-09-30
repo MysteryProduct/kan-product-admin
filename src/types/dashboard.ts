@@ -65,4 +65,6 @@ export interface DashboardSummary {
   pending_work?: PendingWork;
   stock_out?: StockOut;
   operations?: Operations;
+  /** Blocks the employee may see but that could not be computed, as `section.block`. */
+  unavailable?: string[];
 }
