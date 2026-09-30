@@ -26,7 +26,7 @@ const saleOrderModel = new SaleOrderModel();
 export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleOrder }: SaleOrderDetailModalProps) {
     const settingsVatRate = useVatRate();
     const { can } = usePermissions();
-    const canApproveSaleOrder = can('sale_order', 'approve');
+    const canApproveSaleOrder = can('sale_orders', 'approve');
 
     const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
     const [resultDialog, setResultDialog] = React.useState<{
