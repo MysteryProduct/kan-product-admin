@@ -5,6 +5,7 @@ import DashboardModel from '@/models/dashboard';
 import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 import SalesSummary from '@/components/dashboard/SalesSummary';
 import PendingWork from '@/components/dashboard/PendingWork';
+import DashboardListModal, { type OpenList } from '@/components/dashboard/DashboardListModal';
 import StockOut from '@/components/dashboard/StockOut';
 import Operations from '@/components/dashboard/Operations';
 import { unavailableText } from '@/components/dashboard/blockLabels';
@@ -16,6 +17,7 @@ export default function Home() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [openList, setOpenList] = useState<OpenList | null>(null);
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -50,7 +52,7 @@ export default function Home() {
 
         <LoadErrorBanner message={error ?? partialError} onRetry={() => void load()} className="mb-4" />
 
-        {summary?.pending_work && <PendingWork work={summary.pending_work} />}
+        {summary?.pending_work && <PendingWork work={summary.pending_work} onOpen={setOpenList} />}
         {summary?.stock_out && <StockOut stock={summary.stock_out} />}
         {summary?.operations && <Operations operations={summary.operations} />}
         {summary?.sales && <SalesSummary sales={summary.sales} />}
@@ -60,6 +62,10 @@ export default function Home() {
           <p className="text-[14px] text-[var(--ink-muted)]">ยังไม่มีข้อมูลที่แสดงได้ตามสิทธิ์ของคุณ</p>
         )}
       </main>
+
+      {openList && (
+        <DashboardListModal list={openList} onClose={() => setOpenList(null)} onChanged={() => void load()} />
+      )}
     </div>
   );
 }
