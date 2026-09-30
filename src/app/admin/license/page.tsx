@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { DataTable, DataTableColumn } from '@/components/DataTable';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import ActionResultDialog, { ActionResultDialogAction } from '@/components/ActionResultDialog';
@@ -17,6 +18,7 @@ const licenseModel = new EmployeeLicenseModel();
 type ResultState = { isOpen: boolean; status: 'success' | 'error'; action: ActionResultDialogAction; message: string };
 
 export default function LicensePage() {
+  const router = useRouter();
   const { can } = usePermissions();
   const { user, refreshSession } = useAuth();
   const canAddLicense = can('employee_licenses', 'add');
@@ -35,6 +37,7 @@ export default function LicensePage() {
   const [selected, setSelected] = useState<EmployeeLicense | null>(null);
   const [matrixDirty, setMatrixDirty] = useState(false);
   const [pendingSelect, setPendingSelect] = useState<EmployeeLicense | null>(null);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
 
   const [formOpen, setFormOpen] = useState(false);
   const [formLicense, setFormLicense] = useState<EmployeeLicense | null>(null);
@@ -60,6 +63,27 @@ export default function LicensePage() {
   useEffect(() => {
     void fetchLicenses();
   }, [fetchLicenses]);
+
+  // In-app links (sidebar, header) navigate client-side, so beforeunload never fires for them.
+  // While the matrix is dirty, intercept plain same-origin anchor clicks and ask first.
+  useEffect(() => {
+    if (!matrixDirty) return;
+    const guard = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const anchor = (event.target as Element | null)?.closest?.('a[href]');
+      if (!(anchor instanceof HTMLAnchorElement)) return;
+      if ((anchor.target && anchor.target !== '_self') || anchor.hasAttribute('download')) return;
+      const url = new URL(anchor.href, window.location.href);
+      if (url.origin !== window.location.origin) return;
+      if (url.pathname === window.location.pathname && url.search === window.location.search) return;
+      event.preventDefault();
+      event.stopPropagation();
+      setPendingHref(url.pathname + url.search + url.hash);
+    };
+    document.addEventListener('click', guard, true);
+    return () => document.removeEventListener('click', guard, true);
+  }, [matrixDirty]);
 
   const select = (license: EmployeeLicense) => {
     setSelected(license);
@@ -359,6 +383,15 @@ export default function LicensePage() {
         bottom_className="ka-btn ka-btn--primary min-h-11"
         onConfirm={() => pendingSelect && select(pendingSelect)}
         onCancel={() => setPendingSelect(null)}
+      />
+
+      <ConfirmDialog
+        isOpen={!!pendingHref}
+        title="ทิ้งการเปลี่ยนแปลงที่ยังไม่บันทึก?"
+        message={`สิทธิ์ของกลุ่ม "${selected?.license_name ?? ''}" มีการเปลี่ยนที่ยังไม่บันทึก ถ้าออกจากหน้านี้การเปลี่ยนนั้นจะหายไป`}
+        bottom_className="ka-btn ka-btn--primary min-h-11"
+        onConfirm={() => pendingHref && router.push(pendingHref)}
+        onCancel={() => setPendingHref(null)}
       />
 
       <ActionResultDialog
