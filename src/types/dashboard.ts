@@ -24,9 +24,27 @@ export interface PendingWork {
   purchase_orders_to_approve?: number;
 }
 
+/** A list of things that are out of stock: the full count and the first few names. */
+export interface StockOutList<T> {
+  count: number;
+  items: T[];
+}
+
+/** Variants and materials whose remaining stock is 0; a list is present only if its menu can be viewed. */
+export interface StockOut {
+  products?: StockOutList<{
+    product_variant_id: string;
+    product_name: string;
+    color_name: string | null;
+    size_name: string | null;
+  }>;
+  materials?: StockOutList<{ material_id: string; material_name: string }>;
+}
+
 export interface DashboardSummary {
   timezone: 'Asia/Bangkok';
   generated_at: string;
   sales?: SalesSummary;
   pending_work?: PendingWork;
+  stock_out?: StockOut;
 }
