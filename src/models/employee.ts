@@ -9,6 +9,10 @@ class EmployeeModel {
     return response.data;
   }
 
+  async setDisabled(id: string, disabled: boolean): Promise<void> {
+    await axiosInstance.post(`/employee/${id}/${disabled ? 'disable' : 'enable'}`);
+  }
+
   async createEmployee(body: CreateEmployeeDto): Promise<void> {
     await axiosInstance.post('/employee', body);
   }

@@ -11,6 +11,8 @@ export interface Employee {
   employee_email: string;
   license_id: string;
   license_name: string | null;
+  // null while the account is active.
+  employee_disabled_at: string | null;
 }
 
 export interface EmployeeResponse {

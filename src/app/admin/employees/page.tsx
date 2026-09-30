@@ -3,8 +3,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { DataTable, DataTableColumn } from '@/components/DataTable';
 import ActionResultDialog, { ActionResultDialogAction } from '@/components/ActionResultDialog';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import StatusBadge from '@/components/StatusBadge';
 import LoadingSkeleton from '@/components/LoadingSkeleton';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useAuth } from '@/contexts/AuthContext';
 import EmployeeModel from '@/models/employee';
 import type { Employee, EmployeeResponse } from '@/types/employee';
 import EmployeeFormModal from './components/employee-form-modal';
@@ -15,6 +18,8 @@ type ResultState = { isOpen: boolean; status: 'success' | 'error'; action: Actio
 
 export default function EmployeesPage() {
   const { can } = usePermissions();
+  const { user } = useAuth();
+  const canEdit = can('employees', 'edit');
   // Assigning a license grants that license's rights, so adding an employee also takes
   // employee_permissions:edit (TASK-0069); the API enforces the same pair.
   const canAdd = can('employees', 'add') && can('employee_permissions', 'edit');
@@ -26,6 +31,7 @@ export default function EmployeesPage() {
   const [search, setSearch] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
   const [formOpen, setFormOpen] = useState(false);
+  const [employeeToDisable, setEmployeeToDisable] = useState<Employee | null>(null);
   const [result, setResult] = useState<ResultState>({ isOpen: false, status: 'success', action: 'insert', message: '' });
 
   const fetchEmployees = useCallback(
@@ -65,6 +71,26 @@ export default function EmployeesPage() {
     else setCurrentPage(1);
   };
 
+  const setDisabled = async (employee: Employee, disabled: boolean) => {
+    try {
+      await employeeModel.setDisabled(employee.employee_id, disabled);
+      setResult({
+        isOpen: true,
+        status: 'success',
+        action: 'update',
+        message: `${disabled ? 'ปิด' : 'เปิด'}ใช้งานพนักงาน ${employee.employee_username} แล้ว`,
+      });
+      await fetchEmployees();
+    } catch (error) {
+      setResult({
+        isOpen: true,
+        status: 'error',
+        action: 'update',
+        message: error instanceof Error ? error.message : 'เปลี่ยนสถานะพนักงานไม่สำเร็จ',
+      });
+    }
+  };
+
   const columns: DataTableColumn<Employee>[] = [
     {
       key: 'employee_username',
@@ -87,6 +113,38 @@ export default function EmployeesPage() {
       label: 'กลุ่มสิทธิ์',
       render: (value) => (value ? <span className="ka-badge ka-badge--info">{String(value)}</span> : '-'),
     },
+    {
+      key: 'employee_disabled_at',
+      label: 'สถานะ',
+      render: (value) => (
+        <StatusBadge tone={value ? 'neutral' : 'success'}>{value ? 'ปิดใช้งาน' : 'ใช้งาน'}</StatusBadge>
+      ),
+    },
+    ...(canEdit
+      ? [
+          {
+            key: 'employee_id' as const,
+            label: 'การจัดการ',
+            width: '132px',
+            render: (_: unknown, row: Employee) => {
+              const disabled = !!row.employee_disabled_at;
+              const isOwn = row.employee_id === user?.employee_id;
+              // Disabling one's own account would lock the admin out, so the API refuses it too.
+              if (isOwn && !disabled) return <span className="text-sm text-[var(--ink-muted)]">บัญชีของคุณ</span>;
+              return (
+                <button
+                  type="button"
+                  className="ka-btn"
+                  onClick={() => (disabled ? void setDisabled(row, false) : setEmployeeToDisable(row))}
+                  aria-label={`${disabled ? 'เปิด' : 'ปิด'}ใช้งาน ${row.employee_username}`}
+                >
+                  {disabled ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}
+                </button>
+              );
+            },
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -160,6 +218,14 @@ export default function EmployeesPage() {
       </section>
 
       {canAdd && <EmployeeFormModal isOpen={formOpen} onClose={() => setFormOpen(false)} onSaved={handleSaved} />}
+
+      <ConfirmDialog
+        isOpen={!!employeeToDisable}
+        title="ยืนยันการปิดใช้งานพนักงาน"
+        message={`ปิดใช้งาน "${employeeToDisable?.employee_username ?? ''}"? พนักงานจะเข้าสู่ระบบไม่ได้และ session ที่ใช้อยู่จะหมดผลทันที ข้อมูลและเอกสารที่เกี่ยวข้องยังอยู่ครบ เปิดใช้งานกลับได้ภายหลัง`}
+        onConfirm={() => employeeToDisable && void setDisabled(employeeToDisable, true)}
+        onCancel={() => setEmployeeToDisable(null)}
+      />
 
       <ActionResultDialog
         isOpen={result.isOpen}
