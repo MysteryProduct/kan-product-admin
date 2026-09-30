@@ -8,6 +8,7 @@ import SizeModel from '@/models/size';
 import type { Category } from '@/types/category';
 import type { Size } from '@/types/size';
 import LoadErrorBanner, { failedLabels, partialLoadText } from '@/components/LoadErrorBanner';
+import Modal from '@/components/Modal';
 
 interface UpdateSizeFormProps {
 	isOpen: boolean;
@@ -128,30 +129,37 @@ export default function UpdateSizeForm({ isOpen, onClose, onSuccess, initialData
 		}
 	};
 
-	if (!isOpen) {
-		return null;
-	}
-
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
-			<div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface">
-				<div className="border-b border-[var(--border)] bg-[var(--bg-surface)] px-6 py-5">
-					<div className="flex items-center justify-between gap-3">
-						<h2 className="text-xl font-bold text-[var(--ink)] sm:text-2xl">แก้ไขขนาดสินค้า</h2>
+		<>
+			<Modal
+				isOpen={isOpen}
+				onClose={onClose}
+				title="แก้ไขขนาดสินค้า"
+				size="lg"
+				closeOnBackdrop={!loading && !resultDialog.isOpen}
+				closeOnEscape={!loading && !resultDialog.isOpen}
+				footer={
+					<>
 						<button
 							type="button"
 							onClick={onClose}
-							className="ka-btn ka-btn--ghost ka-btn--icon"
-							aria-label="ปิดหน้าต่าง"
+							className="ka-btn"
+							disabled={loading}
 						>
-							<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-							</svg>
+							ยกเลิก
 						</button>
-					</div>
-				</div>
-
-				<form onSubmit={handleSubmit} className="space-y-6 p-6">
+						<button
+							type="submit"
+							form="update-size-form"
+							className="ka-btn ka-btn--primary"
+							disabled={loading}
+						>
+							{loading ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
+						</button>
+					</>
+				}
+			>
+				<form id="update-size-form" onSubmit={handleSubmit} className="space-y-6">
 					<LoadErrorBanner message={loadError} />
 					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 						<div>
@@ -219,26 +227,8 @@ export default function UpdateSizeForm({ isOpen, onClose, onSuccess, initialData
 							{error}
 						</div>
 					)}
-
-					<div className="flex flex-col-reverse gap-3 border-t border-[var(--border)] pt-4 sm:flex-row sm:justify-end">
-						<button
-							type="button"
-							onClick={onClose}
-							className="ka-btn"
-							disabled={loading}
-						>
-							ยกเลิก
-						</button>
-						<button
-							type="submit"
-							className="ka-btn ka-btn--primary"
-							disabled={loading}
-						>
-							{loading ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
-						</button>
-					</div>
 				</form>
-			</div>
+			</Modal>
 
 			<ActionResultDialog
 				isOpen={resultDialog.isOpen}
@@ -247,6 +237,6 @@ export default function UpdateSizeForm({ isOpen, onClose, onSuccess, initialData
 				message={resultDialog.message}
 				onClose={handleResultClose}
 			/>
-		</div>
+		</>
 	);
 }

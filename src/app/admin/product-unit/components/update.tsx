@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { ProductUnit } from '@/types/product-unit';
 import { ProductUnitModel } from '@/models/product-unit';
 import ActionResultDialog from '@/components/ActionResultDialog';
+import Modal from '@/components/Modal';
 
 const productUnitModel = new ProductUnitModel();
 
@@ -83,12 +84,37 @@ export default function UpdateProductUnitForm({ isOpen, onClose, initialData, on
             onSuccess?.();
         }
     };
-    if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4">
-            <div className="w-full max-w-md rounded-2xl bg-[var(--bg-surface)] p-6 overlay-surface">
-                <h2 className="text-xl font-semibold text-[var(--ink)] mb-4">แก้ไขหน่วยสินค้า</h2>
-                <form onSubmit={handleSubmit}>
+        <>
+            <Modal
+                isOpen={isOpen}
+                onClose={onClose}
+                title="แก้ไขหน่วยสินค้า"
+                size="md"
+                closeOnBackdrop={!loading && !resultDialog.isOpen}
+                closeOnEscape={!loading && !resultDialog.isOpen}
+                footer={
+                    <>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="ka-btn"
+                            disabled={loading}
+                        >
+                            ยกเลิก
+                        </button>
+                        <button
+                            type="submit"
+                            form="update-product-unit-form"
+                            className="ka-btn ka-btn--primary"
+                            disabled={loading}
+                        >
+                            {loading ? 'กำลังบันทึก...' : 'บันทึก'}
+                        </button>
+                    </>
+                }
+            >
+                <form id="update-product-unit-form" onSubmit={handleSubmit}>
                     <div className="mb-4">
                         <label htmlFor="product_unit_name" className="block text-sm font-medium text-[var(--ink)] mb-2">
                             ชื่อหน่วยสินค้า
@@ -109,25 +135,9 @@ export default function UpdateProductUnitForm({ isOpen, onClose, initialData, on
                             <p className="text-sm text-[var(--danger)]">{error}</p>
                         </div>
                     )}
-                    <div className="flex justify-end gap-3">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="ka-btn"
-                            disabled={loading}
-                        >
-                            ยกเลิก
-                        </button>
-                        <button
-                            type="submit"
-                            className="ka-btn ka-btn--primary"
-                            disabled={loading}
-                        >
-                            {loading ? 'กำลังบันทึก...' : 'บันทึก'}
-                        </button>
-                    </div>
                 </form>
-            </div>
+            </Modal>
+
             <ActionResultDialog
                 isOpen={resultDialog.isOpen}
                 status={resultDialog.status}
@@ -135,6 +145,6 @@ export default function UpdateProductUnitForm({ isOpen, onClose, initialData, on
                 message={resultDialog.message}
                 onClose={handleResultDialogClose}
             />
-        </div>
+        </>
     );
 }

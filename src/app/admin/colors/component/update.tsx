@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { UpdateColorDto } from '@/types/color';
 import ColorModel from '@/models/color';
 import ActionResultDialog from '@/components/ActionResultDialog';
+import Modal from '@/components/Modal';
 
 interface UpdateColorFormProps {
     isOpen: boolean;
@@ -86,26 +87,36 @@ export default function UpdateColorForm({ isOpen, onClose, onSuccess, initialDat
         }
     };
 
-    if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 bg-[var(--scrim)] z-50 flex items-center justify-center p-4">
-            <div className="bg-[var(--bg-surface)] rounded-lg shadow-lg w-full max-w-md">
-                {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-[var(--border)]">
-                    <h2 className="text-lg font-semibold text-[var(--ink)]">แก้ไขสี</h2>
-                    <button
-                        onClick={onClose}
-                        className="ka-btn ka-btn--ghost ka-btn--icon"
-                        aria-label="ปิดหน้าต่าง"
-                    >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-
-                {/* Body */}
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <>
+            <Modal
+                isOpen={isOpen}
+                onClose={onClose}
+                title="แก้ไขสี"
+                size="md"
+                closeOnBackdrop={!loading && !resultDialog.isOpen}
+                closeOnEscape={!loading && !resultDialog.isOpen}
+                footer={
+                    <>
+                        <button type="button" onClick={onClose} disabled={loading} className="ka-btn">
+                            ยกเลิก
+                        </button>
+                        <button type="submit" form="update-color-form" disabled={loading} className="ka-btn ka-btn--primary">
+                            {loading ? (
+                                <>
+                                    <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                    </svg>
+                                    กำลังบันทึก...
+                                </>
+                            ) : (
+                                'บันทึกข้อมูล'
+                            )}
+                        </button>
+                    </>
+                }
+            >
+                <form id="update-color-form" onSubmit={handleSubmit} className="space-y-4">
                     {/* Error Message */}
                     {error && (
                         <div className="p-4 bg-[var(--danger-soft)] border border-[var(--danger)] rounded-lg">
@@ -171,35 +182,8 @@ export default function UpdateColorForm({ isOpen, onClose, onSuccess, initialDat
                         ></div>
                     </div>
                 </form>
+            </Modal>
 
-                {/* Footer */}
-                <div className="flex gap-3 p-6 border-t border-[var(--border)]">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        disabled={loading}
-                        className="ka-btn flex-1"
-                    >
-                        ยกเลิก
-                    </button>
-                    <button
-                        onClick={handleSubmit}
-                        disabled={loading}
-                        className="ka-btn ka-btn--primary flex-1"
-                    >
-                        {loading ? (
-                            <>
-                                <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                </svg>
-                                กำลังบันทึก...
-                            </>
-                        ) : (
-                            'บันทึกข้อมูล'
-                        )}
-                    </button>
-                </div>
-            </div>
             <ActionResultDialog
                 isOpen={resultDialog.isOpen}
                 status={resultDialog.status}
@@ -207,6 +191,6 @@ export default function UpdateColorForm({ isOpen, onClose, onSuccess, initialDat
                 message={resultDialog.message}
                 onClose={handleResultDialogClose}
             />
-        </div>
+        </>
     );
 }

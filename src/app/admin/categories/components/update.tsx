@@ -7,6 +7,7 @@ import ActionResultDialog from '@/components/ActionResultDialog';
 import SizeModel from '@/models/size';
 import { Size } from '@/types/size';
 import LoadErrorBanner, { failedLabels, partialLoadText } from '@/components/LoadErrorBanner';
+import Modal from '@/components/Modal';
 
 interface CategoryFormProps {
     isOpen: boolean;
@@ -129,12 +130,37 @@ export default function UpdateCategoryForm({ isOpen, onClose, onSuccess, initial
             onSuccess?.();
         }
     };
-    if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
-            <div className="w-full max-w-2xl rounded-2xl bg-[var(--color-bg-primary)] p-6 overlay-surface ">
-                <h2 className="mb-4 text-xl font-semibold text-[var(--ink)]">อัปเดตประเภทสินค้า</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
+        <>
+            <Modal
+                isOpen={isOpen}
+                onClose={onClose}
+                title="อัปเดตประเภทสินค้า"
+                size="lg"
+                closeOnBackdrop={!loading && !resultDialog.isOpen}
+                closeOnEscape={!loading && !resultDialog.isOpen}
+                footer={
+                    <>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="ka-btn"
+                            disabled={loading}
+                        >
+                            ยกเลิก
+                        </button>
+                        <button
+                            type="submit"
+                            form="update-category-form"
+                            className="ka-btn ka-btn--primary"
+                            disabled={loading}
+                        >
+                            {loading ? 'กำลังบันทึก...' : 'บันทึก'}
+                        </button>
+                    </>
+                }
+            >
+                <form id="update-category-form" onSubmit={handleSubmit} className="space-y-4">
                     <LoadErrorBanner message={loadError} />
                     <div>
                         <label className="mb-2 block text-sm font-medium text-[var(--ink)]" htmlFor="category_name">
@@ -184,26 +210,8 @@ export default function UpdateCategoryForm({ isOpen, onClose, onSuccess, initial
                             <p className="text-sm text-[var(--danger)]">{error}</p>
                         </div>
                     )}
-
-                    <div className="flex justify-end gap-3 pt-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="ka-btn"
-                            disabled={loading}
-                        >
-                            ยกเลิก
-                        </button>
-                        <button
-                            type="submit"
-                            className="ka-btn ka-btn--primary"
-                            disabled={loading}
-                        >
-                            {loading ? 'กำลังบันทึก...' : 'บันทึก'}
-                        </button>
-                    </div>
                 </form>
-            </div>
+            </Modal>
 
             <ActionResultDialog
                 isOpen={resultDialog.isOpen}
@@ -212,6 +220,6 @@ export default function UpdateCategoryForm({ isOpen, onClose, onSuccess, initial
                 message={resultDialog.message}
                 onClose={handleResultDialogClose}
             />
-        </div>
+        </>
     )
 }

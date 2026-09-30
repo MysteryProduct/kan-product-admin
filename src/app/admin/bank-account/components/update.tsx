@@ -6,6 +6,7 @@ import ActionResultDialog from '@/components/ActionResultDialog';
 import BankAccountModel from '@/models/bank-account';
 import { BankAccount } from '@/types/bank-account';
 import { THAI_BANK_OPTIONS } from '@/lib/bank';
+import Modal from '@/components/Modal';
 
 interface UpdateBankAccountFormProps {
 	isOpen: boolean;
@@ -105,89 +106,88 @@ export default function UpdateBankAccountForm({ isOpen, onClose, onSuccess, init
 		}
 	};
 
-	if (!isOpen) {
-		return null;
-	}
-
 	return (
 		<>
-			<div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
-				<div className="w-full max-w-2xl rounded-2xl bg-[var(--color-bg-primary)] overlay-surface ">
-					<div className="border-b border-[var(--border)] px-6 py-4">
-						<h2 className="text-xl font-semibold text-[var(--ink)]">แก้ไขบัญชีรับเงิน</h2>
+			<Modal
+				isOpen={isOpen}
+				onClose={onClose}
+				title="แก้ไขบัญชีรับเงิน"
+				size="lg"
+				closeOnBackdrop={!isSubmitting && !resultDialog.isOpen}
+				closeOnEscape={!isSubmitting && !resultDialog.isOpen}
+				footer={
+					<>
+						<button
+							type="button"
+							onClick={onClose}
+							disabled={isSubmitting}
+							className="ka-btn"
+						>
+							ยกเลิก
+						</button>
+						<button
+							type="submit"
+							form="update-bank-account-form"
+							disabled={isSubmitting}
+							className="ka-btn ka-btn--primary"
+						>
+							{isSubmitting ? 'กำลังบันทึก...' : 'บันทึก'}
+						</button>
+					</>
+				}
+			>
+				<form id="update-bank-account-form" onSubmit={handleSubmit} className="space-y-4">
+					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+						<div>
+							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">เลขที่บัญชี</label>
+							<input
+								type="text"
+								value={formData.account_number}
+								onChange={(event) => setFormData((prev) => ({ ...prev, account_number: event.target.value }))}
+								className={INPUT_CLASSNAME}
+							/>
+							{errors.account_number && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.account_number}</p>}
+						</div>
+
+						<div>
+							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">ชื่อบัญชี</label>
+							<input
+								type="text"
+								value={formData.account_name}
+								onChange={(event) => setFormData((prev) => ({ ...prev, account_name: event.target.value }))}
+								className={INPUT_CLASSNAME}
+							/>
+							{errors.account_name && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.account_name}</p>}
+						</div>
+
+						<div>
+							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">ธนาคาร</label>
+							<select
+								value={formData.bank_name}
+								onChange={(event) => setFormData((prev) => ({ ...prev, bank_name: event.target.value }))}
+								className={INPUT_CLASSNAME}
+							>
+								{THAI_BANK_OPTIONS.map((bank) => (
+									<option key={bank.value} value={bank.value}>
+										{bank.label}
+									</option>
+								))}
+							</select>
+							{errors.bank_name && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.bank_name}</p>}
+						</div>
+
+						<div>
+							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">สาขา</label>
+							<input
+								type="text"
+								value={formData.branch_name}
+								onChange={(event) => setFormData((prev) => ({ ...prev, branch_name: event.target.value }))}
+								className={INPUT_CLASSNAME}
+							/>
+						</div>
 					</div>
-
-					<form onSubmit={handleSubmit} className="space-y-4 p-6">
-						<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-							<div>
-								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">เลขที่บัญชี</label>
-								<input
-									type="text"
-									value={formData.account_number}
-									onChange={(event) => setFormData((prev) => ({ ...prev, account_number: event.target.value }))}
-									className={INPUT_CLASSNAME}
-								/>
-								{errors.account_number && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.account_number}</p>}
-							</div>
-
-							<div>
-								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">ชื่อบัญชี</label>
-								<input
-									type="text"
-									value={formData.account_name}
-									onChange={(event) => setFormData((prev) => ({ ...prev, account_name: event.target.value }))}
-									className={INPUT_CLASSNAME}
-								/>
-								{errors.account_name && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.account_name}</p>}
-							</div>
-
-							<div>
-								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">ธนาคาร</label>
-								<select
-									value={formData.bank_name}
-									onChange={(event) => setFormData((prev) => ({ ...prev, bank_name: event.target.value }))}
-									className={INPUT_CLASSNAME}
-								>
-									{THAI_BANK_OPTIONS.map((bank) => (
-										<option key={bank.value} value={bank.value}>
-											{bank.label}
-										</option>
-									))}
-								</select>
-								{errors.bank_name && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.bank_name}</p>}
-							</div>
-
-							<div>
-								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">สาขา</label>
-								<input
-									type="text"
-									value={formData.branch_name}
-									onChange={(event) => setFormData((prev) => ({ ...prev, branch_name: event.target.value }))}
-									className={INPUT_CLASSNAME}
-								/>
-							</div>
-						</div>
-
-						<div className="flex justify-end gap-2 border-t border-[var(--border)] pt-4">
-							<button
-								type="button"
-								onClick={onClose}
-								disabled={isSubmitting}
-								className="ka-btn"
-							>
-								ยกเลิก
-							</button>
-							<button
-								type="submit"
-								disabled={isSubmitting}
-								className="ka-btn ka-btn--primary"
-							>
-								{isSubmitting ? 'กำลังบันทึก...' : 'บันทึก'}
-							</button>
-						</div>
-					</form>
-				</div>
-			</div>
+				</form>
+			</Modal>
 
 			<ActionResultDialog
 				isOpen={resultDialog.isOpen}

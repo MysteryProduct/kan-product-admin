@@ -5,6 +5,7 @@ import CategoryModel from '@/models/category';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import SizeModel from '@/models/size';
 import { Size } from '@/types/size';
+import Modal from '@/components/Modal';
 
 interface CategoryFormProps {
     isOpen: boolean;
@@ -109,12 +110,37 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
             onSuccess?.();
         }
     };
-    if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
-            <div className="w-full max-w-2xl rounded-2xl bg-[var(--color-bg-primary)] p-6 overlay-surface ">
-                <h2 className="mb-4 text-xl font-semibold text-[var(--ink)]">เพิ่มประเภทสินค้า</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
+        <>
+            <Modal
+                isOpen={isOpen}
+                onClose={onClose}
+                title="เพิ่มประเภทสินค้า"
+                size="lg"
+                closeOnBackdrop={!loading && !resultDialog.isOpen}
+                closeOnEscape={!loading && !resultDialog.isOpen}
+                footer={
+                    <>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="ka-btn"
+                            disabled={loading}
+                        >
+                            ยกเลิก
+                        </button>
+                        <button
+                            type="submit"
+                            form="insert-category-form"
+                            className="ka-btn ka-btn--primary"
+                            disabled={loading}
+                        >
+                            {loading ? 'กำลังบันทึก...' : 'บันทึก'}
+                        </button>
+                    </>
+                }
+            >
+                <form id="insert-category-form" onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label className="mb-2 block text-sm font-medium text-[var(--ink)]" htmlFor="category_name">
                             ชื่อประเภทสินค้า
@@ -163,26 +189,8 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
                             <p className="text-sm text-[var(--danger)]">{error}</p>
                         </div>
                     )}
-
-                    <div className="flex justify-end gap-3 pt-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="ka-btn"
-                            disabled={loading}
-                        >
-                            ยกเลิก
-                        </button>
-                        <button
-                            type="submit"
-                            className="ka-btn ka-btn--primary"
-                            disabled={loading}
-                        >
-                            {loading ? 'กำลังบันทึก...' : 'บันทึก'}
-                        </button>
-                    </div>
                 </form>
-            </div>
+            </Modal>
 
             <ActionResultDialog
                 isOpen={resultDialog.isOpen}
@@ -191,6 +199,6 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
                 message={resultDialog.message}
                 onClose={handleResultDialogClose}
             />
-        </div>
+        </>
     )
 }
