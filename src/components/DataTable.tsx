@@ -268,7 +268,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                               }}
                               disabled={disabled}
                               className="ka-btn ka-btn--sm ka-btn--icon ka-btn--touch bg-[var(--bg-surface)] text-[var(--ink-muted)] hover:border-[var(--focus)] hover:text-[var(--brand-ink)]"
-                              aria-label="Toggle column filter"
+                              aria-label={`กรองคอลัมน์ ${col.label}`}
                               ref={(el) => {
                                 if (el) filterRefs.current[String(col.key)] = el;
                               }}
@@ -300,7 +300,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                                 </svg>
                                 <input
                                   type="text"
-                                  placeholder="Search..."
+                                  placeholder="ค้นหา…"
                                   value={(getFilterValue(String(col.key)) as string) || ''}
                                   onChange={(e) =>
                                     handleFilter(String(col.key), e.target.value)
@@ -329,13 +329,13 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                                       }
                                       className="hover:text-[var(--brand-ink)]"
                                     >
-                                      Select all ({col.filterOptions?.length || 0})
+                                      เลือกทั้งหมด ({col.filterOptions?.length || 0})
                                     </button>
                                     <button
                                       onClick={() => handleFilter(String(col.key), [])}
                                       className="hover:text-[var(--brand-ink)]"
                                     >
-                                      Deselect
+                                      ล้างที่เลือก
                                     </button>
                                   </div>
                                   <div className="p-3">
@@ -355,7 +355,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                                       </svg>
                                       <input
                                         type="text"
-                                        placeholder="Search..."
+                                        placeholder="ค้นหา…"
                                         value={filterSearches[String(col.key)] || ''}
                                         onChange={(e) =>
                                           setFilterSearches((prev) => ({
@@ -472,8 +472,11 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                             />
                           </svg>
                         </div>
-                        <p className="text-base font-semibold text-[var(--ink)]">No data found</p>
-                        <p className="text-sm text-[var(--ink-muted)]">Try adjusting your filters</p>
+                        <p className="text-base font-semibold text-[var(--ink)]">ไม่พบข้อมูล</p>
+                        {/* filterConfigs keeps only columns whose filter has a value. */}
+                        {filterConfigs.length > 0 && (
+                          <p className="text-sm text-[var(--ink-muted)]">ลองเปลี่ยนหรือล้างตัวกรอง</p>
+                        )}
                       </div>
                     </td>
                   </tr>
