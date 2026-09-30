@@ -11,6 +11,7 @@ import Pagination from '@/components/Pagination';
 import { usePermissions } from '@/hooks/usePermissions';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import LoadingSkeletonProps from '@/components/LoadingSkeleton';
+import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 export default function ColorsPage() {
   const { can } = usePermissions();
   const canAddColor = can('colors', 'add');
@@ -28,6 +29,7 @@ export default function ColorsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [colorToDelete, setColorToDelete] = useState<Color | null>(null);
   const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState<string | null>(null);
   const [resultDialog, setResultDialog] = useState<{
     isOpen: boolean;
     status: 'success' | 'error';
@@ -43,11 +45,13 @@ export default function ColorsPage() {
       const colorModel = new ColorModel();
       try {
         setLoading(true);
+        setListError(null);
         const data = await colorModel.getColors(currentPage, 10, appliedSearchQuery);
         setColors(data.data);
         setMeta(data.meta);
       } catch (error) {
         console.error('Failed to fetch colors:', error);
+        setListError(loadErrorText('รายการสี', error));
       } finally {
         setLoading(false);
       }
@@ -71,6 +75,7 @@ export default function ColorsPage() {
     const colorModel = new ColorModel();
     try {
       setLoading(true);
+      setListError(null);
       // ตรวจสอบว่าถ้าหน้าปัจจุบันไม่มีข้อมูลเหลืออยู่ (ยกเว้นหน้าแรก) 
       // ให้ลดค่า currentPage ลง 1 หน้า
       const pageToFetch = (colors.length === 1 && currentPage > 1)
@@ -87,6 +92,7 @@ export default function ColorsPage() {
       }
     } catch (error) {
       console.error('Failed to refresh colors:', error);
+      setListError(loadErrorText('รายการสี', error));
     } finally {
       setLoading(false);
     }
@@ -95,6 +101,7 @@ export default function ColorsPage() {
 
   return (
     <div className="flex-1 bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
+      <LoadErrorBanner message={listError} onRetry={() => void handleRefreshColors()} className="mb-4" />
       {/* Statistics Cards */}
 
       {/* Main Content Card */}

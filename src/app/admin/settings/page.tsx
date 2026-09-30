@@ -9,6 +9,7 @@ import SettingsModel from '@/models/settings';
 import { BankAccount } from '@/types/bank-account';
 import { AppSettings } from '@/types/settings';
 import { usePermissions } from '@/hooks/usePermissions';
+import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 
 const settingsModel = new SettingsModel();
 const bankAccountModel = new BankAccountModel();
@@ -39,6 +40,7 @@ export default function SettingsPage() {
 	const canEditSettings = can('settings', 'edit');
 
 	const [loading, setLoading] = useState(true);
+	const [bankAccountsError, setBankAccountsError] = useState<string | null>(null);
 	const [saving, setSaving] = useState(false);
 	const [settings, setSettings] = useState<AppSettings | null>(null);
 	const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
@@ -67,14 +69,24 @@ export default function SettingsPage() {
 		const bootstrap = async () => {
 			try {
 				setLoading(true);
-				const [settingsData, bankAccountData] = await Promise.all([
+				// The bank accounts are only choices; when they fail the settings still load and the person
+				// is told which list is missing.
+				setBankAccountsError(null);
+				const [settingsResult, bankAccountResult] = await Promise.allSettled([
 					settingsModel.getSettings(),
 					bankAccountModel.getBankAccounts(1, 200),
 				]);
+				if (settingsResult.status === 'rejected') throw settingsResult.reason;
+				const settingsData = settingsResult.value;
 
 				setSettings(settingsData);
-				
-				setBankAccounts(bankAccountData.data || []);
+
+				if (bankAccountResult.status === 'fulfilled') {
+					setBankAccounts(bankAccountResult.value.data || []);
+				} else {
+					console.error('Failed to load bank accounts:', bankAccountResult.reason);
+					setBankAccountsError(loadErrorText('บัญชีรับเงิน', bankAccountResult.reason));
+				}
 				setFormData({
 					setting_id: settingsData?.setting_id || '',
 					account_id: settingsData?.account_id || '',
@@ -186,6 +198,7 @@ export default function SettingsPage() {
 				</div>
 
 				<form onSubmit={handleSubmit} className="space-y-6 p-4 sm:p-6">
+					<LoadErrorBanner message={bankAccountsError} />
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 						<div>
 							<label className="mb-2 block text-sm font-medium text-[var(--ink)]">บัญชีรับเงินเริ่มต้น</label>

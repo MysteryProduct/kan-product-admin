@@ -15,6 +15,7 @@ import { formatThaiDate } from '@/lib/date-format';
 import { VAT_TYPE_LABELS } from '@/lib/vat';
 import { SALE_ORDER_STATUS_TONE } from '@/lib/status-tones';
 import StatusBadge from '@/components/StatusBadge';
+import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 
 const saleOrderModel = new SaleOrderModel();
 
@@ -37,6 +38,8 @@ export default function SaleOrderPage() {
     const [saleOrderMeta, setSaleOrderMeta] = useState<PaginationMeta | null>(null);
 
     const [loading, setLoading] = useState(false);
+    const [readyItemsError, setReadyItemsError] = useState<string | null>(null);
+    const [listError, setListError] = useState<string | null>(null);
 
     const [saleOrderSortField, setSaleOrderSortField] = useState<SaleOrderSortField>(null);
     const [saleOrderSortOrder, setSaleOrderSortOrder] = useState<SortOrder>('ASC');
@@ -77,11 +80,13 @@ export default function SaleOrderPage() {
     const loadFetchSaleOrders = async (page = fetchSaleOrderPage, search = fetchSaleOrderAppliedSearch) => {
         try {
             setLoading(true);
+            setReadyItemsError(null);
             const result = await saleOrderModel.getFetchSaleOrders(page, 10, search);
             setFetchSaleOrders(result);
             setFetchSaleOrderMeta(result.meta);
         } catch (error) {
             console.error('Failed to fetch fetch-sale-orders:', error);
+            setReadyItemsError(loadErrorText('รายการสินค้าพร้อมขาย', error));
         } finally {
             setLoading(false);
         }
@@ -95,11 +100,13 @@ export default function SaleOrderPage() {
     ) => {
         try {
             setLoading(true);
+            setListError(null);
             const result = await saleOrderModel.getSaleOrders(page, 10, search, sortField, sortOrder);
             setSaleOrders(result);
             setSaleOrderMeta(result.meta);
         } catch (error) {
             console.error('Failed to fetch sale orders:', error);
+            setListError(loadErrorText('รายการใบขายสินค้า', error));
         } finally {
             setLoading(false);
         }
@@ -359,6 +366,8 @@ export default function SaleOrderPage() {
 
     return (
         <div className="bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
+            <LoadErrorBanner message={readyItemsError} onRetry={() => void loadFetchSaleOrders()} className="mb-4" />
+            <LoadErrorBanner message={listError} onRetry={() => void loadSaleOrders()} className="mb-4" />
             {loading && <LoadingSkeletonProps />}
             <div className="space-y-6">
                 {/* Section 1: Fetch Sale Orders */}

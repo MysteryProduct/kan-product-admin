@@ -14,6 +14,7 @@ import ActionResultDialog from '@/components/ActionResultDialog';
 import LoadingSkeletonProps from '@/components/LoadingSkeleton';
 import { formatThaiDate } from '@/lib/date-format';
 import { VAT_TYPE_LABELS } from '@/lib/vat';
+import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 const purchaseOrderModel = new PurchaseOrderModel();
 
 type SortField = 'purchase_date' | 'purchase_order_total' | null;
@@ -48,6 +49,7 @@ export default function PurchaseOrdersPage() {
   const [purchaseOrderToView, setPurchaseOrderToView] = useState<PurchaseOrder | null>(null);
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState<string | null>(null);
 
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>('ASC');
@@ -84,11 +86,13 @@ export default function PurchaseOrdersPage() {
   const fetchPurchaseOrders = async () => {
     try {
       setLoading(true);
+      setListError(null);
       let purchase = await purchaseOrderModel.getPurchaseOrders(currentPage, 10, appliedSearchQuery, sortField, sortOrder, filters);
       setPurchaseOrders(purchase);
       setMeta(purchase.meta);
     } catch (error) {
       console.error('Failed to fetch purchase orders:', error);
+      setListError(loadErrorText('รายการใบสั่งซื้อ', error));
     } finally {
       setLoading(false);
     }
@@ -153,6 +157,7 @@ export default function PurchaseOrdersPage() {
   const handleRefreshProduct = async (filters: Record<string, string> = {}, checkPageAfterDelete = false) => {
     // รีเฟรชข้อมูลสินค้าเมื่อมีการเพิ่มสินค้าใหม่
     try {
+      setListError(null);
       // คำนวณหน้าที่จะใช้ก่อนเรียก API
       setLoading(true);
       let targetPage = currentPage;
@@ -169,6 +174,7 @@ export default function PurchaseOrdersPage() {
       setMeta(purchase.meta);
     } catch (error) {
       console.error('Failed to fetch purchase orders:', error);
+      setListError(loadErrorText('รายการใบสั่งซื้อ', error));
     } finally {
       setLoading(false);
     }
@@ -297,6 +303,7 @@ export default function PurchaseOrdersPage() {
 
   return (
     <div className="min-h-full bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
+      <LoadErrorBanner message={listError} onRetry={() => void fetchPurchaseOrders()} className="mb-4" />
       {/* Statistics Cards */}
       {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <div className="ka-card p-4 sm:p-6">

@@ -17,6 +17,7 @@ import { formatThaiDate } from '@/lib/date-format';
 import { VAT_TYPE_LABELS } from '@/lib/vat';
 import { PURCHASE_ORDER_STATUS_TONE } from '@/lib/status-tones';
 import StatusBadge from '@/components/StatusBadge';
+import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 
 const purchaseOrderModel = new PurchaseOrderModel();
 const purchaseReceiptModel = new PurchaseReceiptModel();
@@ -41,6 +42,8 @@ export default function PurchaseReceiptPage() {
     const [purchaseReceiptMeta, setPurchaseReceiptMeta] = useState<PaginationMeta | null>(null);
 
     const [loading, setLoading] = useState(false);
+    const [receiptsError, setReceiptsError] = useState<string | null>(null);
+    const [purchaseOrdersError, setPurchaseOrdersError] = useState<string | null>(null);
 
     const [purchaseOrderSortField, setPurchaseOrderSortField] = useState<PurchaseOrderSortField>(null);
     const [purchaseOrderSortOrder, setPurchaseOrderSortOrder] = useState<SortOrder>('ASC');
@@ -78,6 +81,7 @@ export default function PurchaseReceiptPage() {
     const fetchPurchaseOrders = async () => {
         try {
             setLoading(true);
+            setPurchaseOrdersError(null);
             const purchase = await purchaseOrderModel.advisePurchaseOrders(
                 purchaseOrderPage,
                 10,
@@ -89,6 +93,7 @@ export default function PurchaseReceiptPage() {
             setPurchaseOrderMeta(purchase.meta);
         } catch (error) {
             console.error('Failed to fetch purchase orders:', error);
+            setPurchaseOrdersError(loadErrorText('รายการใบสั่งซื้อ', error));
         } finally {
             setLoading(false);
         }
@@ -97,6 +102,7 @@ export default function PurchaseReceiptPage() {
     const fetchPurchaseReceipts = async () => {
         try {
             setLoading(true);
+            setReceiptsError(null);
             const receipt = await purchaseReceiptModel.getPurchaseReceipts(
                 purchaseReceiptPage,
                 10,
@@ -108,6 +114,7 @@ export default function PurchaseReceiptPage() {
             setPurchaseReceiptMeta(receipt.meta);
         } catch (error) {
             console.error('Failed to fetch purchase receipts:', error);
+            setReceiptsError(loadErrorText('รายการใบรับสินค้า', error));
         } finally {
             setLoading(false);
         }
@@ -370,6 +377,8 @@ export default function PurchaseReceiptPage() {
 
     return (
         <div className="min-h-full bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
+            <LoadErrorBanner message={purchaseOrdersError} onRetry={() => void fetchPurchaseOrders()} className="mb-4" />
+            <LoadErrorBanner message={receiptsError} onRetry={() => void fetchPurchaseReceipts()} className="mb-4" />
             {loading && <LoadingSkeletonProps />}
             <div className="space-y-6">
                 <section className="rounded-2xl bg-[var(--bg-surface)] shadow-sm ring-1 ring-black/5">

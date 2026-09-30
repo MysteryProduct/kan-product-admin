@@ -14,6 +14,7 @@ import {
 	PaymentReceiptStatus,
 	PaymentReceiptType,
 } from '@/types/payment-receipt';
+import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 
 interface UpdatePaymentReceiptFormProps {
 	isOpen: boolean;
@@ -33,6 +34,7 @@ export default function UpdatePaymentReceiptForm({
 	initialData,
 }: UpdatePaymentReceiptFormProps) {
 	const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
+	const [bankAccountsError, setBankAccountsError] = useState<string | null>(null);
 	const [loadingAccounts, setLoadingAccounts] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -65,10 +67,12 @@ export default function UpdatePaymentReceiptForm({
 		const loadBankAccounts = async () => {
 			try {
 				setLoadingAccounts(true);
+				setBankAccountsError(null);
 				const response = await bankAccountModel.getBankAccounts(1, 200);
 				setBankAccounts(response.data || []);
 			} catch (error) {
 				console.error('Failed to load bank accounts:', error);
+				setBankAccountsError(loadErrorText('บัญชีรับเงิน', error));
 			} finally {
 				setLoadingAccounts(false);
 			}
@@ -179,6 +183,7 @@ export default function UpdatePaymentReceiptForm({
 					</div>
 
 					<form onSubmit={handleSubmit} className="space-y-4 p-6">
+						<LoadErrorBanner message={bankAccountsError} className="" />
 						<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 							<div>
 								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">เลขที่ใบเสร็จรับเงิน</label>

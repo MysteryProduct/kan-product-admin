@@ -11,6 +11,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import { usePermissions } from '@/hooks/usePermissions';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import LoadingSkeletonProps from '@/components/LoadingSkeleton';
+import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 
 const productUnitModel = new ProductUnitModel();
 const ProductUnitPage = () => {
@@ -31,6 +32,7 @@ const ProductUnitPage = () => {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
     const [productUnitToDelete, setProductUnitToDelete] = useState<ProductUnit | null>(null);
     const [loading, setLoading] = useState(true);
+    const [listError, setListError] = useState<string | null>(null);
     const [resultDialog, setResultDialog] = useState<{
         isOpen: boolean;
         status: 'success' | 'error';
@@ -44,6 +46,7 @@ const ProductUnitPage = () => {
     const fetchProductUnits = async () => {
         try {
             setLoading(true);
+            setListError(null);
             const response: ApiProductUnitResponse = await productUnitModel.getProductUnits(
                 currentPage,
                 limit,
@@ -53,6 +56,7 @@ const ProductUnitPage = () => {
             setMeta(response.meta);
         } catch (error) {
             console.error('Error fetching product units:', error);
+            setListError(loadErrorText('รายการหน่วยสินค้า', error));
         } finally {
             setLoading(false);
         }
@@ -77,6 +81,7 @@ const ProductUnitPage = () => {
     const fetchProductUnitsOnDelete = async () => {
         try {
             setLoading(true);
+            setListError(null);
             const pageToFetch = (productUnits.length === 1 && currentPage > 1)
                 ? currentPage - 1
                 : currentPage;
@@ -89,6 +94,7 @@ const ProductUnitPage = () => {
             }
         } catch (error) {
             console.error('Error fetching product units:', error);
+            setListError(loadErrorText('รายการหน่วยสินค้า', error));
         } finally {
             setLoading(false);
         }
@@ -117,6 +123,7 @@ const ProductUnitPage = () => {
     };
     return (
         <div className="flex-1 bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
+            <LoadErrorBanner message={listError} onRetry={() => void fetchProductUnits()} className="mb-4" />
             {/* Statistics Cards */}
 
             {/* Main Content Card */}

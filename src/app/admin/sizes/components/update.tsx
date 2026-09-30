@@ -7,6 +7,7 @@ import CategoryModel from '@/models/category';
 import SizeModel from '@/models/size';
 import type { Category } from '@/types/category';
 import type { Size } from '@/types/size';
+import LoadErrorBanner, { failedLabels, partialLoadText } from '@/components/LoadErrorBanner';
 
 interface UpdateSizeFormProps {
 	isOpen: boolean;
@@ -23,6 +24,7 @@ export default function UpdateSizeForm({ isOpen, onClose, onSuccess, initialData
 	const [categories, setCategories] = useState<Category[]>([]);
 	const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
 	const [loading, setLoading] = useState(false);
+	const [loadError, setLoadError] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [resultDialog, setResultDialog] = useState<{
 		isOpen: boolean;
@@ -42,18 +44,24 @@ export default function UpdateSizeForm({ isOpen, onClose, onSuccess, initialData
 		}
 
 		const fetchFormData = async () => {
-			try {
-				const [categoryResponse, relation] = await Promise.all([
-					categoryModel.getCategories(1, 200),
-					sizeModel.getCategoryRelationsBySize(initialData.size_id),
-				]);
+			// One failing request must not hide the other, and the person needs to know which one is missing.
+			setLoadError(null);
+			const results = await Promise.allSettled([
+				categoryModel.getCategories(1, 200),
+				sizeModel.getCategoryRelationsBySize(initialData.size_id),
+			]);
+			const [categoryResponse, relation] = results;
 
-				setCategories(categoryResponse.data);
-				setSelectedCategoryIds(relation.category_ids);
-			} catch (fetchError) {
-				console.error('Error fetching update size form data:', fetchError);
-				setCategories([]);
-				setSelectedCategoryIds(initialData.category_ids ?? []);
+			if (categoryResponse.status === 'fulfilled') setCategories(categoryResponse.value.data);
+			// Without the saved relation the size's own categories stand in for it.
+			setSelectedCategoryIds(
+				relation.status === 'fulfilled' ? relation.value.category_ids : (initialData.category_ids ?? []),
+			);
+
+			const failed = failedLabels(results, ['ประเภทสินค้า', 'ประเภทที่เลือกไว้เดิม']);
+			if (failed.length > 0) {
+				console.error('Error fetching update size form data:', results);
+				setLoadError(partialLoadText(failed));
 			}
 		};
 
@@ -144,6 +152,7 @@ export default function UpdateSizeForm({ isOpen, onClose, onSuccess, initialData
 				</div>
 
 				<form onSubmit={handleSubmit} className="space-y-6 p-6">
+					<LoadErrorBanner message={loadError} />
 					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 						<div>
 							<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">Size ID</label>

@@ -21,6 +21,7 @@ const productModel = new ProductModel();
 const categoryModel = new CategoryModel();
 const colorModel = new ColorModel();
 import StorePolicy from './components/store-policy';
+import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 
 type SortField = 'adddate' | 'product_variant_price' | null;
 type SortOrder = 'ASC' | 'DESC';
@@ -73,6 +74,8 @@ export default function ProductsPage() {
   const [categoryOptions, setCategoryOptions] = useState<{ label: string; value: string }[]>([]);
   const [colorOptions, setColorOptions] = useState<{ label: string; value: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [optionsError, setOptionsError] = useState<string | null>(null);
+  const [listError, setListError] = useState<string | null>(null);
   const [resultDialog, setResultDialog] = useState<{
     isOpen: boolean;
     status: 'success' | 'error';
@@ -86,6 +89,7 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchOptions = async () => {
       try {
+        setOptionsError(null);
         const [categories, colors] = await Promise.all([
           categoryModel.getCategories(1, 200),
           colorModel.getColors(1, 200),
@@ -94,6 +98,7 @@ export default function ProductsPage() {
         setColorOptions(toNameOptions(colors.data.map((color) => color.color_name)));
       } catch (error) {
         console.error('Failed to fetch category or color options:', error);
+        setOptionsError(loadErrorText('ตัวเลือกประเภทและสี', error));
       }
     };
     void fetchOptions();
@@ -103,11 +108,13 @@ export default function ProductsPage() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
+        setListError(null);
         const data = await productModel.getProducts(currentPage, 10, appliedSearchQuery, sortField, sortOrder, filters);
         setProducts(data);
         setMeta(data.meta);
       } catch (error) {
         console.error('Failed to fetch products:', error);
+        setListError(loadErrorText('รายการสินค้า', error));
       } finally {
         setLoading(false);
       }
@@ -310,6 +317,7 @@ export default function ProductsPage() {
   const handleRefreshProduct = async (filters: Record<string, string> = {}, checkPageAfterDelete = false) => {
     // รีเฟรชข้อมูลสินค้าเมื่อมีการเพิ่มสินค้าใหม่
     try {
+      setListError(null);
       // คำนวณหน้าที่จะใช้ก่อนเรียก API
       setLoading(true);
       let targetPage = currentPage;
@@ -328,6 +336,7 @@ export default function ProductsPage() {
 
     } catch (error) {
       console.error('Failed to fetch products:', error);
+      setListError(loadErrorText('รายการสินค้า', error));
     }
     finally {
       setLoading(false);
@@ -335,6 +344,8 @@ export default function ProductsPage() {
   };
   return (
     <div className="bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
+      <LoadErrorBanner message={optionsError} className="mb-4" />
+      <LoadErrorBanner message={listError} onRetry={() => void handleRefreshProduct()} className="mb-4" />
       {/* Statistics Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
         <div className="ka-card p-3 sm:p-6">

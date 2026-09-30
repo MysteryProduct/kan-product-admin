@@ -15,6 +15,7 @@ import { ProductUnit } from '@/types/product-unit';
 import { Size } from '@/types/size';
 import CustomSelect from '@/components/CustomSelect';
 import ActionResultDialog from '@/components/ActionResultDialog';
+import LoadErrorBanner, { failedLabels, loadErrorText, partialLoadText } from '@/components/LoadErrorBanner';
 
 interface UpdateProductFormProps {
   isOpen: boolean;
@@ -196,6 +197,7 @@ export default function UpdateProductForm({ isOpen, onClose, onSuccess, initialD
   const [newVariantFiles, setNewVariantFiles] = useState<Record<string, ProductFile[]>>({});
 
   const [loading, setLoading] = useState(false);
+  const [lookupError, setLookupError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [dialogType, setDialogType] = useState<'success' | 'error'>('success');
@@ -223,21 +225,31 @@ export default function UpdateProductForm({ isOpen, onClose, onSuccess, initialD
 
   const fetchLookupData = async () => {
     try {
-      const [categoryRes, colorRes, sizeRes, materialRes, unitRes] = await Promise.all([
+      // One failing list must not empty the others, and the person needs to know which one is missing.
+      setLookupError(null);
+      const results = await Promise.allSettled([
         categoryModel.getCategories(1, 200),
         colorModel.getColors(1, 200),
         sizeModel.getSizes(1, 200),
         materialModel.getMaterials(1, 400),
         productUnitModel.getProductUnits(1, 100),
       ]);
+      const [categoryRes, colorRes, sizeRes, materialRes, unitRes] = results;
 
-      setCategories(categoryRes.data);
-      setColors(colorRes.data);
-      setSizes(sizeRes.data);
-      setMaterials(materialRes.data);
-      setProductUnits(unitRes.data);
+      if (categoryRes.status === 'fulfilled') setCategories(categoryRes.value.data);
+      if (colorRes.status === 'fulfilled') setColors(colorRes.value.data);
+      if (sizeRes.status === 'fulfilled') setSizes(sizeRes.value.data);
+      if (materialRes.status === 'fulfilled') setMaterials(materialRes.value.data);
+      if (unitRes.status === 'fulfilled') setProductUnits(unitRes.value.data);
+
+      const failed = failedLabels(results, ['ประเภทสินค้า', 'สี', 'ขนาด', 'วัตถุดิบ', 'หน่วยสินค้า']);
+      if (failed.length > 0) {
+        console.error('Failed to fetch lookup data:', results);
+        setLookupError(partialLoadText(failed));
+      }
     } catch (fetchError) {
       console.error('Failed to fetch lookup data:', fetchError);
+      setLookupError(loadErrorText('รายการตัวเลือก', fetchError));
     }
   };
 
@@ -620,6 +632,7 @@ export default function UpdateProductForm({ isOpen, onClose, onSuccess, initialD
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6 p-4 sm:p-6">
+            <LoadErrorBanner message={lookupError} />
             {error && (
               <div className="rounded-lg border border-[var(--danger)] bg-[var(--danger-soft)] px-4 py-3 text-[var(--danger)]">
                 {error}

@@ -14,6 +14,7 @@ import { formatThaiDate } from '@/lib/date-format';
 import { calculateVatSummary, VAT_TYPE_LABELS, VAT_TYPE_OPTIONS, VatType } from '@/lib/vat';
 import { SupplierWithPayment } from '@/types/supplier';
 import useVatRate from '@/hooks/useVatRate';
+import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 interface PurchaseOrderItemForm {
     id: string;
     material_id: string;
@@ -42,6 +43,9 @@ export default function UpdatePurchaseOrderForm({
 }: UpdatePurchaseOrderFormProps) {
     const vatRate = useVatRate();
     const [purchaseOrderName, setPurchaseOrderName] = useState('');
+    const [suppliersError, setSuppliersError] = useState<string | null>(null);
+    const [productUnitsError, setProductUnitsError] = useState<string | null>(null);
+    const [materialsError, setMaterialsError] = useState<string | null>(null);
     const [purchaseOrderDetail, setPurchaseOrderDetail] = useState('');
     const [items, setItems] = useState<PurchaseOrderItemForm[]>([]);
     const [materials, setMaterials] = useState<Material[]>([]);
@@ -99,28 +103,34 @@ export default function UpdatePurchaseOrderForm({
 
     const fetchMaterials = async (search: string) => {
         try {
+            setMaterialsError(null);
             const response = await materialModel.getMaterials(1, 100, search);
             setMaterials(response.data);
         } catch (error) {
             console.error('Failed to fetch materials:', error);
+            setMaterialsError(loadErrorText('วัตถุดิบ', error));
         }
     };
 
     const fetchProductUnits = async (search: string) => {
         try {
+            setProductUnitsError(null);
             const response = await productUnitModel.getProductUnits(1, 100, search);
             setProductUnits(response.data);
         } catch (error) {
             console.error('Failed to fetch product units:', error);
+            setProductUnitsError(loadErrorText('หน่วยสินค้า', error));
         }
     };
 
     const fetchSuppliers = async (search: string) => {
         try {
+            setSuppliersError(null);
             const response = await supplierModel.getSuppliers(1, 100, search);
             setSuppliers(response.data);
         } catch (error) {
             console.error('Failed to fetch suppliers:', error);
+            setSuppliersError(loadErrorText('ผู้จัดจำหน่าย', error));
         }
     };
 
@@ -348,6 +358,9 @@ export default function UpdatePurchaseOrderForm({
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 max-h-[calc(90vh-200px)] overflow-y-auto">
+                    <LoadErrorBanner message={materialsError} onRetry={() => void fetchMaterials('')} className="mb-4" />
+                    <LoadErrorBanner message={productUnitsError} onRetry={() => void fetchProductUnits('')} className="mb-4" />
+                    <LoadErrorBanner message={suppliersError} onRetry={() => void fetchSuppliers('')} className="mb-4" />
                     {/* Purchase Order Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>

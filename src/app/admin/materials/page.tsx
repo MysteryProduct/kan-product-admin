@@ -16,6 +16,7 @@ import ColorModel from '@/models/color';
 import SizeModel from '@/models/size';
 import { formatThaiDate } from '@/lib/date-format';
 import { toNameOptions } from '@/lib/filter-options';
+import LoadErrorBanner, { failedLabels, loadErrorText, partialLoadText } from '@/components/LoadErrorBanner';
 
 const materialModel = new MaterialModel();
 const colorModel = new ColorModel();
@@ -39,6 +40,8 @@ export default function MaterialsPage() {
 	const [sortOrder, setSortOrder] = useState<SortOrder>('ASC');
 	const [filters, setFilters] = useState<{ color?: string[]; size?: string[] }>({});
 	const [loading, setLoading] = useState(true);
+	const [optionsError, setOptionsError] = useState<string | null>(null);
+	const [listError, setListError] = useState<string | null>(null);
 
 	const [isInsertOpen, setIsInsertOpen] = useState(false);
 	const [isUpdateOpen, setIsUpdateOpen] = useState(false);
@@ -61,12 +64,16 @@ export default function MaterialsPage() {
 	useEffect(() => {
 		// Fetch color and size options
 		const fetchOptions = async () => {
-			try {
-				const [colors, sizes] = await Promise.all([colorModel.getColors(1, 200), sizeModel.getSizes(1, 200)]);
-				setColorOptions(toNameOptions(colors.data.map((color) => color.color_name)));
-				setSizeOptions(toNameOptions(sizes.data.map((size) => size.size_name)));
-			} catch (error) {
-				console.error('Failed to fetch color or size options:', error);
+			// One failing list must not empty the other, and the person needs to know which one is missing.
+			setOptionsError(null);
+			const results = await Promise.allSettled([colorModel.getColors(1, 200), sizeModel.getSizes(1, 200)]);
+			const [colors, sizes] = results;
+			if (colors.status === 'fulfilled') setColorOptions(toNameOptions(colors.value.data.map((color) => color.color_name)));
+			if (sizes.status === 'fulfilled') setSizeOptions(toNameOptions(sizes.value.data.map((size) => size.size_name)));
+			const failed = failedLabels(results, ['สี', 'ขนาด']);
+			if (failed.length > 0) {
+				console.error('Failed to fetch color or size options:', results);
+				setOptionsError(partialLoadText(failed));
 			}
 		};
 		void fetchOptions();
@@ -74,11 +81,13 @@ export default function MaterialsPage() {
 	const fetchMaterials = useCallback(async (targetPage = currentPage) => {
 		try {
 			setLoading(true);
+			setListError(null);
 			const response = await materialModel.getMaterials(targetPage, 10, appliedSearchQuery, sortField, sortOrder, filters);
 			setMaterials(response);
 			setMeta(response.meta);
 		} catch (error) {
 			console.error('Failed to fetch materials:', error);
+			setListError(loadErrorText('รายการวัตถุดิบ', error));
 		} finally {
 			setLoading(false);
 		}
@@ -281,6 +290,8 @@ export default function MaterialsPage() {
 
 	return (
 		<div className="bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
+			<LoadErrorBanner message={optionsError} className="mb-4" />
+			<LoadErrorBanner message={listError} onRetry={() => void fetchMaterials()} className="mb-4" />
 			<div className="overflow-hidden rounded-xl bg-[var(--bg-surface)] shadow-sm sm:rounded-2xl">
 				<div className="border-b border-[var(--border)] p-3 sm:p-4 md:p-6">
 					<div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center sm:gap-4">

@@ -22,6 +22,7 @@ import ActionResultDialog from '@/components/ActionResultDialog';
 import { formatThaiDate } from '@/lib/date-format';
 import { PAYMENT_RECEIPT_STATUS_TONE, SALE_ORDER_STATUS_TONE } from '@/lib/status-tones';
 import StatusBadge from '@/components/StatusBadge';
+import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 
 const saleOrderModel = new SaleOrderModel();
 const paymentReceiptModel = new PaymentReceiptModel();
@@ -53,6 +54,8 @@ export default function PaymentReceiptPage() {
 	const [paymentReceiptMeta, setPaymentReceiptMeta] = useState<PaginationMeta | null>(null);
 
 	const [loading, setLoading] = useState(false);
+	const [saleOrdersError, setSaleOrdersError] = useState<string | null>(null);
+	const [receiptsError, setReceiptsError] = useState<string | null>(null);
 
 	const [saleOrderSortField, setSaleOrderSortField] = useState<SaleOrderSortField>(null);
 	const [saleOrderSortOrder, setSaleOrderSortOrder] = useState<SortOrder>('ASC');
@@ -100,11 +103,13 @@ export default function PaymentReceiptPage() {
 	) => {
 		try {
 			setLoading(true);
+			setSaleOrdersError(null);
 			const response = await saleOrderModel.getSaleOrders(page, 10, search, sortField, sortOrder);
 			setSaleOrders(response);
 			setSaleOrderMeta(response.meta);
 		} catch (error) {
 			console.error('Failed to fetch sale orders:', error);
+			setSaleOrdersError(loadErrorText('รายการใบสั่งขาย', error));
 		} finally {
 			setLoading(false);
 		}
@@ -118,11 +123,13 @@ export default function PaymentReceiptPage() {
 	) => {
 		try {
 			setLoading(true);
+			setReceiptsError(null);
 			const response = await paymentReceiptModel.getPaymentReceipts(page, 10, search, sortField, sortOrder);
 			setPaymentReceipts(response);
 			setPaymentReceiptMeta(response.meta);
 		} catch (error) {
 			console.error('Failed to fetch payment receipts:', error);
+			setReceiptsError(loadErrorText('รายการใบเสร็จรับเงิน', error));
 		} finally {
 			setLoading(false);
 		}
@@ -364,6 +371,8 @@ export default function PaymentReceiptPage() {
 
 	return (
 		<div className="bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
+			<LoadErrorBanner message={saleOrdersError} onRetry={() => void fetchSaleOrders()} className="mb-4" />
+			<LoadErrorBanner message={receiptsError} onRetry={() => void fetchPaymentReceipts()} className="mb-4" />
 			{loading && <LoadingSkeletonProps />}
 			<div className="space-y-6">
 				<section className="ka-card">
