@@ -26,6 +26,9 @@ const sizeClasses: Record<ModalSize, string> = {
   xl: 'max-w-5xl',
 };
 
+// Open modals, oldest first: only the topmost one handles Escape and Tab so stacked dialogs do not close together.
+const openModals: symbol[] = [];
+
 const focusableSelector = [
   'button:not([disabled])',
   '[href]',
@@ -62,6 +65,8 @@ export default function Modal({
   useEffect(() => {
     if (!isOpen) return;
 
+    const token = Symbol('modal');
+    openModals.push(token);
     const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -71,6 +76,7 @@ export default function Modal({
     (firstFocusable ?? panel)?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (openModals[openModals.length - 1] !== token) return;
       if (event.key === 'Escape' && closeOnEscapeRef.current) {
         event.preventDefault();
         onCloseRef.current();
@@ -99,6 +105,7 @@ export default function Modal({
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      openModals.splice(openModals.indexOf(token), 1);
       document.body.style.overflow = previousOverflow;
       previouslyFocused?.focus();
     };
