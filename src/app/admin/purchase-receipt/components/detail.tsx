@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import Modal from '@/components/Modal';
 import { PurchaseReceipt, PurchaseReceiptListItem } from '@/types/purchase-receipt';
 import { usePermissions } from '@/hooks/usePermissions';
 import Cookies from 'js-cookie';
@@ -111,176 +112,168 @@ export default function PurchaseReceiptDetailModal({
 		}
 	};
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-[2px]">
-			<div className="overlay-surface w-full max-w-6xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)]">
-				<div className="border-b border-[var(--color-border)] px-6 py-5">
-					<div className="flex items-center justify-between gap-3">
-						<h2 className="text-xl font-semibold text-[var(--color-text-primary)]">รายละเอียดใบรับสินค้า</h2>
+		<>
+		<Modal
+			isOpen={isOpen}
+			onClose={onClose}
+			title="รายละเอียดใบรับสินค้า"
+			size="xl"
+			closeOnBackdrop={!showConfirmDialog && !resultDialog.isOpen}
+			closeOnEscape={!showConfirmDialog && !resultDialog.isOpen}
+			footer={
+				<>
+					<button
+						type="button"
+						onClick={onClose}
+						className="ka-btn"
+					>
+						ปิด
+					</button>
+					{canApprovePurchaseReceipt && purchaseReceipt.purchase_receipt_status === 'pending' && (
 						<button
-							onClick={onClose}
-							className="ka-btn ka-btn--icon"
 							type="button"
-							aria-label="ปิดรายละเอียดใบรับสินค้า"
+							onClick={() => setShowConfirmDialog(true)}
+							className="ka-btn ka-btn--primary min-h-11"
 						>
-							<svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-							</svg>
+							อนุมัติ
 						</button>
+					)}
+				</>
+			}
+		>
+			<div>
+				<div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+					<div>
+						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">เลขที่ใบรับสินค้า</label>
+						<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
+							{purchaseReceipt.purchase_receipt_code || purchaseReceipt.purchase_receipt_id}
+						</div>
+					</div>
+					<div>
+						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">เลขที่ใบสั่งซื้อ</label>
+						<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
+							{purchaseReceipt.purchaseOrder?.purchase_order_code || purchaseReceipt.purchase_order_id}
+						</div>
+					</div>
+					<div>
+						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">วันที่รับสินค้า</label>
+						<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
+							{formatThaiDate(purchaseReceipt.entry_date)}
+						</div>
 					</div>
 				</div>
 
-				<div className="max-h-[calc(90vh-160px)] overflow-y-auto p-6">
-					<div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-						<div>
-							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">เลขที่ใบรับสินค้า</label>
-							<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-								{purchaseReceipt.purchase_receipt_code || purchaseReceipt.purchase_receipt_id}
-							</div>
-						</div>
-						<div>
-							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">เลขที่ใบสั่งซื้อ</label>
-							<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-								{purchaseReceipt.purchaseOrder?.purchase_order_code || purchaseReceipt.purchase_order_id}
-							</div>
-						</div>
-						<div>
-							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">วันที่รับสินค้า</label>
-							<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-								{formatThaiDate(purchaseReceipt.entry_date)}
-							</div>
+				<div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+					<div>
+						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">ผู้จัดจำหน่าย</label>
+						<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
+							{purchaseReceipt.supplier?.supplier_name || purchaseReceipt.supplier_id || '-'}
 						</div>
 					</div>
-
-					<div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-						<div>
-							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">ผู้จัดจำหน่าย</label>
-							<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-								{purchaseReceipt.supplier?.supplier_name || purchaseReceipt.supplier_id || '-'}
-							</div>
-						</div>
-						<div>
-							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">รูปแบบ VAT</label>
-							<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-								{VAT_TYPE_LABELS[purchaseReceipt.vat_type || 'none']}
-							</div>
-						</div>
-						<div>
-							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">รายละเอียดใบรับสินค้า</label>
-							<div className="min-h-[44px] rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-								{purchaseReceipt.purchase_receipt_detail || purchaseReceipt.purchase_receipt_detail || '-'}
-							</div>
+					<div>
+						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">รูปแบบ VAT</label>
+						<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
+							{VAT_TYPE_LABELS[purchaseReceipt.vat_type || 'none']}
 						</div>
 					</div>
+					<div>
+						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">รายละเอียดใบรับสินค้า</label>
+						<div className="min-h-[44px] rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
+							{purchaseReceipt.purchase_receipt_detail || purchaseReceipt.purchase_receipt_detail || '-'}
+						</div>
+					</div>
+				</div>
 
-					<div className="space-y-4">
-						{items.length > 0 ? (
-							items.map((item, index) => (
-								<div
-									key={item.purchase_receipt_list_id || `${item.purchase_order_list_id}-${index}`}
-									className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-4"
-								>
-									<div className="mb-3 flex items-center gap-2">
-										<span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)] text-sm font-semibold text-[var(--brand-ink)]">
-											{index + 1}
-										</span>
+				<div className="space-y-4">
+					{items.length > 0 ? (
+						items.map((item, index) => (
+							<div
+								key={item.purchase_receipt_list_id || `${item.purchase_order_list_id}-${index}`}
+								className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-4"
+							>
+								<div className="mb-3 flex items-center gap-2">
+									<span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)] text-sm font-semibold text-[var(--brand-ink)]">
+										{index + 1}
+									</span>
+								</div>
+
+								<div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+									<div>
+										<label className="mb-1 block text-[13px] font-medium text-[var(--color-text-secondary)]">วัตถุดิบ</label>
+										<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)]">
+											{getMaterialDisplay(item)}
+										</div>
 									</div>
-
-									<div className="grid grid-cols-1 gap-4 md:grid-cols-5">
-										<div>
-											<label className="mb-1 block text-[13px] font-medium text-[var(--color-text-secondary)]">วัตถุดิบ</label>
-											<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)]">
-												{getMaterialDisplay(item)}
-											</div>
+									<div>
+										<label className="mb-1 block text-[13px] font-medium text-[var(--color-text-secondary)]">จำนวนรับ</label>
+										<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)]">
+											{item.purchase_receipt_list_qty}
 										</div>
-										<div>
-											<label className="mb-1 block text-[13px] font-medium text-[var(--color-text-secondary)]">จำนวนรับ</label>
-											<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)]">
-												{item.purchase_receipt_list_qty}
-											</div>
+									</div>
+									<div>
+										<label className="mb-1 block text-[13px] font-medium text-[var(--color-text-secondary)]">ราคา/หน่วย</label>
+										<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)]">
+											฿{formatCurrency(item.purchase_receipt_list_price)}
 										</div>
-										<div>
-											<label className="mb-1 block text-[13px] font-medium text-[var(--color-text-secondary)]">ราคา/หน่วย</label>
-											<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)]">
-												฿{formatCurrency(item.purchase_receipt_list_price)}
-											</div>
+									</div>
+									<div>
+										<label className="mb-1 block text-[13px] font-medium text-[var(--color-text-secondary)]">หน่วย</label>
+										<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)]">
+											{item.productUnit?.product_unit_name || item.product_unit_id || '-'}
 										</div>
-										<div>
-											<label className="mb-1 block text-[13px] font-medium text-[var(--color-text-secondary)]">หน่วย</label>
-											<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)]">
-												{item.productUnit?.product_unit_name || item.product_unit_id || '-'}
-											</div>
-										</div>
-										<div>
-											<label className="mb-1 block text-[13px] font-medium text-[var(--color-text-secondary)]">ยอดรวม</label>
-											<div className="numeric rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm font-semibold text-[var(--color-text-primary)]">
-												฿{formatCurrency(calculateItemTotal(item))}
-											</div>
+									</div>
+									<div>
+										<label className="mb-1 block text-[13px] font-medium text-[var(--color-text-secondary)]">ยอดรวม</label>
+										<div className="numeric rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm font-semibold text-[var(--color-text-primary)]">
+											฿{formatCurrency(calculateItemTotal(item))}
 										</div>
 									</div>
 								</div>
-							))
-						) : (
-							<div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-6 text-center text-[var(--color-text-secondary)]">
-								ไม่พบรายการวัตถุดิบ
 							</div>
-						)}
+						))
+					) : (
+						<div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-6 text-center text-[var(--color-text-secondary)]">
+							ไม่พบรายการวัตถุดิบ
+						</div>
+					)}
+				</div>
+
+				<div className="mt-6 space-y-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5 text-[var(--color-text-primary)]">
+					<div className="flex items-center justify-between text-sm md:text-base">
+						<span>ยอดก่อน VAT</span>
+						<span>฿{formatCurrency(vatSummary.subtotal)}</span>
 					</div>
-
-					<div className="mt-6 space-y-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5 text-[var(--color-text-primary)]">
-						<div className="flex items-center justify-between text-sm md:text-base">
-							<span>ยอดก่อน VAT</span>
-							<span>฿{formatCurrency(vatSummary.subtotal)}</span>
-						</div>
-						<div className="flex items-center justify-between text-sm md:text-base">
-							<span>VAT {vatRate}% ({VAT_TYPE_LABELS[purchaseReceipt.vat_type || 'none']})</span>
-							<span>฿{formatCurrency(vatSummary.vatAmount)}</span>
-						</div>
-						<div className="flex items-center justify-between border-t border-[var(--color-border)] pt-3">
-							<span className="text-lg font-semibold">ยอดรวมทั้งสิ้น</span>
-							<span className="numeric text-2xl font-semibold text-[var(--brand-ink)]">฿{formatCurrency(vatSummary.total)}</span>
-						</div>
+					<div className="flex items-center justify-between text-sm md:text-base">
+						<span>VAT {vatRate}% ({VAT_TYPE_LABELS[purchaseReceipt.vat_type || 'none']})</span>
+						<span>฿{formatCurrency(vatSummary.vatAmount)}</span>
 					</div>
-
-					<DocumentHistoryPanel endpoint={`/purchase-receipt/${purchaseReceipt.purchase_receipt_id}/history`} />
-                    {can('purchase_receipt', 'reject') && ['pending', 'approved'].includes(purchaseReceipt.purchase_receipt_status) && <DocumentCancellationAction endpoint={`/purchase-receipt/${purchaseReceipt.purchase_receipt_id}/reject`} onSuccess={() => { onSuccess?.(); onClose(); }} />}
-
-					<div className="flex border-t border-[var(--color-border)] pt-6">
-						<button
-							type="button"
-							onClick={onClose}
-							className="ka-btn w-full"
-						>
-							ปิด
-						</button>
-						{canApprovePurchaseReceipt && purchaseReceipt.purchase_receipt_status === 'pending' && (
-							<button
-								type="button"
-								onClick={() => setShowConfirmDialog(true)}
-								className="ka-btn ka-btn--primary min-h-11 ml-4 w-full"
-							>
-								อนุมัติ
-							</button>
-						)}
-						{showConfirmDialog && (
-							<ConfirmDialog
-								isOpen={showConfirmDialog}
-								title="ยืนยันการอนุมัติ"
-								message="คุณแน่ใจหรือไม่ว่าต้องการอนุมัติใบรับสินค้านี้?"
-								onConfirm={handleApprove}
-								onCancel={() => setShowConfirmDialog(false)}
-								bottom_className="ka-btn ka-btn--primary min-h-11"
-							/>
-						)}
+					<div className="flex items-center justify-between border-t border-[var(--color-border)] pt-3">
+						<span className="text-lg font-semibold">ยอดรวมทั้งสิ้น</span>
+						<span className="numeric text-2xl font-semibold text-[var(--brand-ink)]">฿{formatCurrency(vatSummary.total)}</span>
 					</div>
 				</div>
+
+				<DocumentHistoryPanel endpoint={`/purchase-receipt/${purchaseReceipt.purchase_receipt_id}/history`} />
+                   {can('purchase_receipt', 'reject') && ['pending', 'approved'].includes(purchaseReceipt.purchase_receipt_status) && <DocumentCancellationAction endpoint={`/purchase-receipt/${purchaseReceipt.purchase_receipt_id}/reject`} onSuccess={() => { onSuccess?.(); onClose(); }} />}
 			</div>
-			<ActionResultDialog
-				isOpen={resultDialog.isOpen}
-				status={resultDialog.status}
-				action={resultDialog.action}
-				message={resultDialog.message}
-				onClose={handleResultDialogClose}
-			/>
-		</div>
+		</Modal>
+					{showConfirmDialog && (
+						<ConfirmDialog
+							isOpen={showConfirmDialog}
+							title="ยืนยันการอนุมัติ"
+							message="คุณแน่ใจหรือไม่ว่าต้องการอนุมัติใบรับสินค้านี้?"
+							onConfirm={handleApprove}
+							onCancel={() => setShowConfirmDialog(false)}
+							bottom_className="ka-btn ka-btn--primary min-h-11"
+						/>
+					)}
+		<ActionResultDialog
+			isOpen={resultDialog.isOpen}
+			status={resultDialog.status}
+			action={resultDialog.action}
+			message={resultDialog.message}
+			onClose={handleResultDialogClose}
+		/>
+		</>
 	);
 }

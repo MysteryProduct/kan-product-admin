@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import Modal from '@/components/Modal';
 import { PurchaseOrder, PurchaseOrderItem } from '@/types/purchase-order';
 import { usePermissions } from '@/hooks/usePermissions';
 import PurchaseOrderModel from '@/models/purchase-order';
@@ -106,192 +107,174 @@ export default function PurchaseOrderDetailModal({
 	};
 	return (
 		<>
-		<div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-[var(--scrim)] p-4 backdrop-blur-[2px]">
-			<div className="overlay-surface my-8 w-full max-w-5xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)]">
-				<div className="border-b border-[var(--color-border)] px-6 py-5">
-					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-3">
-							<div className="rounded-lg bg-[var(--color-bg-tertiary)] p-2 text-[var(--brand-ink)]">
-								<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-								</svg>
-							</div>
-							<h2 className="text-xl font-semibold text-[var(--color-text-primary)]">รายละเอียดใบสั่งซื้อ</h2>
-						</div>
+		<Modal
+			isOpen={isOpen}
+			onClose={onClose}
+			title="รายละเอียดใบสั่งซื้อ"
+			size="xl"
+			closeOnBackdrop={!showConfirmDialog && !resultDialog.isOpen}
+			closeOnEscape={!showConfirmDialog && !resultDialog.isOpen}
+			footer={
+				<>
+					<button
+						type="button"
+						onClick={onClose}
+						className="ka-btn"
+					>
+						ปิด
+					</button>
+					{canApprovePurchaseOrder && purchaseOrder.purchase_order_status === 'pending' && (
 						<button
-							onClick={onClose}
-							className="ka-btn ka-btn--icon"
-							aria-label="ปิดรายละเอียดใบสั่งซื้อ"
+							type="button"
+							onClick={() => setShowConfirmDialog(true)}
+							className="ka-btn ka-btn--primary min-h-11"
 						>
-							<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-							</svg>
+							อนุมัติ
 						</button>
+					)}
+				</>
+			}
+		>
+			<div>
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+					<div>
+						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">ชื่อใบสั่งซื้อ</label>
+						<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
+							{purchaseOrder.purchase_order_name || '-'}
+						</div>
+					</div>
+
+					<div>
+						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">วันที่สร้าง</label>
+						<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
+							{formatThaiDate(purchaseOrder.purchase_date)}
+						</div>
+					</div>
+
+					<div>
+						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">ผู้จัดจำหน่าย</label>
+						<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
+							{purchaseOrder.supplier?.supplier_name || '-'}
+						</div>
+					</div>
+
+					<div>
+						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">สถานะ</label>
+						<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
+							<StatusBadge tone={PURCHASE_ORDER_STATUS_TONE[purchaseOrder.purchase_order_status]}>{statusText[purchaseOrder.purchase_order_status]}</StatusBadge>
+						</div>
+					</div>
+
+					<div>
+						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">รูปแบบ VAT</label>
+						<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
+							{VAT_TYPE_LABELS[purchaseOrder.vat_type || 'none']}
+						</div>
 					</div>
 				</div>
 
-				<div className="p-6 max-h-[calc(90vh-200px)] overflow-y-auto">
-					<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-						<div>
-							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">ชื่อใบสั่งซื้อ</label>
-							<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-								{purchaseOrder.purchase_order_name || '-'}
-							</div>
-						</div>
+				<div className="mb-6">
+					<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">รายละเอียด</label>
+					<div className="min-h-[80px] w-full whitespace-pre-line rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-3 text-[var(--color-text-primary)]">
+						{purchaseOrder.purchase_order_detail || '-'}
+					</div>
+				</div>
 
-						<div>
-							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">วันที่สร้าง</label>
-							<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-								{formatThaiDate(purchaseOrder.purchase_date)}
+				<div className="mb-6">
+					<div className="flex items-center justify-between mb-5">
+						<h3 className="flex items-center gap-2 text-lg font-semibold text-[var(--color-text-primary)]">
+							<div className="rounded-lg bg-[var(--color-bg-tertiary)] p-2 text-[var(--brand-ink)]">
+								<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+								</svg>
 							</div>
-						</div>
-
-						<div>
-							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">ผู้จัดจำหน่าย</label>
-							<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-								{purchaseOrder.supplier?.supplier_name || '-'}
-							</div>
-						</div>
-
-						<div>
-							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">สถานะ</label>
-							<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-								<StatusBadge tone={PURCHASE_ORDER_STATUS_TONE[purchaseOrder.purchase_order_status]}>{statusText[purchaseOrder.purchase_order_status]}</StatusBadge>
-							</div>
-						</div>
-
-						<div>
-							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">รูปแบบ VAT</label>
-							<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-								{VAT_TYPE_LABELS[purchaseOrder.vat_type || 'none']}
-							</div>
-						</div>
+							รายการวัตถุดิบ
+						</h3>
 					</div>
 
-					<div className="mb-6">
-						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">รายละเอียด</label>
-						<div className="min-h-[80px] w-full whitespace-pre-line rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-3 text-[var(--color-text-primary)]">
-							{purchaseOrder.purchase_order_detail || '-'}
-						</div>
-					</div>
-
-					<div className="mb-6">
-						<div className="flex items-center justify-between mb-5">
-							<h3 className="flex items-center gap-2 text-lg font-semibold text-[var(--color-text-primary)]">
-								<div className="rounded-lg bg-[var(--color-bg-tertiary)] p-2 text-[var(--brand-ink)]">
-									<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-									</svg>
-								</div>
-								รายการวัตถุดิบ
-							</h3>
-						</div>
-
-						<div className="space-y-5">
-							{items.length > 0 ? (
-								items.map((item, index) => (
-									<div key={item.purchase_order_list_id ?? `${item.material_id}-${index}`} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-5">
-										<div className="flex items-center gap-2 mb-4">
-											<div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)] text-sm font-semibold text-[var(--brand-ink)]">
-												{index + 1}
-											</div>
-											<h4 className="font-semibold text-[var(--color-text-primary)]">รายการที่ {index + 1}</h4>
+					<div className="space-y-5">
+						{items.length > 0 ? (
+							items.map((item, index) => (
+								<div key={item.purchase_order_list_id ?? `${item.material_id}-${index}`} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-5">
+									<div className="flex items-center gap-2 mb-4">
+										<div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)] text-sm font-semibold text-[var(--brand-ink)]">
+											{index + 1}
 										</div>
+										<h4 className="font-semibold text-[var(--color-text-primary)]">รายการที่ {index + 1}</h4>
+									</div>
 
-										<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-											<div className="md:col-span-2">
-												<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">วัตถุดิบ</label>
-												<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-													{item.material?.material_name || '-'}
-												</div>
-											</div>
-											<div>
-												<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">จำนวน</label>
-												<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-													{item.purchase_order_list_qty}
-												</div>
-											</div>
-											<div>
-												<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">ราคา/หน่วย</label>
-												<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-													฿{formatCurrency(item.purchase_order_list_price)}
-												</div>
-											</div>
-											<div>
-												<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">หน่วยสินค้า</label>
-												<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-													{item.productUnit?.product_unit_name || '-'}
-												</div>
+									<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+										<div className="md:col-span-2">
+											<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">วัตถุดิบ</label>
+											<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
+												{item.material?.material_name || '-'}
 											</div>
 										</div>
-
-									<div className="mt-4 border-t border-[var(--color-border)] pt-4">
-											<div className="flex items-center justify-between rounded-lg bg-[var(--color-bg-secondary)] p-3">
-											<span className="text-sm font-medium text-[var(--color-text-secondary)]">ยอดรวมรายการนี้</span>
-												<span className="numeric text-lg font-semibold text-[var(--color-text-primary)]">฿{formatCurrency(calculateItemTotal(item))}</span>
+										<div>
+											<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">จำนวน</label>
+											<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
+												{item.purchase_order_list_qty}
+											</div>
+										</div>
+										<div>
+											<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">ราคา/หน่วย</label>
+											<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
+												฿{formatCurrency(item.purchase_order_list_price)}
+											</div>
+										</div>
+										<div>
+											<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">หน่วยสินค้า</label>
+											<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
+												{item.productUnit?.product_unit_name || '-'}
 											</div>
 										</div>
 									</div>
-								))
-							) : (
-								<div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg-secondary)] py-8 text-center text-[var(--color-text-secondary)]">
-									ไม่พบรายการวัตถุดิบ
-								</div>
-							)}
-						</div>
 
-						<div className="mt-6 space-y-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5 text-[var(--color-text-primary)]">
-							<div className="flex justify-between items-center text-sm md:text-base">
-								<span>ยอดก่อน VAT</span>
-								<span>฿{formatCurrency(vatSummary.subtotal)}</span>
+								<div className="mt-4 border-t border-[var(--color-border)] pt-4">
+										<div className="flex items-center justify-between rounded-lg bg-[var(--color-bg-secondary)] p-3">
+										<span className="text-sm font-medium text-[var(--color-text-secondary)]">ยอดรวมรายการนี้</span>
+											<span className="numeric text-lg font-semibold text-[var(--color-text-primary)]">฿{formatCurrency(calculateItemTotal(item))}</span>
+										</div>
+									</div>
+								</div>
+							))
+						) : (
+							<div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg-secondary)] py-8 text-center text-[var(--color-text-secondary)]">
+								ไม่พบรายการวัตถุดิบ
 							</div>
-							<div className="flex justify-between items-center text-sm md:text-base">
-								<span>VAT {vatRate}% ({VAT_TYPE_LABELS[purchaseOrder.vat_type || 'none']})</span>
-								<span>฿{formatCurrency(vatSummary.vatAmount)}</span>
-							</div>
-							<div className="flex items-center justify-between border-t border-[var(--color-border)] pt-3">
-								<span className="text-lg font-bold">ยอดรวมทั้งสิ้น</span>
-								<span className="numeric text-2xl font-semibold text-[var(--brand-ink)]">฿{formatCurrency(vatSummary.total)}</span>
-							</div>
-						</div>
+						)}
 					</div>
 
-					<DocumentHistoryPanel endpoint={`/purchase-order/${purchaseOrder.purchase_order_id}/history`} />
-                    {can('purchase_orders', 'reject') && ['pending', 'active'].includes(purchaseOrder.purchase_order_status) && <DocumentCancellationAction endpoint={`/purchase-order/${purchaseOrder.purchase_order_id}/reject`} onSuccess={() => { onSuccess?.(); onClose(); }} />}
-
-					<div className="flex border-t border-[var(--color-border)] pt-6">
-						<button
-							type="button"
-							onClick={onClose}
-							className="ka-btn w-full"
-						>
-							ปิด
-						</button>
-						{canApprovePurchaseOrder && purchaseOrder.purchase_order_status === 'pending' && (
-							<button
-								type="button"
-								onClick={() => setShowConfirmDialog(true)}
-								className="ka-btn ka-btn--primary min-h-11 ml-4 w-full"
-							>
-								อนุมัติ
-							</button>
-						)}
-						{showConfirmDialog && (
-							<ConfirmDialog
-								isOpen={showConfirmDialog}
-								title="ยืนยันการอนุมัติ"
-								message="คุณแน่ใจหรือไม่ว่าต้องการอนุมัติใบสั่งซื้อนี้?"
-								onConfirm={handleApprove}
-								onCancel={() => setShowConfirmDialog(false)}
-								bottom_className="ka-btn ka-btn--primary min-h-11"
-							/>
-						)}
+					<div className="mt-6 space-y-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5 text-[var(--color-text-primary)]">
+						<div className="flex justify-between items-center text-sm md:text-base">
+							<span>ยอดก่อน VAT</span>
+							<span>฿{formatCurrency(vatSummary.subtotal)}</span>
+						</div>
+						<div className="flex justify-between items-center text-sm md:text-base">
+							<span>VAT {vatRate}% ({VAT_TYPE_LABELS[purchaseOrder.vat_type || 'none']})</span>
+							<span>฿{formatCurrency(vatSummary.vatAmount)}</span>
+						</div>
+						<div className="flex items-center justify-between border-t border-[var(--color-border)] pt-3">
+							<span className="text-lg font-bold">ยอดรวมทั้งสิ้น</span>
+							<span className="numeric text-2xl font-semibold text-[var(--brand-ink)]">฿{formatCurrency(vatSummary.total)}</span>
+						</div>
 					</div>
 				</div>
+
+				<DocumentHistoryPanel endpoint={`/purchase-order/${purchaseOrder.purchase_order_id}/history`} />
+                   {can('purchase_orders', 'reject') && ['pending', 'active'].includes(purchaseOrder.purchase_order_status) && <DocumentCancellationAction endpoint={`/purchase-order/${purchaseOrder.purchase_order_id}/reject`} onSuccess={() => { onSuccess?.(); onClose(); }} />}
 			</div>
-			
-		</div>
+		</Modal>
+					{showConfirmDialog && (
+						<ConfirmDialog
+							isOpen={showConfirmDialog}
+							title="ยืนยันการอนุมัติ"
+							message="คุณแน่ใจหรือไม่ว่าต้องการอนุมัติใบสั่งซื้อนี้?"
+							onConfirm={handleApprove}
+							onCancel={() => setShowConfirmDialog(false)}
+							bottom_className="ka-btn ka-btn--primary min-h-11"
+						/>
+					)}
 		<ActionResultDialog
 			isOpen={resultDialog.isOpen}
 			status={resultDialog.status}

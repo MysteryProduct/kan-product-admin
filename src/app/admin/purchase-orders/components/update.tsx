@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Modal from '@/components/Modal';
 import MaterialModel from '@/models/material';
 import PurchaseOrderModel from '@/models/purchase-order';
 import { ProductUnitModel } from '@/models/product-unit';
@@ -332,359 +333,341 @@ export default function UpdatePurchaseOrderForm({
     
     return (
         <>
-        <div className="fixed inset-0 bg-[var(--scrim)] backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
-            <div className="bg-[var(--color-bg-primary)] rounded-2xl overlay-surface max-w-5xl w-full my-8 overflow-hidden">
-                {/* Header */}
-                <div className="border-b border-[var(--border)] px-6 py-5">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-[var(--bg-surface)] bg-opacity-20 p-2 rounded-lg backdrop-blur-sm">
-                                <svg className="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        <Modal
+            isOpen={isOpen}
+            onClose={() => { if (!isSubmitting) handleClose(); }}
+            title="แก้ไขใบสั่งซื้อ"
+            size="xl"
+            closeOnBackdrop={!isSubmitting && !resultDialog.isOpen}
+            closeOnEscape={!isSubmitting && !resultDialog.isOpen}
+            footer={
+                <>
+                    <button
+                        type="button"
+                        onClick={handleClose}
+                        disabled={isSubmitting}
+                        className="ka-btn"
+                    >
+                        ยกเลิก
+                    </button>
+                    <button
+                        type="submit" form="purchase-orders-update-form"
+                        disabled={isSubmitting}
+                        className="ka-btn ka-btn--primary min-h-11 flex items-center justify-center gap-2"
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                            </div>
-                            <h2 className="text-2xl font-bold text-[var(--ink)]">แก้ไขใบสั่งซื้อ</h2>
-                        </div>
-                        <button
-                            onClick={handleClose}
-                            disabled={isSubmitting}
-                            aria-label="ปิดหน้าต่าง" className="ka-btn ka-btn--icon"
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-
-                <form onSubmit={handleSubmit} className="p-6 max-h-[calc(90vh-200px)] overflow-y-auto">
-                    <LoadErrorBanner message={materialsError} onRetry={() => void fetchMaterials('')} className="mb-4" />
-                    <LoadErrorBanner message={productUnitsError} onRetry={() => void fetchProductUnits('')} className="mb-4" />
-                    <LoadErrorBanner message={suppliersError} onRetry={() => void fetchSuppliers('')} className="mb-4" />
-                    {/* Purchase Order Info */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <label className="block text-sm font-semibold text-[var(--ink)] mb-2">
-                                <span className="flex items-center gap-2">
-                                    <svg className="w-4 h-4 text-[var(--brand-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                                    </svg>
-                                    ชื่อใบสั่งซื้อ <span className="text-[var(--danger)]">*</span>
-                                </span>
-                            </label>
-                            <input
-                                type="text"
-                                value={purchaseOrderName}
-                                onChange={(e) => setPurchaseOrderName(e.target.value)}
-                                className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--focus)] shadow-sm transition-all text-[var(--ink)] ${errors.purchaseOrderName ? 'border-[var(--danger)] bg-[var(--danger-soft)] ' : 'border-[var(--border-control)] hover:border-[var(--focus)]'
-                                    }`}
-                                placeholder="ระบุชื่อใบสั่งซื้อ..."
-                                disabled={isSubmitting}
-                            />
-                            {errors.purchaseOrderName && (
-                                <p className="text-[var(--danger)] text-sm mt-1 flex items-center gap-1">
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                    </svg>
-                                    {errors.purchaseOrderName}
-                                </p>
-                            )}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-semibold text-[var(--ink)] mb-2">
-                                <span className="flex items-center gap-2">
-                                    <svg className="w-4 h-4 text-[var(--brand-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    วันที่สร้าง
-                                </span>
-                            </label>
-                            <input
-                                type="text"
-                                value={formatThaiDate(initialData.purchase_date)}
-                                className="ka-input w-full"
-                                disabled
-                            />
-                        </div>
-
-                        <div>
-                            <CustomSelect
-                                label="ผู้จัดจำหน่าย"
-                                required={true}
-                                value={supplierId}
-                                onChange={handleSupplierChange}
-                                options={suppliers.map((sup) => ({
-                                    value: sup.supplier_id,
-                                    label: sup.supplier_name,
-                                }))}
-                                fetchData={fetchSuppliers}
-                                placeholder="เลือกผู้จัดจำหน่าย..."
-                            />
-                            {errors.supplier && (
-                                <p className="text-[var(--danger)] text-sm mt-1 flex items-center gap-1">
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                    </svg>
-                                    {errors.supplier}
-                                </p>
-                            )}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-semibold text-[var(--ink)] mb-2">
-                                รูปแบบ VAT
-                            </label>
-                            <select
-                                value={vatType}
-                                onChange={(e) => setVatType(e.target.value as VatType)}
-                                className="ka-input w-full"
-                                disabled={isSubmitting}
-                            >
-                                {VAT_TYPE_OPTIONS.map((option) => (
-                                    <option key={option.value} value={option.value}>
-                                        {option.label}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="mb-6">
+                                กำลังบันทึก...
+                            </>
+                        ) : (
+                            <>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                บันทึกการแก้ไข
+                            </>
+                        )}
+                    </button>
+                </>
+            }
+        >
+            <form id="purchase-orders-update-form" onSubmit={handleSubmit}>
+                <LoadErrorBanner message={materialsError} onRetry={() => void fetchMaterials('')} className="mb-4" />
+                <LoadErrorBanner message={productUnitsError} onRetry={() => void fetchProductUnits('')} className="mb-4" />
+                <LoadErrorBanner message={suppliersError} onRetry={() => void fetchSuppliers('')} className="mb-4" />
+                {/* Purchase Order Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
                         <label className="block text-sm font-semibold text-[var(--ink)] mb-2">
                             <span className="flex items-center gap-2">
                                 <svg className="w-4 h-4 text-[var(--brand-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
                                 </svg>
-                                รายละเอียด <span className="text-[var(--danger)]">*</span>
+                                ชื่อใบสั่งซื้อ <span className="text-[var(--danger)]">*</span>
                             </span>
                         </label>
-                        <textarea
-                            value={purchaseOrderDetail}
-                            onChange={(e) => setPurchaseOrderDetail(e.target.value)}
-                            rows={3}
-                            className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--focus)] shadow-sm transition-all resize-none text-[var(--ink)] ${errors.purchaseOrderDetail ? 'border-[var(--danger)] bg-[var(--danger-soft)] ' : 'border-[var(--border-control)] hover:border-[var(--focus)]'
+                        <input
+                            type="text"
+                            value={purchaseOrderName}
+                            onChange={(e) => setPurchaseOrderName(e.target.value)}
+                            className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--focus)] shadow-sm transition-all text-[var(--ink)] ${errors.purchaseOrderName ? 'border-[var(--danger)] bg-[var(--danger-soft)] ' : 'border-[var(--border-control)] hover:border-[var(--focus)]'
                                 }`}
-                            placeholder="ระบุรายละเอียดใบสั่งซื้อ..."
+                            placeholder="ระบุชื่อใบสั่งซื้อ..."
                             disabled={isSubmitting}
                         />
-                        {errors.purchaseOrderDetail && (
+                        {errors.purchaseOrderName && (
                             <p className="text-[var(--danger)] text-sm mt-1 flex items-center gap-1">
                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                 </svg>
-                                {errors.purchaseOrderDetail}
+                                {errors.purchaseOrderName}
                             </p>
                         )}
                     </div>
 
-                    {/* Items Section */}
-                    <div className="mb-6">
-                        <div className="flex items-center justify-between mb-5">
-                            <h3 className="text-lg font-bold text-[var(--ink)] flex items-center gap-2">
-                                <div className="bg-[var(--brand-soft)] p-2 rounded-lg">
-                                    <svg className="w-5 h-5 text-[var(--brand-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                    </svg>
-                                </div>
-                                รายการวัตถุดิบ
-                            </h3>
-                            <button
-                                type="button"
-                                onClick={addItem}
-                                disabled={isSubmitting}
-                                className="ka-btn ka-btn--primary min-h-11 flex items-center gap-2"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    <div>
+                        <label className="block text-sm font-semibold text-[var(--ink)] mb-2">
+                            <span className="flex items-center gap-2">
+                                <svg className="w-4 h-4 text-[var(--brand-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                เพิ่มวัตถุดิบ
-                            </button>
-                        </div>
+                                วันที่สร้าง
+                            </span>
+                        </label>
+                        <input
+                            type="text"
+                            value={formatThaiDate(initialData.purchase_date)}
+                            className="ka-input w-full"
+                            disabled
+                        />
+                    </div>
 
-                        <div className="space-y-5">
-                            {items.map((item, index) => (
-                                <div key={item.id} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-5">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="bg-[var(--brand-soft)] text-[var(--brand-ink)] font-bold text-sm w-8 h-8 rounded-full flex items-center justify-center">
-                                                {index + 1}
-                                            </div>
-                                            <h4 className="font-semibold text-[var(--ink)]">รายการที่ {index + 1}</h4>
+                    <div>
+                        <CustomSelect
+                            label="ผู้จัดจำหน่าย"
+                            required={true}
+                            value={supplierId}
+                            onChange={handleSupplierChange}
+                            options={suppliers.map((sup) => ({
+                                value: sup.supplier_id,
+                                label: sup.supplier_name,
+                            }))}
+                            fetchData={fetchSuppliers}
+                            placeholder="เลือกผู้จัดจำหน่าย..."
+                        />
+                        {errors.supplier && (
+                            <p className="text-[var(--danger)] text-sm mt-1 flex items-center gap-1">
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                </svg>
+                                {errors.supplier}
+                            </p>
+                        )}
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-semibold text-[var(--ink)] mb-2">
+                            รูปแบบ VAT
+                        </label>
+                        <select
+                            value={vatType}
+                            onChange={(e) => setVatType(e.target.value as VatType)}
+                            className="ka-input w-full"
+                            disabled={isSubmitting}
+                        >
+                            {VAT_TYPE_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
+                <div className="mb-6">
+                    <label className="block text-sm font-semibold text-[var(--ink)] mb-2">
+                        <span className="flex items-center gap-2">
+                            <svg className="w-4 h-4 text-[var(--brand-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                            </svg>
+                            รายละเอียด <span className="text-[var(--danger)]">*</span>
+                        </span>
+                    </label>
+                    <textarea
+                        value={purchaseOrderDetail}
+                        onChange={(e) => setPurchaseOrderDetail(e.target.value)}
+                        rows={3}
+                        className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--focus)] shadow-sm transition-all resize-none text-[var(--ink)] ${errors.purchaseOrderDetail ? 'border-[var(--danger)] bg-[var(--danger-soft)] ' : 'border-[var(--border-control)] hover:border-[var(--focus)]'
+                            }`}
+                        placeholder="ระบุรายละเอียดใบสั่งซื้อ..."
+                        disabled={isSubmitting}
+                    />
+                    {errors.purchaseOrderDetail && (
+                        <p className="text-[var(--danger)] text-sm mt-1 flex items-center gap-1">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                            </svg>
+                            {errors.purchaseOrderDetail}
+                        </p>
+                    )}
+                </div>
+
+                {/* Items Section */}
+                <div className="mb-6">
+                    <div className="flex items-center justify-between mb-5">
+                        <h3 className="text-lg font-bold text-[var(--ink)] flex items-center gap-2">
+                            <div className="bg-[var(--brand-soft)] p-2 rounded-lg">
+                                <svg className="w-5 h-5 text-[var(--brand-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                </svg>
+                            </div>
+                            รายการวัตถุดิบ
+                        </h3>
+                        <button
+                            type="button"
+                            onClick={addItem}
+                            disabled={isSubmitting}
+                            className="ka-btn ka-btn--primary min-h-11 flex items-center gap-2"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            เพิ่มวัตถุดิบ
+                        </button>
+                    </div>
+
+                    <div className="space-y-5">
+                        {items.map((item, index) => (
+                            <div key={item.id} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-5">
+                                <div className="flex items-start justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-[var(--brand-soft)] text-[var(--brand-ink)] font-bold text-sm w-8 h-8 rounded-full flex items-center justify-center">
+                                            {index + 1}
                                         </div>
-                                        {items.length > 1 && (
-                                            <button
-                                                type="button"
-                                                onClick={() => removeItem(item.id)}
-                                                disabled={isSubmitting}
-                                                className="text-[var(--danger)] hover:text-[var(--danger)] hover:bg-[var(--danger-soft)] p-2 rounded-lg transition-all disabled:opacity-50"
-                                            >
-                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        <h4 className="font-semibold text-[var(--ink)]">รายการที่ {index + 1}</h4>
+                                    </div>
+                                    {items.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => removeItem(item.id)}
+                                            disabled={isSubmitting}
+                                            className="text-[var(--danger)] hover:text-[var(--danger)] hover:bg-[var(--danger-soft)] p-2 rounded-lg transition-all disabled:opacity-50"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                    <div className="md:col-span-2">
+                                        <CustomSelect
+                                            label="วัตถุดิบ"
+                                            required
+                                            value={item.material_id}
+                                            onChange={(value) => updateItem(item.id, 'material_id', value)}
+                                            options={getMaterialOptionsForItem(item.id)}
+                                            fetchData={fetchMaterials}
+                                            placeholder="เลือกวัตถุดิบ..."
+                                        />
+                                        {errors[`item_${index}_material`] && (
+                                            <p className="text-[var(--danger)] text-sm mt-1 flex items-center gap-1">
+                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                                 </svg>
-                                            </button>
+                                                {errors[`item_${index}_material`]}
+                                            </p>
                                         )}
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                        <div className="md:col-span-2">
-                                            <CustomSelect
-                                                label="วัตถุดิบ"
-                                                required
-                                                value={item.material_id}
-                                                onChange={(value) => updateItem(item.id, 'material_id', value)}
-                                                options={getMaterialOptionsForItem(item.id)}
-                                                fetchData={fetchMaterials}
-                                                placeholder="เลือกวัตถุดิบ..."
-                                            />
-                                            {errors[`item_${index}_material`] && (
-                                                <p className="text-[var(--danger)] text-sm mt-1 flex items-center gap-1">
-                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                    </svg>
-                                                    {errors[`item_${index}_material`]}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-semibold text-[var(--ink)] mb-2">
-                                                จำนวน <span className="text-[var(--danger)]">*</span>
-                                            </label>
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                value={item.purchase_order_list_qty}
-                                                onChange={(e) => updateItem(item.id, 'purchase_order_list_qty', Number(e.target.value))}
-                                                className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--focus)] shadow-sm transition-all text-[var(--ink)] ${errors[`item_${index}_qty`] ? 'border-[var(--danger)] bg-[var(--danger-soft)] ' : 'border-[var(--border-control)] hover:border-[var(--focus)]'
-                                                    }`}
-                                                disabled={isSubmitting}
-                                            />
-                                            {errors[`item_${index}_qty`] && (
-                                                <p className="text-[var(--danger)] text-sm mt-1 flex items-center gap-1">
-                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                    </svg>
-                                                    {errors[`item_${index}_qty`]}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-semibold text-[var(--ink)] mb-2">
-                                                ราคา/หน่วย <span className="text-[var(--danger)]">*</span>
-                                            </label>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                step="0.01"
-                                                value={item.purchase_order_list_price}
-                                                onChange={(e) => updateItem(item.id, 'purchase_order_list_price', Number(e.target.value))}
-                                                className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--focus)] shadow-sm transition-all text-[var(--ink)] ${errors[`item_${index}_price`] ? 'border-[var(--danger)] bg-[var(--danger-soft)] ' : 'border-[var(--border-control)] hover:border-[var(--focus)]'
-                                                    }`}
-                                                disabled={isSubmitting}
-                                            />
-                                            {errors[`item_${index}_price`] && (
-                                                <p className="text-[var(--danger)] text-sm mt-1 flex items-center gap-1">
-                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                    </svg>
-                                                    {errors[`item_${index}_price`]}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div>
-                                            <CustomSelect
-                                                label="หน่วยสินค้า"
-                                                required
-                                                value={item.product_unit_id}
-                                                onChange={(value) => updateItem(item.id, 'product_unit_id', value)}
-                                                options={productUnits.map((unit) => ({
-                                                    value: unit.product_unit_id,
-                                                    label: unit.product_unit_name,
-                                                }))}
-                                                fetchData={fetchProductUnits}
-                                                placeholder="เลือกหน่วยสินค้า..."
-                                            />
-                                            {errors[`item_${index}_product_unit_id`] && (
-                                                <p className="text-[var(--danger)] text-sm mt-1">{errors[`item_${index}_product_unit_id`]}</p>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-4 pt-4 border-t-2 border-[var(--border)]">
-                                        <div className="flex items-center justify-between rounded-lg bg-[var(--color-bg-secondary)] p-3">
-                                            <span className="text-sm font-semibold text-[var(--ink)] flex items-center gap-2">
-                                                <svg className="w-4 h-4 text-[var(--brand-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                    <div>
+                                        <label className="block text-sm font-semibold text-[var(--ink)] mb-2">
+                                            จำนวน <span className="text-[var(--danger)]">*</span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            value={item.purchase_order_list_qty}
+                                            onChange={(e) => updateItem(item.id, 'purchase_order_list_qty', Number(e.target.value))}
+                                            className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--focus)] shadow-sm transition-all text-[var(--ink)] ${errors[`item_${index}_qty`] ? 'border-[var(--danger)] bg-[var(--danger-soft)] ' : 'border-[var(--border-control)] hover:border-[var(--focus)]'
+                                                }`}
+                                            disabled={isSubmitting}
+                                        />
+                                        {errors[`item_${index}_qty`] && (
+                                            <p className="text-[var(--danger)] text-sm mt-1 flex items-center gap-1">
+                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                                                 </svg>
-                                                ยอดรวมรายการนี้:
-                                            </span>
-                                            <span className="text-xl font-bold text-[var(--brand-ink)]">
-                                                ฿{formatCurrency(calculateItemTotal(item))}
-                                            </span>
-                                        </div>
+                                                {errors[`item_${index}_qty`]}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-semibold text-[var(--ink)] mb-2">
+                                            ราคา/หน่วย <span className="text-[var(--danger)]">*</span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            value={item.purchase_order_list_price}
+                                            onChange={(e) => updateItem(item.id, 'purchase_order_list_price', Number(e.target.value))}
+                                            className={`w-full px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--focus)] shadow-sm transition-all text-[var(--ink)] ${errors[`item_${index}_price`] ? 'border-[var(--danger)] bg-[var(--danger-soft)] ' : 'border-[var(--border-control)] hover:border-[var(--focus)]'
+                                                }`}
+                                            disabled={isSubmitting}
+                                        />
+                                        {errors[`item_${index}_price`] && (
+                                            <p className="text-[var(--danger)] text-sm mt-1 flex items-center gap-1">
+                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                </svg>
+                                                {errors[`item_${index}_price`]}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <CustomSelect
+                                            label="หน่วยสินค้า"
+                                            required
+                                            value={item.product_unit_id}
+                                            onChange={(value) => updateItem(item.id, 'product_unit_id', value)}
+                                            options={productUnits.map((unit) => ({
+                                                value: unit.product_unit_id,
+                                                label: unit.product_unit_name,
+                                            }))}
+                                            fetchData={fetchProductUnits}
+                                            placeholder="เลือกหน่วยสินค้า..."
+                                        />
+                                        {errors[`item_${index}_product_unit_id`] && (
+                                            <p className="text-[var(--danger)] text-sm mt-1">{errors[`item_${index}_product_unit_id`]}</p>
+                                        )}
                                     </div>
                                 </div>
-                            ))}
-                        </div>
 
-                        {/* Grand Total */}
-                        <div className="mt-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-6">
-                            <div className="space-y-2 text-[var(--color-text-primary)]">
-                                <div className="flex justify-between items-center text-sm md:text-base">
-                                    <span>ยอดก่อน VAT</span>
-                                    <span>฿{formatCurrency(vatSummary.subtotal)}</span>
+                                <div className="mt-4 pt-4 border-t-2 border-[var(--border)]">
+                                    <div className="flex items-center justify-between rounded-lg bg-[var(--color-bg-secondary)] p-3">
+                                        <span className="text-sm font-semibold text-[var(--ink)] flex items-center gap-2">
+                                            <svg className="w-4 h-4 text-[var(--brand-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                            </svg>
+                                            ยอดรวมรายการนี้:
+                                        </span>
+                                        <span className="text-xl font-bold text-[var(--brand-ink)]">
+                                            ฿{formatCurrency(calculateItemTotal(item))}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="flex justify-between items-center text-sm md:text-base">
-                                    <span>VAT {vatRate}% ({VAT_TYPE_LABELS[vatType]})</span>
-                                    <span>฿{formatCurrency(vatSummary.vatAmount)}</span>
-                                </div>
-                                <div className="flex items-center justify-between border-t border-[var(--color-border)] pt-2">
-                                    <span className="text-lg font-bold">ยอดรวมทั้งสิ้น</span>
-                                    <span className="text-3xl font-bold">฿{formatCurrency(vatSummary.total)}</span>
-                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Grand Total */}
+                    <div className="mt-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-6">
+                        <div className="space-y-2 text-[var(--color-text-primary)]">
+                            <div className="flex justify-between items-center text-sm md:text-base">
+                                <span>ยอดก่อน VAT</span>
+                                <span>฿{formatCurrency(vatSummary.subtotal)}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm md:text-base">
+                                <span>VAT {vatRate}% ({VAT_TYPE_LABELS[vatType]})</span>
+                                <span>฿{formatCurrency(vatSummary.vatAmount)}</span>
+                            </div>
+                            <div className="flex items-center justify-between border-t border-[var(--color-border)] pt-2">
+                                <span className="text-lg font-bold">ยอดรวมทั้งสิ้น</span>
+                                <span className="text-3xl font-bold">฿{formatCurrency(vatSummary.total)}</span>
                             </div>
                         </div>
                     </div>
-
-                    {/* Footer Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t-2 border-[var(--border)]">
-                        <button
-                            type="button"
-                            onClick={handleClose}
-                            disabled={isSubmitting}
-                            className="ka-btn flex-1"
-                        >
-                            ยกเลิก
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="ka-btn ka-btn--primary min-h-11 flex flex-1 items-center justify-center gap-2"
-                        >
-                            {isSubmitting ? (
-                                <>
-                                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    กำลังบันทึก...
-                                </>
-                            ) : (
-                                <>
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    บันทึกการแก้ไข
-                                </>
-                            )}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                </div>
+            </form>
+        </Modal>
         <ActionResultDialog
             isOpen={resultDialog.isOpen}
             status={resultDialog.status}

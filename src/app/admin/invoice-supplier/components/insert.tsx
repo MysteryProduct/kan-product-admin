@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Modal from '@/components/Modal';
 import { PurchaseReceipt } from '@/types/purchase-receipt';
 import { VAT_TYPE_LABELS } from '@/lib/vat';
 import { toLocalIsoDate, todayLocalIso } from '@/lib/date-format';
@@ -169,180 +170,173 @@ export default function InsertInvoiceSupplierForm({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
-            <div className="w-full max-w-6xl overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] overlay-surface dark:border-[var(--color-border)]">
-                <div className="border-b border-[var(--border)] px-6 py-5">
-                    <div className="flex items-center justify-between gap-4">
-                        <h2 className="text-xl font-bold sm:text-2xl">เพิ่มใบชำระหนี้ผู้จัดจำหน่าย</h2>
-                        <button type="button" onClick={onClose} className="ka-btn ka-btn--icon" aria-label="ปิดหน้าต่าง">
-                            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M6 6l12 12M18 6L6 18" />
-                            </svg>
-                        </button>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="เพิ่มใบชำระหนี้ผู้จัดจำหน่าย"
+            size="xl"
+            footer={
+                <>
+                    <button type="button" onClick={onClose} className="ka-btn h-11">
+                        ยกเลิก
+                    </button>
+                    <button type="submit" form="invoice-supplier-insert-form" className="ka-btn ka-btn--primary h-11">
+                        บันทึกใบชำระหนี้
+                    </button>
+                </>
+            }
+        >
+            <form id="invoice-supplier-insert-form" onSubmit={handleSubmit} className="space-y-5">
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-subtle)] p-4">
+                    <h3 className="mb-3 text-base font-semibold text-[var(--ink)]">ข้อมูลที่ดึงจากใบรับสินค้า (ค่าเริ่มต้น)</h3>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                        <p className="text-sm text-[var(--ink-muted)]">ใบรับสินค้า: <span className="font-semibold text-[var(--ink)]">{sourceReceipt.purchase_receipt_code || sourceReceipt.purchase_receipt_id}</span></p>
+                        <p className="text-sm text-[var(--ink-muted)]">Supplier: <span className="font-semibold text-[var(--ink)]">{sourceReceipt.supplier?.supplier_name || sourceReceipt.supplier_id}</span></p>
+                        <p className="text-sm text-[var(--ink-muted)]">VAT: <span className="font-semibold text-[var(--ink)]">{VAT_TYPE_LABELS[sourceReceipt.vat_type || 'none']}</span></p>
+                        <p className="text-sm text-[var(--ink-muted)]">ยอดรวม: <span className="font-semibold text-[var(--ink)]">฿{formatCurrency(invoiceTotal)}</span></p>
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="max-h-[80vh] space-y-5 overflow-y-auto p-6">
-                    <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-subtle)] p-4">
-                        <h3 className="mb-3 text-base font-semibold text-[var(--ink)]">ข้อมูลที่ดึงจากใบรับสินค้า (ค่าเริ่มต้น)</h3>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                            <p className="text-sm text-[var(--ink-muted)]">ใบรับสินค้า: <span className="font-semibold text-[var(--ink)]">{sourceReceipt.purchase_receipt_code || sourceReceipt.purchase_receipt_id}</span></p>
-                            <p className="text-sm text-[var(--ink-muted)]">Supplier: <span className="font-semibold text-[var(--ink)]">{sourceReceipt.supplier?.supplier_name || sourceReceipt.supplier_id}</span></p>
-                            <p className="text-sm text-[var(--ink-muted)]">VAT: <span className="font-semibold text-[var(--ink)]">{VAT_TYPE_LABELS[sourceReceipt.vat_type || 'none']}</span></p>
-                            <p className="text-sm text-[var(--ink-muted)]">ยอดรวม: <span className="font-semibold text-[var(--ink)]">฿{formatCurrency(invoiceTotal)}</span></p>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-                        <div>
-                            <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">ชื่อเอกสาร</label>
-                            <input value={invoiceName} onChange={(event) => setInvoiceName(event.target.value)} className={INPUT_CLASSNAME} />
-                            {errors.invoice_supplier_name && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.invoice_supplier_name}</p>}
-                        </div>
-
-                        <div>
-                            <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">วันที่เอกสาร</label>
-                            <input type="date" value={invoiceDate} onChange={(event) => setInvoiceDate(event.target.value)} className={INPUT_CLASSNAME} />
-                            {errors.invoice_supplier_date && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.invoice_supplier_date}</p>}
-                        </div>
-
-                        <div>
-                            <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">วันที่ครบกำหนด</label>
-                            <input type="date" value={invoiceDueDate} onChange={(event) => setInvoiceDueDate(event.target.value)} className={INPUT_CLASSNAME} />
-                            {errors.invoice_supplier_due_date && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.invoice_supplier_due_date}</p>}
-                        </div>
-
-                        <div>
-                            <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">สถานะเอกสาร</label>
-                            <select value={invoiceStatus} onChange={(event) => setInvoiceStatus(event.target.value as 'pending' | 'partial' | 'paid' | 'cancelled')} className={INPUT_CLASSNAME}>
-                                {INVOICE_STATUS_OPTIONS.map((status) => (
-                                    <option key={status.value} value={status.value}>
-                                        {status.label}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">ยอดใบชำระหนี้</label>
-                            <div className="h-11 rounded-xl border border-[var(--border-control)] bg-[var(--bg-muted)] px-3 text-sm leading-[44px] text-[var(--ink)]">
-                                ฿{formatCurrency(invoiceTotal)}
-                            </div>
-                        </div>
+                <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    <div>
+                        <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">ชื่อเอกสาร</label>
+                        <input value={invoiceName} onChange={(event) => setInvoiceName(event.target.value)} className={INPUT_CLASSNAME} />
+                        {errors.invoice_supplier_name && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.invoice_supplier_name}</p>}
                     </div>
 
                     <div>
-                        <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">รายละเอียดเพิ่มเติม</label>
-                        <textarea
-                            rows={3}
-                            value={invoiceDetail}
-                            onChange={(event) => setInvoiceDetail(event.target.value)}
-                            className="ka-textarea w-full"
-                            placeholder="หมายเหตุเพิ่มเติม"
-                        />
+                        <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">วันที่เอกสาร</label>
+                        <input type="date" value={invoiceDate} onChange={(event) => setInvoiceDate(event.target.value)} className={INPUT_CLASSNAME} />
+                        {errors.invoice_supplier_date && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.invoice_supplier_date}</p>}
                     </div>
 
-                    <div className="rounded-2xl border border-[var(--border)] p-4">
-                        <div className="mb-3 flex items-center justify-between">
-                            <h3 className="text-base font-semibold text-[var(--ink)]">Invoice Payment (ชำระได้หลายครั้ง)</h3>
-                            <button type="button" onClick={addPaymentRow} className="ka-btn ka-btn--primary min-h-11 h-10">
-                                เพิ่มรายการชำระ
-                            </button>
-                        </div>
+                    <div>
+                        <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">วันที่ครบกำหนด</label>
+                        <input type="date" value={invoiceDueDate} onChange={(event) => setInvoiceDueDate(event.target.value)} className={INPUT_CLASSNAME} />
+                        {errors.invoice_supplier_due_date && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.invoice_supplier_due_date}</p>}
+                    </div>
 
-                        <div className="space-y-3">
-                            {invoicePayments.map((payment, index) => (
-                                <div key={payment.invoice_payment_id} className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] p-3">
-                                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-                                        <div>
-                                            <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">วิธีชำระ</label>
-                                            <select
-                                                value={payment.payment_method}
+                    <div>
+                        <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">สถานะเอกสาร</label>
+                        <select value={invoiceStatus} onChange={(event) => setInvoiceStatus(event.target.value as 'pending' | 'partial' | 'paid' | 'cancelled')} className={INPUT_CLASSNAME}>
+                            {INVOICE_STATUS_OPTIONS.map((status) => (
+                                <option key={status.value} value={status.value}>
+                                    {status.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">ยอดใบชำระหนี้</label>
+                        <div className="h-11 rounded-xl border border-[var(--border-control)] bg-[var(--bg-muted)] px-3 text-sm leading-[44px] text-[var(--ink)]">
+                            ฿{formatCurrency(invoiceTotal)}
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">รายละเอียดเพิ่มเติม</label>
+                    <textarea
+                        rows={3}
+                        value={invoiceDetail}
+                        onChange={(event) => setInvoiceDetail(event.target.value)}
+                        className="ka-textarea w-full"
+                        placeholder="หมายเหตุเพิ่มเติม"
+                    />
+                </div>
+
+                <div className="rounded-2xl border border-[var(--border)] p-4">
+                    <div className="mb-3 flex items-center justify-between">
+                        <h3 className="text-base font-semibold text-[var(--ink)]">Invoice Payment (ชำระได้หลายครั้ง)</h3>
+                        <button type="button" onClick={addPaymentRow} className="ka-btn ka-btn--primary min-h-11 h-10">
+                            เพิ่มรายการชำระ
+                        </button>
+                    </div>
+
+                    <div className="space-y-3">
+                        {invoicePayments.map((payment, index) => (
+                            <div key={payment.invoice_payment_id} className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] p-3">
+                                <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+                                    <div>
+                                        <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">วิธีชำระ</label>
+                                        <select
+                                            value={payment.payment_method}
+                                            onChange={(event) => {
+                                                const nextMethod = event.target.value as 'cash' | 'bank';
+                                                updatePaymentRow(payment.invoice_payment_id, (prev) => ({
+                                                    ...prev,
+                                                    payment_method: nextMethod,
+                                                    payment_id: nextMethod === 'bank' ? prev.payment_id || availablePayments[0]?.payment_id : undefined,
+                                                }));
+                                            }}
+                                            className={INPUT_CLASSNAME}
+                                        >
+                                            {INVOICE_PAYMENT_METHOD_OPTIONS.map((option) => (
+                                                <option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">บัญชีธนาคาร</label>
+                                        <select
+                                            value={payment.payment_id || ''}
+                                            onChange={(event) => updatePaymentRow(payment.invoice_payment_id, (prev) => ({ ...prev, payment_id: event.target.value }))}
+                                            disabled={payment.payment_method !== 'bank'}
+                                            className={`${INPUT_CLASSNAME} disabled:cursor-not-allowed disabled:opacity-60`}
+                                        >
+                                            <option value="">เลือกบัญชี</option>
+                                            {availablePayments.map((bank) => (
+                                                <option key={bank.payment_id} value={bank.payment_id}>
+                                                    {bank.bank_name} - {bank.account_number}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors[`payment_id_${index}`] && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`payment_id_${index}`]}</p>}
+                                    </div>
+
+                                    <div>
+                                        <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ยอดชำระ</label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                value={payment.invoice_payment_price}
                                                 onChange={(event) => {
-                                                    const nextMethod = event.target.value as 'cash' | 'bank';
-                                                    updatePaymentRow(payment.invoice_payment_id, (prev) => ({
-                                                        ...prev,
-                                                        payment_method: nextMethod,
-                                                        payment_id: nextMethod === 'bank' ? prev.payment_id || availablePayments[0]?.payment_id : undefined,
-                                                    }));
+                                                    const next = Number(event.target.value || 0);
+                                                    updatePaymentRow(payment.invoice_payment_id, (prev) => ({ ...prev, invoice_payment_price: next }));
                                                 }}
                                                 className={INPUT_CLASSNAME}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removePaymentRow(payment.invoice_payment_id)}
+                                                className="ka-btn ka-btn--danger h-11"
+                                                disabled={invoicePayments.length <= 1}
                                             >
-                                                {INVOICE_PAYMENT_METHOD_OPTIONS.map((option) => (
-                                                    <option key={option.value} value={option.value}>
-                                                        {option.label}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                                ลบ
+                                            </button>
                                         </div>
-
-                                        <div>
-                                            <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">บัญชีธนาคาร</label>
-                                            <select
-                                                value={payment.payment_id || ''}
-                                                onChange={(event) => updatePaymentRow(payment.invoice_payment_id, (prev) => ({ ...prev, payment_id: event.target.value }))}
-                                                disabled={payment.payment_method !== 'bank'}
-                                                className={`${INPUT_CLASSNAME} disabled:cursor-not-allowed disabled:opacity-60`}
-                                            >
-                                                <option value="">เลือกบัญชี</option>
-                                                {availablePayments.map((bank) => (
-                                                    <option key={bank.payment_id} value={bank.payment_id}>
-                                                        {bank.bank_name} - {bank.account_number}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                            {errors[`payment_id_${index}`] && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`payment_id_${index}`]}</p>}
-                                        </div>
-
-                                        <div>
-                                            <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ยอดชำระ</label>
-                                            <div className="flex gap-2">
-                                                <input
-                                                    type="number"
-                                                    min={0}
-                                                    value={payment.invoice_payment_price}
-                                                    onChange={(event) => {
-                                                        const next = Number(event.target.value || 0);
-                                                        updatePaymentRow(payment.invoice_payment_id, (prev) => ({ ...prev, invoice_payment_price: next }));
-                                                    }}
-                                                    className={INPUT_CLASSNAME}
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removePaymentRow(payment.invoice_payment_id)}
-                                                    className="ka-btn ka-btn--danger h-11"
-                                                    disabled={invoicePayments.length <= 1}
-                                                >
-                                                    ลบ
-                                                </button>
-                                            </div>
-                                            {errors[`invoice_payment_price_${index}`] && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`invoice_payment_price_${index}`]}</p>}
-                                            <p className="mt-1 text-[13px] text-[var(--ink-muted)]">{INVOICE_PAYMENT_METHOD_LABELS[payment.payment_method]}</p>
-                                        </div>
+                                        {errors[`invoice_payment_price_${index}`] && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`invoice_payment_price_${index}`]}</p>}
+                                        <p className="mt-1 text-[13px] text-[var(--ink-muted)]">{INVOICE_PAYMENT_METHOD_LABELS[payment.payment_method]}</p>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-
-                        {errors.invoice_payments && <p className="mt-2 text-[13px] text-[var(--danger)]">{errors.invoice_payments}</p>}
-
-                        <div className="mt-4 grid grid-cols-1 gap-2 rounded-xl bg-[var(--bg-muted)] p-3 text-sm sm:grid-cols-3">
-                            <p className="text-[var(--ink)]">ยอดเอกสาร: <span className="font-semibold">฿{formatCurrency(invoiceTotal)}</span></p>
-                            <p className="text-[var(--ink)]">ชำระแล้ว: <span className="font-semibold">฿{formatCurrency(paidTotal)}</span></p>
-                            <p className="text-[var(--ink)]">คงเหลือ: <span className="font-semibold">฿{formatCurrency(Math.max(invoiceTotal - paidTotal, 0))}</span></p>
-                        </div>
+                            </div>
+                        ))}
                     </div>
 
-                    <div className="flex flex-col-reverse gap-3 border-t border-[var(--border)] pt-4 sm:flex-row sm:justify-end">
-                        <button type="button" onClick={onClose} className="ka-btn h-11">
-                            ยกเลิก
-                        </button>
-                        <button type="submit" className="ka-btn ka-btn--primary h-11">
-                            บันทึกใบชำระหนี้
-                        </button>
+                    {errors.invoice_payments && <p className="mt-2 text-[13px] text-[var(--danger)]">{errors.invoice_payments}</p>}
+
+                    <div className="mt-4 grid grid-cols-1 gap-2 rounded-xl bg-[var(--bg-muted)] p-3 text-sm sm:grid-cols-3">
+                        <p className="text-[var(--ink)]">ยอดเอกสาร: <span className="font-semibold">฿{formatCurrency(invoiceTotal)}</span></p>
+                        <p className="text-[var(--ink)]">ชำระแล้ว: <span className="font-semibold">฿{formatCurrency(paidTotal)}</span></p>
+                        <p className="text-[var(--ink)]">คงเหลือ: <span className="font-semibold">฿{formatCurrency(Math.max(invoiceTotal - paidTotal, 0))}</span></p>
                     </div>
-                </form>
-            </div>
-        </div>
+                </div>
+            </form>
+        </Modal>
     );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Cookies from 'js-cookie';
+import Modal from '@/components/Modal';
 import ActionResultDialog, { ActionResultDialogAction } from '@/components/ActionResultDialog';
 import Pagination from '@/components/Pagination';
 import { PurchaseReceipt, PurchaseReceiptListItem } from '@/types/purchase-receipt';
@@ -366,175 +367,170 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 
 	return (
 		<>
-			<div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
-				<div className="w-full max-w-6xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)] overlay-surface">
-					<div className="border-b border-[var(--border)] px-6 py-5">
-						<div className="flex items-center justify-between gap-3">
-							<h2 className="text-2xl font-bold text-[var(--ink)]">แก้ไขใบรับสินค้า</h2>
-							<button onClick={onClose} disabled={isSubmitting} aria-label="ปิดหน้าต่าง" className="ka-btn ka-btn--icon" type="button">
-								<svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-							</button>
+			<Modal
+				isOpen={isOpen}
+				onClose={() => { if (!isSubmitting) onClose(); }}
+				title="แก้ไขใบรับสินค้า"
+				size="xl"
+				closeOnBackdrop={!isSubmitting && !isSelectModalOpen && !resultDialog.isOpen}
+				closeOnEscape={!isSubmitting && !isSelectModalOpen && !resultDialog.isOpen}
+				footer={
+					<>
+						<button type="button" onClick={onClose} disabled={isSubmitting} className="ka-btn w-full">ยกเลิก</button>
+						<button type="submit" form="purchase-receipt-update-form" disabled={isSubmitting} className="ka-btn ka-btn--primary min-h-11 w-full">{isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}</button>
+					</>
+				}
+			>
+				<form id="purchase-receipt-update-form" onSubmit={handleSubmit}>
+					<div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+						<div>
+							<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">เลขที่ใบรับสินค้า</label>
+							<div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 text-[var(--ink)] shadow-sm">{initialData.purchase_receipt_code || initialData.purchase_receipt_id}</div>
+						</div>
+						<div>
+							<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">เลขที่ใบสั่งซื้อ</label>
+							<div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 text-[var(--ink)] shadow-sm">{initialData.purchaseOrder?.purchase_order_code || initialData.purchase_order_id}</div>
+						</div>
+						<div>
+							<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">รูปแบบ VAT</label>
+							<select
+								value={vatType}
+								onChange={(e) => setVatType(e.target.value as VatType)}
+								className="ka-input w-full"
+								disabled={isSubmitting}
+							>
+								{VAT_TYPE_OPTIONS.map((option) => (
+									<option key={option.value} value={option.value}>
+										{option.label}
+									</option>
+								))}
+							</select>
+						</div>
+						<div>
+							<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">วันที่รับสินค้า</label>
+							<input type="date" value={entryDate} onChange={(e) => setEntryDate(e.target.value)} className="ka-input w-full" disabled={isSubmitting} />
+							{errors.entry_date && <p className="mt-1 text-sm text-[var(--danger)]">{errors.entry_date}</p>}
 						</div>
 					</div>
 
-					<form onSubmit={handleSubmit} className="max-h-[calc(90vh-160px)] overflow-y-auto p-6">
-						<div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-							<div>
-								<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">เลขที่ใบรับสินค้า</label>
-								<div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 text-[var(--ink)] shadow-sm">{initialData.purchase_receipt_code || initialData.purchase_receipt_id}</div>
-							</div>
-							<div>
-								<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">เลขที่ใบสั่งซื้อ</label>
-								<div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 text-[var(--ink)] shadow-sm">{initialData.purchaseOrder?.purchase_order_code || initialData.purchase_order_id}</div>
-							</div>
-							<div>
-								<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">รูปแบบ VAT</label>
-								<select
-									value={vatType}
-									onChange={(e) => setVatType(e.target.value as VatType)}
-									className="ka-input w-full"
-									disabled={isSubmitting}
-								>
-									{VAT_TYPE_OPTIONS.map((option) => (
-										<option key={option.value} value={option.value}>
-											{option.label}
-										</option>
-									))}
-								</select>
-							</div>
-							<div>
-								<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">วันที่รับสินค้า</label>
-								<input type="date" value={entryDate} onChange={(e) => setEntryDate(e.target.value)} className="ka-input w-full" disabled={isSubmitting} />
-								{errors.entry_date && <p className="mt-1 text-sm text-[var(--danger)]">{errors.entry_date}</p>}
-							</div>
-						</div>
+					<div className="mb-6">
+						<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">รายละเอียดใบรับสินค้า</label>
+						<textarea rows={3} value={receiptDetail} onChange={(e) => setReceiptDetail(e.target.value)} className="ka-textarea w-full resize-none" placeholder="ระบุรายละเอียดเพิ่มเติม (ถ้ามี)" disabled={isSubmitting} />
+					</div>
 
-						<div className="mb-6">
-							<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">รายละเอียดใบรับสินค้า</label>
-							<textarea rows={3} value={receiptDetail} onChange={(e) => setReceiptDetail(e.target.value)} className="ka-textarea w-full resize-none" placeholder="ระบุรายละเอียดเพิ่มเติม (ถ้ามี)" disabled={isSubmitting} />
-						</div>
+					<div className="mb-4 flex items-center justify-between">
+						<h3 className="text-lg font-bold text-[var(--ink)]">รายการวัตถุดิบอ้างอิงจากใบสั่งซื้อ</h3>
+						<button type="button" onClick={openSelectModal} disabled={isSubmitting} className="ka-btn ka-btn--primary min-h-11">เพิ่มรายการ</button>
+					</div>
 
-						<div className="mb-4 flex items-center justify-between">
-							<h3 className="text-lg font-bold text-[var(--ink)]">รายการวัตถุดิบอ้างอิงจากใบสั่งซื้อ</h3>
-							<button type="button" onClick={openSelectModal} disabled={isSubmitting} className="ka-btn ka-btn--primary min-h-11">เพิ่มรายการ</button>
-						</div>
-
-						<div className="space-y-4">
-							{items.map((item, index) => (
-								<div key={item.id} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-4">
-									<div className="mb-3 flex items-center justify-between gap-2">
-										<span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-soft)] text-sm font-bold text-[var(--brand-ink)]">{index + 1}</span>
-										<button type="button" onClick={() => handleRemoveItem(item.id)} disabled={isSubmitting || items.length <= 1} className="rounded-lg bg-[var(--danger-soft)] px-2.5 py-1.5 text-[13px] font-semibold text-[var(--danger)] transition-colors hover:bg-[var(--danger-soft)] disabled:cursor-not-allowed disabled:opacity-50">ลบ</button>
-									</div>
-
-									<div className="grid grid-cols-1 gap-4 md:grid-cols-5">
-										<div><label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">วัตถุดิบ</label><div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--ink)]">{item.material_name || item.material_id || '-'}</div>{errors[`item_${index}_material`] && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`item_${index}_material`]}</p>}</div>
-										<div>
-											<label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">จำนวนรับ</label>
-											<input type="number" min={0} max={item.ordered_qty} step="1" value={item.purchase_receipt_list_qty} onChange={(e) => updateItem(item.id, 'purchase_receipt_list_qty', Number(e.target.value))} className="ka-input w-full" disabled={isSubmitting} />
-											<p className="mt-1 text-[11px] text-[var(--ink-muted)]">จำนวนสั่งซื้อ: {item.ordered_qty}</p>
-											{errors[`item_${index}_qty`] && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`item_${index}_qty`]}</p>}
-										</div>
-										<div>
-											<label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ราคา/หน่วย</label>
-											<input type="number" min={0} step="0.01" value={item.purchase_receipt_list_price} onChange={(e) => updateItem(item.id, 'purchase_receipt_list_price', Number(e.target.value))} className="ka-input w-full" disabled={isSubmitting} />
-											{errors[`item_${index}_price`] && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`item_${index}_price`]}</p>}
-										</div>
-										<div><label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">หน่วย</label><div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--ink)]">{item.product_unit_name || item.product_unit_id || '-'}</div></div>
-										<div><label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ยอดรวม</label><div className="rounded-xl border border-[var(--brand-soft)] bg-[var(--brand-soft)] px-3 py-2 text-sm font-semibold text-[var(--brand-ink)]">฿{formatCurrency(calculateItemTotal(item))}</div></div>
-									</div>
+					<div className="space-y-4">
+						{items.map((item, index) => (
+							<div key={item.id} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-4">
+								<div className="mb-3 flex items-center justify-between gap-2">
+									<span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-soft)] text-sm font-bold text-[var(--brand-ink)]">{index + 1}</span>
+									<button type="button" onClick={() => handleRemoveItem(item.id)} disabled={isSubmitting || items.length <= 1} className="rounded-lg bg-[var(--danger-soft)] px-2.5 py-1.5 text-[13px] font-semibold text-[var(--danger)] transition-colors hover:bg-[var(--danger-soft)] disabled:cursor-not-allowed disabled:opacity-50">ลบ</button>
 								</div>
-							))}
-						</div>
 
-						{errors.items && <p className="mt-3 text-sm text-[var(--danger)]">{errors.items}</p>}
-
-						<div className="mt-6 space-y-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5 text-[var(--color-text-primary)]">
-							<div className="flex items-center justify-between text-sm md:text-base">
-								<span>ยอดก่อน VAT</span>
-								<span>฿{formatCurrency(vatSummary.subtotal)}</span>
+								<div className="grid grid-cols-1 gap-4 md:grid-cols-5">
+									<div><label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">วัตถุดิบ</label><div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--ink)]">{item.material_name || item.material_id || '-'}</div>{errors[`item_${index}_material`] && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`item_${index}_material`]}</p>}</div>
+									<div>
+										<label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">จำนวนรับ</label>
+										<input type="number" min={0} max={item.ordered_qty} step="1" value={item.purchase_receipt_list_qty} onChange={(e) => updateItem(item.id, 'purchase_receipt_list_qty', Number(e.target.value))} className="ka-input w-full" disabled={isSubmitting} />
+										<p className="mt-1 text-[11px] text-[var(--ink-muted)]">จำนวนสั่งซื้อ: {item.ordered_qty}</p>
+										{errors[`item_${index}_qty`] && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`item_${index}_qty`]}</p>}
+									</div>
+									<div>
+										<label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ราคา/หน่วย</label>
+										<input type="number" min={0} step="0.01" value={item.purchase_receipt_list_price} onChange={(e) => updateItem(item.id, 'purchase_receipt_list_price', Number(e.target.value))} className="ka-input w-full" disabled={isSubmitting} />
+										{errors[`item_${index}_price`] && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`item_${index}_price`]}</p>}
+									</div>
+									<div><label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">หน่วย</label><div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--ink)]">{item.product_unit_name || item.product_unit_id || '-'}</div></div>
+									<div><label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ยอดรวม</label><div className="rounded-xl border border-[var(--brand-soft)] bg-[var(--brand-soft)] px-3 py-2 text-sm font-semibold text-[var(--brand-ink)]">฿{formatCurrency(calculateItemTotal(item))}</div></div>
+								</div>
 							</div>
-							<div className="flex items-center justify-between text-sm md:text-base">
-								<span>VAT {vatRate}% ({VAT_TYPE_LABELS[vatType]})</span>
-								<span>฿{formatCurrency(vatSummary.vatAmount)}</span>
-							</div>
-							<div className="flex items-center justify-between border-t border-[var(--color-border)] pt-2">
-								<span className="text-lg font-semibold">ยอดรวมทั้งสิ้น</span>
-								<span className="text-2xl font-bold">฿{formatCurrency(vatSummary.total)}</span>
-							</div>
+						))}
+					</div>
+
+					{errors.items && <p className="mt-3 text-sm text-[var(--danger)]">{errors.items}</p>}
+
+					<div className="mt-6 space-y-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5 text-[var(--color-text-primary)]">
+						<div className="flex items-center justify-between text-sm md:text-base">
+							<span>ยอดก่อน VAT</span>
+							<span>฿{formatCurrency(vatSummary.subtotal)}</span>
 						</div>
-
-						<div className="mt-6 flex gap-3 border-t border-[var(--border)] pt-6">
-							<button type="button" onClick={onClose} disabled={isSubmitting} className="ka-btn w-full">ยกเลิก</button>
-							<button type="submit" disabled={isSubmitting} className="ka-btn ka-btn--primary min-h-11 w-full">{isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}</button>
+						<div className="flex items-center justify-between text-sm md:text-base">
+							<span>VAT {vatRate}% ({VAT_TYPE_LABELS[vatType]})</span>
+							<span>฿{formatCurrency(vatSummary.vatAmount)}</span>
 						</div>
-					</form>
-				</div>
-			</div>
-
-			{isSelectModalOpen && (
-				<div className="fixed inset-0 z-[60] flex items-center justify-center bg-[var(--scrim)] p-4">
-					<div className="w-full max-w-5xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)] overlay-surface">
-						<div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4">
-							<h3 className="text-lg font-semibold text-[var(--ink)]">เลือกรายการวัตถุดิบเพื่อเพิ่ม</h3>
-							<button type="button" onClick={() => { setIsSelectModalOpen(false); setSelectedOrderItems({}); }} className="rounded-lg px-2 py-1 text-[var(--ink-muted)] hover:bg-[var(--bg-subtle)] hover:text-[var(--ink)]">✕</button>
-						</div>
-
-						<div className="border-b border-[var(--border)] p-4">
-							<div className="flex flex-1 gap-2">
-								<input type="text" placeholder="ค้นหาวัตถุดิบ..." value={selectionSearch} onChange={(e) => setSelectionSearch(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSelectionSearch()} className="ka-input w-full" />
-								<button type="button" onClick={handleSelectionSearch} className="ka-btn ka-btn--primary min-h-11">ค้นหา</button>
-								{(selectionSearch || selectionAppliedSearch) && <button type="button" onClick={handleSelectionClearSearch} className="ka-btn">ล้าง</button>}
-							</div>
-						</div>
-
-						<div className="max-h-[55vh] overflow-auto p-4">
-							<table className="w-full text-sm">
-								<thead>
-									<tr className="bg-[var(--bg-muted)] text-left text-[var(--ink)]">
-										<th className="w-14 px-3 py-2"><label className="ka-check-hit"><input type="checkbox" className="ka-check" aria-label="เลือกทั้งหมดในหน้านี้" checked={allCurrentPageSelected} onChange={toggleSelectAllCurrentPage} /></label></th>
-										<th className="px-3 py-2">วัตถุดิบ</th>
-										<th className="px-3 py-2">จำนวนสั่งซื้อ</th>
-										<th className="px-3 py-2"><button type="button" className="flex items-center gap-1 font-semibold" onClick={() => handleSelectionSort('purchase_order_list_price')}>ราคา/หน่วย{selectionSortField === 'purchase_order_list_price' && <span>{selectionSortOrder === 'ASC' ? '↑' : '↓'}</span>}</button></th>
-										<th className="px-3 py-2">หน่วย</th>
-										<th className="px-3 py-2"><button type="button" className="flex items-center gap-1 font-semibold" onClick={() => handleSelectionSort('purchase_order_list_total')}>ยอดรวม{selectionSortField === 'purchase_order_list_total' && <span>{selectionSortOrder === 'ASC' ? '↑' : '↓'}</span>}</button></th>
-									</tr>
-								</thead>
-								<tbody>
-									{isSelectionLoading ? (
-										<tr><td colSpan={6} className="px-3 py-6 text-center text-[var(--ink-muted)]">กำลังโหลดข้อมูล...</td></tr>
-									) : selectionRows.length === 0 ? (
-										<tr><td colSpan={6} className="px-3 py-6 text-center text-[var(--ink-muted)]">ไม่พบรายการที่เลือกได้</td></tr>
-									) : selectionRows.map((orderItem) => {
-										const itemId = String(orderItem.purchase_order_list_id);
-										const total = Number(orderItem.purchase_order_list_qty || 0) * Number(orderItem.purchase_order_list_price || 0);
-										return (
-											<tr key={itemId} className="border-b border-[var(--border)]">
-												<td className="px-3 py-2"><label className="ka-check-hit"><input type="checkbox" className="ka-check" aria-label={`เลือก ${orderItem.material?.material_name || orderItem.material_id}`} checked={Boolean(selectedOrderItems[itemId])} onChange={() => toggleOrderItemSelection(orderItem)} /></label></td>
-												<td className="px-3 py-2 text-[var(--ink)]">{orderItem.material?.material_name || orderItem.material_id}</td>
-												<td className="px-3 py-2">{orderItem.purchase_order_list_qty}</td>
-												<td className="px-3 py-2">฿{formatCurrency(Number(orderItem.purchase_order_list_price || 0))}</td>
-												<td className="px-3 py-2">{orderItem.productUnit?.product_unit_name || orderItem.product_unit_id || '-'}</td>
-												<td className="px-3 py-2 font-semibold text-[var(--brand-ink)]">฿{formatCurrency(total)}</td>
-											</tr>
-										);
-									})}
-								</tbody>
-							</table>
-						</div>
-
-						{showSelectionPagination && <Pagination meta={selectionMeta} currentPage={selectionPage} onPageChange={setSelectionPage} />}
-
-						<div className="flex items-center justify-between border-t border-[var(--border)] px-5 py-4">
-							<p className="text-sm text-[var(--ink-muted)]">เลือกแล้ว {selectedCount} รายการ</p>
-							<div className="flex gap-2">
-								<button type="button" onClick={() => { setIsSelectModalOpen(false); setSelectedOrderItems({}); }} className="ka-btn">ยกเลิก</button>
-								<button type="button" onClick={addSelectedItems} disabled={selectedCount === 0} className="ka-btn ka-btn--primary min-h-11">เพิ่มรายการที่เลือก</button>
-							</div>
+						<div className="flex items-center justify-between border-t border-[var(--color-border)] pt-2">
+							<span className="text-lg font-semibold">ยอดรวมทั้งสิ้น</span>
+							<span className="text-2xl font-bold">฿{formatCurrency(vatSummary.total)}</span>
 						</div>
 					</div>
+				</form>
+			</Modal>
+
+			<Modal
+				isOpen={isSelectModalOpen}
+				onClose={() => { setIsSelectModalOpen(false); setSelectedOrderItems({}); }}
+				title="เลือกรายการวัตถุดิบเพื่อเพิ่ม"
+				size="xl"
+				layer="elevated"
+				footer={
+					<div className="flex w-full flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+						<p className="text-sm text-[var(--ink-muted)]">เลือกแล้ว {selectedCount} รายการ</p>
+						<div className="flex gap-2">
+							<button type="button" onClick={() => { setIsSelectModalOpen(false); setSelectedOrderItems({}); }} className="ka-btn">ยกเลิก</button>
+							<button type="button" onClick={addSelectedItems} disabled={selectedCount === 0} className="ka-btn ka-btn--primary min-h-11">เพิ่มรายการที่เลือก</button>
+						</div>
+					</div>
+				}
+			>
+				<div className="border-b border-[var(--border)] pb-4">
+					<div className="flex flex-1 gap-2">
+						<input type="text" placeholder="ค้นหาวัตถุดิบ..." value={selectionSearch} onChange={(e) => setSelectionSearch(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleSelectionSearch()} className="ka-input w-full" />
+						<button type="button" onClick={handleSelectionSearch} className="ka-btn ka-btn--primary min-h-11">ค้นหา</button>
+						{(selectionSearch || selectionAppliedSearch) && <button type="button" onClick={handleSelectionClearSearch} className="ka-btn">ล้าง</button>}
+					</div>
 				</div>
-			)}
+
+				<div className="max-h-[55vh] overflow-auto py-4">
+					<table className="w-full text-sm">
+						<thead>
+							<tr className="bg-[var(--bg-muted)] text-left text-[var(--ink)]">
+								<th className="w-14 px-3 py-2"><label className="ka-check-hit"><input type="checkbox" className="ka-check" aria-label="เลือกทั้งหมดในหน้านี้" checked={allCurrentPageSelected} onChange={toggleSelectAllCurrentPage} /></label></th>
+								<th className="px-3 py-2">วัตถุดิบ</th>
+								<th className="px-3 py-2">จำนวนสั่งซื้อ</th>
+								<th className="px-3 py-2"><button type="button" className="flex items-center gap-1 font-semibold" onClick={() => handleSelectionSort('purchase_order_list_price')}>ราคา/หน่วย{selectionSortField === 'purchase_order_list_price' && <span>{selectionSortOrder === 'ASC' ? '↑' : '↓'}</span>}</button></th>
+								<th className="px-3 py-2">หน่วย</th>
+								<th className="px-3 py-2"><button type="button" className="flex items-center gap-1 font-semibold" onClick={() => handleSelectionSort('purchase_order_list_total')}>ยอดรวม{selectionSortField === 'purchase_order_list_total' && <span>{selectionSortOrder === 'ASC' ? '↑' : '↓'}</span>}</button></th>
+							</tr>
+						</thead>
+						<tbody>
+							{isSelectionLoading ? (
+								<tr><td colSpan={6} className="px-3 py-6 text-center text-[var(--ink-muted)]">กำลังโหลดข้อมูล...</td></tr>
+							) : selectionRows.length === 0 ? (
+								<tr><td colSpan={6} className="px-3 py-6 text-center text-[var(--ink-muted)]">ไม่พบรายการที่เลือกได้</td></tr>
+							) : selectionRows.map((orderItem) => {
+								const itemId = String(orderItem.purchase_order_list_id);
+								const total = Number(orderItem.purchase_order_list_qty || 0) * Number(orderItem.purchase_order_list_price || 0);
+								return (
+									<tr key={itemId} className="border-b border-[var(--border)]">
+										<td className="px-3 py-2"><label className="ka-check-hit"><input type="checkbox" className="ka-check" aria-label={`เลือก ${orderItem.material?.material_name || orderItem.material_id}`} checked={Boolean(selectedOrderItems[itemId])} onChange={() => toggleOrderItemSelection(orderItem)} /></label></td>
+										<td className="px-3 py-2 text-[var(--ink)]">{orderItem.material?.material_name || orderItem.material_id}</td>
+										<td className="px-3 py-2">{orderItem.purchase_order_list_qty}</td>
+										<td className="px-3 py-2">฿{formatCurrency(Number(orderItem.purchase_order_list_price || 0))}</td>
+										<td className="px-3 py-2">{orderItem.productUnit?.product_unit_name || orderItem.product_unit_id || '-'}</td>
+										<td className="px-3 py-2 font-semibold text-[var(--brand-ink)]">฿{formatCurrency(total)}</td>
+									</tr>
+								);
+							})}
+						</tbody>
+					</table>
+				</div>
+
+				{showSelectionPagination && <Pagination meta={selectionMeta} currentPage={selectionPage} onPageChange={setSelectionPage} />}
+			</Modal>
 
 			<ActionResultDialog isOpen={resultDialog.isOpen} status={resultDialog.status} action={resultDialog.action} message={resultDialog.message} onClose={handleResultDialogClose} />
 		</>
