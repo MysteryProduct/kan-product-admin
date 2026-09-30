@@ -31,6 +31,7 @@ interface AuthContextType {
   sessionError: string | null;
   refreshSession: () => Promise<void>;
   login: (username: string, password: string) => Promise<void>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -129,6 +130,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const changePassword = async (
+    currentPassword: string,
+    newPassword: string,
+  ) => {
+    if (!user) throw new Error('เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง');
+    const { access_token } = await authModel.changePassword(
+      currentPassword,
+      newPassword,
+    );
+    // The old token is already dead; keep the new one before anything else sends a request. A late
+    // 401 for a request made with the old token is ignored by the Axios client because its token
+    // no longer matches the cookie.
+    storeSession(access_token, user);
+    await refreshSession();
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -138,6 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         sessionError,
         refreshSession,
         login,
+        changePassword,
         logout,
         isAuthenticated: !!user,
       }}
