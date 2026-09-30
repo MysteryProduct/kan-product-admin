@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Cookies from 'js-cookie';
+import Modal from '@/components/Modal';
 import ActionResultDialog, { ActionResultDialogAction } from '@/components/ActionResultDialog';
 import Pagination from '@/components/Pagination';
 import SaleOrderModel from '@/models/sale-order';
@@ -297,371 +298,345 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
 
     return (
         <>
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
-                <div className="w-full max-w-6xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)] overlay-surface">
-                    <div className="border-b border-[var(--border)] px-6 py-5">
-                        <div className="flex items-center justify-between gap-3">
-                            <h2 className="text-2xl font-bold text-[var(--ink)]">สร้างใบขายสินค้า</h2>
-                            <button
-                                onClick={resetAndClose}
+            <Modal
+                isOpen={isOpen}
+                onClose={() => { if (!isSubmitting) resetAndClose(); }}
+                title="สร้างใบขายสินค้า"
+                size="xl"
+                closeOnBackdrop={!isSubmitting && !isSelectModalOpen && !resultDialog.isOpen}
+                closeOnEscape={!isSubmitting && !isSelectModalOpen && !resultDialog.isOpen}
+                footer={
+                    <>
+                        <button
+                            type="button"
+                            onClick={resetAndClose}
+                            disabled={isSubmitting}
+                            className="ka-btn"
+                        >
+                            ยกเลิก
+                        </button>
+                        <button
+                            type="submit" form="sale-orders-insert-form"
+                            disabled={isSubmitting || items.length === 0}
+                            className="ka-btn ka-btn--primary min-h-11"
+                        >
+                            {isSubmitting ? 'กำลังบันทึก...' : 'สร้างใบขายสินค้า'}
+                        </button>
+                    </>
+                }
+            >
+                <form id="sale-orders-insert-form" onSubmit={handleSubmit}>
+                    {/* Header Fields */}
+                    <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">
+                                ชื่อใบขายสินค้า <span className="text-[var(--danger)]">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={saleOrderName}
+                                onChange={(e) => setSaleOrderName(e.target.value)}
+                                placeholder="กรอกชื่อใบขายสินค้า"
+                                className="ka-input h-11 w-full"
                                 disabled={isSubmitting}
-                                aria-label="ปิดหน้าต่าง"
-                                className="ka-btn ka-btn--icon"
-                                type="button"
+                            />
+                            {errors.sale_order_name && (
+                                <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.sale_order_name}</p>
+                            )}
+                        </div>
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">รูปแบบ VAT</label>
+                            <select
+                                value={vatType}
+                                onChange={(e) => setVatType(e.target.value as VatType)}
+                                className="ka-input h-11 w-full"
+                                disabled={isSubmitting}
                             >
-                                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
+                                {VAT_TYPE_OPTIONS.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">ที่อยู่จัดส่ง</label>
+                            <textarea
+                                value={shippingAddressName}
+                                onChange={(e) => setShippingAddressName(e.target.value)}
+                                placeholder="กรอกที่อยู่จัดส่ง"
+                                rows={3}
+                                className="ka-textarea w-full resize-y"
+                                disabled={isSubmitting}
+                            />
+                        </div>
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">ประเภท</label>
+                            <select
+                                value={saleOrderType}
+                                onChange={(e) => setSaleOrderType(e.target.value)}
+                                className="ka-input h-11 w-full"
+                                disabled={true}
+                            >
+                                <option value="online">ขายบนเว็บไซต์</option>
+                                <option value="order">ขายจากการสั่งซื้อ</option>
+                            </select>
+                        </div>
+                        <div className="md:col-span-2">
+                            <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">รายละเอียด</label>
+                            <textarea
+                                value={saleOrderDetail}
+                                onChange={(e) => setSaleOrderDetail(e.target.value)}
+                                placeholder="กรอกรายละเอียด"
+                                rows={2}
+                                className="ka-textarea w-full resize-y"
+                                disabled={isSubmitting}
+                            />
                         </div>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="max-h-[calc(90vh-160px)] overflow-y-auto p-6">
-                        {/* Header Fields */}
-                        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <div>
-                                <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">
-                                    ชื่อใบขายสินค้า <span className="text-[var(--danger)]">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    value={saleOrderName}
-                                    onChange={(e) => setSaleOrderName(e.target.value)}
-                                    placeholder="กรอกชื่อใบขายสินค้า"
-                                    className="ka-input h-11 w-full"
-                                    disabled={isSubmitting}
-                                />
-                                {errors.sale_order_name && (
-                                    <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.sale_order_name}</p>
-                                )}
-                            </div>
-                            <div>
-                                <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">รูปแบบ VAT</label>
-                                <select
-                                    value={vatType}
-                                    onChange={(e) => setVatType(e.target.value as VatType)}
-                                    className="ka-input h-11 w-full"
-                                    disabled={isSubmitting}
+                    {/* Items Section */}
+                    <div className="mb-4 flex items-center justify-between">
+                        <h3 className="text-base font-semibold text-[var(--ink)]">รายการสินค้า</h3>
+                        <button
+                            type="button"
+                            onClick={openSelectModal}
+                            disabled={isSubmitting}
+                            className="ka-btn ka-btn--primary min-h-11 flex items-center gap-2"
+                        >
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            เพิ่มรายการสินค้า
+                        </button>
+                    </div>
+
+                    {errors.items && (
+                        <p className="mb-3 text-sm text-[var(--danger)]">{errors.items}</p>
+                    )}
+
+                    <div className="space-y-3">
+                        {items.length > 0 ? (
+                            items.map((item, index) => (
+                                <div
+                                    key={item.id}
+                                    className="rounded-2xl border border-[var(--border)] bg-[var(--color-bg-secondary)] p-4"
                                 >
-                                    {VAT_TYPE_OPTIONS.map((option) => (
-                                        <option key={option.value} value={option.value}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="md:col-span-2">
-                                <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">ที่อยู่จัดส่ง</label>
-                                <textarea
-                                    value={shippingAddressName}
-                                    onChange={(e) => setShippingAddressName(e.target.value)}
-                                    placeholder="กรอกที่อยู่จัดส่ง"
-                                    rows={3}
-                                    className="ka-textarea w-full resize-y"
-                                    disabled={isSubmitting}
-                                />
-                            </div>
-                            <div>
-                                <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">ประเภท</label>
-                                <select
-                                    value={saleOrderType}
-                                    onChange={(e) => setSaleOrderType(e.target.value)}
-                                    className="ka-input h-11 w-full"
-                                    disabled={true}
-                                >
-                                    <option value="online">ขายบนเว็บไซต์</option>
-                                    <option value="order">ขายจากการสั่งซื้อ</option>
-                                </select>
-                            </div>
-                            <div className="md:col-span-2">
-                                <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">รายละเอียด</label>
-                                <textarea
-                                    value={saleOrderDetail}
-                                    onChange={(e) => setSaleOrderDetail(e.target.value)}
-                                    placeholder="กรอกรายละเอียด"
-                                    rows={2}
-                                    className="ka-textarea w-full resize-y"
-                                    disabled={isSubmitting}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Items Section */}
-                        <div className="mb-4 flex items-center justify-between">
-                            <h3 className="text-base font-semibold text-[var(--ink)]">รายการสินค้า</h3>
-                            <button
-                                type="button"
-                                onClick={openSelectModal}
-                                disabled={isSubmitting}
-                                className="ka-btn ka-btn--primary min-h-11 flex items-center gap-2"
-                            >
-                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                </svg>
-                                เพิ่มรายการสินค้า
-                            </button>
-                        </div>
-
-                        {errors.items && (
-                            <p className="mb-3 text-sm text-[var(--danger)]">{errors.items}</p>
-                        )}
-
-                        <div className="space-y-3">
-                            {items.length > 0 ? (
-                                items.map((item, index) => (
-                                    <div
-                                        key={item.id}
-                                        className="rounded-2xl border border-[var(--border)] bg-[var(--color-bg-secondary)] p-4"
-                                    >
-                                        <div className="mb-3 flex items-center justify-between">
-                                            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-soft)] text-sm font-bold text-[var(--brand-ink)]">
-                                                {index + 1}
-                                            </span>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveItem(item.id)}
+                                    <div className="mb-3 flex items-center justify-between">
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-soft)] text-sm font-bold text-[var(--brand-ink)]">
+                                            {index + 1}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveItem(item.id)}
+                                            disabled={isSubmitting}
+                                            className="ka-btn ka-btn--ghost ka-btn--icon hover:bg-[var(--danger-soft)] hover:text-[var(--danger)]"
+                                            title="ลบรายการ"
+                                        >
+                                            <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+                                        <div>
+                                            <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ชื่อสินค้า</label>
+                                            <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--ink)]">
+                                                {item.product_name}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">
+                                                จำนวน (สูงสุด {item.max_qty})
+                                            </label>
+                                            <input
+                                                type="number"
+                                                min={1}
+                                                max={item.max_qty}
+                                                value={item.sale_order_list_qty}
+                                                onChange={(e) => updateItem(item.id, 'sale_order_list_qty', e.target.valueAsNumber)}
+                                                className="ka-input w-full"
                                                 disabled={isSubmitting}
-                                                className="ka-btn ka-btn--ghost ka-btn--icon hover:bg-[var(--danger-soft)] hover:text-[var(--danger)]"
-                                                title="ลบรายการ"
-                                            >
-                                                <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                </svg>
-                                            </button>
+                                            />
+                                            {errors[`item_${index}_qty`] && (
+                                                <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`item_${index}_qty`]}</p>
+                                            )}
                                         </div>
-                                        <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
-                                            <div>
-                                                <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ชื่อสินค้า</label>
-                                                <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--ink)]">
-                                                    {item.product_name}
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">
-                                                    จำนวน (สูงสุด {item.max_qty})
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    min={1}
-                                                    max={item.max_qty}
-                                                    value={item.sale_order_list_qty}
-                                                    onChange={(e) => updateItem(item.id, 'sale_order_list_qty', e.target.valueAsNumber)}
-                                                    className="ka-input w-full"
-                                                    disabled={isSubmitting}
-                                                />
-                                                {errors[`item_${index}_qty`] && (
-                                                    <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`item_${index}_qty`]}</p>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ราคา/หน่วย</label>
-                                                <input
-                                                    type="number"
-                                                    min={0}
-                                                    step="0.01"
-                                                    value={item.sale_order_list_price}
-                                                    onChange={(e) => updateItem(item.id, 'sale_order_list_price', e.target.valueAsNumber)}
-                                                    className="ka-input w-full"
-                                                    disabled={isSubmitting}
-                                                />
-                                                {errors[`item_${index}_price`] && (
-                                                    <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`item_${index}_price`]}</p>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ยอดรวม</label>
-                                                <div className="rounded-xl border border-[var(--brand-soft)] bg-[var(--brand-soft)] px-3 py-2 text-sm font-semibold text-[var(--brand-ink)]">
-                                                    ฿{formatCurrency(calculateItemTotal(item))}
-                                                </div>
+                                        <div>
+                                            <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ราคา/หน่วย</label>
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                step="0.01"
+                                                value={item.sale_order_list_price}
+                                                onChange={(e) => updateItem(item.id, 'sale_order_list_price', e.target.valueAsNumber)}
+                                                className="ka-input w-full"
+                                                disabled={isSubmitting}
+                                            />
+                                            {errors[`item_${index}_price`] && (
+                                                <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`item_${index}_price`]}</p>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ยอดรวม</label>
+                                            <div className="rounded-xl border border-[var(--brand-soft)] bg-[var(--brand-soft)] px-3 py-2 text-sm font-semibold text-[var(--brand-ink)]">
+                                                ฿{formatCurrency(calculateItemTotal(item))}
                                             </div>
                                         </div>
                                     </div>
-                                ))
-                            ) : (
-                                <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--bg-subtle)] p-6 text-center text-[var(--ink-muted)]">
-                                    ยังไม่มีรายการสินค้า กรุณากดเพิ่มรายการสินค้า
                                 </div>
-                            )}
-                        </div>
-
-                        {/* VAT Summary */}
-                        {items.length > 0 && (
-                            <div className="mt-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5 text-[var(--color-text-primary)]">
-                                <div className="space-y-2">
-                                    <div className="flex items-center justify-between text-sm md:text-base">
-                                        <span>ยอดก่อน VAT</span>
-                                        <span>฿{formatCurrency(vatSummary.subtotal)}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between text-sm md:text-base">
-                                        <span>VAT {vatRate}%</span>
-                                        <span>฿{formatCurrency(vatSummary.vatAmount)}</span>
-                                    </div>
-                                    <div className="flex items-center justify-between border-t border-[var(--color-border)] pt-2">
-                                        <span className="text-lg font-semibold">ยอดรวมทั้งสิ้น</span>
-                                        <span className="text-2xl font-bold">฿{formatCurrency(vatSummary.total)}</span>
-                                    </div>
-                                </div>
+                            ))
+                        ) : (
+                            <div className="rounded-xl border border-dashed border-[var(--border)] bg-[var(--bg-subtle)] p-6 text-center text-[var(--ink-muted)]">
+                                ยังไม่มีรายการสินค้า กรุณากดเพิ่มรายการสินค้า
                             </div>
                         )}
+                    </div>
 
-                        {/* Footer Buttons */}
-                        <div className="mt-6 flex gap-3 border-t border-[var(--border)] pt-6">
+                    {/* VAT Summary */}
+                    {items.length > 0 && (
+                        <div className="mt-6 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5 text-[var(--color-text-primary)]">
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between text-sm md:text-base">
+                                    <span>ยอดก่อน VAT</span>
+                                    <span>฿{formatCurrency(vatSummary.subtotal)}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm md:text-base">
+                                    <span>VAT {vatRate}%</span>
+                                    <span>฿{formatCurrency(vatSummary.vatAmount)}</span>
+                                </div>
+                                <div className="flex items-center justify-between border-t border-[var(--color-border)] pt-2">
+                                    <span className="text-lg font-semibold">ยอดรวมทั้งสิ้น</span>
+                                    <span className="text-2xl font-bold">฿{formatCurrency(vatSummary.total)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </form>
+            </Modal>
+
+            {/* Selection Modal */}
+            <Modal
+                isOpen={isSelectModalOpen}
+                onClose={() => setIsSelectModalOpen(false)}
+                title="เลือกสินค้า"
+                size="xl"
+                layer="elevated"
+                footer={
+                    <div className="flex w-full flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <span className="text-sm text-[var(--ink-muted)]">
+                            เลือกแล้ว {selectedCount} รายการ
+                        </span>
+                        <div className="flex gap-3">
                             <button
+                                onClick={() => setIsSelectModalOpen(false)}
+                                className="ka-btn"
                                 type="button"
-                                onClick={resetAndClose}
-                                disabled={isSubmitting}
-                                className="ka-btn flex-1"
                             >
                                 ยกเลิก
                             </button>
                             <button
-                                type="submit"
-                                disabled={isSubmitting || items.length === 0}
-                                className="ka-btn ka-btn--primary min-h-11 flex-1"
+                                onClick={addSelectedItems}
+                                disabled={selectedCount === 0}
+                                className="ka-btn ka-btn--primary min-h-11"
+                                type="button"
                             >
-                                {isSubmitting ? 'กำลังบันทึก...' : 'สร้างใบขายสินค้า'}
+                                เพิ่ม {selectedCount > 0 ? `(${selectedCount})` : ''}
                             </button>
                         </div>
-                    </form>
-                </div>
-            </div>
-
-            {/* Selection Modal */}
-            {isSelectModalOpen && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
-                    <div className="w-full max-w-4xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)] overlay-surface">
-                        <div className="border-b border-[var(--border)] px-6 py-4">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-semibold text-[var(--ink)]">เลือกสินค้า</h3>
-                                <button
-                                    onClick={() => setIsSelectModalOpen(false)}
-                                    aria-label="ปิดหน้าต่าง"
-                                    className="ka-btn ka-btn--ghost ka-btn--icon"
-                                    type="button"
-                                >
-                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-
-                            <div className="mt-3 flex gap-2">
-                                <input
-                                    type="text"
-                                    value={selectionSearch}
-                                    onChange={(e) => setSelectionSearch(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleSelectionSearch()}
-                                    placeholder="ค้นหาสินค้า..."
-                                    className="ka-input flex-1"
-                                />
-                                <button
-                                    onClick={handleSelectionSearch}
-                                    className="ka-btn ka-btn--primary min-h-11"
-                                    type="button"
-                                >
-                                    ค้นหา
-                                </button>
-                                {selectionAppliedSearch && (
-                                    <button
-                                        onClick={handleSelectionClearSearch}
-                                        className="ka-btn"
-                                        type="button"
-                                    >
-                                        ล้าง
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="max-h-[400px] overflow-y-auto">
-                            {isSelectionLoading ? (
-                                <div className="p-8 text-center text-[var(--ink-muted)]">กำลังโหลด...</div>
-                            ) : selectionRows.length === 0 ? (
-                                <div className="p-8 text-center text-[var(--ink-muted)]">ไม่พบรายการสินค้า</div>
-                            ) : (
-                                <table className="w-full">
-                                    <thead className="sticky top-0 bg-[var(--bg-subtle)]">
-                                        <tr>
-                                            <th className="w-12 px-4 py-3 text-left">
-                                                <label className="ka-check-hit">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={allCurrentPageSelected}
-                                                        onChange={toggleSelectAllCurrentPage}
-                                                        className="ka-check"
-                                                        aria-label="เลือกทั้งหมดในหน้านี้"
-                                                    />
-                                                </label>
-                                            </th>
-                                            <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--ink)]">ชื่อสินค้า</th>
-                                            <th className="px-4 py-3 text-right text-sm font-semibold text-[var(--ink)]">จำนวน</th>
-                                            <th className="px-4 py-3 text-right text-sm font-semibold text-[var(--ink)]">ราคา/หน่วย</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-[var(--border)]">
-                                        {selectionRows.map((row) => {
-                                            const isSelected = !!selectedFetchItems[row.fetch_sale_order_id];
-                                            return (
-                                                <tr
-                                                    key={row.fetch_sale_order_id}
-                                                    onClick={() => toggleFetchItemSelection(row)}
-                                                    className={`cursor-pointer transition-colors ${isSelected ? 'bg-[var(--brand-soft)] ' : 'hover:bg-[var(--bg-subtle)] '}`}
-                                                >
-                                                    <td className="px-4 py-3">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={isSelected}
-                                                            onChange={() => toggleFetchItemSelection(row)}
-                                                            onClick={(e) => e.stopPropagation()}
-                                                            className="ka-check"
-                                                        />
-                                                    </td>
-                                                    <td className="px-4 py-3 text-sm text-[var(--ink)]">{row.fetch_sale_order_name}</td>
-                                                    <td className="px-4 py-3 text-right text-sm text-[var(--ink)]">{row.fetch_sale_order_qty}</td>
-                                                    <td className="px-4 py-3 text-right text-sm text-[var(--ink)]">฿{formatCurrency(Number(row.fetch_sale_order_price))}</td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            )}
-                        </div>
-
-                        {showSelectionPagination && (
-                            <div className="border-t border-[var(--border)] p-3">
-                                <Pagination
-                                    meta={selectionMeta!}
-                                    currentPage={selectionPage}
-                                    onPageChange={setSelectionPage}
-                                />
-                            </div>
-                        )}
-
-                        <div className="flex items-center justify-between border-t border-[var(--border)] px-6 py-4">
-                            <span className="text-sm text-[var(--ink-muted)]">
-                                เลือกแล้ว {selectedCount} รายการ
-                            </span>
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => setIsSelectModalOpen(false)}
-                                    className="ka-btn"
-                                    type="button"
-                                >
-                                    ยกเลิก
-                                </button>
-                                <button
-                                    onClick={addSelectedItems}
-                                    disabled={selectedCount === 0}
-                                    className="ka-btn ka-btn--primary min-h-11"
-                                    type="button"
-                                >
-                                    เพิ่ม {selectedCount > 0 ? `(${selectedCount})` : ''}
-                                </button>
-                            </div>
-                        </div>
                     </div>
+                }
+            >
+                <div className="mb-3 flex gap-2">
+                    <input
+                        type="text"
+                        value={selectionSearch}
+                        onChange={(e) => setSelectionSearch(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSelectionSearch()}
+                        placeholder="ค้นหาสินค้า..."
+                        className="ka-input flex-1"
+                    />
+                    <button
+                        onClick={handleSelectionSearch}
+                        className="ka-btn ka-btn--primary min-h-11"
+                        type="button"
+                    >
+                        ค้นหา
+                    </button>
+                    {selectionAppliedSearch && (
+                        <button
+                            onClick={handleSelectionClearSearch}
+                            className="ka-btn"
+                            type="button"
+                        >
+                            ล้าง
+                        </button>
+                    )}
                 </div>
-            )}
+                <div className="max-h-[400px] overflow-y-auto">
+                    {isSelectionLoading ? (
+                        <div className="p-8 text-center text-[var(--ink-muted)]">กำลังโหลด...</div>
+                    ) : selectionRows.length === 0 ? (
+                        <div className="p-8 text-center text-[var(--ink-muted)]">ไม่พบรายการสินค้า</div>
+                    ) : (
+                        <table className="w-full">
+                            <thead className="sticky top-0 bg-[var(--bg-subtle)]">
+                                <tr>
+                                    <th className="w-12 px-4 py-3 text-left">
+                                        <label className="ka-check-hit">
+                                            <input
+                                                type="checkbox"
+                                                checked={allCurrentPageSelected}
+                                                onChange={toggleSelectAllCurrentPage}
+                                                className="ka-check"
+                                                aria-label="เลือกทั้งหมดในหน้านี้"
+                                            />
+                                        </label>
+                                    </th>
+                                    <th className="px-4 py-3 text-left text-sm font-semibold text-[var(--ink)]">ชื่อสินค้า</th>
+                                    <th className="px-4 py-3 text-right text-sm font-semibold text-[var(--ink)]">จำนวน</th>
+                                    <th className="px-4 py-3 text-right text-sm font-semibold text-[var(--ink)]">ราคา/หน่วย</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-[var(--border)]">
+                                {selectionRows.map((row) => {
+                                    const isSelected = !!selectedFetchItems[row.fetch_sale_order_id];
+                                    return (
+                                        <tr
+                                            key={row.fetch_sale_order_id}
+                                            onClick={() => toggleFetchItemSelection(row)}
+                                            className={`cursor-pointer transition-colors ${isSelected ? 'bg-[var(--brand-soft)] ' : 'hover:bg-[var(--bg-subtle)] '}`}
+                                        >
+                                            <td className="px-4 py-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isSelected}
+                                                    onChange={() => toggleFetchItemSelection(row)}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="ka-check"
+                                                />
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-[var(--ink)]">{row.fetch_sale_order_name}</td>
+                                            <td className="px-4 py-3 text-right text-sm text-[var(--ink)]">{row.fetch_sale_order_qty}</td>
+                                            <td className="px-4 py-3 text-right text-sm text-[var(--ink)]">฿{formatCurrency(Number(row.fetch_sale_order_price))}</td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+
+                {showSelectionPagination && (
+                    <div className="border-t border-[var(--border)] p-3">
+                        <Pagination
+                            meta={selectionMeta!}
+                            currentPage={selectionPage}
+                            onPageChange={setSelectionPage}
+                        />
+                    </div>
+                )}
+            </Modal>
 
             <ActionResultDialog
                 isOpen={resultDialog.isOpen}

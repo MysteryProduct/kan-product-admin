@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Cookies from 'js-cookie';
+import Modal from '@/components/Modal';
 import { SaleOrder, SaleOrderList } from '@/types/sale-order';
 import { usePermissions } from '@/hooks/usePermissions';
 import ActionResultDialog, { ActionResultDialogAction } from '@/components/ActionResultDialog';
@@ -122,27 +123,40 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
-            <div className="w-full max-w-6xl overflow-hidden rounded-2xl bg-[var(--color-bg-primary)] overlay-surface">
-                <div className="border-b border-[var(--border)] px-6 py-5">
-                    <div className="flex items-center justify-between gap-3">
-                        <h2 className="text-2xl font-bold text-[var(--ink)]">รายละเอียดใบขายสินค้า</h2>
+        <>
+            <Modal
+                isOpen={isOpen}
+                onClose={onClose}
+                title="รายละเอียดใบขายสินค้า"
+                size="xl"
+                closeOnBackdrop={!showConfirmDialog && !resultDialog.isOpen}
+                closeOnEscape={!showConfirmDialog && !resultDialog.isOpen}
+                footer={
+                    <>
                         <button
-                            onClick={onClose}
-                            aria-label="ปิดหน้าต่าง"
-                            className="ka-btn ka-btn--icon"
                             type="button"
+                            onClick={onClose}
+                            className="ka-btn"
                         >
-                            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
+                            ปิด
                         </button>
+                        {canApproveSaleOrder && saleOrder.sale_order_status === 'pending' && (
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmDialog(true)}
+                                className="ka-btn ka-btn--primary min-h-11"
+                            >
+                                อนุมัติ
+                            </button>
+                        )}
+                    </>
+                }
+            >
+                <div>
+                    <div className="mb-6">
+                        <DocumentHistoryPanel endpoint={`/sale-order/${saleOrder.sale_order_id}/history`} />
+                        {can('sale_orders', 'reject') && ['pending'].includes(saleOrder.sale_order_status) && <DocumentCancellationAction endpoint={`/sale-order/${saleOrder.sale_order_id}/cancel`} onSuccess={() => { onSuccess?.(); onClose(); }} />}
                     </div>
-                    <DocumentHistoryPanel endpoint={`/sale-order/${saleOrder.sale_order_id}/history`} />
-                    {can('sale_orders', 'reject') && ['pending'].includes(saleOrder.sale_order_status) && <DocumentCancellationAction endpoint={`/sale-order/${saleOrder.sale_order_id}/cancel`} onSuccess={() => { onSuccess?.(); onClose(); }} />}
-                </div>
-
-                <div className="max-h-[calc(90vh-160px)] overflow-y-auto p-6">
                     {/* Info Section */}
                     <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
                         <div>
@@ -267,28 +281,8 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
                             </div>
                         </div>
                     </div>
-
-                    {/* Footer Buttons */}
-                    <div className="mt-6 flex gap-3 border-t border-[var(--border)] pt-6">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="ka-btn flex-1"
-                        >
-                            ปิด
-                        </button>
-                        {canApproveSaleOrder && saleOrder.sale_order_status === 'pending' && (
-                            <button
-                                type="button"
-                                onClick={() => setShowConfirmDialog(true)}
-                                className="ka-btn ka-btn--primary min-h-11 flex-1"
-                            >
-                                อนุมัติ
-                            </button>
-                        )}
-                    </div>
                 </div>
-            </div>
+            </Modal>
 
             {showConfirmDialog && (
                 <ConfirmDialog
@@ -308,6 +302,6 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
                 message={resultDialog.message}
                 onClose={handleResultDialogClose}
             />
-        </div>
+        </>
     );
 }

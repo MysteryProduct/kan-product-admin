@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
+import Modal from '@/components/Modal';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import BankAccountModel from '@/models/bank-account';
 import PaymentReceiptModel from '@/models/payment-receipt';
@@ -177,150 +178,152 @@ export default function UpdatePaymentReceiptForm({
 
 	return (
 		<>
-			<div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--scrim)] p-4 backdrop-blur-sm">
-				<div className="w-full max-w-3xl rounded-2xl bg-[var(--color-bg-primary)] overlay-surface">
-					<div className="border-b border-[var(--border)] px-6 py-4">
-						<h2 className="text-xl font-semibold text-[var(--ink)]">แก้ไขใบเสร็จรับเงิน</h2>
+			<Modal
+				isOpen={isOpen}
+				onClose={() => { if (!isSubmitting) onClose(); }}
+				title="แก้ไขใบเสร็จรับเงิน"
+				size="xl"
+				closeOnBackdrop={!isSubmitting && !resultDialog.isOpen}
+				closeOnEscape={!isSubmitting && !resultDialog.isOpen}
+				footer={
+					<>
+						<button
+							type="button"
+							onClick={onClose}
+							disabled={isSubmitting}
+							className="ka-btn h-11"
+						>
+							ยกเลิก
+						</button>
+						<button
+							type="submit" form="payment-receipts-update-form"
+							disabled={isSubmitting}
+							className="ka-btn ka-btn--primary min-h-11 h-11"
+						>
+							{isSubmitting ? 'กำลังบันทึก...' : 'บันทึก'}
+						</button>
+					</>
+				}
+			>
+				<form id="payment-receipts-update-form" onSubmit={handleSubmit} className="space-y-4">
+					<LoadErrorBanner message={bankAccountsError} className="" />
+					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+						<div>
+							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">เลขที่ใบเสร็จรับเงิน</label>
+							<input
+								type="text"
+								value={formData.payment_receipt_code}
+								onChange={(event) => setFormData((prev) => ({ ...prev, payment_receipt_code: event.target.value }))}
+								className={INPUT_CLASSNAME}
+							/>
+							{errors.payment_receipt_code && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.payment_receipt_code}</p>}
+						</div>
+
+						<div>
+							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">ประเภทรายการชำระ</label>
+							<select
+								value={formData.payment_receipt_type}
+								onChange={(event) =>
+									setFormData((prev) => ({ ...prev, payment_receipt_type: event.target.value as PaymentReceiptType }))
+								}
+								className={INPUT_CLASSNAME}
+							>
+								{PAYMENT_RECEIPT_TYPE_OPTIONS.map((option) => (
+									<option key={option.value} value={option.value}>
+										{option.label}
+									</option>
+								))}
+							</select>
+						</div>
+
+						<div>
+							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">วิธีชำระเงิน</label>
+							<select
+								value={formData.payment_method}
+								onChange={(event) =>
+									setFormData((prev) => ({ ...prev, payment_method: event.target.value as 'cash' | 'bank' }))
+								}
+								className={INPUT_CLASSNAME}
+							>
+								{PAYMENT_METHOD_OPTIONS.map((option) => (
+									<option key={option.value} value={option.value}>
+										{option.label}
+									</option>
+								))}
+							</select>
+						</div>
+
+						<div>
+							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">บัญชีรับเงิน</label>
+							<select
+								value={formData.account_id}
+								disabled={formData.payment_method !== 'bank' || loadingAccounts}
+								onChange={(event) => setFormData((prev) => ({ ...prev, account_id: event.target.value }))}
+								className={`${INPUT_CLASSNAME} disabled:cursor-not-allowed disabled:opacity-60`}
+							>
+								<option value="">เลือกบัญชี</option>
+								{bankAccounts.map((bankAccount) => (
+									<option key={bankAccount.account_id} value={bankAccount.account_id}>
+										{bankAccount.bank_name} - {bankAccount.account_number}
+									</option>
+								))}
+							</select>
+							{errors.account_id && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.account_id}</p>}
+						</div>
+
+						<div>
+							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">ยอดรับชำระ</label>
+							<input
+								type="number"
+								min={0}
+								step="0.01"
+								value={formData.amount_paid}
+								onChange={(event) => setFormData((prev) => ({ ...prev, amount_paid: event.target.value }))}
+								className={INPUT_CLASSNAME}
+							/>
+							{errors.amount_paid && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.amount_paid}</p>}
+						</div>
+
+						<div>
+							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">วันที่รับชำระ</label>
+							<input
+								type="date"
+								value={formData.payment_date}
+								onChange={(event) => setFormData((prev) => ({ ...prev, payment_date: event.target.value }))}
+								className={INPUT_CLASSNAME}
+							/>
+							{errors.payment_date && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.payment_date}</p>}
+						</div>
+
+						<div>
+							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">สถานะ</label>
+							<select
+								value={formData.payment_status}
+								onChange={(event) =>
+									setFormData((prev) => ({ ...prev, payment_status: event.target.value as PaymentReceiptStatus }))
+								}
+								className={INPUT_CLASSNAME}
+							>
+								{PAYMENT_RECEIPT_STATUS_OPTIONS.map((option) => (
+									<option key={option.value} value={option.value}>
+										{option.label}
+									</option>
+								))}
+							</select>
+						</div>
+
+						<div className="md:col-span-2">
+							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">หมายเหตุ</label>
+							<textarea
+								rows={3}
+								value={formData.payment_receipt_remark}
+								onChange={(event) => setFormData((prev) => ({ ...prev, payment_receipt_remark: event.target.value }))}
+								className="ka-textarea w-full"
+							/>
+						</div>
 					</div>
-
-					<form onSubmit={handleSubmit} className="space-y-4 p-6">
-						<LoadErrorBanner message={bankAccountsError} className="" />
-						<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-							<div>
-								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">เลขที่ใบเสร็จรับเงิน</label>
-								<input
-									type="text"
-									value={formData.payment_receipt_code}
-									onChange={(event) => setFormData((prev) => ({ ...prev, payment_receipt_code: event.target.value }))}
-									className={INPUT_CLASSNAME}
-								/>
-								{errors.payment_receipt_code && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.payment_receipt_code}</p>}
-							</div>
-
-							<div>
-								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">ประเภทรายการชำระ</label>
-								<select
-									value={formData.payment_receipt_type}
-									onChange={(event) =>
-										setFormData((prev) => ({ ...prev, payment_receipt_type: event.target.value as PaymentReceiptType }))
-									}
-									className={INPUT_CLASSNAME}
-								>
-									{PAYMENT_RECEIPT_TYPE_OPTIONS.map((option) => (
-										<option key={option.value} value={option.value}>
-											{option.label}
-										</option>
-									))}
-								</select>
-							</div>
-
-							<div>
-								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">วิธีชำระเงิน</label>
-								<select
-									value={formData.payment_method}
-									onChange={(event) =>
-										setFormData((prev) => ({ ...prev, payment_method: event.target.value as 'cash' | 'bank' }))
-									}
-									className={INPUT_CLASSNAME}
-								>
-									{PAYMENT_METHOD_OPTIONS.map((option) => (
-										<option key={option.value} value={option.value}>
-											{option.label}
-										</option>
-									))}
-								</select>
-							</div>
-
-							<div>
-								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">บัญชีรับเงิน</label>
-								<select
-									value={formData.account_id}
-									disabled={formData.payment_method !== 'bank' || loadingAccounts}
-									onChange={(event) => setFormData((prev) => ({ ...prev, account_id: event.target.value }))}
-									className={`${INPUT_CLASSNAME} disabled:cursor-not-allowed disabled:opacity-60`}
-								>
-									<option value="">เลือกบัญชี</option>
-									{bankAccounts.map((bankAccount) => (
-										<option key={bankAccount.account_id} value={bankAccount.account_id}>
-											{bankAccount.bank_name} - {bankAccount.account_number}
-										</option>
-									))}
-								</select>
-								{errors.account_id && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.account_id}</p>}
-							</div>
-
-							<div>
-								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">ยอดรับชำระ</label>
-								<input
-									type="number"
-									min={0}
-									step="0.01"
-									value={formData.amount_paid}
-									onChange={(event) => setFormData((prev) => ({ ...prev, amount_paid: event.target.value }))}
-									className={INPUT_CLASSNAME}
-								/>
-								{errors.amount_paid && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.amount_paid}</p>}
-							</div>
-
-							<div>
-								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">วันที่รับชำระ</label>
-								<input
-									type="date"
-									value={formData.payment_date}
-									onChange={(event) => setFormData((prev) => ({ ...prev, payment_date: event.target.value }))}
-									className={INPUT_CLASSNAME}
-								/>
-								{errors.payment_date && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.payment_date}</p>}
-							</div>
-
-							<div>
-								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">สถานะ</label>
-								<select
-									value={formData.payment_status}
-									onChange={(event) =>
-										setFormData((prev) => ({ ...prev, payment_status: event.target.value as PaymentReceiptStatus }))
-									}
-									className={INPUT_CLASSNAME}
-								>
-									{PAYMENT_RECEIPT_STATUS_OPTIONS.map((option) => (
-										<option key={option.value} value={option.value}>
-											{option.label}
-										</option>
-									))}
-								</select>
-							</div>
-
-							<div className="md:col-span-2">
-								<label className="mb-1 block text-sm font-medium text-[var(--ink)]">หมายเหตุ</label>
-								<textarea
-									rows={3}
-									value={formData.payment_receipt_remark}
-									onChange={(event) => setFormData((prev) => ({ ...prev, payment_receipt_remark: event.target.value }))}
-									className="ka-textarea w-full"
-								/>
-							</div>
-						</div>
-
-						<div className="flex justify-end gap-2 border-t border-[var(--border)] pt-4">
-							<button
-								type="button"
-								onClick={onClose}
-								disabled={isSubmitting}
-								className="ka-btn h-11"
-							>
-								ยกเลิก
-							</button>
-							<button
-								type="submit"
-								disabled={isSubmitting}
-								className="ka-btn ka-btn--primary min-h-11 h-11"
-							>
-								{isSubmitting ? 'กำลังบันทึก...' : 'บันทึก'}
-							</button>
-						</div>
-					</form>
-				</div>
-			</div>
+				</form>
+			</Modal>
 
 			<ActionResultDialog
 				isOpen={resultDialog.isOpen}
