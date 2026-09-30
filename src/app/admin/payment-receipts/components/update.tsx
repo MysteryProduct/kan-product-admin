@@ -15,6 +15,7 @@ import {
 	PaymentReceiptType,
 } from '@/types/payment-receipt';
 import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
+import { todayLocalIso } from '@/lib/date-format';
 
 interface UpdatePaymentReceiptFormProps {
 	isOpen: boolean;
@@ -43,7 +44,7 @@ export default function UpdatePaymentReceiptForm({
 		payment_receipt_type: 'full' as PaymentReceiptType,
 		payment_method: 'bank' as 'cash' | 'bank',
 		amount_paid: '',
-		payment_date: new Date().toISOString().slice(0, 10),
+		payment_date: todayLocalIso(),
 		payment_status: 'paid' as PaymentReceiptStatus,
 		payment_receipt_remark: '',
 		account_id: '',

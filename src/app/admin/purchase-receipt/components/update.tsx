@@ -11,6 +11,7 @@ import { PurchaseOrderItem } from '@/types/purchase-order-list';
 import { PaginationMeta } from '@/types/pagination';
 import { calculateVatSummary, VAT_TYPE_LABELS, VAT_TYPE_OPTIONS, VatType } from '@/lib/vat';
 import useVatRate from '@/hooks/useVatRate';
+import { toDateInputValue } from '@/lib/date-format';
 
 interface ReceiptItemForm {
 	id: string;
@@ -88,7 +89,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 			return;
 		}
 
-		setEntryDate(new Date(initialData.entry_date || new Date()).toISOString().slice(0, 10));
+		setEntryDate(toDateInputValue(initialData.entry_date));
 		setReceiptDetail(initialData.purchase_receipt_detail || initialData.purchase_receipt_detail || '');
 		setVatType(initialData.vat_type || 'none');
 		setItems(

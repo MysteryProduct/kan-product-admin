@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { PurchaseReceipt } from '@/types/purchase-receipt';
 import { VAT_TYPE_LABELS } from '@/lib/vat';
+import { toLocalIsoDate, todayLocalIso } from '@/lib/date-format';
 import {
     InvoicePaymentItem,
     InvoiceSupplierFormPayload,
@@ -29,12 +30,12 @@ const formatCurrency = (amount: number) =>
         maximumFractionDigits: 2,
     }).format(amount);
 
-const todayIso = () => new Date().toISOString().slice(0, 10);
+const todayIso = todayLocalIso;
 
 const plusDaysIso = (days: number) => {
     const date = new Date();
     date.setDate(date.getDate() + days);
-    return date.toISOString().slice(0, 10);
+    return toLocalIsoDate(date);
 };
 
 export default function InsertInvoiceSupplierForm({

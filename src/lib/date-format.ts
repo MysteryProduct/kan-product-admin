@@ -90,3 +90,30 @@ export const formatThaiDateTime = (value: DateInput, fallback = DEFAULT_FALLBACK
 };
 
 export const toDateValue = (value: DateInput) => parseDateInput(value);
+
+const twoDigits = (value: number) => String(value).padStart(2, '0');
+
+/**
+ * `YYYY-MM-DD` of a moment as the person at this device reads the calendar. `toISOString()` gives the
+ * UTC date instead, which is still yesterday from 00:00 to 07:00 in Thailand.
+ */
+export const toLocalIsoDate = (date: Date = new Date()) =>
+	`${date.getFullYear()}-${twoDigits(date.getMonth() + 1)}-${twoDigits(date.getDate())}`;
+
+/** Today's date as `YYYY-MM-DD` on this device, for a date input's starting value. */
+export const todayLocalIso = () => toLocalIsoDate();
+
+/**
+ * The `YYYY-MM-DD` to show in a date input for a date that is already stored. A stored value is a
+ * calendar date the API wrote as UTC, so its own date part is used as it stands: converting it to
+ * local time would move it by a day for some time zones and, saved again, shift the document.
+ * A missing or unreadable value falls back to today.
+ */
+export const toDateInputValue = (value: DateInput) => {
+	if (typeof value === 'string') {
+		const stored = value.trim().match(/^(\d{4}-\d{2}-\d{2})(?:$|[T\s])/);
+		if (stored) return stored[1];
+	}
+	const date = parseDateInput(value);
+	return date ? toLocalIsoDate(date) : todayLocalIso();
+};

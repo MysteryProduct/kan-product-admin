@@ -11,6 +11,7 @@ import { PurchaseOrder } from '@/types/purchase-order';
 import { PaginationMeta } from '@/types/pagination';
 import { calculateVatSummary, VAT_TYPE_LABELS, VAT_TYPE_OPTIONS, VatType } from '@/lib/vat';
 import useVatRate from '@/hooks/useVatRate';
+import { todayLocalIso } from '@/lib/date-format';
 
 interface ReceiptItemForm {
 	id: string;
@@ -61,7 +62,7 @@ const mapOrderItemToFormItem = (item: PurchaseOrderItem): ReceiptItemForm => ({
 
 export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, purchaseOrder }: InsertPurchaseReceiptFormProps) {
 	const vatRate = useVatRate();
-	const [entryDate, setEntryDate] = useState<string>(new Date().toISOString().slice(0, 10));
+	const [entryDate, setEntryDate] = useState<string>(todayLocalIso());
 	const [receiptDetail, setReceiptDetail] = useState('');
 	const [vatType, setVatType] = useState<VatType>('none');
 	const [items, setItems] = useState<ReceiptItemForm[]>([]);
@@ -97,7 +98,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 	useEffect(() => {
 		if (isOpen && purchaseOrder?.purchase_order_id) {
 			void loadInitialPurchaseOrderItems(purchaseOrder.purchase_order_id);
-			setEntryDate(new Date().toISOString().slice(0, 10));
+			setEntryDate(todayLocalIso());
 			setReceiptDetail('');
 			setVatType(purchaseOrder.vat_type || purchaseOrder.supplier?.vat_type || 'none');
 			setErrors({});
@@ -327,7 +328,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 	};
 
 	const resetAndClose = () => {
-		setEntryDate(new Date().toISOString().slice(0, 10));
+		setEntryDate(todayLocalIso());
 		setReceiptDetail('');
 		setVatType('none');
 		setItems([]);

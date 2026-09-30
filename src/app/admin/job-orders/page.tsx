@@ -12,7 +12,7 @@ import InsertJobOrderForm from './components/insert';
 import UpdateJobOrderForm from './components/update';
 import JobOrderDetailModal from './components/detail';
 import { CreateJobOrderDto, JobOrder } from '@/types/job-order';
-import { formatThaiDate, formatThaiDateLong, toDateValue } from '@/lib/date-format';
+import { formatThaiDate, formatThaiDateLong, toDateValue, toLocalIsoDate } from '@/lib/date-format';
 
 const jobOrderModel = new JobOrderModel();
 
@@ -117,9 +117,7 @@ const DEFAULT_VISIBLE: Record<BoardStatus, number> = {
 	cancelled: PAGE_SIZE,
 };
 
-const toIsoDate = (value: Date) => {
-	return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
-};
+const toIsoDate = toLocalIsoDate;
 
 const parseCalendarMonth = (calendarMonth: string) => {
 	const [yearText, monthText] = calendarMonth.split('-');
@@ -196,9 +194,7 @@ const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
 const startOfDay = (value: Date) => new Date(value.getFullYear(), value.getMonth(), value.getDate());
 
-const toDateKey = (value: Date) => {
-	return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
-};
+const toDateKey = toLocalIsoDate;
 
 const getDelayDays = (targetDate: Date, compareDate: Date) => {
 	const target = startOfDay(targetDate);

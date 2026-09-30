@@ -14,6 +14,7 @@ import { CreateJobOrderDto, JobOrderType } from '@/types/job-order';
 import { Product } from '@/types/product';
 import { Color } from '@/types/color';
 import { Size } from '@/types/size';
+import { todayLocalIso } from '@/lib/date-format';
 
 interface InsertJobOrderFormProps {
 	isOpen: boolean;
@@ -54,11 +55,8 @@ const JOB_ORDER_TYPES: Array<{ value: JobOrderType; label: string }> = [
 	{ value: 'purchase', label: 'ผลิตจากการสั่งซื้อ' },
 ];
 
-// Today in the user's own time zone; toISOString() gives yesterday before 07:00 in Thailand.
-const getDefaultTargetDate = () => {
-	const now = new Date();
-	return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-};
+// Today in the user's own time zone (see todayLocalIso).
+const getDefaultTargetDate = todayLocalIso;
 
 const getUserFromCookie = () => {
 	try {
