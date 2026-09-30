@@ -89,7 +89,7 @@ export const adminMenu: AdminMenuSection[] = [
           { title: 'บัญชีรับเงิน', menu_name: 'bank_accounts', href: '/admin/bank-account' },
           { title: 'ตั้งค่าพื้นฐาน', menu_name: 'settings', href: '/admin/settings' },
           { title: 'พนักงาน', menu_name: 'employees', href: '/admin/employees' },
-          { title: 'สิทธธิ์ผู้ใช้งาน', menu_name: 'employee_licenses', href: '/admin/license' },
+          { title: 'สิทธิ์ผู้ใช้งาน', menu_name: 'employee_licenses', href: '/admin/license' },
           { title: 'ประวัติสิทธิ์และพนักงาน', menu_name: 'access_logs', href: '/admin/access-logs' },
         ],
       },
