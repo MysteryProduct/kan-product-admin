@@ -41,10 +41,28 @@ export interface StockOut {
   materials?: StockOutList<{ material_id: string; material_name: string }>;
 }
 
+/** Production and purchasing; each block is present only if its menu can be viewed. */
+export interface Operations {
+  /** Counts per status (as GET /job-order/summary) and the open jobs past their target date. */
+  job_orders?: {
+    all: number;
+    pending: number;
+    in_progress: number;
+    completed: number;
+    cancelled: number;
+    overdue: number;
+  };
+  /** Approved purchase orders still waiting for goods (active or partial). */
+  purchase_orders_to_receive?: number;
+  /** Supplier invoices not paid in full, and how many are past due or due within 7 days. */
+  supplier_invoices?: { unpaid: number; overdue: number; due_soon: number };
+}
+
 export interface DashboardSummary {
   timezone: 'Asia/Bangkok';
   generated_at: string;
   sales?: SalesSummary;
   pending_work?: PendingWork;
   stock_out?: StockOut;
+  operations?: Operations;
 }
