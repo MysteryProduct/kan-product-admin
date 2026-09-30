@@ -257,7 +257,7 @@ const ProductUnitPage = () => {
                     <div className="px-6 py-4 bg-[var(--bg-subtle)] border-t border-[var(--border)]">
                         <div className="flex items-center justify-between">
                             <div className="text-sm text-[var(--ink-muted)]">
-                                Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, meta.total)} of {meta.total} results
+                                แสดง {((currentPage - 1) * 10) + 1}–{Math.min(currentPage * 10, meta.total)} จาก {meta.total} รายการ
                             </div>
                             <Pagination
                                 currentPage={currentPage}

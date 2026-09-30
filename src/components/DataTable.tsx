@@ -479,7 +479,7 @@ function DataTableInner<T>(
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               {showPaginationInfo ? (
                 <div className="text-sm text-[var(--ink-muted)] numeric">
-                  Showing {paginationStart} to {paginationEnd} of {paginationMeta?.total} results
+                  แสดง {paginationStart}–{paginationEnd} จาก {paginationMeta?.total} รายการ
                 </div>
               ) : (
                 <div />

@@ -351,7 +351,7 @@ export default function SizesPage() {
 					<div className="border-t border-[var(--border)] bg-[var(--bg-subtle)] px-6 py-4">
 						<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 							<div className="text-sm text-[var(--ink-muted)]">
-								Showing {((currentPage - 1) * 10) + 1} to {Math.min(currentPage * 10, meta.total)} of {meta.total} results
+								แสดง {((currentPage - 1) * 10) + 1}–{Math.min(currentPage * 10, meta.total)} จาก {meta.total} รายการ
 							</div>
 							<Pagination currentPage={currentPage} meta={meta} onPageChange={setCurrentPage} />
 						</div>
