@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import DashboardModel from '@/models/dashboard';
 import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 import SalesSummary from '@/components/dashboard/SalesSummary';
+import PendingWork from '@/components/dashboard/PendingWork';
 import type { DashboardSummary } from '@/types/dashboard';
 
 const dashboardModel = new DashboardModel();
@@ -29,7 +30,7 @@ export default function Home() {
     void load();
   }, [load]);
 
-  const hasContent = Boolean(summary?.sales);
+  const hasContent = Boolean(summary?.sales || summary?.pending_work);
 
   return (
     <div className="flex-1">
@@ -43,6 +44,7 @@ export default function Home() {
 
         <LoadErrorBanner message={error} onRetry={() => void load()} className="mb-4" />
 
+        {summary?.pending_work && <PendingWork work={summary.pending_work} />}
         {summary?.sales && <SalesSummary sales={summary.sales} />}
 
         {isLoading && !summary && <p className="text-[14px] text-[var(--ink-muted)]">กำลังโหลด...</p>}
