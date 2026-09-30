@@ -52,10 +52,12 @@ export default function Modal({
   const descriptionId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
+  const closeOnEscapeRef = useRef(closeOnEscape);
 
   useEffect(() => {
     onCloseRef.current = onClose;
-  }, [onClose]);
+    closeOnEscapeRef.current = closeOnEscape;
+  }, [onClose, closeOnEscape]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -69,7 +71,7 @@ export default function Modal({
     (firstFocusable ?? panel)?.focus();
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && closeOnEscape) {
+      if (event.key === 'Escape' && closeOnEscapeRef.current) {
         event.preventDefault();
         onCloseRef.current();
         return;
@@ -100,7 +102,7 @@ export default function Modal({
       document.body.style.overflow = previousOverflow;
       previouslyFocused?.focus();
     };
-  }, [closeOnEscape, isOpen]);
+  }, [isOpen]);
 
   if (!isOpen || typeof document === 'undefined') return null;
 
