@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import EmployeeModel from '@/models/employee';
 import type { Employee, EmployeeResponse } from '@/types/employee';
 import EmployeeFormModal from './components/employee-form-modal';
+import EmployeePasswordModal from './components/employee-password-modal';
 
 const employeeModel = new EmployeeModel();
 
@@ -18,8 +19,9 @@ type ResultState = { isOpen: boolean; status: 'success' | 'error'; action: Actio
 
 export default function EmployeesPage() {
   const { can } = usePermissions();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const canEdit = can('employees', 'edit');
+  const canAssignLicense = can('employee_permissions', 'edit');
   // Assigning a license grants that license's rights, so adding an employee also takes
   // employee_permissions:edit (TASK-0069); the API enforces the same pair.
   const canAdd = can('employees', 'add') && can('employee_permissions', 'edit');
@@ -31,6 +33,8 @@ export default function EmployeesPage() {
   const [search, setSearch] = useState('');
   const [appliedSearch, setAppliedSearch] = useState('');
   const [formOpen, setFormOpen] = useState(false);
+  const [employeeToEdit, setEmployeeToEdit] = useState<Employee | null>(null);
+  const [employeeForPassword, setEmployeeForPassword] = useState<Employee | null>(null);
   const [employeeToDisable, setEmployeeToDisable] = useState<Employee | null>(null);
   const [result, setResult] = useState<ResultState>({ isOpen: false, status: 'success', action: 'insert', message: '' });
 
@@ -62,6 +66,24 @@ export default function EmployeesPage() {
     setSearch('');
     setAppliedSearch('');
     setCurrentPage(1);
+  };
+
+  const handleEdited = (username: string) => {
+    setEmployeeToEdit(null);
+    setResult({ isOpen: true, status: 'success', action: 'update', message: `แก้ไขข้อมูลพนักงาน ${username} แล้ว` });
+    void fetchEmployees();
+  };
+
+  const handlePasswordSet = (employee: Employee) => {
+    setEmployeeForPassword(null);
+    setResult({
+      isOpen: true,
+      status: 'success',
+      action: 'update',
+      message: `ตั้งรหัสผ่านใหม่ให้ ${employee.employee_username} แล้ว พนักงานต้องเข้าสู่ระบบใหม่ทุกเครื่อง`,
+    });
+    // A reset of one's own password ends this session as well.
+    if (employee.employee_id === user?.employee_id) logout();
   };
 
   const handleSaved = (username: string) => {
@@ -125,21 +147,42 @@ export default function EmployeesPage() {
           {
             key: 'employee_id' as const,
             label: 'การจัดการ',
-            width: '132px',
+            width: '280px',
             render: (_: unknown, row: Employee) => {
               const disabled = !!row.employee_disabled_at;
               const isOwn = row.employee_id === user?.employee_id;
-              // Disabling one's own account would lock the admin out, so the API refuses it too.
-              if (isOwn && !disabled) return <span className="text-sm text-[var(--ink-muted)]">บัญชีของคุณ</span>;
               return (
-                <button
-                  type="button"
-                  className="ka-btn"
-                  onClick={() => (disabled ? void setDisabled(row, false) : setEmployeeToDisable(row))}
-                  aria-label={`${disabled ? 'เปิด' : 'ปิด'}ใช้งาน ${row.employee_username}`}
-                >
-                  {disabled ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}
-                </button>
+                <div className="flex flex-wrap items-center gap-1">
+                  <button
+                    type="button"
+                    className="ka-btn"
+                    onClick={() => setEmployeeToEdit(row)}
+                    aria-label={`แก้ไข ${row.employee_username}`}
+                  >
+                    แก้ไข
+                  </button>
+                  <button
+                    type="button"
+                    className="ka-btn"
+                    onClick={() => setEmployeeForPassword(row)}
+                    aria-label={`ตั้งรหัสผ่านใหม่ ${row.employee_username}`}
+                  >
+                    ตั้งรหัสผ่านใหม่
+                  </button>
+                  {isOwn && !disabled ? (
+                    // Disabling one's own account would lock the admin out, so the API refuses it too.
+                    <span className="text-sm text-[var(--ink-muted)]">บัญชีของคุณ</span>
+                  ) : (
+                    <button
+                      type="button"
+                      className="ka-btn"
+                      onClick={() => (disabled ? void setDisabled(row, false) : setEmployeeToDisable(row))}
+                      aria-label={`${disabled ? 'เปิด' : 'ปิด'}ใช้งาน ${row.employee_username}`}
+                    >
+                      {disabled ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}
+                    </button>
+                  )}
+                </div>
               );
             },
           },
@@ -217,7 +260,34 @@ export default function EmployeesPage() {
         </div>
       </section>
 
-      {canAdd && <EmployeeFormModal isOpen={formOpen} onClose={() => setFormOpen(false)} onSaved={handleSaved} />}
+      {canAdd && (
+        <EmployeeFormModal
+          isOpen={formOpen}
+          canAssignLicense={canAssignLicense}
+          onClose={() => setFormOpen(false)}
+          onSaved={handleSaved}
+        />
+      )}
+
+      {canEdit && (
+        <>
+          <EmployeeFormModal
+            isOpen={!!employeeToEdit}
+            employee={employeeToEdit}
+            canAssignLicense={canAssignLicense}
+            isOwn={!!employeeToEdit && employeeToEdit.employee_id === user?.employee_id}
+            onClose={() => setEmployeeToEdit(null)}
+            onSaved={handleEdited}
+          />
+          <EmployeePasswordModal
+            isOpen={!!employeeForPassword}
+            employee={employeeForPassword}
+            isOwn={!!employeeForPassword && employeeForPassword.employee_id === user?.employee_id}
+            onClose={() => setEmployeeForPassword(null)}
+            onSaved={handlePasswordSet}
+          />
+        </>
+      )}
 
       <ConfirmDialog
         isOpen={!!employeeToDisable}

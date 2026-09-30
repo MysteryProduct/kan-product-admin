@@ -20,6 +20,12 @@ export interface EmployeeResponse {
   meta: PaginationMeta;
 }
 
+// The username never changes and the password has its own call, so neither is here.
+// license_id is left out when the caller may not assign licenses.
+export type UpdateEmployeeDto = Partial<
+  Omit<CreateEmployeeDto, 'employee_username' | 'employee_password'>
+>;
+
 export interface CreateEmployeeDto {
   employee_username: string;
   employee_password: string;

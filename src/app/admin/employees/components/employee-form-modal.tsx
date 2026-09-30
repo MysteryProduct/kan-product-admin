@@ -6,11 +6,17 @@ import Modal from '@/components/Modal';
 import CustomSelect from '@/components/CustomSelect';
 import EmployeeModel from '@/models/employee';
 import EmployeeLicenseModel from '@/models/employee-license';
-import type { CreateEmployeeDto } from '@/types/employee';
+import type { CreateEmployeeDto, Employee, UpdateEmployeeDto } from '@/types/employee';
 import type { EmployeeLicense } from '@/types/employee-license';
 
 interface EmployeeFormModalProps {
   isOpen: boolean;
+  // Absent: add a new employee. Present: edit that employee (username stays fixed).
+  employee?: Employee | null;
+  // employee_permissions:edit. Without it the license can be seen but not changed.
+  canAssignLicense: boolean;
+  // Editing one's own row: moving oneself to another license is refused.
+  isOwn?: boolean;
   onClose: () => void;
   onSaved: (name: string) => void;
 }
@@ -44,7 +50,23 @@ async function loadAllLicenses(): Promise<EmployeeLicense[]> {
   return [first, ...rest].flatMap((page) => page.data);
 }
 
-export default function EmployeeFormModal({ isOpen, onClose, onSaved }: EmployeeFormModalProps) {
+export default function EmployeeFormModal({
+  isOpen,
+  employee,
+  canAssignLicense,
+  isOwn = false,
+  onClose,
+  onSaved,
+}: EmployeeFormModalProps) {
+  const isEdit = !!employee;
+  // The license select gives way to a read-only line, with the reason, when it cannot be used.
+  const licenseLockedReason = !isEdit
+    ? null
+    : !canAssignLicense
+      ? 'เปลี่ยนกลุ่มสิทธิ์ไม่ได้ เพราะบัญชีของคุณไม่มีสิทธิ์แก้ไขสิทธิ์รายเมนู (employee_permissions)'
+      : isOwn
+        ? 'เปลี่ยนกลุ่มสิทธิ์ของตัวเองไม่ได้ เพื่อไม่ให้เสียสิทธิ์ที่ใช้แก้ไขกลับ ให้ผู้ดูแลคนอื่นเป็นผู้ย้ายให้'
+        : null;
   const [form, setForm] = useState<CreateEmployeeDto>(EMPTY_FORM);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -55,9 +77,25 @@ export default function EmployeeFormModal({ isOpen, onClose, onSaved }: Employee
 
   useEffect(() => {
     if (!isOpen) return;
-    setForm(EMPTY_FORM);
+    setForm(
+      employee
+        ? {
+            employee_username: employee.employee_username,
+            employee_password: '',
+            employee_firstname: employee.employee_firstname,
+            employee_lastname: employee.employee_lastname,
+            employee_address: employee.employee_address,
+            employee_phone: employee.employee_phone,
+            employee_email: employee.employee_email,
+            license_id: employee.license_id,
+          }
+        : EMPTY_FORM,
+    );
     setErrors({});
     setSubmitError(null);
+    setLicenses([]);
+    setLicenseError(null);
+    if (licenseLockedReason) return;
     let cancelled = false;
     setLicenseLoading(true);
     setLicenseError(null);
@@ -82,7 +120,7 @@ export default function EmployeeFormModal({ isOpen, onClose, onSaved }: Employee
     return () => {
       cancelled = true;
     };
-  }, [isOpen]);
+  }, [isOpen, employee, licenseLockedReason]);
 
   const clearError = (field: keyof CreateEmployeeDto) =>
     setErrors((current) => (current[field] ? { ...current, [field]: undefined } : current));
@@ -94,13 +132,15 @@ export default function EmployeeFormModal({ isOpen, onClose, onSaved }: Employee
 
   const validate = (): FieldErrors => {
     const next: FieldErrors = {};
-    if (!form.employee_username.trim()) next.employee_username = 'กรุณากรอกชื่อผู้ใช้';
-    if (form.employee_password.length < MIN_PASSWORD_LENGTH)
-      next.employee_password = `รหัสผ่านต้องมีอย่างน้อย ${MIN_PASSWORD_LENGTH} ตัวอักษร`;
+    if (!isEdit) {
+      if (!form.employee_username.trim()) next.employee_username = 'กรุณากรอกชื่อผู้ใช้';
+      if (form.employee_password.length < MIN_PASSWORD_LENGTH)
+        next.employee_password = `รหัสผ่านต้องมีอย่างน้อย ${MIN_PASSWORD_LENGTH} ตัวอักษร`;
+    }
     if (!form.employee_firstname.trim()) next.employee_firstname = 'กรุณากรอกชื่อ';
     if (!form.employee_lastname.trim()) next.employee_lastname = 'กรุณากรอกนามสกุล';
     if (!form.employee_email.trim()) next.employee_email = 'กรุณากรอกอีเมล';
-    if (!form.license_id) next.license_id = 'กรุณาเลือกกลุ่มสิทธิ์';
+    if (!licenseLockedReason && !form.license_id) next.license_id = 'กรุณาเลือกกลุ่มสิทธิ์';
     return next;
   };
 
@@ -113,19 +153,31 @@ export default function EmployeeFormModal({ isOpen, onClose, onSaved }: Employee
     setSaving(true);
     try {
       const username = form.employee_username.trim();
-      await employeeModel.createEmployee({
-        ...form,
-        employee_username: username,
+      const details: UpdateEmployeeDto = {
         employee_firstname: form.employee_firstname.trim(),
         employee_lastname: form.employee_lastname.trim(),
         employee_email: form.employee_email.trim(),
         employee_phone: form.employee_phone.trim(),
         employee_address: form.employee_address.trim(),
-      });
+      };
+      if (employee) {
+        // license_id is only sent when it may be changed, so a locked field never trips the API.
+        await employeeModel.updateEmployee(employee.employee_id, {
+          ...details,
+          ...(licenseLockedReason ? {} : { license_id: form.license_id }),
+        });
+      } else {
+        await employeeModel.createEmployee({
+          ...details,
+          employee_username: username,
+          employee_password: form.employee_password,
+          license_id: form.license_id,
+        } as CreateEmployeeDto);
+      }
       onSaved(username);
     } catch (error) {
       // Everything typed stays in the form so it can be corrected and resent.
-      setSubmitError(error instanceof Error ? error.message : 'เพิ่มพนักงานไม่สำเร็จ');
+      setSubmitError(error instanceof Error ? error.message : isEdit ? 'แก้ไขพนักงานไม่สำเร็จ' : 'เพิ่มพนักงานไม่สำเร็จ');
     } finally {
       setSaving(false);
     }
@@ -173,8 +225,12 @@ export default function EmployeeFormModal({ isOpen, onClose, onSaved }: Employee
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="เพิ่มพนักงาน"
-      description="พนักงานเข้าสู่ระบบด้วยชื่อผู้ใช้และรหัสผ่านที่ตั้งไว้ และได้สิทธิ์ตามกลุ่มที่เลือก"
+      title={isEdit ? 'แก้ไขพนักงาน' : 'เพิ่มพนักงาน'}
+      description={
+        isEdit
+          ? 'ชื่อผู้ใช้แก้ไม่ได้ ส่วนรหัสผ่านตั้งใหม่ได้จากปุ่ม "ตั้งรหัสผ่านใหม่" ในรายการ'
+          : 'พนักงานเข้าสู่ระบบด้วยชื่อผู้ใช้และรหัสผ่านที่ตั้งไว้ และได้สิทธิ์ตามกลุ่มที่เลือก'
+      }
       size="lg"
       closeOnBackdrop={!saving}
       closeOnEscape={!saving}
@@ -190,7 +246,7 @@ export default function EmployeeFormModal({ isOpen, onClose, onSaved }: Employee
             aria-busy={saving}
             className="ka-btn ka-btn--primary min-h-11"
           >
-            {saving ? 'กำลังบันทึก…' : 'เพิ่มพนักงาน'}
+            {saving ? 'กำลังบันทึก…' : isEdit ? 'บันทึก' : 'เพิ่มพนักงาน'}
           </button>
         </>
       }
@@ -202,13 +258,24 @@ export default function EmployeeFormModal({ isOpen, onClose, onSaved }: Employee
           </div>
         )}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {field('employee_username', 'ชื่อผู้ใช้', { required: true })}
-          {field('employee_password', 'รหัสผ่าน', {
-            type: 'password',
-            required: true,
-            autoComplete: 'new-password',
-            hint: `อย่างน้อย ${MIN_PASSWORD_LENGTH} ตัวอักษร`,
-          })}
+          {isEdit ? (
+            <div className="ka-field">
+              <span className="ka-label">ชื่อผู้ใช้</span>
+              <p className="ka-input flex items-center break-all opacity-80" aria-label="ชื่อผู้ใช้ (แก้ไม่ได้)">
+                {form.employee_username}
+              </p>
+            </div>
+          ) : (
+            <>
+              {field('employee_username', 'ชื่อผู้ใช้', { required: true })}
+              {field('employee_password', 'รหัสผ่าน', {
+                type: 'password',
+                required: true,
+                autoComplete: 'new-password',
+                hint: `อย่างน้อย ${MIN_PASSWORD_LENGTH} ตัวอักษร`,
+              })}
+            </>
+          )}
           {field('employee_firstname', 'ชื่อ', { required: true })}
           {field('employee_lastname', 'นามสกุล', { required: true })}
           {field('employee_email', 'อีเมล', { type: 'email', required: true })}
@@ -228,7 +295,13 @@ export default function EmployeeFormModal({ isOpen, onClose, onSaved }: Employee
           />
         </div>
         <div className="ka-field" data-invalid={errors.license_id ? '' : undefined}>
-          {licenseError ? (
+          {licenseLockedReason ? (
+            <>
+              <span className="ka-label">กลุ่มสิทธิ์</span>
+              <p className="ka-input flex items-center break-words opacity-80">{employee?.license_name ?? '-'}</p>
+              <p className="ka-help">{licenseLockedReason}</p>
+            </>
+          ) : licenseError ? (
             <>
               <span className="ka-label">
                 กลุ่มสิทธิ์
