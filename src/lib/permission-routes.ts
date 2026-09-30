@@ -14,6 +14,7 @@ const ROUTE_MENU_MAP: Record<string, string> = {
   '/admin/sale-orders': 'sale_orders',
   '/admin/payment-receipts': 'payment_receipts',
   '/admin/license': 'employee_licenses',
+  '/admin/employees': 'employees',
 };
 
 export function getMenuNameFromPath(pathname: string): string | null {
