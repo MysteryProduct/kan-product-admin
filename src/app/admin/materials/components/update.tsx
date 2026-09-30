@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import MaterialModel from '@/models/material';
+import Modal from '@/components/Modal';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import { Material } from '@/types/material';
 import SizeModel from '@/models/size';
@@ -125,116 +126,113 @@ export default function UpdateMaterialForm({ isOpen, onClose, onSuccess, initial
 
 	return (
 		<>
-			<div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-				<div className="absolute inset-0 bg-[var(--scrim)]" onClick={onClose} />
-
-				<div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-[var(--bg-surface)] shadow-xl">
-					<div className="sticky top-0 flex items-center justify-between border-b border-[var(--border)] bg-[var(--bg-surface)] px-6 py-4">
-						<h2 className="text-xl font-semibold text-[var(--ink)]">แก้ไขวัตถุดิบ</h2>
-						<button onClick={onClose} className="ka-btn ka-btn--ghost ka-btn--icon" type="button" aria-label="ปิดหน้าต่าง">
-							<svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-							</svg>
+			<Modal
+				isOpen={isOpen}
+				onClose={onClose}
+				title="แก้ไขวัตถุดิบ"
+				size="lg"
+				closeOnBackdrop={!isSubmitting && !resultDialog.isOpen}
+				closeOnEscape={!isSubmitting && !resultDialog.isOpen}
+				footer={
+					<>
+						<button
+							type="button"
+							onClick={onClose}
+							className="ka-btn"
+							disabled={isSubmitting}
+						>
+							ยกเลิก
 						</button>
+						<button
+							type="submit"
+							form="update-material-form"
+							disabled={isSubmitting}
+							className="ka-btn ka-btn--primary"
+						>
+							{isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}
+						</button>
+					</>
+				}
+			>
+				<form id="update-material-form" onSubmit={handleSubmit} className="space-y-6">
+					{error && (
+						<div className="rounded-lg border border-[var(--danger)] bg-[var(--danger-soft)] px-4 py-3 text-[var(--danger)]">
+							{error}
+						</div>
+					)}
+
+					<div>
+						<label className="mb-2 block text-sm font-medium text-[var(--ink)]">
+							ชื่อวัตถุดิบ <span className="text-[var(--danger)]">*</span>
+						</label>
+						<input
+							type="text"
+							value={materialName}
+							onChange={(e) => setMaterialName(e.target.value)}
+							className="ka-input"
+							placeholder="กรอกชื่อวัตถุดิบ"
+							disabled={isSubmitting}
+						/>
 					</div>
 
-					<form onSubmit={handleSubmit} className="space-y-6 p-6">
-						{error && (
-							<div className="rounded-lg border border-[var(--danger)] bg-[var(--danger-soft)] px-4 py-3 text-[var(--danger)]">
-								{error}
-							</div>
-						)}
+					<div>
+						<label className="mb-2 block text-sm font-medium text-[var(--ink)]">
+							รายละเอียดวัตถุดิบ <span className="text-[var(--danger)]">*</span>
+						</label>
+						<textarea
+							rows={5}
+							value={materialDescription}
+							onChange={(e) => setMaterialDescription(e.target.value)}
+							className="ka-textarea resize-none"
+							placeholder="กรอกรายละเอียดวัตถุดิบ"
+							disabled={isSubmitting}
+						/>
+					</div>
 
-						<div>
-							<label className="mb-2 block text-sm font-medium text-[var(--ink)]">
-								ชื่อวัตถุดิบ <span className="text-[var(--danger)]">*</span>
-							</label>
-							<input
-								type="text"
-								value={materialName}
-								onChange={(e) => setMaterialName(e.target.value)}
-								className="ka-input"
-								placeholder="กรอกชื่อวัตถุดิบ"
-								disabled={isSubmitting}
-							/>
-						</div>
+					<div>
+						<label className="mb-2 block text-sm font-medium text-[var(--ink)]">
+							ราคา <span className="text-[var(--danger)]">*</span>
+						</label>
+						<input
+							type="number"
+							min="0"
+							step="0.01"
+							value={materialPrice}
+							onChange={(e) => setMaterialPrice(e.target.value)}
+							className="ka-input"
+							placeholder="0.00"
+							disabled={isSubmitting}
+						/>
+					</div>
+					<div className="grid grid-cols-1 gap-3 md:grid-cols-2">
 
-						<div>
-							<label className="mb-2 block text-sm font-medium text-[var(--ink)]">
-								รายละเอียดวัตถุดิบ <span className="text-[var(--danger)]">*</span>
-							</label>
-							<textarea
-								rows={5}
-								value={materialDescription}
-								onChange={(e) => setMaterialDescription(e.target.value)}
-								className="ka-textarea resize-none"
-								placeholder="กรอกรายละเอียดวัตถุดิบ"
-								disabled={isSubmitting}
-							/>
-						</div>
+						<CustomSelect
+							label="สี"
+							required
+							value={Number(materialColor)}
+							onChange={(value) => setMaterialColor(Number(value))}
+							options={colorOptions.map((color) => ({
+								value: color.color_id,
+								label: color.color_name,
+							}))}
+							placeholder="เลือกสี"
+							showColor
+						/>
 
-						<div>
-							<label className="mb-2 block text-sm font-medium text-[var(--ink)]">
-								ราคา <span className="text-[var(--danger)]">*</span>
-							</label>
-							<input
-								type="number"
-								min="0"
-								step="0.01"
-								value={materialPrice}
-								onChange={(e) => setMaterialPrice(e.target.value)}
-								className="ka-input"
-								placeholder="0.00"
-								disabled={isSubmitting}
-							/>
-						</div>
-						<div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-
-							<CustomSelect
-								label="สี"
-								required
-								value={Number(materialColor)}
-								onChange={(value) => setMaterialColor(Number(value))}
-								options={colorOptions.map((color) => ({
-									value: color.color_id,
-									label: color.color_name,
-								}))}
-								placeholder="เลือกสี"
-								showColor
-							/>
-
-							<CustomSelect
-								label="ขนาด"
-								required
-								value={Number(materialSize)}
-								onChange={(value) => setMaterialSize(Number(value))}
-								options={sizeOptions.map((size) => ({
-									value: size.size_id,
-									label: size.size_name,
-								}))}
-								placeholder="เลือกหน่วยสินค้า"
-							/>
-						</div>
-						<div className="flex justify-end gap-3 border-t border-[var(--border)] pt-4">
-							<button
-								type="button"
-								onClick={onClose}
-								className="ka-btn"
-								disabled={isSubmitting}
-							>
-								ยกเลิก
-							</button>
-							<button
-								type="submit"
-								disabled={isSubmitting}
-								className="ka-btn ka-btn--primary"
-							>
-								{isSubmitting ? 'กำลังบันทึก...' : 'บันทึกการแก้ไข'}
-							</button>
-						</div>
-					</form>
-				</div>
-			</div>
+						<CustomSelect
+							label="ขนาด"
+							required
+							value={Number(materialSize)}
+							onChange={(value) => setMaterialSize(Number(value))}
+							options={sizeOptions.map((size) => ({
+								value: size.size_id,
+								label: size.size_name,
+							}))}
+							placeholder="เลือกหน่วยสินค้า"
+						/>
+					</div>
+				</form>
+			</Modal>
 
 			<ActionResultDialog
 				isOpen={resultDialog.isOpen}
