@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import Pagination from '@/components/Pagination';
 import { PaginationMeta } from '@/types/pagination';
 
@@ -39,41 +39,40 @@ export interface DataTableProps<T> {
 const FILTER_MENU_WIDTH = 224;
 const FILTER_MENU_MARGIN = 8;
 
-interface SortConfig<T> {
-  key: keyof T;
+// Sorting and filtering are tracked by column key text, whatever the row type is.
+interface SortConfig {
+  key: string;
   direction: 'ASC' | 'DESC';
 }
 
-interface FilterConfig<T> {
-  key: keyof T;
+interface FilterConfig {
+  key: string;
   value: string | string[];
 }
 
-export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
-  (
-    {
-      data,
-      columns,
-      keyField,
-      pageSize = 10,
-      onRowClick,
-      onFilterChange,
-      onSortChange,
-      paginationMeta = null,
-      currentPage,
-      onPageChange,
-      showPaginationInfo = true,
-      className = '',
-      headerClassName = '',
-      rowClassName = '',
-      footerClassName = '',
-      disabled = false,
-    },
-    ref
-  ) => {
-    const [sortConfig, setSortConfig] = useState<SortConfig<any> | null>(null);
-    const [filterConfigs, setFilterConfigs] = useState<FilterConfig<any>[]>([]);
-    const [openFilterKey, setOpenFilterKey] = useState<string | null>(null);
+function DataTableInner<T>(
+  {
+    data,
+    columns,
+    keyField,
+    pageSize = 10,
+    onRowClick,
+    onFilterChange,
+    onSortChange,
+    paginationMeta = null,
+    currentPage,
+    onPageChange,
+    showPaginationInfo = true,
+    className = '',
+    headerClassName = '',
+    rowClassName = '',
+    footerClassName = '',
+    disabled = false,
+  }: DataTableProps<T>,
+  ref: React.ForwardedRef<HTMLDivElement>
+) {
+    const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
+    const [filterConfigs, setFilterConfigs] = useState<FilterConfig[]>([]);
     const [filterSearches, setFilterSearches] = useState<Record<string, string>>({});
     const [showFilterKey, setShowFilterKey] = useState<string | null>(null);
     const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
@@ -125,17 +124,15 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
     React.useEffect(() => {
       if (!disabled) return;
       setShowFilterKey(null);
-      setOpenFilterKey(null);
     }, [disabled]);
     // Handle sort
     const handleSort = (key: string) => {
-      const columnKey = key as keyof any;
       const nextSort =
-        sortConfig?.key === columnKey
+        sortConfig?.key === key
           ? sortConfig.direction === 'ASC'
-            ? { key: columnKey, direction: 'DESC' as const }
+            ? { key: key, direction: 'DESC' as const }
             : null
-          : { key: columnKey, direction: 'ASC' as const };
+          : { key: key, direction: 'ASC' as const };
 
       setSortConfig(nextSort);
 
@@ -153,16 +150,15 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
 
     // Handle filter
     const handleFilter = async(key: string, value: string | string[]) => {
-      const columnKey = key as keyof any;
-      let updatedFilters: FilterConfig<any>[] = [];
+      let updatedFilters: FilterConfig[] = [];
       
       await setFilterConfigs((prev) => {
-        const newFilters = prev.filter((f) => f.key !== columnKey);
+        const newFilters = prev.filter((f) => f.key !== key);
         const normalizedValue = Array.isArray(value)
           ? value.map((v) => v.toLowerCase())
           : value.toLowerCase();
         if (Array.isArray(normalizedValue) ? normalizedValue.length > 0 : normalizedValue.trim()) {
-          newFilters.push({ key: columnKey, value: normalizedValue });
+          newFilters.push({ key, value: normalizedValue });
         }
         updatedFilters = newFilters;    
         return newFilters;
@@ -178,12 +174,6 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
         onFilterChange(filtersObj);
       }
     };
-
-    // Apply filters and sorting
-    const processedData = useMemo(() => {
-      let result = [...data];
-      return result;
-    }, [data]);
 
     const canShowPagination =
       Boolean(paginationMeta) &&
@@ -202,7 +192,6 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
       <div
         ref={ref}
         className={`w-full ${disabled ? 'select-none' : ''} ${className}`}
-        onClick={() => setOpenFilterKey(null)}
       >
         {/* Table Container */}
         <div className="ka-card ka-table-card">
@@ -233,7 +222,7 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                             </span>
                             {col.sortable && (
                               <span className="inline-flex items-center text-[var(--ink-subtle)] transition-colors group-hover:text-[var(--brand-ink)]">
-                                {sortConfig?.key === col.key ? (
+                                {sortConfig?.key === String(col.key) ? (
                                   sortConfig.direction === 'ASC' ? (
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                       <path d="M7 15l5-6 5 6" />
@@ -264,7 +253,6 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                                   }
                                   return newVal;
                                 });
-                                setOpenFilterKey(null);
                               }}
                               disabled={disabled}
                               className="ka-btn ka-btn--sm ka-btn--icon ka-btn--touch bg-[var(--bg-surface)] text-[var(--ink-muted)] hover:border-[var(--focus)] hover:text-[var(--brand-ink)]"
@@ -431,8 +419,8 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)] bg-[var(--bg-surface)]">
-                {processedData.length > 0 ? (
-                  processedData.map((row, idx) => (
+                {data.length > 0 ? (
+                  data.map((row, idx) => (
                     <tr
                       key={String(row[keyField]) || idx}
                       className={`transition-[background-color,box-shadow] duration-150 hover:bg-[var(--bg-subtle)] hover:shadow-[inset_3px_0_0_var(--brand)] ${
@@ -508,7 +496,12 @@ export const DataTable = React.forwardRef<HTMLDivElement, DataTableProps<any>>(
 
       </div>
     );
-  }
-);
+}
 
-DataTable.displayName = 'DataTable';
+// forwardRef drops the row type; the cast keeps DataTable generic so each caller's columns stay typed.
+const DataTableWithRef = React.forwardRef(DataTableInner);
+DataTableWithRef.displayName = 'DataTable';
+
+export const DataTable = DataTableWithRef as unknown as <T>(
+  props: DataTableProps<T> & React.RefAttributes<HTMLDivElement>
+) => React.ReactElement | null;
