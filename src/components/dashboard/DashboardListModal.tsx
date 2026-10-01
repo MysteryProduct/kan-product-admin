@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import Modal from "@/components/Modal";
 import Pagination from "@/components/Pagination";
 import StatusBadge, { type BadgeTone } from "@/components/StatusBadge";
@@ -126,15 +126,29 @@ export default function DashboardListModal({
   const [isLoading, setIsLoading] = useState(true);
   const [detail, setDetail] = useState<DashboardListRow | null>(null);
 
+  // Only the newest request may fill the list, so a slow page 1 cannot
+  // overwrite the page 3 that was asked for after it.
+  const latestRequest = useRef(0);
+
   const load = useCallback(async () => {
+    const request = ++latestRequest.current;
     setIsLoading(true);
     try {
-      setResult(await dashboardModel.getList(list.key, page));
+      const loaded = await dashboardModel.getList(list.key, page);
+      if (request !== latestRequest.current) return;
+      // Rows were changed from a detail view and the page asked for is now past
+      // the end: show the last page rather than "no rows" beside a total.
+      if (loaded.data.length === 0 && loaded.meta.total > 0 && page > loaded.meta.last_page) {
+        setPage(loaded.meta.last_page);
+        return;
+      }
+      setResult(loaded);
       setError(null);
     } catch (loadError) {
+      if (request !== latestRequest.current) return;
       setError(loadErrorText("รายการ", loadError));
     } finally {
-      setIsLoading(false);
+      if (request === latestRequest.current) setIsLoading(false);
     }
   }, [list.key, page]);
 
