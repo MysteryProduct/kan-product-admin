@@ -60,10 +60,18 @@ export interface Operations {
   supplier_invoices?: { unpaid: number; overdue: number; due_soon: number };
 }
 
-export interface DashboardSummary {
+/** The sales dashboard page's figures (its own endpoint). */
+export interface SalesDashboard {
   timezone: 'Asia/Bangkok';
   generated_at: string;
   sales?: SalesSummary;
+  /** Blocks the employee may see but that could not be computed, as `section.block`. */
+  unavailable?: string[];
+}
+
+export interface DashboardSummary {
+  timezone: 'Asia/Bangkok';
+  generated_at: string;
   pending_work?: PendingWork;
   stock_out?: StockOut;
   operations?: Operations;

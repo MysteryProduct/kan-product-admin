@@ -1,9 +1,15 @@
 import axiosInstance from '@/lib/axios';
-import type { DashboardList, DashboardListKey, DashboardSummary } from '@/types/dashboard';
+import type { DashboardList, DashboardListKey, DashboardSummary, SalesDashboard } from '@/types/dashboard';
 
 export default class DashboardModel {
   async getSummary(): Promise<DashboardSummary> {
     const response = await axiosInstance.get<DashboardSummary>('/dashboard/summary');
+    return response.data;
+  }
+
+  /** Sales and receipts for today and this month, for the sales dashboard page. */
+  async getSalesSummary(): Promise<SalesDashboard> {
+    const response = await axiosInstance.get<SalesDashboard>('/dashboard/sales-summary');
     return response.data;
   }
 

@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import DashboardModel from '@/models/dashboard';
 import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
-import SalesSummary from '@/components/dashboard/SalesSummary';
 import PendingWork from '@/components/dashboard/PendingWork';
 import DashboardListModal, { type OpenList } from '@/components/dashboard/DashboardListModal';
 import StockOut from '@/components/dashboard/StockOut';
@@ -37,7 +36,7 @@ export default function Home() {
 
   const partialError = unavailableText(summary?.unavailable);
   const hasContent = Boolean(
-    summary?.sales || summary?.pending_work || summary?.stock_out || summary?.operations || partialError,
+    summary?.pending_work || summary?.stock_out || summary?.operations || partialError,
   );
 
   return (
@@ -46,7 +45,7 @@ export default function Home() {
         <header className="mb-4 sm:mb-6">
           <h1 className="text-[24px] font-bold text-[var(--ink)]">ภาพรวม</h1>
           <p className="text-[14px] text-[var(--ink-muted)]">
-            ตัวเลขจากข้อมูลจริง ช่วง &quot;วันนี้&quot; และ &quot;เดือนนี้&quot; นับตามเวลาไทย
+            ตัวเลขจากข้อมูลจริง ยอดขายและรับชำระดูได้ที่ Dashboard ยอดขาย
           </p>
         </header>
 
@@ -55,7 +54,6 @@ export default function Home() {
         {summary?.pending_work && <PendingWork work={summary.pending_work} onOpen={setOpenList} />}
         {summary?.stock_out && <StockOut stock={summary.stock_out} onOpen={setOpenList} />}
         {summary?.operations && <Operations operations={summary.operations} onOpen={setOpenList} />}
-        {summary?.sales && <SalesSummary sales={summary.sales} />}
 
         {isLoading && !summary && <p className="text-[14px] text-[var(--ink-muted)]">กำลังโหลด...</p>}
         {summary && !hasContent && (
