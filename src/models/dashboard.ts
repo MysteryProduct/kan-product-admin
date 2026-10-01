@@ -5,6 +5,7 @@ import type {
   DashboardListKey,
   DashboardSummary,
   SalesDashboard,
+  SalesMix,
   TopProductRange,
   TopProducts,
 } from '@/types/dashboard';
@@ -32,6 +33,12 @@ export default class DashboardModel {
   /** The ten best-selling products of a period. */
   async getTopProducts(range: TopProductRange): Promise<TopProducts> {
     const response = await axiosInstance.get<TopProducts>('/dashboard/top-products', { params: { range } });
+    return response.data;
+  }
+
+  /** Receipts by payment method and sales by channel for a period. */
+  async getSalesMix(range: TopProductRange): Promise<SalesMix> {
+    const response = await axiosInstance.get<SalesMix>('/dashboard/sales-mix', { params: { range } });
     return response.data;
   }
 

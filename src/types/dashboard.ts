@@ -90,6 +90,10 @@ export interface Cashflow {
   expense?: CashflowSeries;
   /** Value of approved goods receipts. */
   purchases?: CashflowSeries;
+  /** Money given back by refund receipts (positive). */
+  refunds?: CashflowSeries;
+  /** What was received before refunds: income = receipts - refunds. */
+  receipts?: CashflowSeries;
   unavailable?: string[];
 }
 
@@ -116,6 +120,33 @@ export interface TopProducts {
   to: string;
   /** Left out when the employee may not view sale orders. */
   items?: TopProduct[];
+  unavailable?: string[];
+}
+
+export interface PaymentMethodShare {
+  /** As stored (promptpay, card, cash, ...); null when it was not recorded. */
+  method: string | null;
+  count: number;
+  amount: number;
+}
+
+export interface SalesChannelShare {
+  /** The sale order type as stored (store, online, order, ...). */
+  type: string;
+  count: number;
+  amount: number;
+}
+
+/** Receipts by payment method and sales by channel for one period (sales dashboard). */
+export interface SalesMix {
+  timezone: 'Asia/Bangkok';
+  generated_at: string;
+  range: TopProductRange;
+  /** The period as Bangkok dates: from (included) to (not included). */
+  from: string;
+  to: string;
+  payment_methods?: { items: PaymentMethodShare[]; refunded: number };
+  channels?: SalesChannelShare[];
   unavailable?: string[];
 }
 

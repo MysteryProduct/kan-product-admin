@@ -4,24 +4,13 @@ import { useEffect, useState } from 'react';
 import { formatBaht } from '@/components/charts/scale';
 import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 import { unavailableText } from '@/components/dashboard/blockLabels';
+import { RANGES, periodText } from '@/components/dashboard/ranges';
 import DashboardModel from '@/models/dashboard';
 import type { TopProductRange, TopProducts } from '@/types/dashboard';
 
 const dashboardModel = new DashboardModel();
 
-const RANGES: { key: TopProductRange; label: string }[] = [
-  { key: 'this_month', label: 'เดือนนี้' },
-  { key: 'last_3_months', label: '3 เดือนล่าสุด' },
-  { key: 'this_year', label: 'ปีนี้' },
-  { key: 'all', label: 'ทั้งหมด (ไม่เกิน 5 ปี)' },
-];
-
 const count = (value: number) => new Intl.NumberFormat('th-TH').format(value);
-const thaiDate = (value: string) =>
-  new Intl.DateTimeFormat('th-TH', { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`));
-// "to" is the first day after the period; the last day shown is the day before it.
-const lastDay = (to: string) => new Date(new Date(`${to}T00:00:00Z`).getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-
 type Loaded = { range: TopProductRange; retry: number; data: TopProducts } | { range: TopProductRange; retry: number; error: string };
 
 /**
@@ -75,7 +64,7 @@ export default function TopProductsSection() {
           </label>
           {data && (
             <p className="pb-2 text-[13px] text-[var(--ink-muted)]">
-              {thaiDate(data.from)} – {thaiDate(lastDay(data.to))}
+              {periodText(data.from, data.to)}
             </p>
           )}
         </div>

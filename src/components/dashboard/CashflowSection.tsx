@@ -17,11 +17,12 @@ const MAX_YEARS = 5;
 const YEAR_CHOICES = 10;
 const MONTHS = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
 
-type Metric = 'income' | 'expense' | 'purchases';
+type Metric = 'income' | 'expense' | 'purchases' | 'refunds';
 const METRICS: { key: Metric; label: string }[] = [
   { key: 'income', label: 'รายรับ (สุทธิหลังคืนเงิน)' },
   { key: 'expense', label: 'รายจ่าย (จ่ายให้ผู้จัดจำหน่าย)' },
   { key: 'purchases', label: 'มูลค่าซื้อเข้า (ใบรับสินค้าที่อนุมัติ)' },
+  { key: 'refunds', label: 'ยอดคืนเงิน (อัตราคืนอยู่ในตาราง)' },
 ];
 
 const buddhist = (year: number) => year + 543;
@@ -90,6 +91,10 @@ export default function CashflowSection() {
   const monthlySource = data?.[activeMetric];
   const hasAnyMonthly = monthlySource ? monthlySeries(monthlySource).some((line) => line.values.some((value) => value)) : false;
   const hasAnyYearly = yearlySeries.some((bar) => bar.values.some((value) => value));
+  /** Refunds as a share of what was received before them, for a month or a year; null when nothing was received. */
+  const refundRate = (refunded: number | null | undefined, received: number | null | undefined) =>
+    refunded === null || refunded === undefined || !received ? null : (refunded / received) * 100;
+  const percent = (value: number | null) => (value === null ? '' : ` (${value.toFixed(1)}%)`);
   const metricLabel = METRICS.find((item) => item.key === activeMetric)?.label ?? '';
 
   return (
@@ -175,9 +180,10 @@ export default function CashflowSection() {
                       </th>
                       {years.map((year) => {
                         const value = monthlySource.monthly[String(year)]?.[index];
+                        const rate = activeMetric === 'refunds' ? refundRate(value, data.receipts?.monthly[String(year)]?.[index]) : null;
                         return (
                           <td key={year} className="whitespace-nowrap text-right">
-                            {value === null || value === undefined ? '-' : formatBaht(value)}
+                            {value === null || value === undefined ? '-' : `${formatBaht(value)}${percent(rate)}`}
                           </td>
                         );
                       })}
@@ -188,6 +194,7 @@ export default function CashflowSection() {
                     {years.map((year) => (
                       <td key={year} className="whitespace-nowrap text-right font-semibold">
                         {formatBaht(monthlySource.yearly[String(year)] ?? 0)}
+                        {activeMetric === 'refunds' && percent(refundRate(monthlySource.yearly[String(year)], data.receipts?.yearly[String(year)]))}
                       </td>
                     ))}
                   </tr>
@@ -219,6 +226,8 @@ export default function CashflowSection() {
                     {data.expense && <th scope="col" className="text-right">รายจ่าย</th>}
                     {data.income && data.expense && <th scope="col" className="text-right">ส่วนต่าง</th>}
                     {data.purchases && <th scope="col" className="text-right">มูลค่าซื้อเข้า</th>}
+                    {data.refunds && <th scope="col" className="text-right">ยอดคืนเงิน</th>}
+                    {data.refunds && data.receipts && <th scope="col" className="text-right">อัตราคืน</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -240,6 +249,13 @@ export default function CashflowSection() {
                             <td className="whitespace-nowrap text-right font-semibold">{formatBaht(Math.round((income - expense) * 100) / 100)}</td>
                           )}
                           {data.purchases && <td className="whitespace-nowrap text-right">{formatBaht(data.purchases.yearly[String(year)] ?? 0)}</td>}
+                          {data.refunds && <td className="whitespace-nowrap text-right">{formatBaht(data.refunds.yearly[String(year)] ?? 0)}</td>}
+                          {data.refunds && data.receipts && (
+                            <td className="whitespace-nowrap text-right">
+                              {refundRate(data.refunds.yearly[String(year)], data.receipts.yearly[String(year)])?.toFixed(1) ?? '-'}
+                              {refundRate(data.refunds.yearly[String(year)], data.receipts.yearly[String(year)]) === null ? '' : '%'}
+                            </td>
+                          )}
                         </tr>
                       );
                     })}
