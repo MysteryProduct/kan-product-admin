@@ -36,6 +36,13 @@
   --neutral-soft: #eceff2;
   --scrim: rgba(17, 21, 27, 0.55);
 
+  /* Chart series, in fixed order (validated for light and dark; never cycled). */
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
+  --chart-3: #1baf7a;
+  --chart-4: #eda100;
+  --chart-5: #e87ba4;
+
   --shadow-card: 0 0 0 1px rgba(32, 40, 51, 0.06), 0 1px 2px rgba(32, 40, 51, 0.05);
   --shadow-raise: 0 1px 2px rgba(32, 40, 51, 0.06), 0 8px 20px rgba(32, 40, 51, 0.09);
   --shadow-overlay: 0 2px 4px rgba(32, 40, 51, 0.06), 0 20px 48px rgba(32, 40, 51, 0.18);
@@ -116,6 +123,11 @@ html.dark {
   --neutral: #c3cad3;
   --neutral-soft: #252c36;
   --scrim: rgba(0, 0, 0, 0.62);
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-3: #199e70;
+  --chart-4: #c98500;
+  --chart-5: #d55181;
 
   --shadow-card: 0 0 0 1px rgba(148, 163, 184, 0.1), 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-raise: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 24px rgba(0, 0, 0, 0.4);

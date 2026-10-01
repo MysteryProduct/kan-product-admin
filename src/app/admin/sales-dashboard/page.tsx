@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import DashboardModel from '@/models/dashboard';
 import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 import SalesSummary from '@/components/dashboard/SalesSummary';
+import CashflowSection from '@/components/dashboard/CashflowSection';
 import { unavailableText } from '@/components/dashboard/blockLabels';
 import type { SalesDashboard } from '@/types/dashboard';
 
@@ -45,6 +46,8 @@ export default function SalesDashboardPage() {
         <LoadErrorBanner message={error ?? partialError} onRetry={() => void load()} className="mb-4" />
 
         {data?.sales && <SalesSummary sales={data.sales} />}
+
+        <CashflowSection />
 
         {isLoading && !data && <p className="text-[14px] text-[var(--ink-muted)]">กำลังโหลด...</p>}
         {data && !data.sales && !partialError && (

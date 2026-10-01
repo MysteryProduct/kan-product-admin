@@ -69,6 +69,30 @@ export interface SalesDashboard {
   unavailable?: string[];
 }
 
+/** One measure by month and year; a month that has not begun is null. */
+export interface CashflowSeries {
+  /** Per year, 12 months in baht. */
+  monthly: Record<string, (number | null)[]>;
+  /** Per year, the sum of its months (the current year counts up to today). */
+  yearly: Record<string, number>;
+}
+
+/** Income, expense and purchases by Bangkok month and year (sales dashboard charts). */
+export interface Cashflow {
+  timezone: 'Asia/Bangkok';
+  generated_at: string;
+  from_year: number;
+  to_year: number;
+  current: { year: number; month: number };
+  /** Net receipts after refunds. */
+  income?: CashflowSeries;
+  /** Money paid to suppliers. */
+  expense?: CashflowSeries;
+  /** Value of approved goods receipts. */
+  purchases?: CashflowSeries;
+  unavailable?: string[];
+}
+
 export interface DashboardSummary {
   timezone: 'Asia/Bangkok';
   generated_at: string;

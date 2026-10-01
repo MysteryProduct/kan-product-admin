@@ -1,5 +1,5 @@
 import axiosInstance from '@/lib/axios';
-import type { DashboardList, DashboardListKey, DashboardSummary, SalesDashboard } from '@/types/dashboard';
+import type { Cashflow, DashboardList, DashboardListKey, DashboardSummary, SalesDashboard } from '@/types/dashboard';
 
 export default class DashboardModel {
   async getSummary(): Promise<DashboardSummary> {
@@ -10,6 +10,14 @@ export default class DashboardModel {
   /** Sales and receipts for today and this month, for the sales dashboard page. */
   async getSalesSummary(): Promise<SalesDashboard> {
     const response = await axiosInstance.get<SalesDashboard>('/dashboard/sales-summary');
+    return response.data;
+  }
+
+  /** Income, expense and purchases by month and year; at most five years (the API refuses more). */
+  async getCashflow(fromYear: number, toYear: number): Promise<Cashflow> {
+    const response = await axiosInstance.get<Cashflow>('/dashboard/cashflow', {
+      params: { from_year: fromYear, to_year: toYear },
+    });
     return response.data;
   }
 
