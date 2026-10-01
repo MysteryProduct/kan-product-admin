@@ -71,21 +71,42 @@ export interface DashboardSummary {
   unavailable?: string[];
 }
 
-/** The Dashboard numbers whose rows can be opened; a key equals its name in PendingWork. */
+/** The Dashboard numbers whose rows can be opened; one key per number. */
 export type DashboardListKey =
   | 'sale_orders_to_approve'
   | 'store_orders_to_review'
   | 'store_orders_to_ship'
   | 'store_orders_to_pickup'
   | 'contact_requests_new'
-  | 'purchase_orders_to_approve';
+  | 'purchase_orders_to_approve'
+  | 'stock_out_products'
+  | 'stock_out_materials'
+  | 'job_orders_pending'
+  | 'job_orders_in_progress'
+  | 'job_orders_completed'
+  | 'job_orders_cancelled'
+  | 'job_orders_overdue'
+  | 'purchase_orders_to_receive'
+  | 'supplier_invoices_unpaid'
+  | 'supplier_invoices_overdue'
+  | 'supplier_invoices_due_soon';
 
 /** What a row is, which decides the existing detail view that can open it. */
-export type DashboardListKind = 'sale_order' | 'store_order' | 'contact_request' | 'purchase_order';
+export type DashboardListKind =
+  | 'sale_order'
+  | 'store_order'
+  | 'contact_request'
+  | 'purchase_order'
+  | 'product_variant'
+  | 'material'
+  | 'job_order'
+  | 'invoice_supplier';
 
 /** One row of GET /dashboard/lists/:list; the same shape for every list. */
 export interface DashboardListRow {
   id: string;
+  /** The record that opens from the row; a variant stands for part of its product, so it opens the product. */
+  ref_id: string;
   kind: DashboardListKind;
   code: string | null;
   title: string | null;

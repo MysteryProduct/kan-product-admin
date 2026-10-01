@@ -53,8 +53,8 @@ export default function Home() {
         <LoadErrorBanner message={error ?? partialError} onRetry={() => void load()} className="mb-4" />
 
         {summary?.pending_work && <PendingWork work={summary.pending_work} onOpen={setOpenList} />}
-        {summary?.stock_out && <StockOut stock={summary.stock_out} />}
-        {summary?.operations && <Operations operations={summary.operations} />}
+        {summary?.stock_out && <StockOut stock={summary.stock_out} onOpen={setOpenList} />}
+        {summary?.operations && <Operations operations={summary.operations} onOpen={setOpenList} />}
         {summary?.sales && <SalesSummary sales={summary.sales} />}
 
         {isLoading && !summary && <p className="text-[14px] text-[var(--ink-muted)]">กำลังโหลด...</p>}

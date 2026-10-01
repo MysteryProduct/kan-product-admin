@@ -1,51 +1,35 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { usePermissions } from '@/hooks/usePermissions';
-import StoreFulfillmentModel from '@/models/store-fulfillment';
-import { StoreOrderWithParcels } from '@/types/store-fulfillment';
-import { getApiErrorMessage } from '@/lib/api-error';
-import CreateParcelModal from './components/create-parcel-modal';
-import ParcelCard from './components/parcel-card';
-import PickupCard from './components/pickup-card';
-import CancellationCard from './components/cancellation-card';
-import DeliveryConversionCard from './components/delivery-conversion-card';
-import TaxInvoiceCard from './components/tax-invoice-card';
-import TaxInvoiceRequestList from './components/tax-invoice-request-list';
+import { useState } from "react";
+import { usePermissions } from "@/hooks/usePermissions";
+import StoreFulfillmentModel from "@/models/store-fulfillment";
+import { StoreOrderWithParcels } from "@/types/store-fulfillment";
+import { getApiErrorMessage } from "@/lib/api-error";
+import StoreOrderFulfillment from "./components/store-order-fulfillment";
+import TaxInvoiceRequestList from "./components/tax-invoice-request-list";
 
 const storeFulfillmentModel = new StoreFulfillmentModel();
 
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-const statusLabels: Record<string, string> = {
-  awaiting_payment: 'รอชำระเงิน',
-  paid: 'ชำระเงินแล้ว',
-  expired: 'หมดเวลา',
-  awaiting_review: 'กำลังตรวจสอบ',
-  cancelled: 'ยกเลิกแล้ว',
-};
-
 export default function StoreFulfillmentPage() {
   const { can } = usePermissions();
-  const canView = can('store_fulfillment', 'view');
-  const canAdd = can('store_fulfillment', 'add');
-  const canEdit = can('store_fulfillment', 'edit');
+  const canView = can("store_fulfillment", "view");
 
-  const [storeOrderIdInput, setStoreOrderIdInput] = useState('');
+  const [storeOrderIdInput, setStoreOrderIdInput] = useState("");
   const [order, setOrder] = useState<StoreOrderWithParcels | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [showCreateParcel, setShowCreateParcel] = useState(false);
+  const [error, setError] = useState("");
 
   async function search(id?: string) {
     const targetId = (id ?? storeOrderIdInput).trim();
     if (!uuidPattern.test(targetId)) {
-      setError('รูปแบบเลขคำสั่งซื้อไม่ถูกต้อง');
+      setError("รูปแบบเลขคำสั่งซื้อไม่ถูกต้อง");
       return;
     }
     setLoading(true);
-    setError('');
+    setError("");
     try {
       setOrder(await storeFulfillmentModel.getOrder(targetId));
     } catch (err) {
@@ -65,25 +49,6 @@ export default function StoreFulfillmentPage() {
       </div>
     );
   }
-
-  const hasRemaining = order?.items.some((line) => line.remainingUnshipped > 0);
-  // A pending or approved cancellation holds fulfillment, so the API would
-  // refuse a new parcel anyway; the button is hidden rather than left to fail.
-  const cancellationHolds =
-    order?.cancellation?.status === 'pending' ||
-    order?.cancellation?.status === 'approved';
-  const canCreateParcel =
-    canAdd &&
-    order?.status === 'paid' &&
-    order.fulfillmentMethod === 'delivery' &&
-    !cancellationHolds;
-  // TASK-0037: no cash on delivery, so the API refuses a parcel while
-  // shipping is still owed; staff are told why instead of meeting the error.
-  const unpaidShipping = order?.shippingCharges.find(
-    (charge) =>
-      charge.status === 'awaiting_payment' ||
-      charge.status === 'pending_review',
-  );
 
   return (
     <div className="min-h-full bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
@@ -110,7 +75,7 @@ export default function StoreFulfillmentPage() {
               disabled={loading}
               className="ka-btn ka-btn--primary min-h-11"
             >
-              {loading ? 'กำลังค้นหา...' : 'ค้นหา'}
+              {loading ? "กำลังค้นหา..." : "ค้นหา"}
             </button>
           </form>
         </div>
@@ -123,99 +88,11 @@ export default function StoreFulfillmentPage() {
       )}
 
       {order && (
-        <div className="mt-4 grid gap-4">
-          <div className="ka-card p-4 sm:p-6">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <p className="text-sm text-[var(--color-text-secondary)]">
-                  คำสั่งซื้อ #{order.storeOrderId}
-                </p>
-                <p className="font-medium">
-                  {order.fulfillmentMethod === 'delivery' ? 'จัดส่ง' : 'รับที่ร้าน'} ·{' '}
-                  {statusLabels[order.status] ?? order.status}
-                </p>
-              </div>
-              {canCreateParcel && (
-                <button
-                  type="button"
-                  onClick={() => setShowCreateParcel(true)}
-                  disabled={!hasRemaining || !!unpaidShipping}
-                  className="ka-btn ka-btn--primary min-h-11"
-                >
-                  บันทึกพัสดุใหม่
-                </button>
-              )}
-            </div>
-            {canCreateParcel && unpaidShipping && (
-              <p className="mt-2 text-sm text-[var(--warning)]">
-                รอลูกค้าชำระค่าจัดส่ง {unpaidShipping.amount} บาท จึงจะบันทึกพัสดุได้
-              </p>
-            )}
-
-            <table className="mt-4 w-full text-sm">
-              <thead>
-                <tr className="border-b border-[var(--color-border)] text-left text-[var(--color-text-secondary)]">
-                  <th className="py-2">สินค้า</th>
-                  <th className="py-2 text-right">ซื้อ</th>
-                  <th className="py-2 text-right">ส่งแล้ว</th>
-                  <th className="py-2 text-right">คงเหลือ</th>
-                </tr>
-              </thead>
-              <tbody>
-                {order.items.map((line) => (
-                  <tr key={line.saleOrderListId} className="border-b border-[var(--border)]">
-                    <td className="py-2">{line.productName}</td>
-                    <td className="py-2 text-right">{line.purchasedQty}</td>
-                    <td className="py-2 text-right">{line.shippedQty}</td>
-                    <td className="py-2 text-right">{line.remainingUnshipped}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {order.taxInvoice && <TaxInvoiceCard request={order.taxInvoice} />}
-
-          {order.cancellation && (
-            <CancellationCard
-              cancellation={order.cancellation}
-              canEdit={canEdit}
-              onChanged={() => void search(order.storeOrderId)}
-            />
-          )}
-
-          <DeliveryConversionCard
+        <div className="mt-4">
+          <StoreOrderFulfillment
             order={order}
-            canEdit={canEdit}
-            cancellationHolds={cancellationHolds}
             onChanged={() => void search(order.storeOrderId)}
           />
-
-          {order.fulfillmentMethod === 'pickup' && order.pickup && (
-            <PickupCard
-              storeOrderId={order.storeOrderId}
-              pickup={order.pickup}
-              orderPaid={order.status === 'paid'}
-              canEdit={canEdit}
-              onChanged={() => void search(order.storeOrderId)}
-            />
-          )}
-
-          <div className="grid gap-3">
-            {order.fulfillmentMethod === 'delivery' && order.parcels.length === 0 && (
-              <p className="text-sm text-[var(--color-text-secondary)]">
-                ยังไม่มีพัสดุสำหรับคำสั่งซื้อนี้
-              </p>
-            )}
-            {order.parcels.map((parcel) => (
-              <ParcelCard
-                key={parcel.parcelId}
-                parcel={parcel}
-                canEdit={canEdit}
-                onChanged={() => void search(order.storeOrderId)}
-              />
-            ))}
-          </div>
         </div>
       )}
 
@@ -223,20 +100,9 @@ export default function StoreFulfillmentPage() {
         onOpen={(storeOrderId) => {
           setStoreOrderIdInput(storeOrderId);
           void search(storeOrderId);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          window.scrollTo({ top: 0, behavior: "smooth" });
         }}
       />
-
-      {order && showCreateParcel && (
-        <CreateParcelModal
-          isOpen={showCreateParcel}
-          onClose={() => setShowCreateParcel(false)}
-          onSuccess={() => void search(order.storeOrderId)}
-          storeOrderId={order.storeOrderId}
-          lines={order.items}
-          defaultAddress={order.defaultAddress}
-        />
-      )}
     </div>
   );
 }
