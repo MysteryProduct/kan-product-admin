@@ -27,8 +27,9 @@ import type {
 
 const dashboardModel = new DashboardModel();
 
+// A refund is negative: "-฿120.00", not "฿-120.00".
 const baht = (value: number) =>
-  `฿${new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)}`;
+  `${value < 0 ? "-" : ""}฿${new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(value))}`;
 
 // The statuses these lists can hold, in words and tone, by what the row is (the
 // same word can mean different things: "pending" of an order or of a job).
@@ -37,6 +38,19 @@ const STATUS_VIEWS: Partial<
 > = {
   sale_order: {
     pending: { label: "รออนุมัติ", tone: SALE_ORDER_STATUS_TONE.pending },
+    approved: { label: "อนุมัติแล้ว", tone: SALE_ORDER_STATUS_TONE.approved },
+    partial: { label: "ชำระบางส่วน", tone: SALE_ORDER_STATUS_TONE.partial },
+    paid: { label: "ชำระแล้ว", tone: SALE_ORDER_STATUS_TONE.paid },
+    cancelled: { label: "ยกเลิก", tone: SALE_ORDER_STATUS_TONE.cancelled },
+    partially_returned: {
+      label: "คืนสินค้าบางส่วน",
+      tone: SALE_ORDER_STATUS_TONE.partially_returned,
+    },
+    returned: { label: "คืนสินค้าแล้ว", tone: SALE_ORDER_STATUS_TONE.returned },
+  },
+  payment_receipt: {
+    paid: { label: "ชำระแล้ว", tone: "success" },
+    refunded: { label: "คืนเงินแล้ว", tone: "warning" },
   },
   purchase_order: {
     pending: { label: "รออนุมัติ", tone: PURCHASE_ORDER_STATUS_TONE.pending },
@@ -145,7 +159,11 @@ export default function DashboardListModal({
         description={
           total === undefined
             ? undefined
-            : `ทั้งหมด ${new Intl.NumberFormat("th-TH").format(total)} รายการ`
+            : `ทั้งหมด ${new Intl.NumberFormat("th-TH").format(total)} รายการ${
+                result?.amount_total === undefined
+                  ? ""
+                  : ` · รวม ${baht(result.amount_total)}`
+              }`
         }
         size="xl"
         footer={

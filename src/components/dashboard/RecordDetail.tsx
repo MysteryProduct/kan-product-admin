@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import ContactRequestModel from "@/models/contact-request";
 import InvoiceSupplierModel from "@/models/invoice-supplier";
+import PaymentReceiptModel from "@/models/payment-receipt";
 import PurchaseOrderModel from "@/models/purchase-order";
 import SaleOrderModel from "@/models/sale-order";
 import SupplierModel from "@/models/supplier";
@@ -11,6 +12,7 @@ import InvoiceSupplierDetailModal from "@/app/admin/invoice-supplier/components/
 import JobOrderDetailModal from "@/app/admin/job-orders/components/detail";
 import MaterialDetailModal from "@/app/admin/materials/components/detail";
 import ProductDetailModal from "@/app/admin/products/components/detail";
+import PaymentReceiptDetailModal from "@/app/admin/payment-receipts/components/detail";
 import PurchaseOrderDetailModal from "@/app/admin/purchase-orders/components/detail";
 import SaleOrderDetailModal from "@/app/admin/sale-orders/components/detail";
 import StoreOrderModal from "@/app/admin/store-fulfillment/components/store-order-modal";
@@ -21,11 +23,13 @@ import type { InvoiceSupplierRow } from "@/types/invoice-supplier";
 import type { JobOrder } from "@/types/job-order";
 import type { Material } from "@/types/material";
 import type { Product } from "@/types/product";
+import type { PaymentReceipt } from "@/types/payment-receipt";
 import type { PurchaseOrder } from "@/types/purchase-order";
 import type { SaleOrder } from "@/types/sale-order";
 import type { DashboardListKind } from "@/types/dashboard";
 
 const saleOrderModel = new SaleOrderModel();
+const paymentReceiptModel = new PaymentReceiptModel();
 const purchaseOrderModel = new PurchaseOrderModel();
 const contactRequestModel = new ContactRequestModel();
 const invoiceSupplierModel = new InvoiceSupplierModel();
@@ -48,6 +52,7 @@ async function getRecord<T extends object>(
 /** Kinds of row that an existing detail view can open from here. */
 export const OPENABLE_KINDS: DashboardListKind[] = [
   "sale_order",
+  "payment_receipt",
   "purchase_order",
   "contact_request",
   "product_variant",
@@ -59,6 +64,7 @@ export const OPENABLE_KINDS: DashboardListKind[] = [
 
 type Loaded =
   | { kind: "sale_order"; record: SaleOrder }
+  | { kind: "payment_receipt"; record: PaymentReceipt }
   | { kind: "purchase_order"; record: PurchaseOrder }
   | { kind: "contact_request"; record: ContactRequest }
   | { kind: "product_variant"; record: Product }
@@ -97,6 +103,11 @@ export default function RecordDetail({
     const load = async (): Promise<Loaded> => {
       if (kind === "sale_order")
         return { kind, record: await saleOrderModel.getSaleOrderById(id) };
+      if (kind === "payment_receipt")
+        return {
+          kind,
+          record: await paymentReceiptModel.getPaymentReceiptById(id),
+        };
       if (kind === "purchase_order")
         return {
           kind,
@@ -182,6 +193,15 @@ export default function RecordDetail({
         onClose={onClose}
         onSuccess={changed}
         saleOrder={loaded.record}
+      />
+    );
+  }
+  if (loaded.kind === "payment_receipt") {
+    return (
+      <PaymentReceiptDetailModal
+        isOpen
+        onClose={onClose}
+        paymentReceipt={loaded.record}
       />
     );
   }

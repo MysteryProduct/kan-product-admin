@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import DashboardModel from '@/models/dashboard';
 import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 import SalesSummary from '@/components/dashboard/SalesSummary';
+import DashboardListModal, { type OpenList } from '@/components/dashboard/DashboardListModal';
 import CashflowSection from '@/components/dashboard/CashflowSection';
 import TopProductsSection from '@/components/dashboard/TopProductsSection';
 import SalesMixSection from '@/components/dashboard/SalesMixSection';
@@ -16,6 +17,7 @@ export default function SalesDashboardPage() {
   const [data, setData] = useState<SalesDashboard | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [openList, setOpenList] = useState<OpenList | null>(null);
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -47,7 +49,7 @@ export default function SalesDashboardPage() {
 
         <LoadErrorBanner message={error ?? partialError} onRetry={() => void load()} className="mb-4" />
 
-        {data?.sales && <SalesSummary sales={data.sales} />}
+        {data?.sales && <SalesSummary sales={data.sales} onOpen={setOpenList} />}
 
         <CashflowSection />
         <TopProductsSection />
@@ -58,6 +60,10 @@ export default function SalesDashboardPage() {
           <p className="text-[14px] text-[var(--ink-muted)]">ยังไม่มีข้อมูลที่แสดงได้ตามสิทธิ์ของคุณ</p>
         )}
       </main>
+
+      {openList && (
+        <DashboardListModal list={openList} onClose={() => setOpenList(null)} onChanged={() => void load()} />
+      )}
     </div>
   );
 }

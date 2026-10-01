@@ -162,6 +162,12 @@ export interface DashboardSummary {
 
 /** The Dashboard numbers whose rows can be opened; one key per number. */
 export type DashboardListKey =
+  | 'sales_received_today'
+  | 'sales_received_month'
+  | 'sales_approved_today'
+  | 'sales_approved_month'
+  | 'sales_store_orders_today'
+  | 'sales_store_orders_month'
   | 'sale_orders_to_approve'
   | 'store_orders_to_review'
   | 'store_orders_to_ship'
@@ -183,6 +189,7 @@ export type DashboardListKey =
 /** What a row is, which decides the existing detail view that can open it. */
 export type DashboardListKind =
   | 'sale_order'
+  | 'payment_receipt'
   | 'store_order'
   | 'contact_request'
   | 'purchase_order'
@@ -208,4 +215,6 @@ export interface DashboardListRow {
 export interface DashboardList {
   data: DashboardListRow[];
   meta: PaginationMeta;
+  /** For a money card: the figure on the card, the sum of every row of the list. */
+  amount_total?: number;
 }
