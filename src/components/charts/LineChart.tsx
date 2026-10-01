@@ -85,7 +85,7 @@ export default function LineChart({ title, categories, series }: LineChartProps)
 
       {hover !== null && (
         <div
-          role="status"
+          aria-hidden="true"
           className="pointer-events-none absolute top-2 z-10 min-w-[150px] rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--bg-surface)] p-2 text-[13px] shadow-[var(--shadow-raise)]"
           style={{ left: Math.min(Math.max(x(hover) + 12, 0), Math.max(width - 170, 0)) }}
         >

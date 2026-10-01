@@ -106,7 +106,7 @@ export interface TopProduct {
   name: string;
   /** Units sold, net of returns. */
   quantity: number;
-  /** Net units at the line price, before VAT and shipping. */
+  /** Net units at the price written on the sale order lines; VAT and shipping of the whole order are not added. */
   amount: number;
 }
 

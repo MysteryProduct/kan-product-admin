@@ -77,7 +77,7 @@ export default function GroupedBarChart({ title, categories, series }: GroupedBa
 
       {hover !== null && (
         <div
-          role="status"
+          aria-hidden="true"
           className="pointer-events-none absolute top-2 z-10 min-w-[150px] rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--bg-surface)] p-2 text-[13px] shadow-[var(--shadow-raise)]"
           style={{ left: Math.min(Math.max(PAD.left + groupWidth * (hover + 0.5) + 16, 0), Math.max(width - 170, 0)) }}
         >

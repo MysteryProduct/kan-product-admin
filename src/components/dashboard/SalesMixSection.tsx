@@ -153,7 +153,7 @@ export default function SalesMixSection() {
                 <p className="text-[14px] text-[var(--ink-muted)]">ยังไม่มียอดขายในช่วงเวลานี้</p>
               )}
               <p className="mt-3 text-[13px] text-[var(--ink-muted)]">
-                นับใบขายที่อนุมัติแล้ว ตามยอดรวมก่อน VAT และค่าส่ง ยังไม่หักใบที่คืนภายหลัง
+                นับใบขายที่อนุมัติแล้ว ตามยอดรวมของใบ (รวม VAT และค่าส่ง) ยังไม่หักใบที่คืนภายหลัง
               </p>
             </div>
           )}

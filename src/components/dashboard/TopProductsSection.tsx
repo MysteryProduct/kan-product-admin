@@ -112,7 +112,7 @@ export default function TopProductsSection() {
                         จำนวน (ชิ้น)
                       </th>
                       <th scope="col" className="text-right">
-                        มูลค่า
+                        มูลค่าตามราคาในรายการ
                       </th>
                     </tr>
                   </thead>
