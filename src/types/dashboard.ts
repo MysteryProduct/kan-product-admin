@@ -93,6 +93,32 @@ export interface Cashflow {
   unavailable?: string[];
 }
 
+export type TopProductRange = 'this_month' | 'last_3_months' | 'this_year' | 'all';
+
+export interface TopProduct {
+  rank: number;
+  /** Null for a sale order line that has no product variant. */
+  product_id: string | null;
+  name: string;
+  /** Units sold, net of returns. */
+  quantity: number;
+  /** Net units at the line price, before VAT and shipping. */
+  amount: number;
+}
+
+/** The best-selling products of a period (sales dashboard). */
+export interface TopProducts {
+  timezone: 'Asia/Bangkok';
+  generated_at: string;
+  range: TopProductRange;
+  /** The period as Bangkok dates: from (included) to (not included). */
+  from: string;
+  to: string;
+  /** Left out when the employee may not view sale orders. */
+  items?: TopProduct[];
+  unavailable?: string[];
+}
+
 export interface DashboardSummary {
   timezone: 'Asia/Bangkok';
   generated_at: string;

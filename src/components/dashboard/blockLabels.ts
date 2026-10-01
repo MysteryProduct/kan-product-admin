@@ -3,6 +3,7 @@ const BLOCK_LABELS: Record<string, string> = {
   'sales.received': 'ยอดที่รับชำระจริง',
   'sales.approved': 'ยอดใบขายที่อนุมัติ',
   'sales.store_orders': 'คำสั่งซื้อหน้าร้านที่ชำระแล้ว',
+  'top_products.items': 'สินค้าขายดี',
   'cashflow.income': 'รายรับ',
   'cashflow.expense': 'รายจ่าย',
   'cashflow.purchases': 'มูลค่าซื้อเข้า',

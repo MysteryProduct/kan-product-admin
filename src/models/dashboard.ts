@@ -1,5 +1,13 @@
 import axiosInstance from '@/lib/axios';
-import type { Cashflow, DashboardList, DashboardListKey, DashboardSummary, SalesDashboard } from '@/types/dashboard';
+import type {
+  Cashflow,
+  DashboardList,
+  DashboardListKey,
+  DashboardSummary,
+  SalesDashboard,
+  TopProductRange,
+  TopProducts,
+} from '@/types/dashboard';
 
 export default class DashboardModel {
   async getSummary(): Promise<DashboardSummary> {
@@ -18,6 +26,12 @@ export default class DashboardModel {
     const response = await axiosInstance.get<Cashflow>('/dashboard/cashflow', {
       params: { from_year: fromYear, to_year: toYear },
     });
+    return response.data;
+  }
+
+  /** The ten best-selling products of a period. */
+  async getTopProducts(range: TopProductRange): Promise<TopProducts> {
+    const response = await axiosInstance.get<TopProducts>('/dashboard/top-products', { params: { range } });
     return response.data;
   }
 
