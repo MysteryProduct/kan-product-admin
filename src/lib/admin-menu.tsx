@@ -74,6 +74,7 @@ export const adminMenu: AdminMenuSection[] = [
         subItems: [
           { title: 'คำขอติดต่อกลับ', menu_name: 'contact_requests', href: '/admin/contact-requests' },
           { title: 'จัดส่งพัสดุ', menu_name: 'store_fulfillment', href: '/admin/store-fulfillment' },
+          { title: 'เปิดล็อตขาย', menu_name: 'store_fulfillment', href: '/admin/store-lots' },
         ],
       },
       {
