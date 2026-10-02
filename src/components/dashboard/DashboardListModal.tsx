@@ -16,6 +16,8 @@ import {
   INVOICE_SUPPLIER_STATUS_TONE,
   PURCHASE_ORDER_STATUS_TONE,
   SALE_ORDER_STATUS_TONE,
+  STORE_CANCELLATION_STATUS_TONE,
+  STORE_PICKUP_STATUS_TONE,
 } from "@/lib/status-tones";
 import { INVOICE_STATUS_LABELS } from "@/types/invoice-supplier";
 import type {
@@ -63,9 +65,40 @@ const STATUS_VIEWS: Partial<
       tone: PURCHASE_ORDER_STATUS_TONE.partial,
     },
   },
+  // The Store work queues send why the order is listed rather than its own
+  // status. Pickup, shipping and an attempt in flight use the order page's
+  // words; the refund reasons say what staff have to do (TASK-0089).
   store_order: {
     awaiting_review: { label: "รอตรวจ", tone: "warning" },
     paid: { label: "ชำระแล้ว", tone: "success" },
+    cancellation_pending: {
+      label: "รอพิจารณา",
+      tone: STORE_CANCELLATION_STATUS_TONE.pending,
+    },
+    refund_failed: { label: "คืนไม่สำเร็จ", tone: "danger" },
+    refund_transfer_due: { label: "ต้องโอนคืน", tone: "warning" },
+    shipping_overpaid: { label: "ค่าส่งจ่ายเกิน", tone: "warning" },
+    refund_reversal_pending: {
+      label: "คืนแล้ว รอปิดคำสั่งซื้อ",
+      tone: "warning",
+    },
+    // Nothing asks the gateway again by itself: staff press "ลองคืนเงินอีกครั้ง".
+    refund_retry_due: { label: "รอผล กดตรวจอีกครั้ง", tone: "warning" },
+    refund_account_required: { label: "รอลูกค้าแจ้งบัญชี", tone: "warning" },
+    refund_processing: { label: "กำลังส่งคำขอคืนเงิน", tone: "info" },
+    pickup_overdue: {
+      label: "เกินกำหนดรับ",
+      tone: STORE_PICKUP_STATUS_TONE.overdue,
+    },
+    pickup_pending_review: {
+      label: "รอพิจารณากรณีไม่รับสินค้า",
+      tone: STORE_PICKUP_STATUS_TONE.pending_review,
+    },
+    shipping_awaiting_payment: { label: "รอลูกค้าชำระ", tone: "warning" },
+    shipping_pending_review: {
+      label: "รอพิจารณา (ครบกำหนดเก็บสินค้า)",
+      tone: "danger",
+    },
   },
   contact_request: {
     new: { label: "ใหม่", tone: CONTACT_REQUEST_STATUS_TONE.new },

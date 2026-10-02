@@ -22,6 +22,14 @@ export interface PendingWork {
   store_orders_to_review?: number;
   store_orders_to_ship?: number;
   store_orders_to_pickup?: number;
+  /** Cancellation requests waiting for a decision. */
+  store_cancellations_to_decide?: number;
+  /** Orders with money owed back that is not settled yet. */
+  store_refunds_unfinished?: number;
+  /** The orders waiting to be collected that are past their date or their hold. */
+  store_pickups_overdue?: number;
+  /** Orders whose shipping charge the customer has not paid. */
+  store_shipping_unpaid?: number;
   contact_requests_new?: number;
   purchase_orders_to_approve?: number;
 }
@@ -172,6 +180,10 @@ export type DashboardListKey =
   | 'store_orders_to_review'
   | 'store_orders_to_ship'
   | 'store_orders_to_pickup'
+  | 'store_cancellations_to_decide'
+  | 'store_refunds_unfinished'
+  | 'store_pickups_overdue'
+  | 'store_shipping_unpaid'
   | 'contact_requests_new'
   | 'purchase_orders_to_approve'
   | 'stock_out_products'
