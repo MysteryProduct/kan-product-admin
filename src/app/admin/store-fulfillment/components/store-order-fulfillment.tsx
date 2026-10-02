@@ -9,6 +9,7 @@ import PickupCard from "./pickup-card";
 import CancellationCard from "./cancellation-card";
 import DeliveryConversionCard from "./delivery-conversion-card";
 import TaxInvoiceCard from "./tax-invoice-card";
+import ReturnCard from "./return-card";
 
 export const statusLabels: Record<string, string> = {
   awaiting_payment: "รอชำระเงิน",
@@ -121,6 +122,16 @@ export default function StoreOrderFulfillment({
         {order.cancellation && (
           <CancellationCard
             cancellation={order.cancellation}
+            canEdit={canEdit}
+            onChanged={() => onChanged()}
+          />
+        )}
+
+        {order.returns && (
+          <ReturnCard
+            storeOrderId={order.storeOrderId}
+            orderStatus={order.status}
+            returns={order.returns}
             canEdit={canEdit}
             onChanged={() => onChanged()}
           />

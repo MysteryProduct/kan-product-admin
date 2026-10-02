@@ -2,6 +2,7 @@ import axiosInstance from '@/lib/axios';
 import {
   ConvertToDeliveryDto,
   CreateParcelDto,
+  CreateStoreReturnDto,
   DecideCancellationDto,
   RecordManualRefundDto,
   StoreRefund,
@@ -139,6 +140,19 @@ class StoreFulfillmentModel {
   async refundExcessShipping(gatewayChargeId: string): Promise<void> {
     await axiosInstance.post(
       `/fulfillment/cancellations/shipping-payments/${encodeURIComponent(gatewayChargeId)}/refund`,
+    );
+  }
+
+  // TASK-0109: goods the customer returned after receipt. A card refund is
+  // started at once; PromptPay waits for the transfer to be recorded through
+  // recordManualRefund(), like any other transfer refund.
+  async createReturn(
+    storeOrderId: string,
+    dto: CreateStoreReturnDto,
+  ): Promise<void> {
+    await axiosInstance.post(
+      `/fulfillment/returns/orders/${storeOrderId}`,
+      dto,
     );
   }
 

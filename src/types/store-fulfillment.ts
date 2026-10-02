@@ -135,7 +135,8 @@ export interface StoreRefund {
   refundId: string;
   status: StoreRefundStatus;
   // 'shipping': a shipping payment returned through its own charge.
-  kind?: 'order' | 'shipping';
+  // 'return': the price of goods returned after receipt (TASK-0109).
+  kind?: 'order' | 'shipping' | 'return';
   // True when the provider has returned the money but the order has not been
   // reversed locally yet, so staff can finish that step. Derived by the API
   // from the refund and the order, never stored.
@@ -224,6 +225,52 @@ export interface StoreTaxInvoiceRequestList {
   meta: { total: number; page: number; limit: number; last_page: number };
 }
 
+// TASK-0109: goods returned after receipt (R11, owner 2026-10-02).
+export type StoreReturnReason = 'defective' | 'incomplete' | 'wrong_item';
+
+export interface StoreReturnLine {
+  saleOrderListId: string;
+  productName: string;
+  // VAT-inclusive line price; a refund is this times the quantity returned.
+  unitPrice: number;
+  purchasedQty: number;
+  // Shipped in a parcel, or handed over at the shop.
+  deliveredQty: number;
+  returnedQty: number;
+  returnableQty: number;
+}
+
+export interface StoreReturnRecord {
+  returnId: string;
+  reason: StoreReturnReason;
+  note: string | null;
+  createdBy: string;
+  createdAt: string;
+  items: {
+    productName: string;
+    quantity: number;
+    unitPrice: number;
+    restocked: boolean;
+  }[];
+  // Null when there was nothing to pay back.
+  refund: StoreRefund | null;
+}
+
+export interface StoreReturns {
+  lines: StoreReturnLine[];
+  // When goods reached the customer, as far as the system knows: a parcel's
+  // dispatch date or the pickup handover. Staff judge the 30 days by these.
+  receivedDates: { source: 'parcel' | 'pickup'; date: string }[];
+  returns: StoreReturnRecord[];
+}
+
+export interface CreateStoreReturnDto {
+  return_reference: string;
+  reason: StoreReturnReason;
+  note?: string;
+  items: { sale_order_list_id: string; quantity: number; restock: boolean }[];
+}
+
 export interface StoreOrderWithParcels {
   storeOrderId: string;
   status: string;
@@ -235,6 +282,7 @@ export interface StoreOrderWithParcels {
   shippingPayments?: StoreShippingPayment[];
   // Present once the customer has asked to cancel; null until then.
   cancellation: StoreCancellation | null;
+  returns: StoreReturns;
   taxInvoice: StoreTaxInvoiceRequest | null;
   items: StoreOrderLine[];
   parcels: StoreParcel[];
