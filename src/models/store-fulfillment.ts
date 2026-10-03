@@ -1,4 +1,5 @@
 import axiosInstance from '@/lib/axios';
+import { storeOrderListParams } from '@/lib/store-order-list';
 import {
   ConvertToDeliveryDto,
   CreateParcelDto,
@@ -12,6 +13,8 @@ import {
   PickupContactLogDto,
   RecordParcelReturnDto,
   SecondAppointmentDto,
+  StoreOrderList,
+  StoreOrderListFilters,
   StoreOrderWithParcels,
   StoreTaxInvoiceRequestList,
 } from '@/types/store-fulfillment';
@@ -25,6 +28,20 @@ class StoreFulfillmentModel {
     const response = await axiosInstance.get<StoreTaxInvoiceRequestList>(
       '/fulfillment/tax-invoices',
       { params: { page, limit } },
+    );
+    return response.data;
+  }
+
+  // TASK-0088: find an order by phone, name, member email, sale order code or
+  // id, and filter by status, method and day. Newest first.
+  async listOrders(
+    filters: StoreOrderListFilters,
+    page = 1,
+    limit = 20,
+  ): Promise<StoreOrderList> {
+    const response = await axiosInstance.get<StoreOrderList>(
+      '/fulfillment/orders',
+      { params: storeOrderListParams(filters, page, limit) },
     );
     return response.data;
   }

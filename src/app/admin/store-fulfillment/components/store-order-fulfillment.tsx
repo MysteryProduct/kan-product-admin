@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { usePermissions } from "@/hooks/usePermissions";
+import { STORE_ORDER_STATUS_LABELS } from "@/lib/store-order-list";
 import { StoreOrderWithParcels } from "@/types/store-fulfillment";
 import CreateParcelModal from "./create-parcel-modal";
 import ParcelCard from "./parcel-card";
@@ -11,13 +12,8 @@ import DeliveryConversionCard from "./delivery-conversion-card";
 import TaxInvoiceCard from "./tax-invoice-card";
 import ReturnCard from "./return-card";
 
-export const statusLabels: Record<string, string> = {
-  awaiting_payment: "รอชำระเงิน",
-  paid: "ชำระเงินแล้ว",
-  expired: "หมดเวลา",
-  awaiting_review: "กำลังตรวจสอบ",
-  cancelled: "ยกเลิกแล้ว",
-};
+// The same words as the order list, which keeps them (TASK-0088).
+export const statusLabels: Record<string, string> = STORE_ORDER_STATUS_LABELS;
 
 interface StoreOrderFulfillmentProps {
   order: StoreOrderWithParcels;

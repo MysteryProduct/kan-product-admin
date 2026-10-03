@@ -6,6 +6,7 @@ import StoreFulfillmentModel from "@/models/store-fulfillment";
 import { StoreOrderWithParcels } from "@/types/store-fulfillment";
 import { getApiErrorMessage } from "@/lib/api-error";
 import StoreOrderFulfillment from "./components/store-order-fulfillment";
+import StoreOrderList from "./components/store-order-list";
 import TaxInvoiceRequestList from "./components/tax-invoice-request-list";
 
 const storeFulfillmentModel = new StoreFulfillmentModel();
@@ -21,6 +22,8 @@ export default function StoreFulfillmentPage() {
   const [order, setOrder] = useState<StoreOrderWithParcels | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // Bumped when the opened order was changed, so the list shows its new status.
+  const [listVersion, setListVersion] = useState(0);
 
   async function search(id?: string) {
     const targetId = (id ?? storeOrderIdInput).trim();
@@ -38,6 +41,13 @@ export default function StoreFulfillmentPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  // A row of either list below opens its order at the top of the page.
+  function openOrder(storeOrderId: string) {
+    setStoreOrderIdInput(storeOrderId);
+    void search(storeOrderId);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   if (!canView) {
@@ -91,18 +101,16 @@ export default function StoreFulfillmentPage() {
         <div className="mt-4">
           <StoreOrderFulfillment
             order={order}
-            onChanged={() => void search(order.storeOrderId)}
+            onChanged={() => {
+              void search(order.storeOrderId);
+              setListVersion((version) => version + 1);
+            }}
           />
         </div>
       )}
 
-      <TaxInvoiceRequestList
-        onOpen={(storeOrderId) => {
-          setStoreOrderIdInput(storeOrderId);
-          void search(storeOrderId);
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }}
-      />
+      <StoreOrderList onOpen={openOrder} refreshKey={listVersion} />
+      <TaxInvoiceRequestList onOpen={openOrder} />
     </div>
   );
 }

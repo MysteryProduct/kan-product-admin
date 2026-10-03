@@ -1,7 +1,12 @@
 import type { BadgeTone } from '@/components/StatusBadge';
 import type { ContactRequestStatus } from '@/types/contact-request';
 import type { InvoiceSupplierStatus } from '@/types/invoice-supplier';
-import type { StoreCancellationStatus, StoreParcel, StorePickupStatus } from '@/types/store-fulfillment';
+import type {
+  StoreCancellationStatus,
+  StoreOrderListStatus,
+  StoreParcel,
+  StorePickupStatus,
+} from '@/types/store-fulfillment';
 
 // One tone per status, shared by every screen that shows it (Kan Product Admin design system, Badge).
 // warning = waiting or partly done, info = in progress, success = done, danger = cancelled or failed.
@@ -43,6 +48,14 @@ export const CONTACT_REQUEST_STATUS_TONE: Record<ContactRequestStatus, BadgeTone
   new: 'brand',
   contacting: 'warning',
   closed: 'neutral',
+};
+
+export const STORE_ORDER_STATUS_TONE: Record<StoreOrderListStatus, BadgeTone> = {
+  awaiting_payment: 'warning',
+  paid: 'success',
+  expired: 'neutral',
+  awaiting_review: 'warning',
+  cancelled: 'danger',
 };
 
 export const STORE_CANCELLATION_STATUS_TONE: Record<StoreCancellationStatus, BadgeTone> = {

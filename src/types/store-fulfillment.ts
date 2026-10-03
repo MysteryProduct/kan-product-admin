@@ -225,6 +225,43 @@ export interface StoreTaxInvoiceRequestList {
   meta: { total: number; page: number; limit: number; last_page: number };
 }
 
+// TASK-0088: the staff list of Store orders. Only what a row needs; the
+// address, bank details and tax id stay on the order's own page.
+export type StoreOrderListStatus =
+  | 'awaiting_payment'
+  | 'paid'
+  | 'expired'
+  | 'awaiting_review'
+  | 'cancelled';
+
+export interface StoreOrderListItem {
+  storeOrderId: string;
+  saleOrderCode: string | null;
+  createdAt: string;
+  name: string | null;
+  phone: string | null;
+  customerType: 'member' | 'guest';
+  fulfillmentMethod: 'delivery' | 'pickup';
+  status: StoreOrderListStatus;
+  // The order total, shipping included.
+  total: number;
+}
+
+export interface StoreOrderList {
+  data: StoreOrderListItem[];
+  meta: { total: number; page: number; limit: number; last_page: number };
+}
+
+// What staff chose; an empty string is "not chosen" and is never sent.
+export interface StoreOrderListFilters {
+  search: string;
+  status: StoreOrderListStatus | '';
+  fulfillmentMethod: 'delivery' | 'pickup' | '';
+  // Calendar days as `YYYY-MM-DD`, both included.
+  dateFrom: string;
+  dateTo: string;
+}
+
 // TASK-0109: goods returned after receipt (R11, owner 2026-10-02).
 export type StoreReturnReason = 'defective' | 'incomplete' | 'wrong_item';
 
