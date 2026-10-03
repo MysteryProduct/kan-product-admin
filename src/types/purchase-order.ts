@@ -24,6 +24,8 @@ export interface PurchaseOrder {
   purchase_order_name: string;
   purchase_order_detail: string;
   purchase_order_code: string;
+  // The code before the TASK-0112 renumbering, if it had another ("เลขเดิม").
+  legacy_code?: string | null;
   supplier?:{
     supplier_id:  string;
     supplier_name: string;

@@ -73,6 +73,14 @@ export default function InvoiceSupplierDetailModal({ isOpen, onClose, invoice }:
               {invoice.invoice_supplier_code}
             </div>
           </div>
+          {invoice.legacy_code && (
+            <div>
+              <p className="mb-1 text-[13px] font-semibold uppercase tracking-wide text-[var(--ink-muted)]">เลขเดิม</p>
+              <div className="h-11 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-3 text-sm leading-[44px] text-[var(--ink)]">
+                {invoice.legacy_code}
+              </div>
+            </div>
+          )}
           <div>
             <p className="mb-1 text-[13px] font-semibold uppercase tracking-wide text-[var(--ink-muted)]">ชื่อเอกสาร</p>
             <div className="h-11 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-3 text-sm leading-[44px] text-[var(--ink)]">

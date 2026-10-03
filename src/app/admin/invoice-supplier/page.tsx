@@ -25,6 +25,7 @@ import UpdateInvoiceSupplierForm from './components/update';
 import InvoiceSupplierDetailModal from './components/detail';
 import { INVOICE_SUPPLIER_STATUS_TONE } from '@/lib/status-tones';
 import StatusBadge from '@/components/StatusBadge';
+import DocumentCode from '@/components/DocumentCode';
 
 const purchaseReceiptModel = new PurchaseReceiptModel();
 const supplierModel = new SupplierModel();
@@ -285,7 +286,13 @@ export default function InvoiceSupplierPage() {
       key: 'purchase_receipt_code' as keyof PurchaseReceipt,
       label: 'เลขที่ใบรับสินค้า',
       width: '220px',
-      render: (_, row) => row.purchase_receipt_code || row.purchase_receipt_id,
+      render: (_, row) => (
+        <DocumentCode
+          code={row.purchase_receipt_code || row.purchase_receipt_id}
+          legacyCode={row.legacy_code}
+          search={approvedSearch}
+        />
+      ),
     },
     {
       key: 'supplier_id',

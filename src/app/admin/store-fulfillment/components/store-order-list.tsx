@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { DataTable, DataTableColumn } from '@/components/DataTable';
 import LoadErrorBanner from '@/components/LoadErrorBanner';
 import StatusBadge from '@/components/StatusBadge';
+import DocumentCode from '@/components/DocumentCode';
 import StoreFulfillmentModel from '@/models/store-fulfillment';
 import {
   StoreOrderList as StoreOrderListResult,
@@ -167,8 +168,14 @@ export default function StoreOrderList({
     {
       key: 'saleOrderCode',
       label: 'รหัสใบขาย',
-      render: (value) => (
-        <span className="whitespace-nowrap">{(value as string | null) ?? '-'}</span>
+      render: (value, row) => (
+        <span className="whitespace-nowrap">
+          <DocumentCode
+            code={(value as string | null) ?? '-'}
+            legacyCode={row.legacySaleOrderCode}
+            search={filters.search}
+          />
+        </span>
       ),
     },
     {

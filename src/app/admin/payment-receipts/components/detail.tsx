@@ -50,6 +50,12 @@ export default function PaymentReceiptDetailModal({
 					<p className="text-[13px] text-[var(--ink-muted)]">เลขที่เอกสาร</p>
 					<p className="text-sm font-medium text-[var(--ink)]">{paymentReceipt.payment_receipt_code}</p>
 				</div>
+				{paymentReceipt.legacy_code && (
+					<div>
+						<p className="text-[13px] text-[var(--ink-muted)]">เลขเดิม</p>
+						<p className="break-all text-sm font-medium text-[var(--ink)]">{paymentReceipt.legacy_code}</p>
+					</div>
+				)}
 				<div>
 					<p className="text-[13px] text-[var(--ink-muted)]">ใบสั่งขาย</p>
 					<p className="text-sm font-medium text-[var(--ink)]">

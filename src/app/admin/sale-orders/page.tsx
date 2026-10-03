@@ -16,6 +16,7 @@ import { VAT_TYPE_LABELS } from '@/lib/vat';
 import { SALE_ORDER_STATUS_TONE } from '@/lib/status-tones';
 import StatusBadge from '@/components/StatusBadge';
 import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
+import DocumentCode from '@/components/DocumentCode';
 
 const saleOrderModel = new SaleOrderModel();
 
@@ -268,7 +269,13 @@ export default function SaleOrderPage() {
             key: 'sale_order_code',
             label: 'รหัสใบขายสินค้า',
             width: '200px',
-            render: (_, row) => row.sale_order_code || row.sale_order_id,
+            render: (_, row) => (
+                <DocumentCode
+                    code={row.sale_order_code || row.sale_order_id}
+                    legacyCode={row.legacy_code}
+                    search={saleOrderAppliedSearch}
+                />
+            ),
         },
         {
             key: 'sale_order_name',

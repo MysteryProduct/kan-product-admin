@@ -23,6 +23,7 @@ import { formatThaiDate } from '@/lib/date-format';
 import { PAYMENT_RECEIPT_STATUS_TONE, SALE_ORDER_STATUS_TONE } from '@/lib/status-tones';
 import StatusBadge from '@/components/StatusBadge';
 import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
+import DocumentCode from '@/components/DocumentCode';
 
 const saleOrderModel = new SaleOrderModel();
 const paymentReceiptModel = new PaymentReceiptModel();
@@ -234,7 +235,13 @@ export default function PaymentReceiptPage() {
 			key: 'sale_order_code',
 			label: 'รหัสใบสั่งขาย',
 			width: '200px',
-			render: (_, row) => row.sale_order_code || row.sale_order_id,
+			render: (_, row) => (
+				<DocumentCode
+					code={row.sale_order_code || row.sale_order_id}
+					legacyCode={row.legacy_code}
+					search={saleOrderAppliedSearch}
+				/>
+			),
 		},
 		{
 			key: 'sale_order_name',
@@ -281,6 +288,13 @@ export default function PaymentReceiptPage() {
 			key: 'payment_receipt_code',
 			label: 'เลขที่ใบเสร็จรับเงิน',
 			width: '200px',
+			render: (_, row) => (
+				<DocumentCode
+					code={row.payment_receipt_code}
+					legacyCode={row.legacy_code}
+					search={paymentReceiptAppliedSearch}
+				/>
+			),
 		},
 		{
 			key: 'sale_order_id',

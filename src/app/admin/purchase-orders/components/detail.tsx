@@ -144,6 +144,15 @@ export default function PurchaseOrderDetailModal({
 						</div>
 					</div>
 
+					{purchaseOrder.legacy_code && (
+						<div>
+							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">เลขเดิม</label>
+							<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
+								{purchaseOrder.legacy_code}
+							</div>
+						</div>
+					)}
+
 					<div>
 						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">วันที่สร้าง</label>
 						<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">

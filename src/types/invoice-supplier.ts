@@ -27,6 +27,8 @@ export interface InvoiceSupplierRow {
   supplier_id: string;
   supplier_name: string;
   invoice_supplier_code: string;
+  // The code before the TASK-0112 renumbering, if it had another ("เลขเดิม").
+  legacy_code?: string | null;
   invoice_supplier_name: string;
   invoice_supplier_date: string;
   invoice_supplier_due_date: string;

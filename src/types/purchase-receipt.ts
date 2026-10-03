@@ -38,6 +38,8 @@ export interface PurchaseReceiptListItem {
 export interface PurchaseReceipt {
   purchase_receipt_id: string;
   purchase_receipt_code?: string;
+  // The code before the TASK-0112 renumbering, if it had another ("เลขเดิม").
+  legacy_code?: string | null;
   purchase_order_id: string;
   supplier_id: string;
   entry_date: Date;

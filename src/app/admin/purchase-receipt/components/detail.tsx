@@ -149,6 +149,14 @@ export default function PurchaseReceiptDetailModal({
 							{purchaseReceipt.purchase_receipt_code || purchaseReceipt.purchase_receipt_id}
 						</div>
 					</div>
+					{purchaseReceipt.legacy_code && (
+						<div>
+							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">เลขเดิม</label>
+							<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
+								{purchaseReceipt.legacy_code}
+							</div>
+						</div>
+					)}
 					<div>
 						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">เลขที่ใบสั่งซื้อ</label>
 						<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">

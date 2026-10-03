@@ -165,6 +165,14 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
                                 {saleOrder.sale_order_code || saleOrder.sale_order_id}
                             </div>
                         </div>
+                        {saleOrder.legacy_code && (
+                            <div>
+                                <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">เลขเดิม</label>
+                                <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 text-[var(--ink)] shadow-sm">
+                                    {saleOrder.legacy_code}
+                                </div>
+                            </div>
+                        )}
                         <div>
                             <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">ชื่อใบขายสินค้า</label>
                             <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 text-[var(--ink)] shadow-sm">

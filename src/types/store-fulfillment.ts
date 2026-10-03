@@ -237,6 +237,8 @@ export type StoreOrderListStatus =
 export interface StoreOrderListItem {
   storeOrderId: string;
   saleOrderCode: string | null;
+  // The sale order's code before the TASK-0112 renumbering, if it had another.
+  legacySaleOrderCode: string | null;
   createdAt: string;
   name: string | null;
   phone: string | null;

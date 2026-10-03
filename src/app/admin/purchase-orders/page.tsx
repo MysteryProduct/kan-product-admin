@@ -15,6 +15,7 @@ import LoadingSkeletonProps from '@/components/LoadingSkeleton';
 import { formatThaiDate } from '@/lib/date-format';
 import { VAT_TYPE_LABELS } from '@/lib/vat';
 import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
+import DocumentCode from '@/components/DocumentCode';
 const purchaseOrderModel = new PurchaseOrderModel();
 
 type SortField = 'purchase_date' | 'purchase_order_total' | null;
@@ -194,6 +195,9 @@ export default function PurchaseOrdersPage() {
       key: 'purchase_order_code' as keyof PurchaseOrder,
       label: 'รหัสใบสั่งซื้อ',
       width: '250px',
+      render: (_, row) => (
+        <DocumentCode code={row.purchase_order_code} legacyCode={row.legacy_code} search={appliedSearchQuery} />
+      ),
     },
     {
       key: 'purchase_order_name' as any as keyof PurchaseOrder,

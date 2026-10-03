@@ -10,6 +10,8 @@ export interface PaymentReceipt {
   payment_receipt_id: string;
   sale_order_id: string;
   payment_receipt_code: string;
+  // The code before the TASK-0112 renumbering, if it had another ("เลขเดิม").
+  legacy_code?: string | null;
   // The payment provider's own reference (Omise chrg_... / rfnd_...), shown
   // apart from the receipt number; none for a receipt recorded in the Admin.
   gateway_reference?: string | null;

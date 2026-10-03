@@ -33,6 +33,8 @@ export interface SaleOrderList {
 export interface SaleOrder {
   sale_order_id: string;
   sale_order_code?: string;
+  // The code before the TASK-0112 renumbering, if it had another ("เลขเดิม").
+  legacy_code?: string | null;
   user_id?: string;
   shipping_address_id?: string;
   shipping_address_name?: string;
