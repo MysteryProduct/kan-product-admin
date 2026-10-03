@@ -10,6 +10,9 @@ export interface PaymentReceipt {
   payment_receipt_id: string;
   sale_order_id: string;
   payment_receipt_code: string;
+  // The payment provider's own reference (Omise chrg_... / rfnd_...), shown
+  // apart from the receipt number; none for a receipt recorded in the Admin.
+  gateway_reference?: string | null;
   payment_receipt_type: PaymentReceiptType;
   payment_method: PaymentMethod | 'refund';
   amount_paid: number;
@@ -30,9 +33,9 @@ export interface PaymentReceiptResponse {
   meta: PaginationMeta;
 }
 
+// No receipt code: the system issues it (ADR-0001).
 export interface CreatePaymentReceiptDto {
   sale_order_id: string;
-  payment_receipt_code: string;
   payment_receipt_type: PaymentReceiptType;
   payment_method: PaymentMethod;
   amount_paid: number;
@@ -45,6 +48,7 @@ export interface CreatePaymentReceiptDto {
 
 export interface UpdatePaymentReceiptDto extends Omit<CreatePaymentReceiptDto, 'sale_order_id'> {
   payment_receipt_id: string;
+  payment_receipt_code: string;
   update_by?: string;
 }
 

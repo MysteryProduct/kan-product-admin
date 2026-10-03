@@ -41,7 +41,6 @@ export default function InsertPaymentReceiptForm({
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const [formData, setFormData] = useState({
-		payment_receipt_code: '',
 		payment_receipt_type: 'full' as PaymentReceiptType,
 		payment_method: 'bank' as 'cash' | 'bank',
 		amount_paid: '',
@@ -90,7 +89,6 @@ export default function InsertPaymentReceiptForm({
 
 		setFormData((prev) => ({
 			...prev,
-			payment_receipt_code: `PR-${Date.now()}`,
 			amount_paid: String(Number(saleOrder.sale_order_total || 0).toFixed(2)),
 		}));
 		setErrors({});
@@ -100,10 +98,6 @@ export default function InsertPaymentReceiptForm({
 
 	const validate = () => {
 		const nextErrors: Record<string, string> = {};
-		if (!formData.payment_receipt_code.trim()) {
-			nextErrors.payment_receipt_code = 'กรุณาระบุเลขที่ใบเสร็จรับเงิน';
-		}
-
 		const paidAmount = Number(formData.amount_paid);
 		if (Number.isNaN(paidAmount) || paidAmount <= 0) {
 			nextErrors.amount_paid = 'ยอดรับชำระต้องมากกว่า 0';
@@ -138,7 +132,6 @@ export default function InsertPaymentReceiptForm({
 
 			await paymentReceiptModel.createPaymentReceipt({
 				sale_order_id: saleOrder.sale_order_id,
-				payment_receipt_code: formData.payment_receipt_code,
 				payment_receipt_type: formData.payment_receipt_type,
 				payment_method: formData.payment_method,
 				amount_paid: Number(formData.amount_paid),
@@ -211,17 +204,6 @@ export default function InsertPaymentReceiptForm({
 				<form id="payment-receipts-insert-form" onSubmit={handleSubmit} className="space-y-4">
 					<LoadErrorBanner message={bankAccountsError} className="" />
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-						<div>
-							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">เลขที่ใบเสร็จรับเงิน</label>
-							<input
-								type="text"
-								value={formData.payment_receipt_code}
-								onChange={(event) => setFormData((prev) => ({ ...prev, payment_receipt_code: event.target.value }))}
-								className={INPUT_CLASSNAME}
-							/>
-							{errors.payment_receipt_code && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.payment_receipt_code}</p>}
-						</div>
-
 						<div>
 							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">ประเภทรายการชำระ</label>
 							<select

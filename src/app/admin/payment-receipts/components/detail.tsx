@@ -86,6 +86,12 @@ export default function PaymentReceiptDetailModal({
 								: '-'}
 					</p>
 				</div>
+				{paymentReceipt.gateway_reference && (
+					<div>
+						<p className="text-[13px] text-[var(--ink-muted)]">อ้างอิงผู้ให้บริการ</p>
+						<p className="break-all text-sm font-medium text-[var(--ink)]">{paymentReceipt.gateway_reference}</p>
+					</div>
+				)}
 				<div className="sm:col-span-2">
 					<p className="text-[13px] text-[var(--ink-muted)]">หมายเหตุ</p>
 					<p className="text-sm font-medium text-[var(--ink)]">{paymentReceipt.payment_receipt_remark || '-'}</p>
