@@ -391,7 +391,7 @@ export default function UpdateJobOrderForm({
 				isOpen={isOpen}
 				onClose={() => { if (!isSubmitting) onClose(); }}
 				title="แก้ไขงานผลิต"
-				description="อัปเดตข้อมูลงานให้สอดคล้องกับแผนการผลิตล่าสุด"
+				description={`เลขที่งานผลิต ${jobOrder.job_order_code}`}
 				size="xl"
 				closeOnBackdrop={!isSubmitting && !resultDialog.isOpen}
 				closeOnEscape={!isSubmitting && !resultDialog.isOpen}

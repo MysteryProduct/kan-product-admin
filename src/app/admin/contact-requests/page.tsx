@@ -60,6 +60,7 @@ export default function ContactRequestsPage() {
   }
 
   const columns: DataTableColumn<ContactRequest>[] = [
+    { key: 'contactRequestCode', label: 'เลขที่คำขอ' },
     { key: 'productName', label: 'สินค้า' },
     { key: 'contactName', label: 'ชื่อผู้ติดต่อ' },
     { key: 'contactPhone', label: 'เบอร์โทร' },

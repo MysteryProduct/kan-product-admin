@@ -91,6 +91,10 @@ export default function JobOrderDetailModal({
 			<div className="space-y-4">
 				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div>
+						<p className="text-[13px] uppercase tracking-wider text-[var(--ink-muted)]">เลขที่งานผลิต</p>
+						<p className="text-[var(--ink)] font-semibold break-all">{jobOrder.job_order_code || '-'}</p>
+					</div>
+					<div>
 						<p className="text-[13px] uppercase tracking-wider text-[var(--ink-muted)]">ชื่องานผลิต</p>
 						<p className="text-[var(--ink)] font-semibold">{jobOrder.job_order_name || '-'}</p>
 					</div>

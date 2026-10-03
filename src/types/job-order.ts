@@ -17,6 +17,8 @@ export interface JobOrderMaterial {
 
 export interface JobOrder {
   job_order_id: string;
+  // ADR-0001: JO + Bangkok day + number, issued by the API on create.
+  job_order_code: string;
   job_order_name: string;
   job_order_description?: string;
   job_order_qty?: number;

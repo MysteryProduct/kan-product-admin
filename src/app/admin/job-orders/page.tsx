@@ -314,6 +314,7 @@ const JobCard = memo(function JobCard({
 					{job.job_order_type}
 				</span>
 			</div>
+			<p className="mt-0.5 truncate text-[12px] tabular-nums text-[var(--ink-muted)]">{job.job_order_code}</p>
 
 			<div className="mt-1 text-[13px] text-[var(--ink-muted)] space-y-0.5">
 				<p className="truncate font-medium text-[var(--ink)]">{assignee}</p>
@@ -476,6 +477,7 @@ export default function JobOrdersPage() {
 			jobOrders.map((job) => [
 				job.job_order_id,
 				[
+					job.job_order_code || '',
 					job.job_order_name || '',
 					getAssigneeName(job),
 					String(job.target_date || ''),
@@ -1205,7 +1207,7 @@ export default function JobOrdersPage() {
 																			setIsDetailOpen(true);
 																		}}
 																		className={`w-full flex items-center gap-1.5 rounded-md px-2 py-1 text-[13px] text-left truncate transition-colors hover:brightness-95 ${style.chipClass}`}
-																		title={`${job.job_order_name} (${style.label})`}
+																		title={`${job.job_order_code} ${job.job_order_name} (${style.label})`}
 																	>
 																		<span className={`w-2 h-2 rounded-full shrink-0 ${style.dotClass}`} />
 																		<span className="truncate">{job.job_order_name}</span>

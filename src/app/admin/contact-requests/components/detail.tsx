@@ -90,6 +90,8 @@ export default function ContactRequestDetailModal({
     >
       <div className="grid gap-4 text-[var(--color-text-primary)]">
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
+          <dt className="text-[var(--color-text-secondary)]">เลขที่คำขอ</dt>
+          <dd className="break-all">{contactRequest.contactRequestCode}</dd>
           <dt className="text-[var(--color-text-secondary)]">ชื่อผู้ติดต่อ</dt>
           <dd>{contactRequest.contactName}</dd>
           <dt className="text-[var(--color-text-secondary)]">เบอร์โทร</dt>

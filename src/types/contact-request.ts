@@ -4,6 +4,8 @@ export type ContactRequestStatus = 'new' | 'contacting' | 'closed';
 
 export interface ContactRequest {
   contactRequestId: string;
+  // ADR-0001: CR + Bangkok day + number, issued by the API on create.
+  contactRequestCode: string;
   customerId: string | null;
   productId: string;
   productName: string;
