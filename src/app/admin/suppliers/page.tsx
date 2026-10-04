@@ -182,6 +182,12 @@ export default function SupplierPage() {
                 ),
             },
             {
+                key: 'supplier_code',
+                label: 'รหัสผู้จัดจำหน่าย',
+                width: '140px',
+                render: (_, row) => <span className="font-mono break-all">{row.supplier_code || '-'}</span>,
+            },
+            {
                 key: 'supplier_name',
                 label: 'ชื่อผู้จัดจำหน่าย',
                 sortable: true,

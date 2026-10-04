@@ -22,6 +22,7 @@ export interface ProductVariantMaterial {
     material_qty: number;
     material?: {
         material_id: string;
+        material_code?: string;
         material_name: string;
         material_description?: string;
         material_price?: number;
@@ -67,6 +68,7 @@ export interface ProductVariant {
 }
 
 export interface Product {
+    product_code?: string;
     product_id: string;
     product_name: string;
     product_description: string;

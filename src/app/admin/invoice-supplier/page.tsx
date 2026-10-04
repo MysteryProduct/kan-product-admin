@@ -360,7 +360,7 @@ export default function InvoiceSupplierPage() {
       render: (_, row) => (
         <div>
           <p className="text-[var(--ink)]">{row.supplier?.supplier_name}</p>
-          <p className="text-[13px] text-[var(--ink-muted)]">{row.supplier?.supplier_id}</p>
+          <p className="text-[13px] text-[var(--ink-muted)]">{row.supplier?.supplier_code || '-'}</p>
         </div>
       ),
     },

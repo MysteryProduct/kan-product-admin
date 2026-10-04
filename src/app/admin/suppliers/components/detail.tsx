@@ -33,6 +33,12 @@ export default function SupplierDetailModal({ isOpen, onClose, supplier }: Suppl
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                         <div className="space-y-4">
                             <div className="space-y-2">
+                                <p className="text-sm font-semibold text-[var(--ink)]">รหัสผู้จัดจำหน่าย</p>
+                                <div className="px-4 py-3 bg-[var(--bg-surface)] border-2 border-[var(--border)] rounded-xl text-[var(--ink)] font-mono break-all">
+                                    {supplier.supplier_code || '-'}
+                                </div>
+                            </div>
+                            <div className="space-y-2">
                                 <label className="block text-sm font-semibold text-[var(--ink)]">
                                     <span className="flex items-center space-x-2">
                                         <svg className="w-4 h-4 text-[var(--ink-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">

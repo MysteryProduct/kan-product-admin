@@ -182,6 +182,12 @@ export default function ProductsPage() {
       render: (_, row) => <StorePolicy id={row.product_id} editable={canEditProduct} />,
     },
     {
+      key: 'product_code',
+      label: 'รหัสสินค้า',
+      width: '140px',
+      render: (_, row) => <span className="font-mono break-all">{row.product_code || '-'}</span>,
+    },
+    {
       key: 'product_name' as keyof Product,
       label: 'ชื่อสินค้า',
       width: '250px',

@@ -46,6 +46,7 @@ export interface InvoiceSupplierRow {
   };
   supplier?: {
     supplier_id: string;
+    supplier_code?: string;
     supplier_name: string;
   };
 }

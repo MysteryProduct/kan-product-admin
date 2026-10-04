@@ -122,6 +122,10 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
             <h3 className="mb-4 text-sm font-semibold text-[var(--ink)]">Product หลัก</h3>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
+                <p className="mb-2 text-sm font-medium text-[var(--ink)]">รหัสสินค้า</p>
+                <div className={fieldClassName + ' font-mono break-all'}>{currentProduct.product_code || '-'}</div>
+              </div>
+              <div>
                 <p className="mb-2 text-sm font-medium text-[var(--ink)]">ชื่อสินค้า</p>
                 <div className={fieldClassName}>{currentProduct.product_name || '-'}</div>
               </div>
@@ -191,7 +195,7 @@ export default function ProductDetailModal({ isOpen, onClose, product }: Product
                               <tbody className="divide-y divide-[var(--border)]">
                                 {materials.map((material, materialIndex) => (
                                   <tr key={material.product_material_id || `${material.material_id}-${materialIndex}`}>
-                                    <td className="px-3 py-2 text-sm text-[var(--ink)]">{material.material?.material_name || material.material_id}</td>
+                                    <td className="px-3 py-2 text-sm text-[var(--ink)]">{material.material?.material_name || material.material?.material_code || '-'}</td>
                                     <td className="px-3 py-2 text-sm text-[var(--ink)]">{material.material_qty}</td>
                                   </tr>
                                 ))}

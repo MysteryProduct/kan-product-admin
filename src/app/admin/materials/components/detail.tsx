@@ -40,7 +40,7 @@ export default function MaterialDetailModal({ isOpen, onClose, material }: Mater
 					<div>
 						<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">รหัสวัตถุดิบ</label>
 						<div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 text-[var(--ink)] shadow-sm">
-							{material.material_id}
+							{material.material_code || '-'}
 						</div>
 					</div>
 					<div>

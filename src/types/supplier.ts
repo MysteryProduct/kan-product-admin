@@ -2,6 +2,7 @@ import { PaginationMeta } from "./pagination";
 import { VatType } from '@/lib/vat';
 
 export interface Supplier {
+    supplier_code?: string;
     supplier_id: string;
     supplier_name: string;
     supplier_contact: string;

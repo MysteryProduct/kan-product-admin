@@ -1,6 +1,7 @@
 import { PaginationMeta } from './pagination';
 
 export interface Material {
+    material_code?: string;
     material_id: string;
     material_name: string;
     material_description: string;
