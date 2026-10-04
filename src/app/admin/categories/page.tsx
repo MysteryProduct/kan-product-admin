@@ -187,7 +187,6 @@ export default function CategoryPage() {
                         <table className="w-full">
                             <thead>
                                 <tr className="bg-[var(--bg-subtle)] border-b border-[var(--border)]">
-                                    <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-[13px] sm:text-sm font-semibold text-[var(--ink)] hidden sm:table-cell">Category Id</th>
                                     <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-[13px] sm:text-sm font-semibold text-[var(--ink)]">
                                         Category Name
                                     </th>
@@ -203,7 +202,6 @@ export default function CategoryPage() {
                                         key={category.category_id}
                                         className="bg-[var(--bg-surface)] border-b border-[var(--border)] hover:bg-[var(--bg-subtle)] transition-colors"
                                     >
-                                        <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-[var(--ink-muted)] hidden sm:table-cell">{category.category_id}</td>
                                         <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-[var(--ink)]">{category.category_name}</td>
                                         <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4">
                                             {category.size_ids && category.size_ids.length > 0 ? (

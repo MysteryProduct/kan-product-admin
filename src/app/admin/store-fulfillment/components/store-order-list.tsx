@@ -40,8 +40,9 @@ const formatBaht = (amount: number) =>
 
 /**
  * TASK-0088: every Store order, newest first, found by phone, name, member
- * email, sale order code or order id and narrowed by status, method and day.
- * Choosing a row opens that order on the page, so staff never need its id.
+ * email or sale order code (the old one too) and narrowed by status, method
+ * and day. Choosing a row opens that order on the page, so staff never need
+ * its id (ADR-0001).
  */
 export default function StoreOrderList({
   onOpen,
@@ -166,36 +167,35 @@ export default function StoreOrderList({
         STORE_CUSTOMER_TYPE_LABELS[value as StoreOrderListItem['customerType']],
     },
     {
+      // The order is its sale order (ADR-0001): one code, and the button that
+      // opens it. The id is only what the click passes on.
       key: 'saleOrderCode',
-      label: 'รหัสใบขาย',
-      render: (value, row) => (
-        <span className="whitespace-nowrap">
+      label: 'เลขคำสั่งซื้อ',
+      render: (value, row) => {
+        const code = (value as string | null) ?? '-';
+        // The button holds only the code, so its name is the code; the note
+        // that the search matched an old number sits beside it, unclickable.
+        return (
           <DocumentCode
-            code={(value as string | null) ?? '-'}
+            code={
+              <button
+                type="button"
+                onClick={(event) => {
+                  // The row opens the order too; once is enough.
+                  event.stopPropagation();
+                  onOpen(row.storeOrderId);
+                }}
+                aria-label={`เปิดคำสั่งซื้อ ${code}`}
+                className="ka-btn ka-btn--ghost min-h-11 whitespace-nowrap text-left text-[var(--brand-ink)]"
+              >
+                {code}
+              </button>
+            }
             legacyCode={row.legacySaleOrderCode}
             search={filters.search}
           />
-        </span>
-      ),
-    },
-    {
-      key: 'storeOrderId',
-      label: 'เลขคำสั่งซื้อ',
-      render: (_value, row) => (
-        <button
-          type="button"
-          onClick={(event) => {
-            // The row opens the order too; once is enough.
-            event.stopPropagation();
-            onOpen(row.storeOrderId);
-          }}
-          title={row.storeOrderId}
-          aria-label={`เปิดคำสั่งซื้อ ${row.storeOrderId}`}
-          className="ka-btn ka-btn--ghost min-h-11 whitespace-nowrap text-[var(--brand-ink)]"
-        >
-          เปิด #{row.storeOrderId.slice(0, 8)}
-        </button>
-      ),
+        );
+      },
     },
   ];
 
@@ -225,7 +225,7 @@ export default function StoreOrderList({
                   value={searchDraft}
                   onChange={(event) => setSearchDraft(event.target.value)}
                   maxLength={STORE_ORDER_SEARCH_MAX_LENGTH}
-                  placeholder="เบอร์โทร ชื่อ อีเมลสมาชิก รหัสใบขาย หรือเลขคำสั่งซื้อ"
+                  placeholder="เบอร์โทร ชื่อ อีเมลสมาชิก หรือเลขคำสั่งซื้อ"
                   className="ka-input min-h-11 min-w-0 flex-1"
                 />
                 <button type="submit" className="ka-btn ka-btn--primary min-h-11">

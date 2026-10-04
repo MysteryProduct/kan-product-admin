@@ -29,13 +29,7 @@ export default function SizeDetailModal({ isOpen, onClose, size }: SizeDetailMod
 			}
 		>
 			<div className="space-y-6">
-				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-					<div>
-						<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">Size ID</label>
-						<div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2.5 text-[var(--ink)]">
-							{size.size_id}
-						</div>
-					</div>
+				<div className="grid grid-cols-1 gap-4">
 					<div>
 						<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">ชื่อขนาดสินค้า</label>
 						<div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2.5 text-[var(--ink)]">

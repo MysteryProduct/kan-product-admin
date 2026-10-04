@@ -312,6 +312,8 @@ export interface CreateStoreReturnDto {
 
 export interface StoreOrderWithParcels {
   storeOrderId: string;
+  // The sale order's code, what the order is called on screen (ADR-0001).
+  saleOrderCode: string;
   status: string;
   fulfillmentMethod: 'delivery' | 'pickup';
   // Present for pickup orders, and kept for one converted to delivery.

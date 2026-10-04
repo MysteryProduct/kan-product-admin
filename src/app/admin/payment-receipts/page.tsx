@@ -237,7 +237,7 @@ export default function PaymentReceiptPage() {
 			width: '200px',
 			render: (_, row) => (
 				<DocumentCode
-					code={row.sale_order_code || row.sale_order_id}
+					code={row.sale_order_code || '-'}
 					legacyCode={row.legacy_code}
 					search={saleOrderAppliedSearch}
 				/>
@@ -299,7 +299,7 @@ export default function PaymentReceiptPage() {
 		{
 			key: 'sale_order_id',
 			label: 'ใบสั่งขาย',
-			render: (_, row) => row.saleOrder?.sale_order_code || row.sale_order_id,
+			render: (_, row) => row.saleOrder?.sale_order_code || '-',
 		},
 		{
 			key: 'payment_method',

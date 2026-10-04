@@ -291,17 +291,17 @@ export default function PurchaseReceiptPage() {
             key: 'purchase_receipt_code' as any,
             label: 'รหัสใบรับสินค้า',
             width: '220px',
-            render: (_, row) => row.purchase_receipt_code || row.purchase_receipt_id,
+            render: (_, row) => row.purchase_receipt_code || '-',
         },
         {
             key: 'purchase_order_id',
             label: 'ใบสั่งซื้อ',
-            render: (_, row) => row.purchaseOrder?.purchase_order_code || row.purchase_order_id,
+            render: (_, row) => row.purchaseOrder?.purchase_order_code || '-',
         },
         {
             key: 'supplier_id',
             label: 'ผู้จัดจำหน่าย',
-            render: (_, row) => row.supplier?.supplier_name || row.supplier_id || '-',
+            render: (_, row) => row.supplier?.supplier_name || '-',
         },
         {
             key: 'entry_date',
@@ -475,7 +475,7 @@ export default function PurchaseReceiptPage() {
             <ConfirmDialog
                 isOpen={canDeletePurchaseReceipt && isDeleteDialogOpen}
                 title="ยืนยันการลบใบรับสินค้า"
-                message={`คุณแน่ใจหรือไม่ว่าต้องการลบใบรับสินค้า "${purchaseReceiptToDelete?.purchase_receipt_code || purchaseReceiptToDelete?.purchase_receipt_id || ''}"?`}
+                message={`คุณแน่ใจหรือไม่ว่าต้องการลบใบรับสินค้า${purchaseReceiptToDelete?.purchase_receipt_code ? ` "${purchaseReceiptToDelete.purchase_receipt_code}"` : 'นี้'}?`}
                 onCancel={() => {
                     setIsDeleteDialogOpen(false);
                     setPurchaseReceiptToDelete(null);

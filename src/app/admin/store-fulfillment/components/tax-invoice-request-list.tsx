@@ -11,9 +11,9 @@ const storeFulfillmentModel = new StoreFulfillmentModel();
 const PAGE_SIZE = 10;
 
 /**
- * TASK-0038: every tax invoice request, newest first. The page otherwise
- * finds an order only by its id, which staff would not know for a request
- * made after payment; choosing a row opens that order below.
+ * TASK-0038: every tax invoice request, newest first. A request made after
+ * payment is not otherwise easy to find; choosing a row opens that order
+ * above.
  */
 export default function TaxInvoiceRequestList({
   onOpen,

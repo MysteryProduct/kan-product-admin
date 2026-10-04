@@ -59,7 +59,7 @@ export default function PaymentReceiptDetailModal({
 				<div>
 					<p className="text-[13px] text-[var(--ink-muted)]">ใบสั่งขาย</p>
 					<p className="text-sm font-medium text-[var(--ink)]">
-						{paymentReceipt.saleOrder?.sale_order_code || paymentReceipt.sale_order_id}
+						{paymentReceipt.saleOrder?.sale_order_code || '-'}
 					</p>
 				</div>
 				<div>

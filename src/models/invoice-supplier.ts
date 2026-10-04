@@ -25,7 +25,8 @@ export interface CreateInvoiceSupplierDto {
 }
 
 export interface UpdateInvoiceSupplierDto {
-    invoice_supplier_code: string;
+    // Issued by the system and never changed (ADR-0001); an update does not send it.
+    invoice_supplier_code?: string;
     invoice_supplier_name: string;
     invoice_supplier_date: string;
     invoice_supplier_due_date: string;
@@ -122,7 +123,6 @@ export function buildUpdateDto(payload: {
     invoicePayments: InvoicePaymentItem[];
 }): UpdateInvoiceSupplierDto {
     return {
-        invoice_supplier_code: payload.invoice_supplier_code || '',
         invoice_supplier_name: payload.invoice_supplier_name,
         invoice_supplier_date: payload.invoice_supplier_date,
         invoice_supplier_due_date: payload.invoice_supplier_due_date,

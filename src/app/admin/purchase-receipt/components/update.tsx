@@ -385,11 +385,11 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 					<div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
 						<div>
 							<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">เลขที่ใบรับสินค้า</label>
-							<div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 text-[var(--ink)] shadow-sm">{initialData.purchase_receipt_code || initialData.purchase_receipt_id}</div>
+							<div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 text-[var(--ink)] shadow-sm">{initialData.purchase_receipt_code || '-'}</div>
 						</div>
 						<div>
 							<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">เลขที่ใบสั่งซื้อ</label>
-							<div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 text-[var(--ink)] shadow-sm">{initialData.purchaseOrder?.purchase_order_code || initialData.purchase_order_id}</div>
+							<div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 text-[var(--ink)] shadow-sm">{initialData.purchaseOrder?.purchase_order_code || '-'}</div>
 						</div>
 						<div>
 							<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">รูปแบบ VAT</label>
@@ -432,7 +432,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 								</div>
 
 								<div className="grid grid-cols-1 gap-4 md:grid-cols-5">
-									<div><label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">วัตถุดิบ</label><div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--ink)]">{item.material_name || item.material_id || '-'}</div>{errors[`item_${index}_material`] && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`item_${index}_material`]}</p>}</div>
+									<div><label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">วัตถุดิบ</label><div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--ink)]">{item.material_name || '-'}</div>{errors[`item_${index}_material`] && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`item_${index}_material`]}</p>}</div>
 									<div>
 										<label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">จำนวนรับ</label>
 										<input type="number" min={0} max={item.ordered_qty} step="1" value={item.purchase_receipt_list_qty} onChange={(e) => updateItem(item.id, 'purchase_receipt_list_qty', Number(e.target.value))} className="ka-input w-full" disabled={isSubmitting} />
@@ -444,7 +444,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 										<input type="number" min={0} step="0.01" value={item.purchase_receipt_list_price} onChange={(e) => updateItem(item.id, 'purchase_receipt_list_price', Number(e.target.value))} className="ka-input w-full" disabled={isSubmitting} />
 										{errors[`item_${index}_price`] && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`item_${index}_price`]}</p>}
 									</div>
-									<div><label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">หน่วย</label><div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--ink)]">{item.product_unit_name || item.product_unit_id || '-'}</div></div>
+									<div><label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">หน่วย</label><div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-3 py-2 text-sm text-[var(--ink)]">{item.product_unit_name || '-'}</div></div>
 									<div><label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">ยอดรวม</label><div className="rounded-xl border border-[var(--brand-soft)] bg-[var(--brand-soft)] px-3 py-2 text-sm font-semibold text-[var(--brand-ink)]">฿{formatCurrency(calculateItemTotal(item))}</div></div>
 								</div>
 							</div>
@@ -516,11 +516,11 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 								const total = Number(orderItem.purchase_order_list_qty || 0) * Number(orderItem.purchase_order_list_price || 0);
 								return (
 									<tr key={itemId} className="border-b border-[var(--border)]">
-										<td className="px-3 py-2"><label className="ka-check-hit"><input type="checkbox" className="ka-check" aria-label={`เลือก ${orderItem.material?.material_name || orderItem.material_id}`} checked={Boolean(selectedOrderItems[itemId])} onChange={() => toggleOrderItemSelection(orderItem)} /></label></td>
-										<td className="px-3 py-2 text-[var(--ink)]">{orderItem.material?.material_name || orderItem.material_id}</td>
+										<td className="px-3 py-2"><label className="ka-check-hit"><input type="checkbox" className="ka-check" aria-label={`เลือก ${orderItem.material?.material_name || '-'}`} checked={Boolean(selectedOrderItems[itemId])} onChange={() => toggleOrderItemSelection(orderItem)} /></label></td>
+										<td className="px-3 py-2 text-[var(--ink)]">{orderItem.material?.material_name || '-'}</td>
 										<td className="px-3 py-2">{orderItem.purchase_order_list_qty}</td>
 										<td className="px-3 py-2">฿{formatCurrency(Number(orderItem.purchase_order_list_price || 0))}</td>
-										<td className="px-3 py-2">{orderItem.productUnit?.product_unit_name || orderItem.product_unit_id || '-'}</td>
+										<td className="px-3 py-2">{orderItem.productUnit?.product_unit_name || '-'}</td>
 										<td className="px-3 py-2 font-semibold text-[var(--brand-ink)]">฿{formatCurrency(total)}</td>
 									</tr>
 								);

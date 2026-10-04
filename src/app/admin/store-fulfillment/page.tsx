@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { usePermissions } from "@/hooks/usePermissions";
 import StoreFulfillmentModel from "@/models/store-fulfillment";
 import { StoreOrderWithParcels } from "@/types/store-fulfillment";
@@ -11,42 +11,47 @@ import TaxInvoiceRequestList from "./components/tax-invoice-request-list";
 
 const storeFulfillmentModel = new StoreFulfillmentModel();
 
-const uuidPattern =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 export default function StoreFulfillmentPage() {
   const { can } = usePermissions();
   const canView = can("store_fulfillment", "view");
 
-  const [storeOrderIdInput, setStoreOrderIdInput] = useState("");
   const [order, setOrder] = useState<StoreOrderWithParcels | null>(null);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // True while a row just chosen is being fetched; the order shown before it
+  // is cleared so staff never act on the wrong one.
+  const [opening, setOpening] = useState(false);
+  // Only the newest request may change the page: a slower earlier answer must
+  // not replace the order that was chosen last.
+  const latestRequest = useRef(0);
+  // The order the page is meant to show. A reload that an earlier card asks
+  // for after its own save must not bring that order back over a newer choice.
+  const chosenOrderId = useRef<string | null>(null);
   // Bumped when the opened order was changed, so the list shows its new status.
   const [listVersion, setListVersion] = useState(0);
 
-  async function search(id?: string) {
-    const targetId = (id ?? storeOrderIdInput).trim();
-    if (!uuidPattern.test(targetId)) {
-      setError("รูปแบบเลขคำสั่งซื้อไม่ถูกต้อง");
-      return;
-    }
-    setLoading(true);
+  // Staff find an order in the list below by its code and phone; the id only
+  // travels from a row to this call (ADR-0001).
+  async function loadOrder(storeOrderId: string) {
+    const request = ++latestRequest.current;
     setError("");
     try {
-      setOrder(await storeFulfillmentModel.getOrder(targetId));
+      const loaded = await storeFulfillmentModel.getOrder(storeOrderId);
+      if (request === latestRequest.current) setOrder(loaded);
     } catch (err) {
+      if (request !== latestRequest.current) return;
       setOrder(null);
       setError(getApiErrorMessage(err));
     } finally {
-      setLoading(false);
+      if (request === latestRequest.current) setOpening(false);
     }
   }
 
   // A row of either list below opens its order at the top of the page.
   function openOrder(storeOrderId: string) {
-    setStoreOrderIdInput(storeOrderId);
-    void search(storeOrderId);
+    chosenOrderId.current = storeOrderId;
+    setOrder(null);
+    setOpening(true);
+    void loadOrder(storeOrderId);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -63,31 +68,10 @@ export default function StoreFulfillmentPage() {
   return (
     <div className="min-h-full bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
       <div className="ka-card overflow-hidden">
-        <div className="flex flex-col gap-3 border-b border-[var(--border)] p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4 md:p-6">
+        <div className="border-b border-[var(--border)] p-3 sm:p-4 md:p-6">
           <h1 className="text-lg font-semibold text-[var(--color-text-primary)]">
             จัดส่งพัสดุ
           </h1>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void search();
-            }}
-            className="flex gap-2"
-          >
-            <input
-              value={storeOrderIdInput}
-              onChange={(e) => setStoreOrderIdInput(e.target.value)}
-              placeholder="เลขคำสั่งซื้อ (store order id)"
-              className="ka-input min-h-11 w-80 max-w-full"
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="ka-btn ka-btn--primary min-h-11"
-            >
-              {loading ? "กำลังค้นหา..." : "ค้นหา"}
-            </button>
-          </form>
         </div>
       </div>
 
@@ -97,12 +81,23 @@ export default function StoreFulfillmentPage() {
         </p>
       )}
 
+      {opening && (
+        <p
+          role="status"
+          className="mt-4 text-[var(--color-text-secondary)]"
+        >
+          กำลังโหลดคำสั่งซื้อ...
+        </p>
+      )}
+
       {order && (
         <div className="mt-4">
           <StoreOrderFulfillment
             order={order}
             onChanged={() => {
-              void search(order.storeOrderId);
+              if (chosenOrderId.current === order.storeOrderId) {
+                void loadOrder(order.storeOrderId);
+              }
               setListVersion((version) => version + 1);
             }}
           />

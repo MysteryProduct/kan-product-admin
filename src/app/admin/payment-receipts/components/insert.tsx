@@ -94,7 +94,7 @@ export default function InsertPaymentReceiptForm({
 		setErrors({});
 	}, [isOpen, saleOrder?.sale_order_id]);
 
-	const saleOrderCode = useMemo(() => saleOrder?.sale_order_code || saleOrder?.sale_order_id || '-', [saleOrder]);
+	const saleOrderCode = useMemo(() => saleOrder?.sale_order_code || '-', [saleOrder]);
 
 	const validate = () => {
 		const nextErrors: Record<string, string> = {};

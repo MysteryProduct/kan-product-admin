@@ -251,7 +251,6 @@ export default function SizesPage() {
 					<table className="min-w-full divide-y divide-[var(--border)]">
 						<thead>
 							<tr className="bg-[var(--bg-subtle)]">
-								<th className="hidden px-4 py-3 text-left text-[13px] font-semibold uppercase tracking-wide text-[var(--ink-muted)] sm:table-cell">Size ID</th>
 								<th className="px-4 py-3 text-left text-[13px] font-semibold uppercase tracking-wide text-[var(--ink-muted)]">ชื่อขนาด</th>
 								<th className="px-4 py-3 text-left text-[13px] font-semibold uppercase tracking-wide text-[var(--ink-muted)]">Category ที่ผูก</th>
 								<th className="px-4 py-3 text-left text-[13px] font-semibold uppercase tracking-wide text-[var(--ink-muted)]">Action</th>
@@ -265,7 +264,6 @@ export default function SizesPage() {
 
 									return (
 										<tr key={size.size_id} className="bg-[var(--bg-surface)] transition hover:bg-[var(--bg-subtle)]">
-											<td className="hidden px-4 py-4 text-sm text-[var(--ink-muted)] sm:table-cell">{size.size_id}</td>
 											<td className="px-4 py-4 text-sm font-medium text-[var(--ink)]">{size.size_name}</td>
 											<td className="px-4 py-4">
 												{relationCategories.length > 0 ? (
@@ -338,7 +336,7 @@ export default function SizesPage() {
 								})
 							) : (
 								<tr>
-									<td colSpan={4} className="px-4 py-10 text-center text-sm text-[var(--ink-muted)]">
+									<td colSpan={3} className="px-4 py-10 text-center text-sm text-[var(--ink-muted)]">
 										ไม่พบข้อมูลขนาดสินค้า
 									</td>
 								</tr>

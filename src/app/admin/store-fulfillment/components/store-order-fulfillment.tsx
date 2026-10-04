@@ -61,7 +61,7 @@ export default function StoreOrderFulfillment({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                คำสั่งซื้อ #{order.storeOrderId}
+                คำสั่งซื้อ {order.saleOrderCode}
               </p>
               <p className="font-medium">
                 {order.fulfillmentMethod === "delivery"

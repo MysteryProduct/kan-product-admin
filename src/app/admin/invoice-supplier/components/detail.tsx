@@ -45,7 +45,7 @@ export default function InvoiceSupplierDetailModal({ isOpen, onClose, invoice }:
   const invoicePayments = invoice.invoicePayments || [];
   const availablePayments = invoice.availablePayments || [];
   const purchaseReceiptCode =
-    invoice.purchase_receipt_code || invoice.purchaseReceipt?.purchase_receipt_code || invoice.purchaseReceipt?.purchase_receipt_id || '-';
+    invoice.purchase_receipt_code || invoice.purchaseReceipt?.purchase_receipt_code || '-';
   const supplierName = invoice.supplier_name || invoice.supplier?.supplier_name || '-';
   const vatType = invoice.vat_type || 'none';
   const paidTotal = invoicePayments.reduce((sum, item) => sum + Number(item.invoice_payment_price || 0), 0);

@@ -27,7 +27,6 @@ const formatCurrency = (amount: number) =>
     }).format(amount);
 
 export default function UpdateInvoiceSupplierForm({ isOpen, onClose, onSubmit, invoice }: UpdateInvoiceSupplierFormProps) {
-    const [invoiceCode, setInvoiceCode] = useState('');
     const [invoiceName, setInvoiceName] = useState('');
     const [invoiceDate, setInvoiceDate] = useState('');
     const [invoiceDueDate, setInvoiceDueDate] = useState('');
@@ -51,7 +50,6 @@ export default function UpdateInvoiceSupplierForm({ isOpen, onClose, onSubmit, i
         const availablePaymentsList = invoice.availablePayments || [];
         const existingPayments = invoice.invoicePayments || [];
 
-        setInvoiceCode(invoice.invoice_supplier_code);
         setInvoiceName(invoice.invoice_supplier_name);
         setInvoiceDate(invoice.invoice_supplier_date.slice(0, 10));
         setInvoiceDueDate(invoice.invoice_supplier_due_date.slice(0, 10));
@@ -101,9 +99,6 @@ export default function UpdateInvoiceSupplierForm({ isOpen, onClose, onSubmit, i
     const validate = () => {
         const nextErrors: Record<string, string> = {};
 
-        if (!invoiceCode.trim()) {
-            nextErrors.invoice_supplier_code = 'กรุณาระบุเลขที่ใบชำระหนี้';
-        }
         if (!invoiceName.trim()) {
             nextErrors.invoice_supplier_name = 'กรุณาระบุชื่อเอกสาร';
         }
@@ -141,7 +136,6 @@ export default function UpdateInvoiceSupplierForm({ isOpen, onClose, onSubmit, i
         }
 
         onSubmit({
-            invoice_supplier_code: invoiceCode.trim(),
             invoice_supplier_name: invoiceName.trim(),
             invoice_supplier_date: invoiceDate,
             invoice_supplier_due_date: invoiceDueDate,
@@ -174,8 +168,8 @@ export default function UpdateInvoiceSupplierForm({ isOpen, onClose, onSubmit, i
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     <div>
                         <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">เลขที่ใบชำระหนี้</label>
-                        <input value={invoiceCode} onChange={(event) => setInvoiceCode(event.target.value)} className={INPUT_CLASSNAME} />
-                        {errors.invoice_supplier_code && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.invoice_supplier_code}</p>}
+                        {/* Issued by the system (ADR-0001); the API refuses a changed code. */}
+                        <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] px-4 py-2 text-[var(--ink)] shadow-sm">{invoice?.invoice_supplier_code || '-'}</div>
                     </div>
 
                     <div>

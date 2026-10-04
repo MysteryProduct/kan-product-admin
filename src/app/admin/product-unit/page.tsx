@@ -196,7 +196,6 @@ const ProductUnitPage = () => {
                     <table className="w-full">
                         <thead>
                             <tr className="bg-[var(--bg-subtle)] border-b border-[var(--border)]">
-                                <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-[13px] sm:text-sm font-semibold text-[var(--ink)] hidden sm:table-cell">รหัสหน่วยสินค้า</th>
                                 <th className="text-left px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-[13px] sm:text-sm font-semibold text-[var(--ink)]">
                                     ชื่อหน่วยสินค้า
                                 </th>
@@ -209,7 +208,6 @@ const ProductUnitPage = () => {
                                     key={productUnit.product_unit_id}
                                     className="bg-[var(--bg-surface)] border-b border-[var(--border)] hover:bg-[var(--bg-subtle)] transition-colors"
                                 >
-                                    <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-[var(--ink-muted)] hidden sm:table-cell">{productUnit.product_unit_id}</td>
                                     <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-sm text-[var(--ink)]">{productUnit.product_unit_name}</td>
                                     <td className="px-2 sm:px-3 md:px-6 py-3 sm:py-4">
                                         {canEditProductUnit && (
@@ -249,7 +247,7 @@ const ProductUnitPage = () => {
                                 </tr>
                             ))) : (
                                 <tr>
-                                    <td colSpan={3} className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-center text-sm text-[var(--ink-muted)]">
+                                    <td colSpan={2} className="px-2 sm:px-3 md:px-6 py-3 sm:py-4 text-center text-sm text-[var(--ink-muted)]">
                                         ไม่พบข้อมูลหน่วยสินค้า
                                     </td>
                                 </tr>

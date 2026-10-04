@@ -288,7 +288,7 @@ export default function InvoiceSupplierPage() {
       width: '220px',
       render: (_, row) => (
         <DocumentCode
-          code={row.purchase_receipt_code || row.purchase_receipt_id}
+          code={row.purchase_receipt_code || '-'}
           legacyCode={row.legacy_code}
           search={approvedSearch}
         />
@@ -297,7 +297,7 @@ export default function InvoiceSupplierPage() {
     {
       key: 'supplier_id',
       label: 'ผู้จัดจำหน่าย',
-      render: (_, row) => row.supplier?.supplier_name || row.supplier_id,
+      render: (_, row) => row.supplier?.supplier_name || '-',
     },
     {
       key: 'entry_date',
@@ -350,7 +350,7 @@ export default function InvoiceSupplierPage() {
       label: 'อ้างอิงใบรับสินค้า',
       render: (_, row) => (
         <div>
-            <p className="text-[var(--ink)]">{row.purchaseReceipt?.purchase_receipt_code || row.purchaseReceipt?.purchase_receipt_id}</p>
+            <p className="text-[var(--ink)]">{row.purchaseReceipt?.purchase_receipt_code || '-'}</p>
         </div>
       ),
     },

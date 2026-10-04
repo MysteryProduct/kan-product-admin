@@ -146,7 +146,7 @@ export default function PurchaseReceiptDetailModal({
 					<div>
 						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">เลขที่ใบรับสินค้า</label>
 						<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-							{purchaseReceipt.purchase_receipt_code || purchaseReceipt.purchase_receipt_id}
+							{purchaseReceipt.purchase_receipt_code || '-'}
 						</div>
 					</div>
 					{purchaseReceipt.legacy_code && (
@@ -160,7 +160,7 @@ export default function PurchaseReceiptDetailModal({
 					<div>
 						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">เลขที่ใบสั่งซื้อ</label>
 						<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-							{purchaseReceipt.purchaseOrder?.purchase_order_code || purchaseReceipt.purchase_order_id}
+							{purchaseReceipt.purchaseOrder?.purchase_order_code || '-'}
 						</div>
 					</div>
 					<div>
@@ -175,7 +175,7 @@ export default function PurchaseReceiptDetailModal({
 					<div>
 						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">ผู้จัดจำหน่าย</label>
 						<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-							{purchaseReceipt.supplier?.supplier_name || purchaseReceipt.supplier_id || '-'}
+							{purchaseReceipt.supplier?.supplier_name || '-'}
 						</div>
 					</div>
 					<div>
@@ -227,7 +227,7 @@ export default function PurchaseReceiptDetailModal({
 									<div>
 										<label className="mb-1 block text-[13px] font-medium text-[var(--color-text-secondary)]">หน่วย</label>
 										<div className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)]">
-											{item.productUnit?.product_unit_name || item.product_unit_id || '-'}
+											{item.productUnit?.product_unit_name || '-'}
 										</div>
 									</div>
 									<div>

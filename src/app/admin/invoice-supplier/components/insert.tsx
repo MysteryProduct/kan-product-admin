@@ -66,7 +66,7 @@ export default function InsertInvoiceSupplierForm({
             return;
         }
 
-        setInvoiceName(`ใบชำระหนี้ ${sourceReceipt.supplier?.supplier_name || sourceReceipt.supplier_id}`);
+        setInvoiceName(sourceReceipt.supplier?.supplier_name ? `ใบชำระหนี้ ${sourceReceipt.supplier.supplier_name}` : 'ใบชำระหนี้');
         setInvoiceDate(todayIso());
         setInvoiceDueDate(plusDaysIso(30));
         setInvoiceStatus('pending');
@@ -190,8 +190,8 @@ export default function InsertInvoiceSupplierForm({
                 <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-subtle)] p-4">
                     <h3 className="mb-3 text-base font-semibold text-[var(--ink)]">ข้อมูลที่ดึงจากใบรับสินค้า (ค่าเริ่มต้น)</h3>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                        <p className="text-sm text-[var(--ink-muted)]">ใบรับสินค้า: <span className="font-semibold text-[var(--ink)]">{sourceReceipt.purchase_receipt_code || sourceReceipt.purchase_receipt_id}</span></p>
-                        <p className="text-sm text-[var(--ink-muted)]">Supplier: <span className="font-semibold text-[var(--ink)]">{sourceReceipt.supplier?.supplier_name || sourceReceipt.supplier_id}</span></p>
+                        <p className="text-sm text-[var(--ink-muted)]">ใบรับสินค้า: <span className="font-semibold text-[var(--ink)]">{sourceReceipt.purchase_receipt_code || '-'}</span></p>
+                        <p className="text-sm text-[var(--ink-muted)]">Supplier: <span className="font-semibold text-[var(--ink)]">{sourceReceipt.supplier?.supplier_name || '-'}</span></p>
                         <p className="text-sm text-[var(--ink-muted)]">VAT: <span className="font-semibold text-[var(--ink)]">{VAT_TYPE_LABELS[sourceReceipt.vat_type || 'none']}</span></p>
                         <p className="text-sm text-[var(--ink-muted)]">ยอดรวม: <span className="font-semibold text-[var(--ink)]">฿{formatCurrency(invoiceTotal)}</span></p>
                     </div>
