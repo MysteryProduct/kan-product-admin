@@ -280,18 +280,6 @@ export default function SettingsPage() {
 									disabled={!canSave || saving}
 								/>
 							</div>
-							<div className="md:col-span-2">
-								<label htmlFor="shop_address" className="mb-2 block text-sm font-medium text-[var(--ink)]">ที่อยู่</label>
-								<textarea
-									id="shop_address"
-									rows={3}
-									maxLength={500}
-									value={formData.shop_address}
-									onChange={(event) => setFormData((prev) => ({ ...prev, shop_address: event.target.value }))}
-									className={`${inputClass} h-auto py-2`}
-									disabled={!canSave || saving}
-								/>
-							</div>
 							<div>
 								<label htmlFor="shop_tax_id" className="mb-2 block text-sm font-medium text-[var(--ink)]">เลขประจำตัวผู้เสียภาษี</label>
 								<input
@@ -342,7 +330,7 @@ export default function SettingsPage() {
 					<fieldset className="space-y-4">
 						<legend className="text-sm font-semibold text-[var(--ink)]">ช่องทางติดต่อร้าน (แสดงบนหน้าร้าน)</legend>
 						<p className="text-[13px] text-[var(--ink-muted)]">
-							เว้นว่างช่องไหน หน้าร้านจะไม่แสดงช่องนั้น
+							เว้นว่างช่องไหน หน้าร้านจะไม่แสดงช่องนั้น ทุกช่องในกลุ่มนี้เปิดเผยต่อผู้เข้าชมหน้าร้านทุกคน
 						</p>
 						<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 							{(
@@ -371,6 +359,18 @@ export default function SettingsPage() {
 									{errors[field.name] && <p id={`${field.name}_error`} className="mt-1 text-[13px] text-[var(--danger)]">{errors[field.name]}</p>}
 								</div>
 							))}
+							<div className="md:col-span-2">
+								<label htmlFor="shop_address" className="mb-2 block text-sm font-medium text-[var(--ink)]">ที่อยู่ร้าน (แสดงบนหน้าร้าน และใช้เป็นที่อยู่บนใบกำกับภาษี)</label>
+								<textarea
+									id="shop_address"
+									rows={3}
+									maxLength={500}
+									value={formData.shop_address}
+									onChange={(event) => setFormData((prev) => ({ ...prev, shop_address: event.target.value }))}
+									className={`${inputClass} h-auto py-2`}
+									disabled={!canSave || saving}
+								/>
+							</div>
 						</div>
 					</fieldset>
 
