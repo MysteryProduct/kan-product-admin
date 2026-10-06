@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import Cookies from 'js-cookie';
 import ActionResultDialog, { ActionResultDialogAction } from '@/components/ActionResultDialog';
 import LoadingSkeletonProps from '@/components/LoadingSkeleton';
@@ -225,6 +226,16 @@ export default function SettingsPage() {
 							{canAddSettings
 								? 'ยังไม่มีการตั้งค่าพื้นฐานในระบบ เลือกบัญชีรับเงินและอัตรา VAT แล้วกดบันทึกเพื่อสร้างการตั้งค่า'
 								: 'ยังไม่มีการตั้งค่าพื้นฐานในระบบ และบัญชีนี้ไม่มีสิทธิ์สร้าง กรุณาติดต่อผู้ดูแลระบบ'}
+						</p>
+					)}
+					{/* A first row needs a bank account; with none yet, say where to add one instead of leaving an empty list. */}
+					{!hasSettingsRow && canAddSettings && !bankAccountsError && bankAccounts.length === 0 && (
+						<p role="status" className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] p-3 text-sm text-[var(--ink-muted)]">
+							ยังไม่มีบัญชีรับเงินในระบบ กรุณาเพิ่มบัญชีที่หน้า{' '}
+							<Link href="/admin/bank-account" className="font-medium text-[var(--ink)] underline">
+								บัญชีรับเงิน
+							</Link>{' '}
+							ก่อน แล้วกลับมาสร้างการตั้งค่าที่หน้านี้
 						</p>
 					)}
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
