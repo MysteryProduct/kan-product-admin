@@ -1,5 +1,5 @@
 import axiosInstance from '@/lib/axios';
-import { AppSettings, UpdateSettingsDto } from '@/types/settings';
+import { AppSettings, CreateSettingsDto, UpdateSettingsDto } from '@/types/settings';
 
 interface SettingsPayload {
   data?: AppSettings | AppSettings[];
@@ -24,6 +24,19 @@ class SettingsModel {
     } catch (error) {
       throw error;
     }
+  }
+
+  // Used only when the database has no settings row yet; afterwards the row is edited.
+  async createSettings(payload: CreateSettingsDto): Promise<AppSettings> {
+    const response = await axiosInstance.post<AppSettings | SettingsPayload>('/settings', payload);
+    const data = response.data as AppSettings | SettingsPayload;
+    if (data && typeof data === 'object' && 'data' in data) {
+      const normalized = data.data;
+      const settings = Array.isArray(normalized) ? normalized[0] : normalized;
+      if (!settings) throw new Error('API ไม่ได้ส่งข้อมูลการตั้งค่าที่บันทึกกลับมา');
+      return settings;
+    }
+    return data as AppSettings;
   }
 
   async updateSettings(payload: UpdateSettingsDto): Promise<AppSettings> {
