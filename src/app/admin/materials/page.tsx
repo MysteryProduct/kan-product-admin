@@ -66,7 +66,7 @@ export default function MaterialsPage() {
 		const fetchOptions = async () => {
 			// One failing list must not empty the other, and the person needs to know which one is missing.
 			setOptionsError(null);
-			const results = await Promise.allSettled([colorModel.getColors(1, 200), sizeModel.getSizes(1, 200)]);
+			const results = await Promise.allSettled([colorModel.getAllColors(), sizeModel.getAllSizes()]);
 			const [colors, sizes] = results;
 			if (colors.status === 'fulfilled') setColorOptions(toNameOptions(colors.value.data.map((color) => color.color_name)));
 			if (sizes.status === 'fulfilled') setSizeOptions(toNameOptions(sizes.value.data.map((size) => size.size_name)));

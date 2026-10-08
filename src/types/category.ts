@@ -4,6 +4,7 @@ export interface Category {
     category_id: number;
     category_name: string;
     sizes?: Size[];
+    categorySize?: { id?: number; size_id: number; size?: Size }[];
     size_ids?: number[];
 }
 

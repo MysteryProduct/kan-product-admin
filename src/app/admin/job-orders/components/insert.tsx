@@ -176,8 +176,8 @@ export default function InsertJobOrderForm({
 			const [materialResult, productResult, colorResult, sizeResult] = await Promise.allSettled([
 				materialModel.getMaterials(1, 300),
 				productModel.getProducts(1, 200),
-				colorModel.getColors(1, 200),
-				sizeModel.getSizes(1, 200),
+				colorModel.getAllColors(),
+				sizeModel.getAllSizes(),
 			]);
 			if (materialResult.status === 'fulfilled') setMaterialOptions(materialResult.value.data || []);
 			if (productResult.status === 'fulfilled') setProducts(productResult.value.data || []);

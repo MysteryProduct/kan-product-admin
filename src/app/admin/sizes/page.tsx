@@ -90,8 +90,6 @@ export default function SizesPage() {
 
 	const hydrateSizeWithRelations = useCallback(async (size: Size): Promise<Size> => {
 		const relation = await loadRelationForSize(size);
-        console.log(relation);
-        
 		return {
 			...size,
 			category_ids: relation.category.map((cat) => cat.category_id),

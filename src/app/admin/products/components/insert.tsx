@@ -153,9 +153,9 @@ export default function ProductForm({ isOpen, onClose, onSuccess }: ProductFormP
       // One failing list must not empty the others, and the person needs to know which one is missing.
       setLookupError(null);
       const results = await Promise.allSettled([
-        categoryModel.getCategories(1, 200),
-        colorModel.getColors(1, 200),
-        sizeModel.getSizes(1, 200),
+        categoryModel.getAllCategories(),
+        colorModel.getAllColors(),
+        sizeModel.getAllSizes(),
         materialModel.getMaterials(1, 400),
         productUnitModel.getProductUnits(1, 100),
       ]);

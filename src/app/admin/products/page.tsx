@@ -91,8 +91,8 @@ export default function ProductsPage() {
       try {
         setOptionsError(null);
         const [categories, colors] = await Promise.all([
-          categoryModel.getCategories(1, 200),
-          colorModel.getColors(1, 200),
+          categoryModel.getAllCategories(),
+          colorModel.getAllColors(),
         ]);
         setCategoryOptions(toNameOptions(categories.data.map((category) => category.category_name)));
         setColorOptions(toNameOptions(colors.data.map((color) => color.color_name)));

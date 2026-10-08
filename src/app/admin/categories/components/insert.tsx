@@ -43,7 +43,7 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
             const fetchSizes = async () => {
                 try {
                     const sizeModel = new SizeModel();
-                    const result = await sizeModel.getSizes(1, 200);
+                    const result = await sizeModel.getAllSizes();
                     setSizes(result.data);
                 } catch (fetchError) {
                     console.error('Error fetching sizes for category form:', fetchError);

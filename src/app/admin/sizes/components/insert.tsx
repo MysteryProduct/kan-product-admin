@@ -42,7 +42,7 @@ export default function InsertSizeForm({ isOpen, onClose, onSuccess }: InsertSiz
 
 		const fetchCategories = async () => {
 			try {
-				const response = await categoryModel.getCategories(1, 200);
+				const response = await categoryModel.getAllCategories();
 				setCategories(response.data);
 			} catch (fetchError) {
 				console.error('Error fetching categories for size form:', fetchError);

@@ -6,7 +6,7 @@ import CategoryModel from '@/models/category';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import SizeModel from '@/models/size';
 import { Size } from '@/types/size';
-import LoadErrorBanner, { failedLabels, partialLoadText } from '@/components/LoadErrorBanner';
+import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 import Modal from '@/components/Modal';
 
 interface CategoryFormProps {
@@ -46,28 +46,12 @@ export default function UpdateCategoryForm({ isOpen, onClose, onSuccess, initial
 
             const fetchFormData = async () => {
                 const sizeModel = new SizeModel();
-                const categoryModel = new CategoryModel();
-                // One failing request must not hide the other, and the person needs to know which one is missing.
                 setLoadError(null);
-                const results = await Promise.allSettled([
-                    sizeModel.getSizes(1, 200),
-                    categoryModel.getCategorySizeIds(initialData.category_id),
-                ]);
-                const [sizeResponse, selectedSizeIds] = results;
-
-                if (sizeResponse.status === 'fulfilled') setSizes(sizeResponse.value.data);
-                // Without the saved relation the sizes the category came with stay ticked.
-                if (selectedSizeIds.status === 'fulfilled') {
-                    setFormData((prev) => ({
-                        ...prev,
-                        size_ids: selectedSizeIds.value,
-                    }));
-                }
-
-                const failed = failedLabels(results, ['ขนาด', 'ขนาดที่เลือกไว้เดิม']);
-                if (failed.length > 0) {
-                    console.error('Error fetching update category form data:', results);
-                    setLoadError(partialLoadText(failed));
+                try {
+                    const response = await sizeModel.getAllSizes();
+                    setSizes(response.data);
+                } catch (error) {
+                    setLoadError(loadErrorText('ขนาด', error));
                 }
             };
 

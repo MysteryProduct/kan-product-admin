@@ -23,6 +23,15 @@ export default class ColorModel {
     };
 
     // Additional methods for creating, updating, deleting colors can be added here
+    async getAllColors(): Promise<ColorResponse> {
+        const first = await this.getColors(1, 100);
+        const data = [...first.data];
+        for (let page = 2; page <= first.meta.last_page; page++) {
+            data.push(...(await this.getColors(page, 100)).data);
+        }
+        return { data, meta: { total: data.length, page: 1, limit: data.length, last_page: data.length ? 1 : 0 } };
+    }
+
     createColor = async (createColorDto: CreateColorDto) => {
         try {
             const response = await axiosInstance.post('/color/', createColorDto);
@@ -33,9 +42,9 @@ export default class ColorModel {
         }
     }
 
-    updateColor = async (updateColorDto: UpdateColorDto) => {
+    updateColor = async ({ color_id, ...payload }: UpdateColorDto) => {
         try {
-            const response = await axiosInstance.patch(`/color/${updateColorDto.color_id}`, updateColorDto);
+            const response = await axiosInstance.patch(`/color/${color_id}`, payload);
             return response.data;
         } catch (error) {
             console.error('Error updating color:', error);

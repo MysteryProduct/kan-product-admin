@@ -48,7 +48,7 @@ export default function UpdateSizeForm({ isOpen, onClose, onSuccess, initialData
 			// One failing request must not hide the other, and the person needs to know which one is missing.
 			setLoadError(null);
 			const results = await Promise.allSettled([
-				categoryModel.getCategories(1, 200),
+				categoryModel.getAllCategories(),
 				sizeModel.getCategoryRelationsBySize(initialData.size_id),
 			]);
 			const [categoryResponse, relation] = results;

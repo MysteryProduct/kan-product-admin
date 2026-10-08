@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { PaginationMeta } from '@/types/pagination';
 import { Category } from '@/types/category';
@@ -41,26 +41,11 @@ export default function CategoryPage() {
 
     const categoryModel = useMemo(() => new CategoryModel(), []);
 
-    const hydrateCategorySizeRelation = useCallback(async (list: Category[]): Promise<Category[]> => {
-        const hydrated = await Promise.all(
-            list.map(async (category) => {
-                const sizeIds = await categoryModel.getCategorySizeIds(category.category_id);
-                return {
-                    ...category,
-                    size_ids: sizeIds,
-                };
-            })
-        );
-
-        return hydrated;
-    }, [categoryModel]);
-
     useEffect(() => {
         const fetchCategories = async () => {
             try {
                 const result = await categoryModel.getCategories(currentPage, 10, appliedSearchQuery);
-                const hydratedCategories = await hydrateCategorySizeRelation(result.data);
-                setCategories(hydratedCategories);
+                setCategories(result.data);
                 setMeta(result.meta);
             } catch (err: unknown) {
                 const message = err instanceof Error ? err.message : 'ไม่สามารถดึงข้อมูลประเภทสินค้าได้';
@@ -75,7 +60,7 @@ export default function CategoryPage() {
         };
 
         fetchCategories();
-    }, [appliedSearchQuery, categoryModel, currentPage, hydrateCategorySizeRelation]);
+    }, [appliedSearchQuery, categoryModel, currentPage]);
 
     const handleSearch = () => {
         setCurrentPage(1);
@@ -99,8 +84,7 @@ export default function CategoryPage() {
             }
 
             const result = await categoryModel.getCategories(targetPage, 10, appliedSearchQuery);
-            const hydratedCategories = await hydrateCategorySizeRelation(result.data);
-            setCategories(hydratedCategories);
+            setCategories(result.data);
             setMeta(result.meta);
         } catch (err: unknown) {
             const message = err instanceof Error ? err.message : 'ไม่สามารถรีเฟรชข้อมูลประเภทสินค้าได้';
