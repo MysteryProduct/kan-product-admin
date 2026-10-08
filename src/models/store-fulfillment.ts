@@ -85,7 +85,10 @@ class StoreFulfillmentModel {
       `/fulfillment/orders/${storeOrderId}/parcels`,
       {
         ...pickDefined(dto, PARCEL_FIELDS),
-        items: dto.items.map((item) => pickDefined(item, ['sale_order_list_id', 'quantity'] as const)),
+        // A missing list is left out so the API refuses it, instead of failing here.
+        ...(dto.items !== undefined && {
+          items: dto.items.map((item) => pickDefined(item, ['sale_order_list_id', 'quantity'] as const)),
+        }),
       },
     );
     return response.data;
@@ -204,9 +207,11 @@ class StoreFulfillmentModel {
       `/fulfillment/returns/orders/${storeOrderId}`,
       {
         ...pickDefined(dto, RETURN_FIELDS),
-        items: dto.items.map((item) =>
-          pickDefined(item, ['sale_order_list_id', 'quantity', 'restock'] as const),
-        ),
+        ...(dto.items !== undefined && {
+          items: dto.items.map((item) =>
+            pickDefined(item, ['sale_order_list_id', 'quantity', 'restock'] as const),
+          ),
+        }),
       },
     );
   }

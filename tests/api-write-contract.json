@@ -116,6 +116,8 @@
     "carrier_name",
     "district",
     "items",
+    "items[].quantity",
+    "items[].sale_order_list_id",
     "postal_code",
     "province",
     "recipient_name",
@@ -148,6 +150,9 @@
   ],
   "POST /fulfillment/returns/orders/:storeOrderId": [
     "items",
+    "items[].quantity",
+    "items[].restock",
+    "items[].sale_order_list_id",
     "note",
     "reason",
     "return_reference"
@@ -211,6 +216,8 @@
     "guest_phone",
     "idempotency_key",
     "items",
+    "items[].product_variant_id",
+    "items[].quantity",
     "postal_code",
     "province",
     "recipient_name",

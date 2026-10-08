@@ -54,8 +54,29 @@ test('route matching: holes match params only, literals must be equal', () => {
   assert.equal(routeKey('PUT', '/category/${id}'), undefined);
 });
 
+// The contract lists top-level fields by name and the fields of nested line
+// items as `field[].inner`.
+const topFields = key => contract[key].filter(field => !field.includes('[]'));
+const nestedFields = (key, field) => contract[key]
+  .filter(name => name.startsWith(`${field}[].`)).map(name => name.slice(field.length + 3));
+// Everything wrong with a request body: fields, and nested item fields, the API would reject.
+function violations(key, body = {}) {
+  const found = Object.keys(body).filter(field => !topFields(key).includes(field));
+  for (const [field, value] of Object.entries(body)) {
+    const allowed = nestedFields(key, field);
+    if (!Array.isArray(value) || allowed.length === 0) continue;
+    for (const item of value) {
+      for (const inner of Object.keys(item ?? {})) if (!allowed.includes(inner)) found.push(`${field}[].${inner}`);
+    }
+  }
+  return found;
+}
+
 // Realistic form state: a full list row, relations and unknown fields included.
 const SIZE_ROW = { size_id: 4, size_name: 'S' };
+const ADDRESS = { recipient_name: 'สมชาย', recipient_phone: '0800000000', address_line1: '1 ถนน', address_line2: 'ซอย 2', district: 'บางรัก', province: 'กรุงเทพ', postal_code: '10500' };
+const EMPLOYEE = { employee_firstname: 'สมชาย', employee_lastname: 'ใจดี', employee_address: '1 ถนน', employee_phone: '0800000000', employee_email: 'a@b.test' };
+const LINE = { sale_order_list_id: 'L1', quantity: 2, name: 'สินค้า', remaining: 5 };
 const CASES = [
   ['category', 'category create', m => m('category').createCategory('เสื้อ', [1, 2])],
   ['category', 'category update from a full list row', m => m('category').updateCategory({ category_id: 7, category_name: 'เสื้อ', size_ids: [4], categorySize: [{ id: 1, size_id: 4, size: SIZE_ROW }], sizes: [SIZE_ROW], extra: true })],
@@ -63,15 +84,15 @@ const CASES = [
   ['color', 'color update from a full row', m => m('color').updateColor({ color_id: 3, color_name: 'แดง', color_hex: '#FF0000', extra: true })],
   ['product-unit', 'product unit create', m => m('product-unit').createProductUnit('ชิ้น')],
   ['product-unit', 'product unit update', m => m('product-unit').updateProductUnit(2, 'กล่อง')],
-  ['employee', 'employee create from a full form state', m => m('employee').createEmployee({ employee_username: 'somchai', employee_password: 'pw-12345678', employee_firstname: 'สมชาย', employee_lastname: 'ใจดี', employee_address: '1 ถนน', employee_phone: '0800000000', employee_email: 'a@b.test', license_id: 'L1', confirm_password: 'pw-12345678', employee_id: 'x', extra: true })],
-  ['employee', 'employee update from a full employee row', m => m('employee').updateEmployee('E1', { employee_id: 'E1', employee_username: 'somchai', employee_firstname: 'สมชาย', employee_lastname: 'ใจดี', employee_address: '1 ถนน', employee_phone: '0800000000', employee_email: 'a@b.test', license_id: 'L1', license: { license_id: 'L1', license_name: 'Manager' }, disabled_at: null, extra: true })],
-  ['employee', 'employee update without a license', m => m('employee').updateEmployee('E1', { employee_firstname: 'สมชาย', employee_lastname: 'ใจดี', employee_address: '1 ถนน', employee_phone: '0800000000', employee_email: 'a@b.test' })],
+  ['employee', 'employee create from a full form state', m => m('employee').createEmployee({ employee_username: 'somchai', employee_password: 'pw-12345678', ...EMPLOYEE, license_id: 'L1', confirm_password: 'pw-12345678', employee_id: 'x', extra: true })],
+  ['employee', 'employee update from a full employee row', m => m('employee').updateEmployee('E1', { employee_id: 'E1', employee_username: 'somchai', ...EMPLOYEE, license_id: 'L1', license: { license_id: 'L1', license_name: 'Manager' }, disabled_at: null, extra: true })],
+  ['employee', 'employee update without a license', m => m('employee').updateEmployee('E1', { ...EMPLOYEE })],
   ['employee', 'employee set password', m => m('employee').setPassword('E1', 'new-password-123')],
   ['contact-request', 'contact request update from a full row', m => m('contact-request').updateContactRequest('C1', { status: 'contacting', contact_result: 'โทรแล้ว', contactRequestId: 'C1', contactName: 'ลูกค้า', extra: true })],
   ['contact-request', 'contact request update with a cleared result', m => m('contact-request').updateContactRequest('C1', { status: 'new', contact_result: '', contactRequestId: 'C1' })],
-  ['store-fulfillment', 'fulfillment create parcel from a full form state', m => m('store-fulfillment').createParcel('O1', { carrier_name: 'Kerry', tracking_number: 'T1', items: [{ sale_order_list_id: 'L1', quantity: 2, name: 'สินค้า', remaining: 5 }], recipient_name: 'สมชาย', recipient_phone: '0800000000', address_line1: '1 ถนน', address_line2: 'ซอย 2', district: 'บางรัก', province: 'กรุงเทพ', postal_code: '10500', parcelId: 'x', extra: true })],
-  ['store-fulfillment', 'fulfillment edit parcel address from a full row', m => m('store-fulfillment').editParcelAddress('P1', { recipient_name: 'สมชาย', recipient_phone: '0800000000', address_line1: '1 ถนน', address_line2: 'ซอย 2', district: 'บางรัก', province: 'กรุงเทพ', postal_code: '10500', reason: 'ลูกค้าแจ้งแก้', history: [], extra: true })],
-  ['store-fulfillment', 'fulfillment convert to delivery from a full form state', m => m('store-fulfillment').convertToDelivery('O1', { recipient_name: 'สมชาย', recipient_phone: '0800000000', address_line1: '1 ถนน', address_line2: 'ซอย 2', district: 'บางรัก', province: 'กรุงเทพ', postal_code: '10500', note: 'หมายเหตุ', shippingFee: 50, extra: true })],
+  ['store-fulfillment', 'fulfillment create parcel from a full form state', m => m('store-fulfillment').createParcel('O1', { carrier_name: 'Kerry', tracking_number: 'T1', items: [LINE], ...ADDRESS, parcelId: 'x', extra: true })],
+  ['store-fulfillment', 'fulfillment edit parcel address from a full row', m => m('store-fulfillment').editParcelAddress('P1', { ...ADDRESS, reason: 'ลูกค้าแจ้งแก้', history: [], extra: true })],
+  ['store-fulfillment', 'fulfillment convert to delivery from a full form state', m => m('store-fulfillment').convertToDelivery('O1', { ...ADDRESS, note: 'หมายเหตุ', shippingFee: 50, extra: true })],
   ['store-fulfillment', 'fulfillment record parcel return', m => m('store-fulfillment').recordParcelReturn('P1', { reason: 'ส่งไม่ได้', contact_outcome: 'reached', contact_note: 'โทรแล้ว', parcelId: 'P1', extra: true })],
   ['store-fulfillment', 'fulfillment decide cancellation', m => m('store-fulfillment').decideCancellation('R1', { decision: 'approve', note: 'ตกลง', requestId: 'R1', extra: true })],
   ['store-fulfillment', 'fulfillment record manual refund', m => m('store-fulfillment').recordManualRefund('RF1', { reference: 'REF1', amount: 100, transferred_at: '2026-10-08T10:00:00Z', refundId: 'RF1', extra: true })],
@@ -109,13 +130,20 @@ test('bodies exactly as the forms build them reach the API unchanged', async () 
   assert.deepEqual(s.calls.map(call => call.body), [created, { status: 'contacting', contact_result: 'ผล' }]);
 });
 
-test('nested item lines carry only the fields the API accepts (the contract lists top-level fields only)', async () => {
+test('nested item lines carry only the fields the API lists for them', async () => {
   const s = setup();
   const m = s.model('store-fulfillment');
   await m.createParcel('O1', { carrier_name: 'K', tracking_number: 'T', items: [{ sale_order_list_id: 'L1', quantity: 2, name: 'x', remaining: 5 }] });
   await m.createReturn('O1', { return_reference: 'U', reason: 'defective', items: [{ sale_order_list_id: 'L1', quantity: 1, restock: true, name: 'x' }] });
   assert.deepEqual(s.calls[0].body.items, [{ sale_order_list_id: 'L1', quantity: 2 }]);
   assert.deepEqual(s.calls[1].body.items, [{ sale_order_list_id: 'L1', quantity: 1, restock: true }]);
+  assert.deepEqual(nestedFields('POST /fulfillment/returns/orders/:storeOrderId', 'items').sort(), ['quantity', 'restock', 'sale_order_list_id']);
+});
+
+test('a missing items list is left for the API to refuse instead of failing in Admin', async () => {
+  const s = setup();
+  await s.model('store-fulfillment').createParcel('O1', { carrier_name: 'K', tracking_number: 'T' });
+  assert.deepEqual(s.calls[0].body, { carrier_name: 'K', tracking_number: 'T' });
 });
 
 test('optional fields stay optional and empty strings are kept', async () => {
@@ -139,6 +167,9 @@ const COMPLETE = [
   ['store-fulfillment', 'scheduleSecondAppointment', ['O1'], 'POST /fulfillment/pickup/orders/:storeOrderId/second-appointment'],
   ['store-fulfillment', 'logPickupContact', ['O1'], 'POST /fulfillment/pickup/orders/:storeOrderId/contact-log'],
   ['store-fulfillment', 'handoverPickup', ['O1'], 'POST /fulfillment/pickup/orders/:storeOrderId/handover'],
+  ['color', 'createColor', [], 'POST /color'],
+  ['color', 'updateColor', [{ color_id: 3 }], 'PATCH /color/:id'],
+  ['category', 'updateCategory', [{ category_id: 7 }], 'PATCH /category/:id'],
   ['employee', 'createEmployee', [], 'POST /employee'],
   ['employee', 'updateEmployee', ['E1'], 'PATCH /employee/:id'],
   ['contact-request', 'updateContactRequest', ['C1'], 'PATCH /contact-requests/:id'],
@@ -146,10 +177,19 @@ const COMPLETE = [
 for (const [model, method, lead, key] of COMPLETE) {
   test(`${method} sends every field the API accepts for ${key}`, async () => {
     const s = setup();
-    const dto = Object.fromEntries(contract[key].map(field => [field,
-      field === 'items' ? [{ sale_order_list_id: 'L1', quantity: 1, restock: true }] : 'v']));
-    await s.model(model)[method](...lead, dto);
-    assert.deepEqual(Object.keys(s.calls[0].body).sort(), [...contract[key]].sort());
+    const dto = Object.fromEntries(topFields(key).map(field => {
+      const inner = nestedFields(key, field);
+      return [field, inner.length ? [Object.fromEntries(inner.map(name => [name, 'v']))] : 'v'];
+    }));
+    // A leading object carries the id of a model that takes one object (updateColor).
+    const args = lead.length && typeof lead[0] === 'object' ? [{ ...lead[0], ...dto }] : [...lead, dto];
+    await s.model(model)[method](...args);
+    const sent = s.calls[0].body;
+    assert.deepEqual(Object.keys(sent).sort(), [...topFields(key)].sort());
+    for (const field of topFields(key)) {
+      const inner = nestedFields(key, field);
+      if (inner.length) assert.deepEqual(Object.keys(sent[field][0]).sort(), [...inner].sort(), `${field}[] item fields`);
+    }
   });
 }
 
@@ -163,7 +203,7 @@ for (const [model, name, run] of CASES) {
     const { method, url, body } = s.calls[0];
     const key = routeKey(method, url);
     assert.ok(key, `${method} ${url} is not a strict route in the contract; update tests/api-write-contract.json`);
-    const extra = Object.keys(body ?? {}).filter(field => !contract[key].includes(field));
+    const extra = violations(key, body);
     assert.deepEqual(extra, [], `${key} would be rejected for: ${extra.join(', ')}`);
     exercised.add(`${model} ${key}`);
   });
