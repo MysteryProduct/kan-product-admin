@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import Cookies from 'js-cookie';
 import ActionResultDialog, { ActionResultDialogAction } from '@/components/ActionResultDialog';
 import LoadingSkeletonProps from '@/components/LoadingSkeleton';
@@ -8,6 +9,13 @@ import BankAccountModel from '@/models/bank-account';
 import SettingsModel from '@/models/settings';
 import { BankAccount } from '@/types/bank-account';
 import { AppSettings } from '@/types/settings';
+import {
+	SHOP_CONTACT_LIMITS,
+	emptyShopContact,
+	shopContactFrom,
+	shopContactPayload,
+	validateShopContact,
+} from '@/lib/shop-contact';
 import { usePermissions } from '@/hooks/usePermissions';
 import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 
@@ -38,6 +46,7 @@ const inputClass =
 export default function SettingsPage() {
 	const { can } = usePermissions();
 	const canEditSettings = can('settings', 'edit');
+	const canAddSettings = can('settings', 'add');
 
 	const [loading, setLoading] = useState(true);
 	const [bankAccountsError, setBankAccountsError] = useState<string | null>(null);
@@ -50,6 +59,7 @@ export default function SettingsPage() {
 		account_id: '',
 		vat_rate: '7',
 		...emptyShopIdentity,
+		...emptyShopContact,
 	});
 	const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -92,6 +102,7 @@ export default function SettingsPage() {
 					account_id: settingsData?.account_id || '',
 					vat_rate: String(settingsData?.vat_rate ?? 7),
 					...shopIdentityFrom(settingsData),
+					...shopContactFrom(settingsData),
 				});
 			} catch (error) {
 				setResultDialog({
@@ -107,6 +118,10 @@ export default function SettingsPage() {
 
 		void bootstrap();
 	}, []);
+
+	// With no settings row the person is creating the first one, which needs the add permission.
+	const hasSettingsRow = Boolean(settings?.setting_id);
+	const canSave = hasSettingsRow ? canEditSettings : canAddSettings;
 
 	const selectedBankLabel = useMemo(() => {
 		const selected = bankAccounts.find((item) => item.account_id === formData.account_id);
@@ -133,6 +148,8 @@ export default function SettingsPage() {
 			nextErrors.shop_tax_id = 'เลขประจำตัวผู้เสียภาษีต้องเป็นตัวเลข 13 หลัก';
 		}
 
+		Object.assign(nextErrors, validateShopContact(formData));
+
 		setErrors(nextErrors);
 		return Object.keys(nextErrors).length === 0;
 	};
@@ -147,8 +164,7 @@ export default function SettingsPage() {
 			setSaving(true);
 			const user = Cookies.get('user') ? JSON.parse(Cookies.get('user') as string) : null;
 
-			const updated = await settingsModel.updateSettings({
-				setting_id: settings?.setting_id || '',
+			const fields = {
 				account_id: formData.account_id,
 				vat_rate: Number(formData.vat_rate),
 				shop_name: formData.shop_name.trim() || null,
@@ -160,15 +176,21 @@ export default function SettingsPage() {
 					formData.shop_branch_type === 'branch'
 						? formData.shop_branch_code.trim() || null
 						: null,
-				// update_by: user?.employee_id,
-			});
+				...shopContactPayload(formData),
+			};
+			// With no row yet there is nothing to edit: the first save creates it.
+			const updated = settings?.setting_id
+				? await settingsModel.updateSettings({ ...fields, setting_id: settings.setting_id })
+				: await settingsModel.createSettings(fields);
 
 			setSettings(updated);
 			setResultDialog({
 				isOpen: true,
 				status: 'success',
 				action: 'update',
-				message: 'บันทึกการตั้งค่าพื้นฐานสำเร็จ',
+				message: settings?.setting_id
+					? 'บันทึกการตั้งค่าพื้นฐานสำเร็จ'
+					: 'สร้างการตั้งค่าพื้นฐานสำเร็จ',
 			});
 		} catch (error) {
 			setResultDialog({
@@ -199,6 +221,23 @@ export default function SettingsPage() {
 
 				<form onSubmit={handleSubmit} className="space-y-6 p-4 sm:p-6">
 					<LoadErrorBanner message={bankAccountsError} />
+					{!hasSettingsRow && (
+						<p className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] p-3 text-sm text-[var(--ink-muted)]">
+							{canAddSettings
+								? 'ยังไม่มีการตั้งค่าพื้นฐานในระบบ เลือกบัญชีรับเงินและอัตรา VAT แล้วกดบันทึกเพื่อสร้างการตั้งค่า'
+								: 'ยังไม่มีการตั้งค่าพื้นฐานในระบบ และบัญชีนี้ไม่มีสิทธิ์สร้าง กรุณาติดต่อผู้ดูแลระบบ'}
+						</p>
+					)}
+					{/* A first row needs a bank account; with none yet, say where to add one instead of leaving an empty list. */}
+					{!hasSettingsRow && canAddSettings && !bankAccountsError && bankAccounts.length === 0 && (
+						<p role="status" className="rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)] p-3 text-sm text-[var(--ink-muted)]">
+							ยังไม่มีบัญชีรับเงินในระบบ กรุณาเพิ่มบัญชีที่หน้า{' '}
+							<Link href="/admin/bank-account" className="font-medium text-[var(--ink)] underline">
+								บัญชีรับเงิน
+							</Link>{' '}
+							ก่อน แล้วกลับมาสร้างการตั้งค่าที่หน้านี้
+						</p>
+					)}
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 						<div>
 							<label className="mb-2 block text-sm font-medium text-[var(--ink)]">บัญชีรับเงินเริ่มต้น</label>
@@ -206,7 +245,7 @@ export default function SettingsPage() {
 								value={formData.account_id}
 								onChange={(event) => setFormData((prev) => ({ ...prev, account_id: event.target.value }))}
 								className="ka-input"
-								disabled={!canEditSettings || saving}
+								disabled={!canSave || saving}
 							>
 								<option value="">เลือกบัญชี</option>
 								{bankAccounts.map((account) => (
@@ -228,7 +267,7 @@ export default function SettingsPage() {
 								value={formData.vat_rate}
 								onChange={(event) => setFormData((prev) => ({ ...prev, vat_rate: event.target.value }))}
 								className="ka-input"
-								disabled={!canEditSettings || saving}
+								disabled={!canSave || saving}
 							/>
 							{errors.vat_rate && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.vat_rate}</p>}
 						</div>
@@ -249,19 +288,7 @@ export default function SettingsPage() {
 									value={formData.shop_name}
 									onChange={(event) => setFormData((prev) => ({ ...prev, shop_name: event.target.value }))}
 									className={inputClass}
-									disabled={!canEditSettings || saving}
-								/>
-							</div>
-							<div className="md:col-span-2">
-								<label htmlFor="shop_address" className="mb-2 block text-sm font-medium text-[var(--ink)]">ที่อยู่</label>
-								<textarea
-									id="shop_address"
-									rows={3}
-									maxLength={500}
-									value={formData.shop_address}
-									onChange={(event) => setFormData((prev) => ({ ...prev, shop_address: event.target.value }))}
-									className={`${inputClass} h-auto py-2`}
-									disabled={!canEditSettings || saving}
+									disabled={!canSave || saving}
 								/>
 							</div>
 							<div>
@@ -276,7 +303,7 @@ export default function SettingsPage() {
 									className={inputClass}
 									aria-invalid={Boolean(errors.shop_tax_id)}
 									aria-describedby={errors.shop_tax_id ? 'shop_tax_id_error' : undefined}
-									disabled={!canEditSettings || saving}
+									disabled={!canSave || saving}
 								/>
 								{errors.shop_tax_id && <p id="shop_tax_id_error" className="mt-1 text-[13px] text-[var(--danger)]">{errors.shop_tax_id}</p>}
 							</div>
@@ -287,7 +314,7 @@ export default function SettingsPage() {
 									value={formData.shop_branch_type}
 									onChange={(event) => setFormData((prev) => ({ ...prev, shop_branch_type: event.target.value }))}
 									className={inputClass}
-									disabled={!canEditSettings || saving}
+									disabled={!canSave || saving}
 								>
 									<option value="">ยังไม่ระบุ</option>
 									<option value="head_office">สำนักงานใหญ่</option>
@@ -304,10 +331,57 @@ export default function SettingsPage() {
 										value={formData.shop_branch_code}
 										onChange={(event) => setFormData((prev) => ({ ...prev, shop_branch_code: event.target.value }))}
 										className={inputClass}
-										disabled={!canEditSettings || saving}
+										disabled={!canSave || saving}
 									/>
 								</div>
 							)}
+						</div>
+					</fieldset>
+
+					<fieldset className="space-y-4">
+						<legend className="text-sm font-semibold text-[var(--ink)]">ช่องทางติดต่อร้าน (แสดงบนหน้าร้าน)</legend>
+						<p className="text-[13px] text-[var(--ink-muted)]">
+							เว้นว่างช่องไหน หน้าร้านจะไม่แสดงช่องนั้น ทุกช่องในกลุ่มนี้เปิดเผยต่อผู้เข้าชมหน้าร้านทุกคน
+						</p>
+						<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+							{(
+								[
+									{ name: 'shop_phone', label: 'เบอร์โทร', inputMode: 'tel', placeholder: 'เช่น 0812345678' },
+									{ name: 'shop_email', label: 'อีเมล', inputMode: 'email', placeholder: 'เช่น shop@example.com' },
+									{ name: 'shop_line', label: 'LINE (ไอดีที่ขึ้นต้นด้วย @ หรือลิงก์ line.me / lin.ee)', inputMode: 'text', placeholder: 'เช่น @shopname' },
+									{ name: 'shop_hours', label: 'เวลาทำการ', inputMode: 'text', placeholder: 'เช่น 09.00-17.30 น.' },
+								] as const
+							).map((field) => (
+								<div key={field.name}>
+									<label htmlFor={field.name} className="mb-2 block text-sm font-medium text-[var(--ink)]">{field.label}</label>
+									<input
+										id={field.name}
+										type="text"
+										inputMode={field.inputMode}
+										maxLength={SHOP_CONTACT_LIMITS[field.name]}
+										placeholder={field.placeholder}
+										value={formData[field.name]}
+										onChange={(event) => setFormData((prev) => ({ ...prev, [field.name]: event.target.value }))}
+										className={inputClass}
+										aria-invalid={Boolean(errors[field.name])}
+										aria-describedby={errors[field.name] ? `${field.name}_error` : undefined}
+										disabled={!canSave || saving}
+									/>
+									{errors[field.name] && <p id={`${field.name}_error`} className="mt-1 text-[13px] text-[var(--danger)]">{errors[field.name]}</p>}
+								</div>
+							))}
+							<div className="md:col-span-2">
+								<label htmlFor="shop_address" className="mb-2 block text-sm font-medium text-[var(--ink)]">ที่อยู่ร้าน (แสดงบนหน้าร้าน และใช้เป็นที่อยู่บนใบกำกับภาษี)</label>
+								<textarea
+									id="shop_address"
+									rows={3}
+									maxLength={500}
+									value={formData.shop_address}
+									onChange={(event) => setFormData((prev) => ({ ...prev, shop_address: event.target.value }))}
+									className={`${inputClass} h-auto py-2`}
+									disabled={!canSave || saving}
+								/>
+							</div>
 						</div>
 					</fieldset>
 
@@ -326,7 +400,7 @@ export default function SettingsPage() {
 					<div className="flex justify-end">
 						<button
 							type="submit"
-							disabled={!canEditSettings || saving}
+							disabled={!canSave || saving}
 							className="ka-btn ka-btn--primary"
 						>
 							{saving ? 'กำลังบันทึก...' : 'บันทึกการตั้งค่า'}
