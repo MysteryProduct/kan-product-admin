@@ -29,8 +29,13 @@ export default class CategoryModel {
         return response.data;
     };
 
-    updateCategory = async ({ category_id, ...payload }: UpdateCategoryDto) => {
-        const response = await axiosInstance.patch(`/category/${category_id}`, payload);
+    updateCategory = async ({ category_id, category_name, size_ids }: UpdateCategoryDto) => {
+        // The API rejects unknown fields, and the form state is a full list row
+        // (relations such as `categorySize` included), so send only what it accepts.
+        const response = await axiosInstance.patch(`/category/${category_id}`, {
+            category_name,
+            ...(size_ids !== undefined && { size_ids }),
+        });
         return response.data;
     };
 

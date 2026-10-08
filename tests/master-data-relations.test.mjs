@@ -42,3 +42,15 @@ test('all size options paginate legally without truncating after 100',async()=>{
   const p=config.params.page;return {data:{data:Array.from({length:p===3?5:100},(_,i)=>({size_id:(p-1)*100+i+1,size_name:'size'})),meta:{total:205,page:p,limit:100,last_page:3}}};
  });const {data:list}=await s.size.getAllSizes();assert.equal(list.length,205);assert.equal(list.at(-1).size_id,205);assert.equal(s.calls.length,3);
 });
+
+test('category update sends only fields the strict API accepts, even from a full list row (TASK-0142)',async()=>{
+ const listed={data:{data:[{category_id:7,category_name:'เสื้อ',categorySize:[{id:1,size_id:4},{id:2,size_id:5}],sizes:[{size_id:4}],unknownLater:true}],meta:{total:1,page:1,limit:10,last_page:1}}};
+ const s=setup(()=>listed);
+ const [row]=(await s.category.getCategories()).data;
+ s.calls.length=0;
+ await s.category.updateCategory({...row,category_name:'เสื้อยืด'});
+ assert.deepEqual(s.calls,[['patch','/category/7',{category_name:'เสื้อยืด',size_ids:[4,5]}]]);
+ s.calls.length=0;
+ await s.category.updateCategory({...row,size_ids:undefined});
+ assert.deepEqual(s.calls,[['patch','/category/7',{category_name:'เสื้อ'}]]);
+});
