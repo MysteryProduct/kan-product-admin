@@ -29,7 +29,9 @@ function setup() {
   return { calls, model };
 }
 
-// ':param' and template holes match any single segment.
+// A template hole (`${...}`) in an Admin URL stands for a value, so it matches
+// only a ':param' segment of the contract, never a literal one: otherwise
+// `/employee/${id}/${action}` would be taken for `/employee/:id/password`.
 const segments = route => route.replace(/\/+$/, '').split('/').filter(Boolean);
 function routeKey(verb, url) {
   const wanted = segments(url.replace(/\$\{[^}]*\}/g, ':p'));
@@ -38,9 +40,19 @@ function routeKey(verb, url) {
     if (v !== verb) return false;
     const parts = segments(p);
     return parts.length === wanted.length && parts.every((part, i) =>
-      part.startsWith(':') || wanted[i].startsWith(':') || part === wanted[i]);
+      part.startsWith(':') ? true : !wanted[i].startsWith(':') && part === wanted[i]);
   });
 }
+
+test('route matching: holes match params only, literals must be equal', () => {
+  assert.equal(routeKey('POST', '/employee/${id}/password'), 'POST /employee/:id/password');
+  assert.equal(routeKey('POST', "/employee/${id}/${disabled ? 'disable' : 'enable'}"), undefined);
+  assert.equal(routeKey('PATCH', '/category/${category_id}'), 'PATCH /category/:id');
+  assert.equal(routeKey('POST', '/category/'), 'POST /category');
+  assert.equal(routeKey('PATCH', '/category/'), undefined);
+  assert.equal(routeKey('POST', '/category/${id}/extra'), undefined);
+  assert.equal(routeKey('PUT', '/category/${id}'), undefined);
+});
 
 // Realistic form state: a full list row, relations and unknown fields included.
 const SIZE_ROW = { size_id: 4, size_name: 'S' };
