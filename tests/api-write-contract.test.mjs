@@ -63,10 +63,39 @@ const CASES = [
   ['color', 'color update from a full row', m => m('color').updateColor({ color_id: 3, color_name: 'แดง', color_hex: '#FF0000', extra: true })],
   ['product-unit', 'product unit create', m => m('product-unit').createProductUnit('ชิ้น')],
   ['product-unit', 'product unit update', m => m('product-unit').updateProductUnit(2, 'กล่อง')],
+  ['employee', 'employee create from a full form state', m => m('employee').createEmployee({ employee_username: 'somchai', employee_password: 'pw-12345678', employee_firstname: 'สมชาย', employee_lastname: 'ใจดี', employee_address: '1 ถนน', employee_phone: '0800000000', employee_email: 'a@b.test', license_id: 'L1', confirm_password: 'pw-12345678', employee_id: 'x', extra: true })],
+  ['employee', 'employee update from a full employee row', m => m('employee').updateEmployee('E1', { employee_id: 'E1', employee_username: 'somchai', employee_firstname: 'สมชาย', employee_lastname: 'ใจดี', employee_address: '1 ถนน', employee_phone: '0800000000', employee_email: 'a@b.test', license_id: 'L1', license: { license_id: 'L1', license_name: 'Manager' }, disabled_at: null, extra: true })],
+  ['employee', 'employee update without a license', m => m('employee').updateEmployee('E1', { employee_firstname: 'สมชาย', employee_lastname: 'ใจดี', employee_address: '1 ถนน', employee_phone: '0800000000', employee_email: 'a@b.test' })],
+  ['employee', 'employee set password', m => m('employee').setPassword('E1', 'new-password-123')],
+  ['contact-request', 'contact request update from a full row', m => m('contact-request').updateContactRequest('C1', { status: 'contacting', contact_result: 'โทรแล้ว', contactRequestId: 'C1', contactName: 'ลูกค้า', extra: true })],
+  ['contact-request', 'contact request update with a cleared result', m => m('contact-request').updateContactRequest('C1', { status: 'new', contact_result: '', contactRequestId: 'C1' })],
   ['employee-license', 'employee license create', m => m('employee-license').createLicense('Manager')],
   ['employee-license', 'employee license save permissions', m => m('employee-license').savePermissions('0199-id', { permissions: [{ menu_id: 'm1', permission_view: true }] })],
   ['employee-license', 'employee license rename', m => m('employee-license').renameLicense('0199-id', 'Manager')],
 ];
+
+test('contact request update keeps an empty result so the API can clear it, and omits an absent one', async () => {
+  const s = setup();
+  await s.model('contact-request').updateContactRequest('C1', { status: 'new', contact_result: '', contactRequestId: 'C1' });
+  await s.model('contact-request').updateContactRequest('C1', { status: 'closed' });
+  assert.deepEqual(s.calls.map(call => call.body), [{ status: 'new', contact_result: '' }, { status: 'closed' }]);
+});
+
+test('employee update sends the license only when the caller gave one', async () => {
+  const s = setup();
+  const details = { employee_firstname: 'ก', employee_lastname: 'ข', employee_address: 'ค', employee_phone: '1', employee_email: 'a@b.test' };
+  await s.model('employee').updateEmployee('E1', details);
+  await s.model('employee').updateEmployee('E1', { ...details, license_id: 'L2' });
+  assert.deepEqual(s.calls.map(call => call.body), [details, { ...details, license_id: 'L2' }]);
+});
+
+test('bodies exactly as the forms build them reach the API unchanged', async () => {
+  const s = setup();
+  const created = { employee_firstname: 'ก', employee_lastname: 'ข', employee_address: 'ค', employee_phone: '1', employee_email: 'a@b.test', employee_username: 'u', employee_password: 'pw-12345678', license_id: 'L1' };
+  await s.model('employee').createEmployee(created);
+  await s.model('contact-request').updateContactRequest('C1', { status: 'contacting', contact_result: 'ผล' });
+  assert.deepEqual(s.calls.map(call => call.body), [created, { status: 'contacting', contact_result: 'ผล' }]);
+});
 
 // Contract routes exercised by CASES, recorded while they run.
 const exercised = new Set();

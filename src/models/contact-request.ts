@@ -1,4 +1,5 @@
 import axiosInstance from '@/lib/axios';
+import { pickDefined } from '@/lib/pick-defined';
 import {
   ContactRequest,
   ContactRequestResponse,
@@ -32,7 +33,9 @@ class ContactRequestModel {
   ): Promise<ContactRequest> {
     const response = await axiosInstance.patch<ContactRequest>(
       `/contact-requests/${id}`,
-      dto,
+      // An empty contact_result is sent on purpose (it clears the recorded one);
+      // only fields the strict API accepts are forwarded.
+      pickDefined(dto, ['status', 'contact_result'] as const),
     );
     return response.data;
   }

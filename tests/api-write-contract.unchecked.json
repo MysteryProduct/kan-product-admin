@@ -1,10 +1,6 @@
 [
   "auth-model POST /auth/change-password",
   "auth-model POST /auth/employee-login",
-  "contact-request PATCH /contact-requests/:id",
-  "employee PATCH /employee/:id",
-  "employee POST /employee",
-  "employee POST /employee/:id/password",
   "store-fulfillment PATCH /fulfillment/parcels/:id/address",
   "store-fulfillment POST /fulfillment/cancellations/:id/decision",
   "store-fulfillment POST /fulfillment/cancellations/refunds/:refundId/manual",
