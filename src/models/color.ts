@@ -34,7 +34,9 @@ export default class ColorModel {
 
     createColor = async (createColorDto: CreateColorDto) => {
         try {
-            const response = await axiosInstance.post('/color/', createColorDto);
+            // Send only the fields the strict API accepts (see tests/api-write-contract.test.mjs).
+            const { color_name, color_hex } = createColorDto;
+            const response = await axiosInstance.post('/color/', { color_name, color_hex });
             return response.data;
         } catch (error) {
             console.error('Error creating color:', error);
@@ -42,9 +44,12 @@ export default class ColorModel {
         }
     }
 
-    updateColor = async ({ color_id, ...payload }: UpdateColorDto) => {
+    updateColor = async ({ color_id, color_name, color_hex }: UpdateColorDto) => {
         try {
-            const response = await axiosInstance.patch(`/color/${color_id}`, payload);
+            const response = await axiosInstance.patch(`/color/${color_id}`, {
+                ...(color_name !== undefined && { color_name }),
+                ...(color_hex !== undefined && { color_hex }),
+            });
             return response.data;
         } catch (error) {
             console.error('Error updating color:', error);
