@@ -1,17 +1,5 @@
 [
   "auth-model POST /auth/change-password",
   "auth-model POST /auth/employee-login",
-  "store-fulfillment PATCH /fulfillment/parcels/:id/address",
-  "store-fulfillment POST /fulfillment/cancellations/:id/decision",
-  "store-fulfillment POST /fulfillment/cancellations/refunds/:refundId/manual",
-  "store-fulfillment POST /fulfillment/orders/:storeOrderId/convert-to-delivery",
-  "store-fulfillment POST /fulfillment/orders/:storeOrderId/parcels",
-  "store-fulfillment POST /fulfillment/parcels/:id/hold",
-  "store-fulfillment POST /fulfillment/parcels/:id/return",
-  "store-fulfillment POST /fulfillment/parcels/:id/void",
-  "store-fulfillment POST /fulfillment/pickup/orders/:storeOrderId/contact-log",
-  "store-fulfillment POST /fulfillment/pickup/orders/:storeOrderId/handover",
-  "store-fulfillment POST /fulfillment/pickup/orders/:storeOrderId/second-appointment",
-  "store-fulfillment POST /fulfillment/returns/orders/:storeOrderId",
   "store-lot POST /store-lots/:id/release"
 ]

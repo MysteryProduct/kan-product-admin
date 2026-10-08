@@ -1,4 +1,5 @@
 import axiosInstance from '@/lib/axios';
+import { pickDefined } from '@/lib/pick-defined';
 import { storeOrderListParams } from '@/lib/store-order-list';
 import {
   ConvertToDeliveryDto,
@@ -18,6 +19,29 @@ import {
   StoreOrderWithParcels,
   StoreTaxInvoiceRequestList,
 } from '@/types/store-fulfillment';
+
+// The API rejects unknown body fields, so each request carries only these.
+// Top-level lists are checked against its DTOs by tests/api-write-contract.test.mjs;
+// the nested item lists are checked there by their own test.
+const ADDRESS_FIELDS = [
+  'recipient_name',
+  'recipient_phone',
+  'address_line1',
+  'address_line2',
+  'district',
+  'province',
+  'postal_code',
+] as const;
+const PARCEL_FIELDS = ['carrier_name', 'tracking_number', ...ADDRESS_FIELDS] as const;
+const EDIT_ADDRESS_FIELDS = [...ADDRESS_FIELDS, 'reason'] as const;
+const CONVERT_FIELDS = [...ADDRESS_FIELDS, 'note'] as const;
+const PARCEL_RETURN_FIELDS = ['reason', 'contact_outcome', 'contact_note'] as const;
+const DECISION_FIELDS = ['decision', 'note'] as const;
+const MANUAL_REFUND_FIELDS = ['reference', 'amount', 'transferred_at'] as const;
+const RETURN_FIELDS = ['return_reference', 'reason', 'note'] as const;
+const APPOINTMENT_FIELDS = ['scheduled_at', 'note'] as const;
+const CONTACT_LOG_FIELDS = ['channel', 'outcome', 'note'] as const;
+const HANDOVER_FIELDS = ['phone', 'recipient_name'] as const;
 
 class StoreFulfillmentModel {
   // TASK-0038: newest first, for staff to find orders waiting on a document.
@@ -59,7 +83,10 @@ class StoreFulfillmentModel {
   ): Promise<{ parcelId: string }> {
     const response = await axiosInstance.post<{ parcelId: string }>(
       `/fulfillment/orders/${storeOrderId}/parcels`,
-      dto,
+      {
+        ...pickDefined(dto, PARCEL_FIELDS),
+        items: dto.items.map((item) => pickDefined(item, ['sale_order_list_id', 'quantity'] as const)),
+      },
     );
     return response.data;
   }
@@ -72,7 +99,10 @@ class StoreFulfillmentModel {
     parcelId: string,
     dto: EditParcelAddressDto,
   ): Promise<void> {
-    await axiosInstance.patch(`/fulfillment/parcels/${parcelId}/address`, dto);
+    await axiosInstance.patch(
+      `/fulfillment/parcels/${parcelId}/address`,
+      pickDefined(dto, EDIT_ADDRESS_FIELDS),
+    );
   }
 
   async shipParcel(parcelId: string): Promise<void> {
@@ -95,7 +125,7 @@ class StoreFulfillmentModel {
   ): Promise<{ shippingFee: number }> {
     const response = await axiosInstance.post<{ shippingFee: number }>(
       `/fulfillment/orders/${storeOrderId}/convert-to-delivery`,
-      dto,
+      pickDefined(dto, CONVERT_FIELDS),
     );
     return response.data;
   }
@@ -106,7 +136,10 @@ class StoreFulfillmentModel {
     parcelId: string,
     dto: RecordParcelReturnDto,
   ): Promise<void> {
-    await axiosInstance.post(`/fulfillment/parcels/${parcelId}/return`, dto);
+    await axiosInstance.post(
+      `/fulfillment/parcels/${parcelId}/return`,
+      pickDefined(dto, PARCEL_RETURN_FIELDS),
+    );
   }
 
   async getAddressHistory(parcelId: string): Promise<ParcelAddressHistoryEntry[]> {
@@ -125,7 +158,7 @@ class StoreFulfillmentModel {
     const response = await axiosInstance.post<{
       status: string;
       refund?: StoreRefund;
-    }>(`/fulfillment/cancellations/${requestId}/decision`, dto);
+    }>(`/fulfillment/cancellations/${requestId}/decision`, pickDefined(dto, DECISION_FIELDS));
     return response.data;
   }
 
@@ -146,7 +179,7 @@ class StoreFulfillmentModel {
   ): Promise<StoreRefund> {
     const response = await axiosInstance.post<StoreRefund>(
       `/fulfillment/cancellations/refunds/${refundId}/manual`,
-      dto,
+      pickDefined(dto, MANUAL_REFUND_FIELDS),
     );
     return response.data;
   }
@@ -169,7 +202,12 @@ class StoreFulfillmentModel {
   ): Promise<void> {
     await axiosInstance.post(
       `/fulfillment/returns/orders/${storeOrderId}`,
-      dto,
+      {
+        ...pickDefined(dto, RETURN_FIELDS),
+        items: dto.items.map((item) =>
+          pickDefined(item, ['sale_order_list_id', 'quantity', 'restock'] as const),
+        ),
+      },
     );
   }
 
@@ -183,7 +221,7 @@ class StoreFulfillmentModel {
   ): Promise<void> {
     await axiosInstance.post(
       `/fulfillment/pickup/orders/${storeOrderId}/second-appointment`,
-      dto,
+      pickDefined(dto, APPOINTMENT_FIELDS),
     );
   }
 
@@ -193,7 +231,7 @@ class StoreFulfillmentModel {
   ): Promise<void> {
     await axiosInstance.post(
       `/fulfillment/pickup/orders/${storeOrderId}/contact-log`,
-      dto,
+      pickDefined(dto, CONTACT_LOG_FIELDS),
     );
   }
 
@@ -203,7 +241,7 @@ class StoreFulfillmentModel {
   ): Promise<void> {
     await axiosInstance.post(
       `/fulfillment/pickup/orders/${storeOrderId}/handover`,
-      dto,
+      pickDefined(dto, HANDOVER_FIELDS),
     );
   }
 }

@@ -69,6 +69,18 @@ const CASES = [
   ['employee', 'employee set password', m => m('employee').setPassword('E1', 'new-password-123')],
   ['contact-request', 'contact request update from a full row', m => m('contact-request').updateContactRequest('C1', { status: 'contacting', contact_result: 'โทรแล้ว', contactRequestId: 'C1', contactName: 'ลูกค้า', extra: true })],
   ['contact-request', 'contact request update with a cleared result', m => m('contact-request').updateContactRequest('C1', { status: 'new', contact_result: '', contactRequestId: 'C1' })],
+  ['store-fulfillment', 'fulfillment create parcel from a full form state', m => m('store-fulfillment').createParcel('O1', { carrier_name: 'Kerry', tracking_number: 'T1', items: [{ sale_order_list_id: 'L1', quantity: 2, name: 'สินค้า', remaining: 5 }], recipient_name: 'สมชาย', recipient_phone: '0800000000', address_line1: '1 ถนน', address_line2: 'ซอย 2', district: 'บางรัก', province: 'กรุงเทพ', postal_code: '10500', parcelId: 'x', extra: true })],
+  ['store-fulfillment', 'fulfillment edit parcel address from a full row', m => m('store-fulfillment').editParcelAddress('P1', { recipient_name: 'สมชาย', recipient_phone: '0800000000', address_line1: '1 ถนน', address_line2: 'ซอย 2', district: 'บางรัก', province: 'กรุงเทพ', postal_code: '10500', reason: 'ลูกค้าแจ้งแก้', history: [], extra: true })],
+  ['store-fulfillment', 'fulfillment convert to delivery from a full form state', m => m('store-fulfillment').convertToDelivery('O1', { recipient_name: 'สมชาย', recipient_phone: '0800000000', address_line1: '1 ถนน', address_line2: 'ซอย 2', district: 'บางรัก', province: 'กรุงเทพ', postal_code: '10500', note: 'หมายเหตุ', shippingFee: 50, extra: true })],
+  ['store-fulfillment', 'fulfillment record parcel return', m => m('store-fulfillment').recordParcelReturn('P1', { reason: 'ส่งไม่ได้', contact_outcome: 'reached', contact_note: 'โทรแล้ว', parcelId: 'P1', extra: true })],
+  ['store-fulfillment', 'fulfillment decide cancellation', m => m('store-fulfillment').decideCancellation('R1', { decision: 'approve', note: 'ตกลง', requestId: 'R1', extra: true })],
+  ['store-fulfillment', 'fulfillment record manual refund', m => m('store-fulfillment').recordManualRefund('RF1', { reference: 'REF1', amount: 100, transferred_at: '2026-10-08T10:00:00Z', refundId: 'RF1', extra: true })],
+  ['store-fulfillment', 'fulfillment create return from a full form state', m => m('store-fulfillment').createReturn('O1', { return_reference: 'U1', reason: 'defective', note: 'ชำรุด', items: [{ sale_order_list_id: 'L1', quantity: 1, restock: false, name: 'สินค้า' }], extra: true })],
+  ['store-fulfillment', 'fulfillment schedule second appointment', m => m('store-fulfillment').scheduleSecondAppointment('O1', { scheduled_at: '2026-10-09T10:00:00Z', note: 'นัดใหม่', extra: true })],
+  ['store-fulfillment', 'fulfillment log pickup contact', m => m('store-fulfillment').logPickupContact('O1', { channel: 'phone', outcome: 'reached', note: 'โทรแล้ว', extra: true })],
+  ['store-fulfillment', 'fulfillment handover pickup', m => m('store-fulfillment').handoverPickup('O1', { phone: '0800000000', recipient_name: 'สมชาย', extra: true })],
+  ['store-fulfillment', 'fulfillment hold parcel', m => m('store-fulfillment').holdParcel('P1', 'รอตรวจสอบ')],
+  ['store-fulfillment', 'fulfillment void parcel', m => m('store-fulfillment').voidParcel('P1', 'บันทึกผิด')],
   ['employee-license', 'employee license create', m => m('employee-license').createLicense('Manager')],
   ['employee-license', 'employee license save permissions', m => m('employee-license').savePermissions('0199-id', { permissions: [{ menu_id: 'm1', permission_view: true }] })],
   ['employee-license', 'employee license rename', m => m('employee-license').renameLicense('0199-id', 'Manager')],
@@ -96,6 +108,50 @@ test('bodies exactly as the forms build them reach the API unchanged', async () 
   await s.model('contact-request').updateContactRequest('C1', { status: 'contacting', contact_result: 'ผล' });
   assert.deepEqual(s.calls.map(call => call.body), [created, { status: 'contacting', contact_result: 'ผล' }]);
 });
+
+test('nested item lines carry only the fields the API accepts (the contract lists top-level fields only)', async () => {
+  const s = setup();
+  const m = s.model('store-fulfillment');
+  await m.createParcel('O1', { carrier_name: 'K', tracking_number: 'T', items: [{ sale_order_list_id: 'L1', quantity: 2, name: 'x', remaining: 5 }] });
+  await m.createReturn('O1', { return_reference: 'U', reason: 'defective', items: [{ sale_order_list_id: 'L1', quantity: 1, restock: true, name: 'x' }] });
+  assert.deepEqual(s.calls[0].body.items, [{ sale_order_list_id: 'L1', quantity: 2 }]);
+  assert.deepEqual(s.calls[1].body.items, [{ sale_order_list_id: 'L1', quantity: 1, restock: true }]);
+});
+
+test('optional fields stay optional and empty strings are kept', async () => {
+  const s = setup();
+  const m = s.model('store-fulfillment');
+  await m.holdParcel('P1');
+  await m.logPickupContact('O1', { channel: 'phone', outcome: 'other', note: '' });
+  assert.deepEqual(s.calls.map(call => call.body), [{}, { channel: 'phone', outcome: 'other', note: '' }]);
+});
+
+// The other direction: a model must not drop a field the API accepts. Each
+// method gets a body carrying every contract field and must send all of them.
+const COMPLETE = [
+  ['store-fulfillment', 'createParcel', ['O1'], 'POST /fulfillment/orders/:storeOrderId/parcels'],
+  ['store-fulfillment', 'editParcelAddress', ['P1'], 'PATCH /fulfillment/parcels/:id/address'],
+  ['store-fulfillment', 'convertToDelivery', ['O1'], 'POST /fulfillment/orders/:storeOrderId/convert-to-delivery'],
+  ['store-fulfillment', 'recordParcelReturn', ['P1'], 'POST /fulfillment/parcels/:id/return'],
+  ['store-fulfillment', 'decideCancellation', ['R1'], 'POST /fulfillment/cancellations/:id/decision'],
+  ['store-fulfillment', 'recordManualRefund', ['RF1'], 'POST /fulfillment/cancellations/refunds/:refundId/manual'],
+  ['store-fulfillment', 'createReturn', ['O1'], 'POST /fulfillment/returns/orders/:storeOrderId'],
+  ['store-fulfillment', 'scheduleSecondAppointment', ['O1'], 'POST /fulfillment/pickup/orders/:storeOrderId/second-appointment'],
+  ['store-fulfillment', 'logPickupContact', ['O1'], 'POST /fulfillment/pickup/orders/:storeOrderId/contact-log'],
+  ['store-fulfillment', 'handoverPickup', ['O1'], 'POST /fulfillment/pickup/orders/:storeOrderId/handover'],
+  ['employee', 'createEmployee', [], 'POST /employee'],
+  ['employee', 'updateEmployee', ['E1'], 'PATCH /employee/:id'],
+  ['contact-request', 'updateContactRequest', ['C1'], 'PATCH /contact-requests/:id'],
+];
+for (const [model, method, lead, key] of COMPLETE) {
+  test(`${method} sends every field the API accepts for ${key}`, async () => {
+    const s = setup();
+    const dto = Object.fromEntries(contract[key].map(field => [field,
+      field === 'items' ? [{ sale_order_list_id: 'L1', quantity: 1, restock: true }] : 'v']));
+    await s.model(model)[method](...lead, dto);
+    assert.deepEqual(Object.keys(s.calls[0].body).sort(), [...contract[key]].sort());
+  });
+}
 
 // Contract routes exercised by CASES, recorded while they run.
 const exercised = new Set();
