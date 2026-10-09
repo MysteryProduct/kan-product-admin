@@ -360,7 +360,7 @@ export interface SecondAppointmentDto {
 }
 
 export interface PickupContactLogDto {
-  channel: 'phone' | 'sms' | 'email' | 'in_person' | 'other';
+  channel: 'phone' | 'email' | 'in_person' | 'other';
   outcome: 'reached' | 'unreachable' | 'other';
   note?: string;
 }

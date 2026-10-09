@@ -24,7 +24,6 @@ const statusLabels: Record<StorePickupStatus, string> = {
 
 const channelLabels: Record<string, string> = {
   phone: 'โทรศัพท์',
-  sms: 'SMS',
   email: 'อีเมล',
   in_person: 'พบที่ร้าน',
   other: 'อื่น ๆ',
