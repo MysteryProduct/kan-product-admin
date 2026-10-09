@@ -86,7 +86,7 @@ export default function InsertPurchaseOrderForm({
     const fetchProductUnits = async (search: string) => {
         try {
             setProductUnitsError(null);
-            const response = await productUnitModel.getProductUnits(1, 100, search);
+            const response = await productUnitModel.getAllProductUnits(search);
             setProductUnits(response.data);
         } catch (error) {
             console.error('Failed to fetch product units:', error);
@@ -118,14 +118,16 @@ export default function InsertPurchaseOrderForm({
     };
 
     const updateItem = (id: string, field: keyof PurchaseOrderItemForm, value: any) => {
+        // CustomSelect hands back text; the API wants the unit id as a number (TASK-0149).
+        const nextValue = field === 'product_unit_id' ? Number(value) : value;
         setItems(items.map(item => {
             if (item.id === id) {
-                const updatedItem = { ...item, [field]: value };
+                const updatedItem = { ...item, [field]: nextValue };
 
                 if (field === 'material_id') {
                     const selectedMaterial = materials.find((material) => material.material_id === value);
                     if (selectedMaterial) {
-                        updatedItem.purchase_order_list_price = selectedMaterial.material_price;
+                        updatedItem.purchase_order_list_price = Number(selectedMaterial.material_price);
                     }
                 }
 

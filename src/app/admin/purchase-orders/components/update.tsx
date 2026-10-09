@@ -83,7 +83,8 @@ export default function UpdatePurchaseOrderForm({
                     id: crypto.randomUUID(),
                     material_id: item.material_id,
                     purchase_order_list_qty: item.purchase_order_list_qty,
-                    purchase_order_list_price: item.purchase_order_list_price,
+                    // The API returns numeric columns as text ('10.00'); the update body must send numbers (TASK-0149).
+                    purchase_order_list_price: Number(item.purchase_order_list_price),
                     product_unit_id: item.product_unit_id || 0,
                 })));
             } else {
@@ -116,7 +117,7 @@ export default function UpdatePurchaseOrderForm({
     const fetchProductUnits = async (search: string) => {
         try {
             setProductUnitsError(null);
-            const response = await productUnitModel.getProductUnits(1, 100, search);
+            const response = await productUnitModel.getAllProductUnits(search);
             setProductUnits(response.data);
         } catch (error) {
             console.error('Failed to fetch product units:', error);
@@ -155,14 +156,16 @@ export default function UpdatePurchaseOrderForm({
     };
 
     const updateItem = (id: string, field: keyof PurchaseOrderItemForm, value: any) => {
+        // CustomSelect hands back text; the API wants the unit id as a number (TASK-0149).
+        const nextValue = field === 'product_unit_id' ? Number(value) : value;
         setItems(items.map(item => {
             if (item.id === id) {
-                const updatedItem = { ...item, [field]: value };
+                const updatedItem = { ...item, [field]: nextValue };
 
                 if (field === 'material_id') {
                     const selectedMaterial = materials.find((material) => material.material_id === value);
                     if (selectedMaterial) {
-                        updatedItem.purchase_order_list_price = selectedMaterial.material_price;
+                        updatedItem.purchase_order_list_price = Number(selectedMaterial.material_price);
                     }
                 }
 

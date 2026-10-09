@@ -23,6 +23,16 @@ export class ProductUnitModel {
         }
     }
 
+    // Option lists must not silently drop units after the first page (TASK-0149).
+    async getAllProductUnits(search?: string): Promise<ApiProductUnitResponse> {
+        const first = await this.getProductUnits(1, 100, search);
+        const data = [...first.data];
+        for (let page = 2; page <= first.meta.last_page; page++) {
+            data.push(...(await this.getProductUnits(page, 100, search)).data);
+        }
+        return { data, meta: { ...first.meta, page: 1, limit: data.length, last_page: data.length ? 1 : 0 } };
+    }
+
     createProductUnit = async (productUnitName: string): Promise<ProductUnit> => {
         try {
             const response = await axiosInstance.post<ProductUnit>("/product-unit", {

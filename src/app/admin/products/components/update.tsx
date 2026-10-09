@@ -233,7 +233,7 @@ export default function UpdateProductForm({ isOpen, onClose, onSuccess, initialD
         colorModel.getAllColors(),
         sizeModel.getAllSizes(),
         materialModel.getMaterials(1, 400),
-        productUnitModel.getProductUnits(1, 100),
+        productUnitModel.getAllProductUnits(),
       ]);
       const [categoryRes, colorRes, sizeRes, materialRes, unitRes] = results;
 
