@@ -75,10 +75,13 @@ function violations(key, body = {}) {
 
 // TASK-0155. Whether a value is what the API expects for a field. Absent and null values are left to
 // the API (a null is valid for an optional field), `unknown` types are not compared, and a converted
-// type also takes a string.
+// type also takes a string the API's conversion accepts: any string for `string~` and `boolean~`, a
+// string that Number() turns into a finite number for `number~`.
 function typeMatches(expected, value) {
   if (value === undefined || value === null) return true;
-  if (expected.endsWith('~') && typeof value === 'string') return true;
+  if (expected.endsWith('~') && typeof value === 'string') {
+    return expected === 'number~' ? Number.isFinite(Number(value)) : true;
+  }
   switch (expected.replace(/~$/, '')) {
     case 'string': return typeof value === 'string';
     case 'number': return typeof value === 'number';
@@ -253,6 +256,9 @@ test('type comparison leaves absent, null and unknown-typed values to the API an
   assert.equal(typeMatches('unknown', { any: 1 }), true);
   assert.equal(typeMatches('number', '5'), false);
   assert.equal(typeMatches('number~', '5'), true);
+  assert.equal(typeMatches('number~', '5.50'), true);
+  assert.equal(typeMatches('number~', 'abc'), false, 'text the API cannot convert is refused');
+  assert.equal(typeMatches('boolean~', 'false'), true);
   assert.equal(typeMatches('array', {}), false);
   assert.equal(typeMatches('object', []), false);
   const open = Object.entries(contract).flatMap(([route, fields]) => Object.entries(fields).filter(([, type]) => type === 'unknown').map(([field]) => `${route} ${field}`));
