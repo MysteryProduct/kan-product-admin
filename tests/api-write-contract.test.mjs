@@ -54,10 +54,11 @@ test('route matching: holes match params only, literals must be equal', () => {
   assert.equal(routeKey('PUT', '/category/${id}'), undefined);
 });
 
-// The contract lists top-level fields by name and the fields of nested line
-// items as `field[].inner`.
-const topFields = key => contract[key].filter(field => !field.includes('[]'));
-const nestedFields = (key, field) => contract[key]
+// The contract maps each top-level field to the JSON type the API's validators expect and lists the
+// fields of nested line items as `field[].inner`. A type ending in `~` is converted by the API
+// before validation (`number~`: a number or a string it turns into one).
+const topFields = key => Object.keys(contract[key]).filter(field => !field.includes('[]'));
+const nestedFields = (key, field) => Object.keys(contract[key])
   .filter(name => name.startsWith(`${field}[].`)).map(name => name.slice(field.length + 3));
 // Everything wrong with a request body: fields, and nested item fields, the API would reject.
 function violations(key, body = {}) {
@@ -68,6 +69,37 @@ function violations(key, body = {}) {
     for (const item of value) {
       for (const inner of Object.keys(item ?? {})) if (!allowed.includes(inner)) found.push(`${field}[].${inner}`);
     }
+  }
+  return found;
+}
+
+// TASK-0155. Whether a value is what the API expects for a field. Absent and null values are left to
+// the API (a null is valid for an optional field), `unknown` types are not compared, and a converted
+// type also takes a string.
+function typeMatches(expected, value) {
+  if (value === undefined || value === null) return true;
+  if (expected.endsWith('~') && typeof value === 'string') return true;
+  switch (expected.replace(/~$/, '')) {
+    case 'string': return typeof value === 'string';
+    case 'number': return typeof value === 'number';
+    case 'boolean': return typeof value === 'boolean';
+    case 'array': return Array.isArray(value);
+    case 'object': return typeof value === 'object' && !Array.isArray(value);
+    default: return true;
+  }
+}
+const describeType = value => (Array.isArray(value) ? 'array' : typeof value);
+// Everything wrong with the types of a request body, top-level and in nested items.
+function typeViolations(key, body = {}) {
+  const found = [];
+  const check = (name, value) => {
+    const expected = contract[key][name];
+    if (expected && !typeMatches(expected, value)) found.push(`${name}: sent ${describeType(value)}, expected ${expected}`);
+  };
+  for (const [field, value] of Object.entries(body)) {
+    check(field, value);
+    if (!Array.isArray(value)) continue;
+    for (const item of value) for (const [inner, innerValue] of Object.entries(item ?? {})) check(`${field}[].${inner}`, innerValue);
   }
   return found;
 }
@@ -193,6 +225,40 @@ for (const [model, method, lead, key] of COMPLETE) {
   });
 }
 
+// TASK-0155. Value types. The API takes `restock` as a boolean (no conversion), so the string a form
+// control hands over ('false') is refused; numbers the API converts (`quantity`) may arrive as text.
+test('a model that sends a value of the wrong type is caught with the route, field and both types', async () => {
+  const s = setup();
+  const returns = 'POST /fulfillment/returns/orders/:storeOrderId';
+  await s.model('store-fulfillment').createReturn('O1', { return_reference: 'U1', reason: 'defective', items: [{ sale_order_list_id: 'L1', quantity: 1, restock: 'false' }] });
+  assert.deepEqual(typeViolations(routeKey('POST', s.calls[0].url), s.calls[0].body), ['items[].restock: sent string, expected boolean']);
+  assert.equal(routeKey('POST', s.calls[0].url), returns);
+  await s.model('store-fulfillment').createReturn('O1', { return_reference: 'U1', reason: 'defective', items: [{ sale_order_list_id: 'L1', quantity: '2', restock: false }] });
+  assert.deepEqual(typeViolations(returns, s.calls[1].body), [], 'a converted number may arrive as text');
+});
+
+test('typing over a field with the right type is not evidence: the value a control hands over is what is sent', async () => {
+  const s = setup();
+  const m = s.model('store-fulfillment');
+  await m.createReturn('O1', { return_reference: 'U1', reason: 'defective', items: [{ sale_order_list_id: 'L1', quantity: 1, restock: true }] });
+  await m.createReturn('O1', { return_reference: 'U1', reason: 'defective', items: [{ sale_order_list_id: 'L1', quantity: 1, restock: 'true' }] });
+  const [typed, fromControl] = s.calls.map(call => typeViolations('POST /fulfillment/returns/orders/:storeOrderId', call.body));
+  assert.deepEqual(typed, []);
+  assert.deepEqual(fromControl, ['items[].restock: sent string, expected boolean']);
+});
+
+test('type comparison leaves absent, null and unknown-typed values to the API and counts the open types', () => {
+  assert.equal(typeMatches('boolean', undefined), true);
+  assert.equal(typeMatches('boolean', null), true);
+  assert.equal(typeMatches('unknown', { any: 1 }), true);
+  assert.equal(typeMatches('number', '5'), false);
+  assert.equal(typeMatches('number~', '5'), true);
+  assert.equal(typeMatches('array', {}), false);
+  assert.equal(typeMatches('object', []), false);
+  const open = Object.entries(contract).flatMap(([route, fields]) => Object.entries(fields).filter(([, type]) => type === 'unknown').map(([field]) => `${route} ${field}`));
+  assert.deepEqual(open, ['POST /fulfillment/pickup/orders/:storeOrderId/second-appointment scheduled_at']);
+});
+
 // Contract routes exercised by CASES, recorded while they run.
 const exercised = new Set();
 for (const [model, name, run] of CASES) {
@@ -205,6 +271,8 @@ for (const [model, name, run] of CASES) {
     assert.ok(key, `${method} ${url} is not a strict route in the contract; update tests/api-write-contract.json`);
     const extra = violations(key, body);
     assert.deepEqual(extra, [], `${key} would be rejected for: ${extra.join(', ')}`);
+    const wrong = typeViolations(key, body);
+    assert.deepEqual(wrong, [], `${key} would be rejected for the type of: ${wrong.join('; ')}`);
     exercised.add(`${model} ${key}`);
   });
 }

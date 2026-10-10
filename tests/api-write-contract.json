@@ -1,271 +1,271 @@
 {
-  "PATCH /category/:id": [
-    "category_name",
-    "size_ids"
-  ],
-  "PATCH /color/:id": [
-    "color_hex",
-    "color_name"
-  ],
-  "PATCH /contact-requests/:id": [
-    "contact_result",
-    "status"
-  ],
-  "PATCH /employee-license/:id": [
-    "license_name"
-  ],
-  "PATCH /employee/:id": [
-    "employee_address",
-    "employee_email",
-    "employee_firstname",
-    "employee_lastname",
-    "employee_phone",
-    "license_id"
-  ],
-  "PATCH /fulfillment/parcels/:id/address": [
-    "address_line1",
-    "address_line2",
-    "district",
-    "postal_code",
-    "province",
-    "reason",
-    "recipient_name",
-    "recipient_phone"
-  ],
-  "PATCH /product-unit/:id": [
-    "product_unit_name"
-  ],
-  "PATCH /product/:id/store-policy": [
-    "contact_enabled",
-    "online_purchase",
-    "published"
-  ],
-  "PATCH /store/account/addresses/:addressId": [
-    "address_line1",
-    "address_line2",
-    "district",
-    "is_default",
-    "label",
-    "postal_code",
-    "province",
-    "recipient_name",
-    "recipient_phone"
-  ],
-  "PATCH /store/account/me": [
-    "full_name",
-    "phone"
-  ],
-  "POST /auth/change-password": [
-    "current_password",
-    "new_password"
-  ],
-  "POST /auth/employee-login": [
-    "password",
-    "username"
-  ],
-  "POST /auth/login": [
-    "password",
-    "username"
-  ],
-  "POST /category": [
-    "category_name",
-    "size_ids"
-  ],
-  "POST /color": [
-    "color_hex",
-    "color_name"
-  ],
-  "POST /employee": [
-    "employee_address",
-    "employee_email",
-    "employee_firstname",
-    "employee_lastname",
-    "employee_password",
-    "employee_phone",
-    "employee_username",
-    "license_id"
-  ],
-  "POST /employee-license": [
-    "license_name"
-  ],
-  "POST /employee/:id/password": [
-    "employee_password"
-  ],
-  "POST /fulfillment/cancellations/:id/decision": [
-    "decision",
-    "note"
-  ],
-  "POST /fulfillment/cancellations/refunds/:refundId/manual": [
-    "amount",
-    "reference",
-    "transferred_at"
-  ],
-  "POST /fulfillment/orders/:storeOrderId/convert-to-delivery": [
-    "address_line1",
-    "address_line2",
-    "district",
-    "note",
-    "postal_code",
-    "province",
-    "recipient_name",
-    "recipient_phone"
-  ],
-  "POST /fulfillment/orders/:storeOrderId/parcels": [
-    "address_line1",
-    "address_line2",
-    "carrier_name",
-    "district",
-    "items",
-    "items[].quantity",
-    "items[].sale_order_list_id",
-    "postal_code",
-    "province",
-    "recipient_name",
-    "recipient_phone",
-    "tracking_number"
-  ],
-  "POST /fulfillment/parcels/:id/hold": [
-    "reason"
-  ],
-  "POST /fulfillment/parcels/:id/return": [
-    "contact_note",
-    "contact_outcome",
-    "reason"
-  ],
-  "POST /fulfillment/parcels/:id/void": [
-    "reason"
-  ],
-  "POST /fulfillment/pickup/orders/:storeOrderId/contact-log": [
-    "channel",
-    "note",
-    "outcome"
-  ],
-  "POST /fulfillment/pickup/orders/:storeOrderId/handover": [
-    "phone",
-    "recipient_name"
-  ],
-  "POST /fulfillment/pickup/orders/:storeOrderId/second-appointment": [
-    "note",
-    "scheduled_at"
-  ],
-  "POST /fulfillment/returns/orders/:storeOrderId": [
-    "items",
-    "items[].quantity",
-    "items[].restock",
-    "items[].sale_order_list_id",
-    "note",
-    "reason",
-    "return_reference"
-  ],
-  "POST /product-unit": [
-    "product_unit_name"
-  ],
-  "POST /store-lots/:id/release": [
-    "note"
-  ],
-  "POST /store/account/addresses": [
-    "address_line1",
-    "address_line2",
-    "district",
-    "is_default",
-    "label",
-    "postal_code",
-    "province",
-    "recipient_name",
-    "recipient_phone"
-  ],
-  "POST /store/account/login": [
-    "email",
-    "password"
-  ],
-  "POST /store/account/password-reset/confirm": [
-    "password",
-    "token"
-  ],
-  "POST /store/account/password-reset/request": [
-    "email"
-  ],
-  "POST /store/account/register": [
-    "email",
-    "full_name",
-    "password",
-    "phone"
-  ],
-  "POST /store/account/resend-verification": [
-    "email"
-  ],
-  "POST /store/account/verify": [
-    "token"
-  ],
-  "POST /store/cancellations/orders/:storeOrderId": [
-    "reason",
-    "refund_account_bank",
-    "refund_account_name",
-    "refund_account_number"
-  ],
-  "POST /store/cancellations/orders/:storeOrderId/refunds/:refundId/account": [
-    "refund_account_bank",
-    "refund_account_name",
-    "refund_account_number"
-  ],
-  "POST /store/checkout": [
-    "address_line1",
-    "address_line2",
-    "district",
-    "fulfillment_method",
-    "guest_phone",
-    "idempotency_key",
-    "items",
-    "items[].product_variant_id",
-    "items[].quantity",
-    "postal_code",
-    "province",
-    "recipient_name",
-    "recipient_phone",
-    "tax_invoice_address",
-    "tax_invoice_branch_code",
-    "tax_invoice_branch_type",
-    "tax_invoice_name",
-    "tax_invoice_requested",
-    "tax_invoice_tax_id"
-  ],
-  "POST /store/checkout/:id/payment/card": [
-    "token"
-  ],
-  "POST /store/checkout/:id/shipping-charge/card": [
-    "token"
-  ],
-  "POST /store/contact-requests": [
-    "contact_name",
-    "contact_phone",
-    "message",
-    "product_id",
-    "quantity"
-  ],
-  "POST /store/fulfillment/guest-session": [
-    "code",
-    "phone"
-  ],
-  "POST /store/tax-invoices/orders/:storeOrderId": [
-    "tax_invoice_address",
-    "tax_invoice_branch_code",
-    "tax_invoice_branch_type",
-    "tax_invoice_name",
-    "tax_invoice_tax_id"
-  ],
-  "POST /user/insertUser": [
-    "email",
-    "password",
-    "permission",
-    "username"
-  ],
-  "POST /user/updateUser/:id": [
-    "email",
-    "password",
-    "permission",
-    "username"
-  ],
-  "PUT /employee-permission/license/:licenseId": [
-    "permissions"
-  ]
+  "PATCH /category/:id": {
+    "category_name": "string",
+    "size_ids": "array"
+  },
+  "PATCH /color/:id": {
+    "color_hex": "string",
+    "color_name": "string"
+  },
+  "PATCH /contact-requests/:id": {
+    "contact_result": "string",
+    "status": "string"
+  },
+  "PATCH /employee-license/:id": {
+    "license_name": "string"
+  },
+  "PATCH /employee/:id": {
+    "employee_address": "string",
+    "employee_email": "string",
+    "employee_firstname": "string",
+    "employee_lastname": "string",
+    "employee_phone": "string",
+    "license_id": "string"
+  },
+  "PATCH /fulfillment/parcels/:id/address": {
+    "address_line1": "string",
+    "address_line2": "string",
+    "district": "string",
+    "postal_code": "string",
+    "province": "string",
+    "reason": "string",
+    "recipient_name": "string",
+    "recipient_phone": "string"
+  },
+  "PATCH /product-unit/:id": {
+    "product_unit_name": "string"
+  },
+  "PATCH /product/:id/store-policy": {
+    "contact_enabled": "boolean",
+    "online_purchase": "boolean",
+    "published": "boolean"
+  },
+  "PATCH /store/account/addresses/:addressId": {
+    "address_line1": "string",
+    "address_line2": "string",
+    "district": "string",
+    "is_default": "boolean",
+    "label": "string",
+    "postal_code": "string",
+    "province": "string",
+    "recipient_name": "string",
+    "recipient_phone": "string"
+  },
+  "PATCH /store/account/me": {
+    "full_name": "string",
+    "phone": "string"
+  },
+  "POST /auth/change-password": {
+    "current_password": "string",
+    "new_password": "string"
+  },
+  "POST /auth/employee-login": {
+    "password": "string",
+    "username": "string"
+  },
+  "POST /auth/login": {
+    "password": "string",
+    "username": "string"
+  },
+  "POST /category": {
+    "category_name": "string",
+    "size_ids": "array"
+  },
+  "POST /color": {
+    "color_hex": "string",
+    "color_name": "string"
+  },
+  "POST /employee": {
+    "employee_address": "string",
+    "employee_email": "string",
+    "employee_firstname": "string",
+    "employee_lastname": "string",
+    "employee_password": "string",
+    "employee_phone": "string",
+    "employee_username": "string",
+    "license_id": "string"
+  },
+  "POST /employee-license": {
+    "license_name": "string"
+  },
+  "POST /employee/:id/password": {
+    "employee_password": "string"
+  },
+  "POST /fulfillment/cancellations/:id/decision": {
+    "decision": "string",
+    "note": "string"
+  },
+  "POST /fulfillment/cancellations/refunds/:refundId/manual": {
+    "amount": "number~",
+    "reference": "string",
+    "transferred_at": "string"
+  },
+  "POST /fulfillment/orders/:storeOrderId/convert-to-delivery": {
+    "address_line1": "string",
+    "address_line2": "string",
+    "district": "string",
+    "note": "string",
+    "postal_code": "string",
+    "province": "string",
+    "recipient_name": "string",
+    "recipient_phone": "string"
+  },
+  "POST /fulfillment/orders/:storeOrderId/parcels": {
+    "address_line1": "string",
+    "address_line2": "string",
+    "carrier_name": "string",
+    "district": "string",
+    "items": "array",
+    "items[].quantity": "number~",
+    "items[].sale_order_list_id": "string",
+    "postal_code": "string",
+    "province": "string",
+    "recipient_name": "string",
+    "recipient_phone": "string",
+    "tracking_number": "string"
+  },
+  "POST /fulfillment/parcels/:id/hold": {
+    "reason": "string"
+  },
+  "POST /fulfillment/parcels/:id/return": {
+    "contact_note": "string",
+    "contact_outcome": "string",
+    "reason": "string"
+  },
+  "POST /fulfillment/parcels/:id/void": {
+    "reason": "string"
+  },
+  "POST /fulfillment/pickup/orders/:storeOrderId/contact-log": {
+    "channel": "string",
+    "note": "string",
+    "outcome": "string"
+  },
+  "POST /fulfillment/pickup/orders/:storeOrderId/handover": {
+    "phone": "string",
+    "recipient_name": "string"
+  },
+  "POST /fulfillment/pickup/orders/:storeOrderId/second-appointment": {
+    "note": "string",
+    "scheduled_at": "unknown"
+  },
+  "POST /fulfillment/returns/orders/:storeOrderId": {
+    "items": "array",
+    "items[].quantity": "number~",
+    "items[].restock": "boolean",
+    "items[].sale_order_list_id": "string",
+    "note": "string",
+    "reason": "string",
+    "return_reference": "string"
+  },
+  "POST /product-unit": {
+    "product_unit_name": "string"
+  },
+  "POST /store-lots/:id/release": {
+    "note": "string"
+  },
+  "POST /store/account/addresses": {
+    "address_line1": "string",
+    "address_line2": "string",
+    "district": "string",
+    "is_default": "boolean",
+    "label": "string",
+    "postal_code": "string",
+    "province": "string",
+    "recipient_name": "string",
+    "recipient_phone": "string"
+  },
+  "POST /store/account/login": {
+    "email": "string",
+    "password": "string"
+  },
+  "POST /store/account/password-reset/confirm": {
+    "password": "string",
+    "token": "string"
+  },
+  "POST /store/account/password-reset/request": {
+    "email": "string"
+  },
+  "POST /store/account/register": {
+    "email": "string",
+    "full_name": "string",
+    "password": "string",
+    "phone": "string"
+  },
+  "POST /store/account/resend-verification": {
+    "email": "string"
+  },
+  "POST /store/account/verify": {
+    "token": "string"
+  },
+  "POST /store/cancellations/orders/:storeOrderId": {
+    "reason": "string",
+    "refund_account_bank": "string",
+    "refund_account_name": "string",
+    "refund_account_number": "string"
+  },
+  "POST /store/cancellations/orders/:storeOrderId/refunds/:refundId/account": {
+    "refund_account_bank": "string",
+    "refund_account_name": "string",
+    "refund_account_number": "string"
+  },
+  "POST /store/checkout": {
+    "address_line1": "string",
+    "address_line2": "string",
+    "district": "string",
+    "fulfillment_method": "string",
+    "guest_phone": "string",
+    "idempotency_key": "string",
+    "items": "array",
+    "items[].product_variant_id": "string",
+    "items[].quantity": "number~",
+    "postal_code": "string",
+    "province": "string",
+    "recipient_name": "string",
+    "recipient_phone": "string",
+    "tax_invoice_address": "string",
+    "tax_invoice_branch_code": "string",
+    "tax_invoice_branch_type": "string",
+    "tax_invoice_name": "string",
+    "tax_invoice_requested": "boolean",
+    "tax_invoice_tax_id": "string"
+  },
+  "POST /store/checkout/:id/payment/card": {
+    "token": "string"
+  },
+  "POST /store/checkout/:id/shipping-charge/card": {
+    "token": "string"
+  },
+  "POST /store/contact-requests": {
+    "contact_name": "string",
+    "contact_phone": "string",
+    "message": "string",
+    "product_id": "string",
+    "quantity": "number~"
+  },
+  "POST /store/fulfillment/guest-session": {
+    "code": "string",
+    "phone": "string"
+  },
+  "POST /store/tax-invoices/orders/:storeOrderId": {
+    "tax_invoice_address": "string",
+    "tax_invoice_branch_code": "string",
+    "tax_invoice_branch_type": "string",
+    "tax_invoice_name": "string",
+    "tax_invoice_tax_id": "string"
+  },
+  "POST /user/insertUser": {
+    "email": "string",
+    "password": "string",
+    "permission": "string",
+    "username": "string"
+  },
+  "POST /user/updateUser/:id": {
+    "email": "string",
+    "password": "string",
+    "permission": "string",
+    "username": "string"
+  },
+  "PUT /employee-permission/license/:licenseId": {
+    "permissions": "array"
+  }
 }
