@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ProductForm from './components/insert';
 import UpdateProductForm from './components/update';
 import ProductDetailModal from './components/detail';
 
-import ProductModel from '@/models/product';
+import ProductModel, { StorePolicyState } from '@/models/product';
 import { Product, ProductResponse } from '@/types/product';
 import { PaginationMeta } from '@/types/pagination';
 import ConfirmDialog from '@/components/ConfirmDialog';
@@ -22,6 +22,31 @@ const categoryModel = new CategoryModel();
 const colorModel = new ColorModel();
 import StorePolicy from './components/store-policy';
 import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
+import BulkBar from './components/bulk-bar';
+import BulkDialog, { BulkMode } from './components/bulk-dialog';
+import QuickEdit from './components/quick-edit';
+import ColumnMenu, { ColumnChoice } from './components/column-menu';
+import { useAuth } from '@/contexts/AuthContext';
+import { createLatestGate } from '@/lib/latest-request';
+import { selectedProducts } from '@/lib/product-bulk';
+import { browserStorage, loadHiddenColumns, preferenceKey, saveHiddenColumns } from '@/lib/table-preferences';
+
+// Columns the employee may hide. The code, name and row commands always stay.
+const HIDEABLE_COLUMNS: { key: string; label: string }[] = [
+  { key: 'store_policy', label: 'หน้าร้านออนไลน์' },
+  { key: 'category', label: 'ประเภทสินค้า' },
+  { key: 'color', label: 'สีสินค้า' },
+  { key: 'adddate', label: 'วันที่เพิ่ม' },
+  { key: 'product_variant_price', label: 'ราคา' },
+  { key: 'stock', label: 'สถานะสินค้า' },
+];
+const REQUIRED_COLUMNS: { key: string; label: string }[] = [
+  { key: 'product_code', label: 'รหัสสินค้า' },
+  { key: 'product_name', label: 'ชื่อสินค้า' },
+  { key: 'product_id', label: 'การจัดการ' },
+];
+const HIDEABLE_KEYS = HIDEABLE_COLUMNS.map((c) => c.key);
+const REQUIRED_KEYS = REQUIRED_COLUMNS.map((c) => c.key);
 
 type SortField = 'adddate' | 'product_variant_price' | null;
 type SortOrder = 'ASC' | 'DESC';
@@ -52,6 +77,7 @@ const getStockStatus = (product: Product): string => {
 
 export default function ProductsPage() {
   const { can } = usePermissions();
+  const { user } = useAuth();
   const canAddProduct = can('products', 'add');
   const canEditProduct = can('products', 'edit');
   const canDeleteProduct = can('products', 'delete');
@@ -73,18 +99,34 @@ export default function ProductsPage() {
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [categoryOptions, setCategoryOptions] = useState<{ label: string; value: string }[]>([]);
   const [colorOptions, setColorOptions] = useState<{ label: string; value: string }[]>([]);
+  // Categories by id, for the commands that write a category (the filter above compares names).
+  const [categoryChoices, setCategoryChoices] = useState<{ label: string; value: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [optionsError, setOptionsError] = useState<string | null>(null);
   const [listError, setListError] = useState<string | null>(null);
   const [resultDialog, setResultDialog] = useState<{
     isOpen: boolean;
     status: 'success' | 'error';
+    action: 'delete' | 'update';
     message: string;
   }>({
     isOpen: false,
     status: 'success',
+    action: 'delete',
     message: '',
   });
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [policies, setPolicies] = useState<Map<string, StorePolicyState>>(new Map());
+  const [policiesLoaded, setPoliciesLoaded] = useState(false);
+  const [policiesFailed, setPoliciesFailed] = useState(false);
+  const [bulk, setBulk] = useState<{ mode: BulkMode; targets: Product[] } | null>(null);
+  const [quickEditProduct, setQuickEditProduct] = useState<Product | null>(null);
+  const [hiddenColumns, setHiddenColumns] = useState<string[]>([]);
+  const [preferenceSaved, setPreferenceSaved] = useState(true);
+  // Only the newest list / policy request may apply its result.
+  const listGate = useRef(createLatestGate());
+  const policyGate = useRef(createLatestGate());
+  const preferenceStorageKey = preferenceKey('products', user?.employee_id);
 
   useEffect(() => {
     const fetchOptions = async () => {
@@ -95,6 +137,12 @@ export default function ProductsPage() {
           colorModel.getAllColors(),
         ]);
         setCategoryOptions(toNameOptions(categories.data.map((category) => category.category_name)));
+        setCategoryChoices(
+          categories.data.map((category) => ({
+            label: category.category_name,
+            value: String(category.category_id),
+          })),
+        );
         setColorOptions(toNameOptions(colors.data.map((color) => color.color_name)));
       } catch (error) {
         console.error('Failed to fetch category or color options:', error);
@@ -104,37 +152,89 @@ export default function ProductsPage() {
     void fetchOptions();
   }, []);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
+  // Store policy of the rows on the page, in one request (never one per row).
+  const loadPolicies = useCallback(async (ids: string[]) => {
+    const ticket = policyGate.current.begin();
+    setPoliciesFailed(false);
+    setPoliciesLoaded(false);
+    if (ids.length === 0) {
+      setPolicies(new Map());
+      setPoliciesLoaded(true);
+      return;
+    }
+    try {
+      const rows = await productModel.getStorePolicies(ids);
+      if (!policyGate.current.isLatest(ticket)) return;
+      setPolicies(new Map(rows.map((row) => [row.product_id, row])));
+      setPoliciesLoaded(true);
+    } catch (error) {
+      if (!policyGate.current.isLatest(ticket)) return;
+      console.error('Failed to fetch store policies:', error);
+      setPolicies(new Map());
+      setPoliciesFailed(true);
+    }
+  }, []);
+
+  const loadProducts = useCallback(
+    async (page: number) => {
+      const ticket = listGate.current.begin();
       try {
         setLoading(true);
         setListError(null);
-        const data = await productModel.getProducts(currentPage, 10, appliedSearchQuery, sortField, sortOrder, filters);
+        const data = await productModel.getProducts(page, 10, appliedSearchQuery, sortField, sortOrder, filters);
+        // A slower answer to an older query must not replace the current one.
+        if (!listGate.current.isLatest(ticket)) return;
         setProducts(data);
         setMeta(data.meta);
+        const present = new Set(data.data.map((product) => product.product_id));
+        setSelectedIds((prev) => {
+          const kept = new Set([...prev].filter((id) => present.has(id)));
+          return kept.size === prev.size ? prev : kept;
+        });
+        void loadPolicies(data.data.map((product) => product.product_id));
       } catch (error) {
+        if (!listGate.current.isLatest(ticket)) return;
         console.error('Failed to fetch products:', error);
         setListError(loadErrorText('รายการสินค้า', error));
       } finally {
-        setLoading(false);
+        if (listGate.current.isLatest(ticket)) setLoading(false);
       }
-    };
+    },
+    [appliedSearchQuery, sortField, sortOrder, filters, loadPolicies],
+  );
 
-    fetchProducts();
-  }, [currentPage, appliedSearchQuery, sortField, sortOrder, filters]);
+  useEffect(() => {
+    void loadProducts(currentPage);
+  }, [currentPage, loadProducts]);
+
+  // Column preferences are read after mount (the server cannot see storage) and per employee.
+  useEffect(() => {
+    setHiddenColumns(loadHiddenColumns(browserStorage(), preferenceStorageKey, HIDEABLE_KEYS, REQUIRED_KEYS));
+  }, [preferenceStorageKey]);
+
+  // The selection belongs to the rows of one query and page.
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const changePage = (page: number) => {
+    clearSelection();
+    setCurrentPage(page);
+  };
 
   const handleSearch = () => {
+    clearSelection();
     setCurrentPage(1);
     setAppliedSearchQuery(searchQuery.trim());
   };
 
   const handleClearSearch = () => {
+    clearSelection();
     setSearchQuery('');
     setAppliedSearchQuery('');
     setCurrentPage(1);
   };
 
   const handleSortChange = (sort: { key: string; direction: 'ASC' | 'DESC' } | null) => {
+    clearSelection();
     if (!sort) {
       setSortField(null);
       setSortOrder('ASC');
@@ -166,9 +266,31 @@ export default function ProductsPage() {
         }
       }
     }
+    clearSelection();
     setCurrentPage(1);
     setFilters(updatedFilters);
   };
+
+  const setColumnHidden = (hidden: string[]) => {
+    setHiddenColumns(hidden);
+    setPreferenceSaved(saveHiddenColumns(browserStorage(), preferenceStorageKey, hidden));
+  };
+  const hiddenSet = new Set(hiddenColumns);
+  // A column with an active filter stays visible, so a filter is never left on a column nobody can see.
+  const filteredColumns = new Set(Object.keys(filters));
+  // The same holds for the active sort, whose control lives in that column's header.
+  const columnChoices: ColumnChoice[] = [
+    ...REQUIRED_COLUMNS.map((c) => ({ ...c, required: true })),
+    ...HIDEABLE_COLUMNS.map((c) => {
+      const filtered = filteredColumns.has(c.key);
+      const sorted = sortField === c.key;
+      return {
+        ...c,
+        required: filtered || sorted,
+        note: filtered ? 'กำลังกรองอยู่' : sorted ? 'กำลังเรียงอยู่' : undefined,
+      };
+    }),
+  ];
 
   // Define DataTable columns
   const columns: DataTableColumn<Product>[] = [
@@ -179,7 +301,18 @@ export default function ProductsPage() {
       // uses, and React saw two children with the same key on every row.
       key: 'store_policy' as keyof Product,
       label: 'หน้าร้านออนไลน์',
-      render: (_, row) => <StorePolicy id={row.product_id} editable={canEditProduct} />,
+      render: (_, row) => (
+        <StorePolicy
+          id={row.product_id}
+          editable={canEditProduct}
+          policy={policies.get(row.product_id)}
+          failed={policiesFailed || (policiesLoaded && !policies.has(row.product_id))}
+          onRetry={() => void loadPolicies((products?.data ?? []).map((product) => product.product_id))}
+          onChanged={(policy) =>
+            setPolicies((prev) => new Map(prev).set(policy.product_id, policy))
+          }
+        />
+      ),
     },
     {
       key: 'product_code',
@@ -279,6 +412,18 @@ export default function ProductsPage() {
           </button>
           {canEditProduct && (
             <button
+              onClick={() => setQuickEditProduct(row)}
+              className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
+              title="แก้ไขด่วน (ชื่อ/หมวดหมู่)"
+              aria-label={`แก้ไขด่วน ${row.product_name}`}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </button>
+          )}
+          {canEditProduct && (
+            <button
               onClick={() => {
                 setSelectedProduct(row);
                 setIsUpdateFormOpen(true);
@@ -319,34 +464,33 @@ export default function ProductsPage() {
 
   const totalProducts = products ? products.data.length : 0;
 
-
-  const handleRefreshProduct = async (filters: Record<string, string> = {}, checkPageAfterDelete = false) => {
-    // รีเฟรชข้อมูลสินค้าเมื่อมีการเพิ่มสินค้าใหม่
-    try {
-      setListError(null);
-      // คำนวณหน้าที่จะใช้ก่อนเรียก API
-      setLoading(true);
-      let targetPage = currentPage;
-
-      // ถ้าเป็นการลบข้อมูลและไม่ใช่หน้าแรก และหน้าปัจจุบันมีเพียง 1 รายการ
-      // ให้ลดหน้าลงมา 1 หน้า
-      if (checkPageAfterDelete && currentPage > 1 && products?.data.length === 1) {
-        targetPage = currentPage - 1;
-        setCurrentPage(targetPage);
-      }
-
-      const data = await productModel.getProducts(targetPage, 10, appliedSearchQuery, sortField, sortOrder, filters);
-
-      setProducts(data);
-      setMeta(data.meta);
-
-    } catch (error) {
-      console.error('Failed to fetch products:', error);
-      setListError(loadErrorText('รายการสินค้า', error));
+  // Reloads the current query (search, sort and filters included) after a change.
+  const handleRefreshProduct = async (checkPageAfterDelete = false) => {
+    let targetPage = currentPage;
+    // After a delete, a page left empty steps back one page.
+    if (checkPageAfterDelete && currentPage > 1 && products?.data.length === 1) {
+      targetPage = currentPage - 1;
+      clearSelection();
+      setCurrentPage(targetPage);
     }
-    finally {
-      setLoading(false);
-    }
+    await loadProducts(targetPage);
+  };
+
+  const pageProducts = products?.data ?? [];
+  const chosenProducts = selectedProducts(pageProducts, selectedIds);
+  const visibleColumns = columns.filter((column) => !hiddenSet.has(String(column.key)));
+
+  const openBulk = (mode: BulkMode, targets: Product[]) => {
+    if (targets.length > 0) setBulk({ mode, targets });
+  };
+  // The API has confirmed the change: reload what the table shows and drop the
+  // selection, which pointed at the rows as they were before.
+  const finishCommand = (message: string) => {
+    setBulk(null);
+    setQuickEditProduct(null);
+    clearSelection();
+    setResultDialog({ isOpen: true, status: 'success', action: 'update', message });
+    void handleRefreshProduct();
   };
   return (
     <div className="bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
@@ -426,6 +570,16 @@ export default function ProductsPage() {
               )}
             </div>
 
+            <div className="flex flex-wrap items-center gap-2">
+            <ColumnMenu
+              columns={columnChoices}
+              hidden={hiddenSet}
+              saved={preferenceSaved}
+              onToggle={(key, visible) =>
+                setColumnHidden(visible ? hiddenColumns.filter((k) => k !== key) : [...hiddenColumns, key])
+              }
+              onReset={() => setColumnHidden([])}
+            />
             {canAddProduct && (
               <button
                 onClick={() => setIsFormOpen(true)}
@@ -437,19 +591,47 @@ export default function ProductsPage() {
                 <span>เพิ่มข้อมูล</span>
               </button>
             )}
+            </div>
           </div>
         </div>
 
+        {canEditProduct && (
+          <div className="min-h-[60px] px-3 pt-3 sm:px-4 md:px-6">
+            {chosenProducts.length > 0 ? (
+              <BulkBar
+                count={chosenProducts.length}
+                disabled={loading}
+                onCommand={(mode) => openBulk(mode, chosenProducts)}
+                onClear={clearSelection}
+              />
+            ) : (
+              <p className="py-2 text-sm text-[var(--ink-muted)]">
+                เลือกสินค้าในตารางเพื่อเปลี่ยนหมวดหมู่ ตั้งค่าหน้าร้าน หรือเปลี่ยนสถานะตัวเลือกพร้อมกันหลายรายการ
+              </p>
+            )}
+          </div>
+        )}
+
         {loading && <LoadingSkeletonProps />}
         <DataTable
-          data={products?.data || []}
-          columns={columns}
+          data={pageProducts}
+          columns={visibleColumns}
           keyField="product_id"
           disabled={loading}
           className="bg-[var(--bg-surface)] p-1"
           paginationMeta={meta}
           currentPage={currentPage}
-          onPageChange={setCurrentPage}
+          onPageChange={changePage}
+          selection={
+            canEditProduct
+              ? {
+                  selectedKeys: selectedIds,
+                  onChange: setSelectedIds,
+                  getRowLabel: (row) => row.product_name,
+                  disabled: bulk !== null,
+                }
+              : undefined
+          }
           onFilterChange={handleDataTableFilterChange}
           onSortChange={handleSortChange}
         />
@@ -483,6 +665,31 @@ export default function ProductsPage() {
         }}
         product={selectedDetailProduct}
       />
+      {bulk && canEditProduct && (
+        <BulkDialog
+          key={bulk.mode}
+          mode={bulk.mode}
+          products={bulk.targets}
+          policies={policies}
+          categories={categoryChoices}
+          onClose={() => setBulk(null)}
+          onSaved={finishCommand}
+        />
+      )}
+      {quickEditProduct && canEditProduct && !bulk && (
+        <QuickEdit
+          key={quickEditProduct.product_id}
+          product={quickEditProduct}
+          categories={categoryChoices}
+          onClose={() => setQuickEditProduct(null)}
+          onSaved={finishCommand}
+          onEditVariants={() => {
+            const product = quickEditProduct;
+            setQuickEditProduct(null);
+            openBulk('status', [product]);
+          }}
+        />
+      )}
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         isOpen={canDeleteProduct && isDeleteDialogOpen}
@@ -497,10 +704,11 @@ export default function ProductsPage() {
             try {
               await productModel.deleteProduct(productToDelete.product_id);
               // รีเฟรชข้อมูลสินค้า และตรวจสอบว่าหน้านี้ยังมีข้อมูลหรือไม่
-              await handleRefreshProduct(filters, true);
+              await handleRefreshProduct(true);
               setResultDialog({
                 isOpen: true,
                 status: 'success',
+                action: 'delete',
                 message: 'ลบสินค้าสำเร็จ',
               });
             } catch (error: unknown) {
@@ -525,6 +733,7 @@ export default function ProductsPage() {
               setResultDialog({
                 isOpen: true,
                 status: 'error',
+                action: 'delete',
                 message: errorMessage,
               });
             }
@@ -537,7 +746,7 @@ export default function ProductsPage() {
       <ActionResultDialog
         isOpen={resultDialog.isOpen}
         status={resultDialog.status}
-        action="delete"
+        action={resultDialog.action}
         message={resultDialog.message}
         onClose={() => setResultDialog((prev) => ({ ...prev, isOpen: false }))}
       />

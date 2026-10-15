@@ -16,6 +16,20 @@ export interface DataTableColumn<T> {
   width?: string;
 }
 
+/**
+ * Opt-in multi-row selection. The table only reports which row keys are
+ * checked: the caller owns the set, decides what a selection may do and clears
+ * it when the rows it points at change. Without this prop no column is added.
+ */
+export interface DataTableSelection<T> {
+  selectedKeys: ReadonlySet<string>;
+  onChange: (keys: Set<string>) => void;
+  /** Accessible name of a row's checkbox, e.g. the product name. */
+  getRowLabel: (row: T) => string;
+  /** Selection is suspended (for example while a command is saving). */
+  disabled?: boolean;
+}
+
 export interface DataTableProps<T> {
   data: T[];
   columns: DataTableColumn<T>[];
@@ -33,6 +47,7 @@ export interface DataTableProps<T> {
   rowClassName?: string;
   footerClassName?: string;
   disabled?: boolean;
+  selection?: DataTableSelection<T>;
 }
 
 // The filter menu is `w-56` (14rem = 224px); the margin keeps it off the screen edge.
@@ -68,6 +83,7 @@ function DataTableInner<T>(
     rowClassName = '',
     footerClassName = '',
     disabled = false,
+    selection,
   }: DataTableProps<T>,
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
@@ -79,6 +95,37 @@ function DataTableInner<T>(
     const filterRefs = React.useRef<Record<string, HTMLElement | null>>({});
 
     const tableScrollRef = React.useRef<HTMLDivElement | null>(null);
+
+    const rowKey = (row: T) => String(row[keyField]);
+    const pageKeys = data.map(rowKey);
+    const checkedOnPage = selection
+      ? pageKeys.filter((key) => selection.selectedKeys.has(key)).length
+      : 0;
+    const allChecked = pageKeys.length > 0 && checkedOnPage === pageKeys.length;
+    const selectAllRef = React.useRef<HTMLInputElement | null>(null);
+    React.useEffect(() => {
+      if (selectAllRef.current) {
+        selectAllRef.current.indeterminate = checkedOnPage > 0 && !allChecked;
+      }
+    }, [checkedOnPage, allChecked]);
+    const selectionLocked = Boolean(selection?.disabled) || disabled;
+    // Only the rows shown are ever selected, so a toggle never keeps a key that is off the page.
+    const toggleRow = (key: string, checked: boolean) => {
+      if (!selection) return;
+      const next = new Set(selection.selectedKeys);
+      if (checked) next.add(key);
+      else next.delete(key);
+      selection.onChange(next);
+    };
+    const toggleAll = (checked: boolean) => {
+      if (!selection) return;
+      const next = new Set(selection.selectedKeys);
+      for (const key of pageKeys) {
+        if (checked) next.add(key);
+        else next.delete(key);
+      }
+      selection.onChange(next);
+    };
 
     // Handle filter dropdown positioning
     const updateDropdownPosition = (colKey: string | number) => {
@@ -199,6 +246,21 @@ function DataTableInner<T>(
             <table className="w-full text-[15px] leading-6 text-[var(--ink)]">
               <thead>
                 <tr className={`border-b border-[var(--border)] bg-[var(--bg-subtle)] ${headerClassName}`}>
+                  {selection && (
+                    <th className="w-12 px-2 py-3 text-center align-middle">
+                      <label className="ka-check-hit">
+                        <input
+                          ref={selectAllRef}
+                          type="checkbox"
+                          className="ka-check"
+                          checked={allChecked}
+                          disabled={selectionLocked || pageKeys.length === 0}
+                          onChange={(e) => toggleAll(e.target.checked)}
+                          aria-label="เลือกทุกรายการในหน้านี้"
+                        />
+                      </label>
+                    </th>
+                  )}
                   {columns.map((col) => (
                     <th
                       key={String(col.key)}
@@ -420,14 +482,36 @@ function DataTableInner<T>(
               </thead>
               <tbody className="divide-y divide-[var(--border)] bg-[var(--bg-surface)]">
                 {data.length > 0 ? (
-                  data.map((row, idx) => (
+                  data.map((row, idx) => {
+                    const selected = Boolean(selection?.selectedKeys.has(rowKey(row)));
+                    return (
                     <tr
                       key={String(row[keyField]) || idx}
-                      className={`transition-[background-color,box-shadow] duration-150 hover:bg-[var(--bg-subtle)] hover:shadow-[inset_3px_0_0_var(--brand)] ${
-                        onRowClick ? 'cursor-pointer' : ''
-                      } ${rowClassName}`}
+                      data-selected={selected || undefined}
+                      className={`transition-[background-color,box-shadow] ${
+                        selection ? 'duration-(--ka-motion-control)' : 'duration-150'
+                      } hover:shadow-[inset_3px_0_0_var(--brand)] ${
+                        selected
+                          ? 'bg-[var(--brand-soft)] hover:bg-[var(--brand-soft)]'
+                          : 'hover:bg-[var(--bg-subtle)]'
+                      } ${onRowClick ? 'cursor-pointer' : ''} ${rowClassName}`}
                       onClick={() => onRowClick?.(row)}
                     >
+                      {selection && (
+                        <td className="w-12 px-2 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                          <label className="ka-check-hit">
+                            <input
+                              type="checkbox"
+                              className="ka-check"
+                              checked={selected}
+                              disabled={selectionLocked}
+                              onClick={(e) => e.stopPropagation()}
+                              onChange={(e) => toggleRow(rowKey(row), e.target.checked)}
+                              aria-label={`เลือก ${selection.getRowLabel(row)}`}
+                            />
+                          </label>
+                        </td>
+                      )}
                       {columns.map((col) => (
                         <td
                           key={String(col.key)}
@@ -440,10 +524,11 @@ function DataTableInner<T>(
                         </td>
                       ))}
                     </tr>
-                  ))
+                    );
+                  })
                 ) : (
                   <tr>
-                    <td colSpan={columns.length} className="px-4 py-16 text-center">
+                    <td colSpan={columns.length + (selection ? 1 : 0)} className="px-4 py-16 text-center">
                       <div className="ka-empty p-0">
                         <div className="ka-empty__art">
                           <svg

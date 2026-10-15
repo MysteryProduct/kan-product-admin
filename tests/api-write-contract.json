@@ -35,9 +35,27 @@
   "PATCH /product-unit/:id": {
     "product_unit_name": "string"
   },
+  "PATCH /product/:id/quick-edit": {
+    "category_id": "number",
+    "product_name": "string"
+  },
   "PATCH /product/:id/store-policy": {
     "contact_enabled": "boolean",
     "online_purchase": "boolean",
+    "published": "boolean"
+  },
+  "PATCH /product/bulk/category": {
+    "category_id": "number",
+    "product_ids": "array"
+  },
+  "PATCH /product/bulk/variant-status": {
+    "status": "string",
+    "variant_ids": "array"
+  },
+  "PATCH /product/store-policy/bulk": {
+    "contact_enabled": "boolean",
+    "online_purchase": "boolean",
+    "product_ids": "array",
     "published": "boolean"
   },
   "PATCH /store/account/addresses/:addressId": {

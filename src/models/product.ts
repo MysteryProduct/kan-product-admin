@@ -13,6 +13,24 @@ export interface SingleProductResponse {
   message?: string;
 }
 
+export interface StorePolicyState {
+  product_id: string;
+  published: boolean;
+  online_purchase: boolean;
+  contact_enabled: boolean;
+}
+
+export type StorePolicyChange = Partial<Omit<StorePolicyState, 'product_id'>>;
+
+export type VariantStatusValue = 'active' | 'inactive';
+
+export interface QuickEditResult {
+  product_id: string;
+  product_name: string;
+  category_id: number | null;
+  category_name: string | null;
+}
+
 // ===== Product API Service =====
 
 class ProductModel {
@@ -181,6 +199,39 @@ class ProductModel {
       console.error(`Error updating product ${productData.product_id}:`, error);
       throw error;
     }
+  }
+
+  /**
+   * Store policy of several products in one request. A product the API does
+   * not know is absent from the result.
+   */
+  async getStorePolicies(ids: string[]): Promise<StorePolicyState[]> {
+    const response = await axiosInstance.get<{ data: StorePolicyState[] }>(
+      '/product/store-policy/batch',
+      { params: { ids: ids.join(',') } },
+    );
+    return response.data.data;
+  }
+
+  /** Sets the named store switches on every product, or on none of them. */
+  async bulkUpdateStorePolicy(productIds: string[], change: StorePolicyChange): Promise<void> {
+    await axiosInstance.patch('/product/store-policy/bulk', { product_ids: productIds, ...change });
+  }
+
+  /** Moves every product to the category, or none of them. */
+  async bulkUpdateCategory(productIds: string[], categoryId: number): Promise<void> {
+    await axiosInstance.patch('/product/bulk/category', { product_ids: productIds, category_id: categoryId });
+  }
+
+  /** Sets the status of exactly the named variants, or of none of them. */
+  async bulkUpdateVariantStatus(variantIds: string[], status: VariantStatusValue): Promise<void> {
+    await axiosInstance.patch('/product/bulk/variant-status', { variant_ids: variantIds, status });
+  }
+
+  /** Changes the name and/or category only; variants, files and recipes are not touched. */
+  async quickEdit(id: string, change: { product_name?: string; category_id?: number }): Promise<QuickEditResult> {
+    const response = await axiosInstance.patch<QuickEditResult>(`/product/${id}/quick-edit`, change);
+    return response.data;
   }
 
   /**
