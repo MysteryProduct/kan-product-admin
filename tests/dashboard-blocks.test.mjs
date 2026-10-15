@@ -19,3 +19,10 @@ test('names each failed block in Thai, in the order given', () => {
 test('falls back to the block name the API sent when it has no label', () => {
   assert.equal(unavailableText(['future.block']), 'โหลดข้อมูลบางส่วนไม่สำเร็จ: future.block');
 });
+
+test('names the stock overview block in Thai (TASK-0161)', () => {
+  assert.equal(
+    unavailableText(['stock_overview.variants']),
+    'โหลดข้อมูลบางส่วนไม่สำเร็จ: สต็อกสินค้าตามสถานะ',
+  );
+});

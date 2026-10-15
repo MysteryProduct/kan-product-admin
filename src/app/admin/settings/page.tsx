@@ -43,6 +43,10 @@ const shopIdentityFrom = (settings: AppSettings | null) => ({
 const inputClass =
 	'ka-input';
 
+// TASK-0161: units at or below which a product variant counts as low on the Dashboard.
+const DEFAULT_LOW_STOCK_THRESHOLD = 20;
+const MAX_LOW_STOCK_THRESHOLD = 1_000_000;
+
 export default function SettingsPage() {
 	const { can } = usePermissions();
 	const canEditSettings = can('settings', 'edit');
@@ -58,6 +62,7 @@ export default function SettingsPage() {
 		setting_id: '',
 		account_id: '',
 		vat_rate: '7',
+		low_stock_threshold: String(DEFAULT_LOW_STOCK_THRESHOLD),
 		...emptyShopIdentity,
 		...emptyShopContact,
 	});
@@ -101,6 +106,7 @@ export default function SettingsPage() {
 					setting_id: settingsData?.setting_id || '',
 					account_id: settingsData?.account_id || '',
 					vat_rate: String(settingsData?.vat_rate ?? 7),
+					low_stock_threshold: String(settingsData?.low_stock_threshold ?? DEFAULT_LOW_STOCK_THRESHOLD),
 					...shopIdentityFrom(settingsData),
 					...shopContactFrom(settingsData),
 				});
@@ -143,6 +149,14 @@ export default function SettingsPage() {
 			nextErrors.vat_rate = 'อัตรา VAT ต้องอยู่ระหว่าง 0 - 100';
 		}
 
+		const lowStock = formData.low_stock_threshold.trim();
+		if (
+			!/^\d+$/.test(lowStock) ||
+			Number(lowStock) > MAX_LOW_STOCK_THRESHOLD
+		) {
+			nextErrors.low_stock_threshold = 'เกณฑ์เหลือน้อยต้องเป็นจำนวนเต็มตั้งแต่ 0 ถึง 1,000,000';
+		}
+
 		const shopTaxId = formData.shop_tax_id.replace(/[\s-]/g, '');
 		if (shopTaxId && !/^\d{13}$/.test(shopTaxId)) {
 			nextErrors.shop_tax_id = 'เลขประจำตัวผู้เสียภาษีต้องเป็นตัวเลข 13 หลัก';
@@ -167,6 +181,7 @@ export default function SettingsPage() {
 			const fields = {
 				account_id: formData.account_id,
 				vat_rate: Number(formData.vat_rate),
+				low_stock_threshold: Number(formData.low_stock_threshold.trim()),
 				shop_name: formData.shop_name.trim() || null,
 				shop_address: formData.shop_address.trim() || null,
 				shop_tax_id: formData.shop_tax_id.replace(/[\s-]/g, '') || null,
@@ -272,6 +287,41 @@ export default function SettingsPage() {
 							{errors.vat_rate && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.vat_rate}</p>}
 						</div>
 					</div>
+
+					<fieldset className="space-y-4">
+						<legend className="text-sm font-semibold text-[var(--ink)]">สต็อกสินค้า (Dashboard)</legend>
+						<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+							<div>
+								<label htmlFor="low_stock_threshold" className="mb-2 block text-sm font-medium text-[var(--ink)]">
+									เกณฑ์เหลือน้อย (ชิ้น)
+								</label>
+								<input
+									id="low_stock_threshold"
+									type="number"
+									inputMode="numeric"
+									min={0}
+									max={MAX_LOW_STOCK_THRESHOLD}
+									step={1}
+									value={formData.low_stock_threshold}
+									onChange={(event) => setFormData((prev) => ({ ...prev, low_stock_threshold: event.target.value }))}
+									className={inputClass}
+									aria-invalid={Boolean(errors.low_stock_threshold)}
+									aria-describedby={`low_stock_threshold_hint${errors.low_stock_threshold ? ' low_stock_threshold_error' : ''}`}
+									disabled={!canSave || saving}
+								/>
+								{errors.low_stock_threshold && (
+									<p id="low_stock_threshold_error" className="mt-1 text-[13px] text-[var(--danger)]">
+										{errors.low_stock_threshold}
+									</p>
+								)}
+							</div>
+							<p id="low_stock_threshold_hint" className="text-[13px] text-[var(--ink-muted)] md:pt-8">
+								ใช้ค่าเดียวทั้งระบบ นับจากจำนวนคงเหลือรวมทุกล็อตของแต่ละแบบสินค้า (สี/ขนาด): 1 ถึงค่านี้ = เหลือน้อย
+								มากกว่าค่านี้ = ปกติ และ 0 หรือน้อยกว่า = หมด ตั้งเป็น 0 เพื่อไม่แสดงสถานะเหลือน้อย (สถานะหมดยังแสดง)
+								เกณฑ์นี้ใช้เตือนบน Dashboard เท่านั้น ไม่เปลี่ยนจำนวนสต็อกหรือการขายหน้าร้าน
+							</p>
+						</div>
+					</fieldset>
 
 					<fieldset className="space-y-4">
 						<legend className="text-sm font-semibold text-[var(--ink)]">ข้อมูลร้านสำหรับใบกำกับภาษี</legend>
@@ -393,6 +443,12 @@ export default function SettingsPage() {
 							</p>
 							<p>
 								VAT ปัจจุบัน: <span className="font-medium text-[var(--ink)]">{settings?.vat_rate ?? Number(formData.vat_rate)}%</span>
+							</p>
+							<p>
+								เกณฑ์เหลือน้อย:{' '}
+								<span className="font-medium text-[var(--ink)]">
+									{settings?.low_stock_threshold ?? DEFAULT_LOW_STOCK_THRESHOLD} ชิ้น
+								</span>
 							</p>
 						</div>
 					</div>

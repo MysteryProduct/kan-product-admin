@@ -158,6 +158,39 @@ export interface SalesMix {
   unavailable?: string[];
 }
 
+/** Out of stock, low, or normal; `problem` asks for out and low together. */
+export type StockStatus = 'out' | 'low' | 'normal';
+export type StockStatusFilter = StockStatus | 'problem';
+
+/** The conditions the stock card and the list opened from it both use. */
+export interface StockFilter {
+  category_id?: number;
+  /** A part of the product code or name. */
+  q?: string;
+}
+
+/** Variants counted by the remaining stock of all their lots; this is stock on hand, not what the Store can sell. */
+export interface StockOverview {
+  /** The one threshold in use: 1..threshold is low, above it normal, 0 or less out. */
+  threshold: number;
+  /** Products with at least one variant in the filter, each counted once. */
+  products: number;
+  variants: number;
+  out: number;
+  low: number;
+  normal: number;
+  /** Products with at least one low or out variant. */
+  products_with_issue: number;
+}
+
+/** GET /dashboard/stock-overview; `stock_overview` is missing without `view` on products, `unavailable` names a failure. */
+export interface StockOverviewResponse {
+  timezone: 'Asia/Bangkok';
+  generated_at: string;
+  stock_overview?: StockOverview;
+  unavailable?: string[];
+}
+
 export interface DashboardSummary {
   timezone: 'Asia/Bangkok';
   generated_at: string;
@@ -188,6 +221,7 @@ export type DashboardListKey =
   | 'purchase_orders_to_approve'
   | 'stock_out_products'
   | 'stock_out_materials'
+  | 'stock_variants'
   | 'job_orders_pending'
   | 'job_orders_in_progress'
   | 'job_orders_completed'
@@ -222,6 +256,11 @@ export interface DashboardListRow {
   date: string | null;
   amount: number | null;
   status: string | null;
+  /** Only a row of the `stock_variants` list: what the variant is and how many are left (all lots added up). */
+  product_name?: string;
+  color_name?: string | null;
+  size_name?: string | null;
+  remain_qty?: number;
 }
 
 export interface DashboardList {

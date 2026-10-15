@@ -21,6 +21,7 @@ const BLOCK_LABELS: Record<string, string> = {
   'pending_work.store_shipping_unpaid': 'รอลูกค้าชำระค่าจัดส่ง',
   'pending_work.contact_requests_new': 'คำขอติดต่อกลับใหม่',
   'pending_work.purchase_orders_to_approve': 'ใบสั่งซื้อรออนุมัติ',
+  'stock_overview.variants': 'สต็อกสินค้าตามสถานะ',
   'stock_out.products': 'สินค้าที่หมด',
   'stock_out.materials': 'วัตถุดิบที่หมด',
   'operations.job_orders': 'งานผลิต',

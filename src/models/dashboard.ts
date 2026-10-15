@@ -5,6 +5,8 @@ import type {
   DashboardListKey,
   DashboardSummary,
   SalesDashboard,
+  StockFilter,
+  StockOverviewResponse,
   SalesMix,
   TopProductRange,
   TopProducts,
@@ -42,10 +44,26 @@ export default class DashboardModel {
     return response.data;
   }
 
-  /** The rows behind one Dashboard number, a page at a time (10 a page). */
-  async getList(key: DashboardListKey, page: number, limit = 10): Promise<DashboardList> {
+  /** Stock by variant under a category / code-or-name filter, for the stock card. */
+  async getStockOverview(filter: StockFilter): Promise<StockOverviewResponse> {
+    const response = await axiosInstance.get<StockOverviewResponse>('/dashboard/stock-overview', {
+      params: { ...filter },
+    });
+    return response.data;
+  }
+
+  /**
+   * The rows behind one Dashboard number, a page at a time (10 a page). `extra` carries the
+   * stock list's filter and status; the server ignores it for every other list.
+   */
+  async getList(
+    key: DashboardListKey,
+    page: number,
+    limit = 10,
+    extra: Record<string, string | number | undefined> = {},
+  ): Promise<DashboardList> {
     const response = await axiosInstance.get<DashboardList>(`/dashboard/lists/${key}`, {
-      params: { page, limit },
+      params: { page, limit, ...extra },
     });
     return response.data;
   }

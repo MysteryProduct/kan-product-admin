@@ -6,6 +6,8 @@ import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 import PendingWork from '@/components/dashboard/PendingWork';
 import DashboardListModal, { type OpenList } from '@/components/dashboard/DashboardListModal';
 import StockOut from '@/components/dashboard/StockOut';
+import StockOverview from '@/components/dashboard/StockOverview';
+import { usePermissions } from '@/hooks/usePermissions';
 import Operations from '@/components/dashboard/Operations';
 import { unavailableText } from '@/components/dashboard/blockLabels';
 import type { DashboardSummary } from '@/types/dashboard';
@@ -17,6 +19,10 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [openList, setOpenList] = useState<OpenList | null>(null);
+  const { can } = usePermissions();
+  // The stock overview reads its own endpoint; a record changed from a detail view makes it read again.
+  const [stockReload, setStockReload] = useState(0);
+  const [stockState, setStockState] = useState<'loading' | 'shown' | 'failed'>('loading');
 
   const load = useCallback(async () => {
     setIsLoading(true);
@@ -52,7 +58,10 @@ export default function Home() {
         <LoadErrorBanner message={error ?? partialError} onRetry={() => void load()} className="mb-4" />
 
         {summary?.pending_work && <PendingWork work={summary.pending_work} onOpen={setOpenList} />}
-        {summary?.stock_out && <StockOut stock={summary.stock_out} onOpen={setOpenList} />}
+        {can('products', 'view') && (
+          <StockOverview reloadToken={stockReload} onOpen={setOpenList} onState={setStockState} />
+        )}
+        {summary?.stock_out && <StockOut stock={summary.stock_out} onOpen={setOpenList} hideProducts={can('products', 'view') && stockState !== 'failed'} />}
         {summary?.operations && <Operations operations={summary.operations} onOpen={setOpenList} />}
 
         {isLoading && !summary && <p className="text-[14px] text-[var(--ink-muted)]">กำลังโหลด...</p>}
@@ -62,7 +71,14 @@ export default function Home() {
       </main>
 
       {openList && (
-        <DashboardListModal list={openList} onClose={() => setOpenList(null)} onChanged={() => void load()} />
+        <DashboardListModal
+          list={openList}
+          onClose={() => setOpenList(null)}
+          onChanged={() => {
+            void load();
+            setStockReload((token) => token + 1);
+          }}
+        />
       )}
     </div>
   );

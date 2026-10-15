@@ -22,6 +22,8 @@ export interface AppSettings extends ShopTaxIdentity, ShopContactChannels {
   setting_id: string;
   account_id: string;
   vat_rate: number;
+  /** Dashboard low-stock threshold in units (TASK-0161); 0 = no low band. */
+  low_stock_threshold?: number;
   account?: BankAccount;
 }
 
@@ -29,6 +31,7 @@ export interface UpdateSettingsDto extends ShopTaxIdentity, ShopContactChannels 
   setting_id: string;
   account_id: string;
   vat_rate: number;
+  low_stock_threshold?: number;
   update_by?: string;
 }
 

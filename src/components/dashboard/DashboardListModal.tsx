@@ -25,6 +25,8 @@ import type {
   DashboardListKey,
   DashboardListKind,
   DashboardListRow,
+  StockFilter,
+  StockStatusFilter,
 } from "@/types/dashboard";
 
 const dashboardModel = new DashboardModel();
@@ -53,6 +55,12 @@ const STATUS_VIEWS: Partial<
   payment_receipt: {
     paid: { label: "ชำระแล้ว", tone: "success" },
     refunded: { label: "คืนเงินแล้ว", tone: "warning" },
+  },
+  // Stock of a variant by the remaining quantity of all lots (TASK-0161).
+  product_variant: {
+    out: { label: "หมด", tone: "danger" },
+    low: { label: "เหลือน้อย", tone: "warning" },
+    normal: { label: "ปกติ", tone: "success" },
   },
   purchase_order: {
     pending: { label: "รออนุมัติ", tone: PURCHASE_ORDER_STATUS_TONE.pending },
@@ -134,7 +142,22 @@ export interface OpenList {
   href: string;
   /** What the date column means for this list (target date, due date, ...). */
   dateLabel?: string;
+  /** The stock list's conditions, the same as the card that opened it; only `stock_variants` has them. */
+  stock?: {
+    filter: StockFilter;
+    status?: StockStatusFilter;
+    /** The name of the chosen category, for the line that says what is filtered. */
+    categoryName?: string;
+  };
 }
+
+const STOCK_STATUS_OPTIONS: { value: StockStatusFilter | ""; label: string }[] = [
+  { value: "", label: "ทุกสถานะ" },
+  { value: "problem", label: "ต้องดูแล (หมด + เหลือน้อย)" },
+  { value: "out", label: "หมด" },
+  { value: "low", label: "เหลือน้อย" },
+  { value: "normal", label: "ปกติ" },
+];
 
 interface DashboardListModalProps {
   list: OpenList;
@@ -158,6 +181,11 @@ export default function DashboardListModal({
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [detail, setDetail] = useState<DashboardListRow | null>(null);
+  // The stock list's status can be changed here; the category and search stay the card's.
+  const [stockStatus, setStockStatus] = useState<StockStatusFilter | "">(
+    list.stock?.status ?? "",
+  );
+  const stockFilter = list.stock?.filter;
 
   // Only the newest request may fill the list, so a slow page 1 cannot
   // overwrite the page 3 that was asked for after it.
@@ -167,7 +195,18 @@ export default function DashboardListModal({
     const request = ++latestRequest.current;
     setIsLoading(true);
     try {
-      const loaded = await dashboardModel.getList(list.key, page);
+      const loaded = await dashboardModel.getList(
+        list.key,
+        page,
+        10,
+        list.key === "stock_variants"
+          ? {
+              ...(stockFilter?.category_id !== undefined ? { category_id: stockFilter.category_id } : {}),
+              ...(stockFilter?.q ? { q: stockFilter.q } : {}),
+              ...(stockStatus ? { status: stockStatus } : {}),
+            }
+          : {},
+      );
       if (request !== latestRequest.current) return;
       // Rows were changed from a detail view and the page asked for is now past
       // the end: show the last page rather than "no rows" beside a total.
@@ -183,7 +222,7 @@ export default function DashboardListModal({
     } finally {
       if (request === latestRequest.current) setIsLoading(false);
     }
-  }, [list.key, page]);
+  }, [list.key, page, stockFilter?.category_id, stockFilter?.q, stockStatus]);
 
   useEffect(() => {
     void load();
@@ -196,6 +235,9 @@ export default function DashboardListModal({
   const hasDate = rows.some((row) => row.date);
   const hasAmount = rows.some((row) => row.amount !== null);
   const hasStatus = rows.some((row) => row.status);
+  // Only the stock list says how many are left, and in which color and size.
+  const hasStock = rows.some((row) => row.remain_qty !== undefined);
+  const isStock = list.key === "stock_variants";
 
   return (
     <>
@@ -231,6 +273,35 @@ export default function DashboardListModal({
         <div className="space-y-4">
           <LoadErrorBanner message={error} onRetry={() => void load()} />
 
+          {isStock && (
+            <div className="space-y-2">
+              <div className="max-w-xs">
+                <label htmlFor="stock-status" className="mb-1 block text-[13px] font-medium text-[var(--ink)]">
+                  สถานะสต็อก
+                </label>
+                <select
+                  id="stock-status"
+                  className="ka-input"
+                  value={stockStatus}
+                  onChange={(event) => {
+                    setStockStatus(event.target.value as StockStatusFilter | "");
+                    setPage(1);
+                  }}
+                >
+                  {STOCK_STATUS_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <p className="text-[13px] text-[var(--ink-muted)]">
+                หมวดหมู่: {list.stock?.categoryName ?? (stockFilter?.category_id ? `#${stockFilter.category_id}` : "ทั้งหมด")}
+                {stockFilter?.q ? ` · ค้นหา: ${stockFilter.q}` : ""} · จำนวนคงเหลือรวมทุกล็อต (ชิ้น) ไม่ใช่จำนวนที่ซื้อออนไลน์ได้
+              </p>
+            </div>
+          )}
+
           {isLoading && !result && (
             <p className="text-[14px] text-[var(--ink-muted)]">กำลังโหลด...</p>
           )}
@@ -245,6 +316,22 @@ export default function DashboardListModal({
                 <thead>
                   <tr>
                     <th scope="col">รายการ</th>
+                    {/* On a phone the color and size sit under the name, so the quantity and status stay in view. */}
+                    {hasStock && (
+                      <th scope="col" className="hidden sm:table-cell">
+                        สี
+                      </th>
+                    )}
+                    {hasStock && (
+                      <th scope="col" className="hidden sm:table-cell">
+                        ขนาด
+                      </th>
+                    )}
+                    {hasStock && (
+                      <th scope="col" className="text-right">
+                        คงเหลือ<span className="hidden sm:inline"> (ชิ้น)</span>
+                      </th>
+                    )}
                     {hasParty && <th scope="col">ผู้เกี่ยวข้อง</th>}
                     {hasDate && (
                       <th scope="col">{list.dateLabel ?? "วันที่"}</th>
@@ -263,7 +350,7 @@ export default function DashboardListModal({
                 <tbody>
                   {rows.map((row) => (
                     <tr key={row.id}>
-                      <td className="min-w-[10rem] break-words">
+                      <td className={`${hasStock ? "min-w-[8rem]" : "min-w-[10rem]"} break-words`}>
                         {OPENABLE_KINDS.includes(row.kind) ? (
                           // The name opens the record too, so it stays reachable on a narrow screen
                           // where the action column has scrolled out of view.
@@ -284,7 +371,21 @@ export default function DashboardListModal({
                             {row.title}
                           </span>
                         )}
+                        {row.remain_qty !== undefined && (
+                          <span className="block text-[13px] text-[var(--ink-muted)] sm:hidden">
+                            {[row.color_name, row.size_name].filter(Boolean).join(" · ") || "-"}
+                          </span>
+                        )}
                       </td>
+                      {hasStock && <td className="hidden break-words sm:table-cell">{row.color_name ?? "-"}</td>}
+                      {hasStock && <td className="hidden break-words sm:table-cell">{row.size_name ?? "-"}</td>}
+                      {hasStock && (
+                        <td className="whitespace-nowrap text-right font-medium tabular-nums">
+                          {row.remain_qty === undefined
+                            ? "-"
+                            : new Intl.NumberFormat("th-TH").format(row.remain_qty)}
+                        </td>
+                      )}
                       {hasParty && (
                         <td className="break-words">{row.party ?? "-"}</td>
                       )}

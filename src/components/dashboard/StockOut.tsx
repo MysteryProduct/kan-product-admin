@@ -61,11 +61,15 @@ function StockOutCard({
 export default function StockOut({
   stock,
   onOpen,
+  hideProducts = false,
 }: {
   stock: StockOutData;
   onOpen: (list: OpenList) => void;
+  /** The stock overview already shows the out-of-stock variants, so the same card is left out. */
+  hideProducts?: boolean;
 }) {
-  const { products, materials } = stock;
+  const { materials } = stock;
+  const products = hideProducts ? undefined : stock.products;
   if (!products && !materials) return null;
 
   return (
