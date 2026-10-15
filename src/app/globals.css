@@ -70,6 +70,11 @@
   --ka-base: 200ms;
   --ka-slow: 320ms;
 
+  /* Semantic roles: vault/standards/references/motion.md. Keep legacy tokens. */
+  --ka-motion-control: var(--ka-fast);
+  --ka-motion-state: var(--ka-base);
+  --ka-motion-enter: var(--ka-slow);
+
   /* Names used by pages written before TASK-0049; they resolve to the tokens above. */
   --background: var(--bg-page);
   --foreground: var(--ink);
@@ -162,4 +167,9 @@ button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 .surface { background: var(--bg-surface); box-shadow: var(--shadow-border); }
 .overlay-surface { box-shadow: var(--shadow-overlay); overscroll-behavior: contain; }
 .numeric { font-variant-numeric: tabular-nums; }
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  /* The success mark's resting state must be visible without ka-draw. */
+  .ka-check-draw { stroke-dashoffset: 0; }
+  .ka-btn:active, a.ka-card:hover, .ka-card--link:hover, .ka-card--link:hover .ka-stat__icon { transform: none; }
+}

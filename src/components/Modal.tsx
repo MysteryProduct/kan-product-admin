@@ -28,6 +28,8 @@ const sizeClasses: Record<ModalSize, string> = {
 
 // Open modals, oldest first: only the topmost one handles Escape and Tab so stacked dialogs do not close together.
 const openModals: symbol[] = [];
+let originalOverflow = '';
+let rootOpener: HTMLElement | null = null;
 
 const focusableSelector = [
   'button:not([disabled])',
@@ -66,9 +68,12 @@ export default function Modal({
     if (!isOpen) return;
 
     const token = Symbol('modal');
-    openModals.push(token);
     const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const previousOverflow = document.body.style.overflow;
+    if (openModals.length === 0) {
+      originalOverflow = document.body.style.overflow;
+      rootOpener = previouslyFocused;
+    }
+    openModals.push(token);
     document.body.style.overflow = 'hidden';
 
     const panel = panelRef.current;
@@ -105,9 +110,16 @@ export default function Modal({
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      const wasTopmost = openModals[openModals.length - 1] === token;
       openModals.splice(openModals.indexOf(token), 1);
-      document.body.style.overflow = previousOverflow;
-      previouslyFocused?.focus();
+      if (openModals.length === 0) {
+        // Form and result may unmount in either order in the same commit.
+        document.body.style.overflow = originalOverflow;
+        if (rootOpener?.isConnected) rootOpener.focus();
+        rootOpener = null;
+      } else if (wasTopmost && previouslyFocused?.isConnected) {
+        previouslyFocused.focus();
+      }
     };
   }, [isOpen]);
 

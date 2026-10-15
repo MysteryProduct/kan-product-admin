@@ -199,11 +199,11 @@ a.ka-card:hover, .ka-card--link:hover { transform: translateY(-2px); box-shadow:
 @media (max-width: 767px) { .ka-page { min-width: var(--touch-target); height: var(--touch-target); } .ka-page--far { display: none; } }
 
 /* ---------- Modal & dialogs ---------- */
-.ka-scrim { position: fixed; inset: 0; z-index: 70; display: flex; align-items: flex-end; justify-content: center; padding: 0; background: var(--scrim); backdrop-filter: blur(2px); animation: ka-fade var(--ka-base) var(--ka-ease); }
+.ka-scrim { position: fixed; inset: 0; z-index: 70; display: flex; align-items: flex-end; justify-content: center; padding: 0; background: var(--scrim); backdrop-filter: blur(2px); animation: ka-fade var(--ka-motion-state) var(--ka-ease); }
 .ka-modal {
   display: flex; flex-direction: column; width: 100%; max-height: calc(100dvh - 16px); overflow: hidden;
   border-radius: var(--radius-panel) var(--radius-panel) 0 0; background: var(--bg-surface); color: var(--ink); box-shadow: var(--shadow-overlay);
-  animation: ka-rise var(--ka-slow) var(--ka-ease);
+  animation: ka-rise var(--ka-motion-enter) var(--ka-ease);
 }
 .ka-modal--sm { max-width: 440px; } .ka-modal--md { max-width: 640px; } .ka-modal--lg { max-width: 880px; }
 .ka-modal__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) var(--space-6); border-bottom: 1px solid var(--border); }
@@ -228,6 +228,9 @@ a.ka-card:hover, .ka-card--link:hover { transform: translateY(-2px); box-shadow:
 .ka-check-draw { stroke-dasharray: 24; stroke-dashoffset: 24; animation: ka-draw 420ms var(--ka-ease) 260ms forwards; }
 @keyframes ka-fade { from { opacity: 0; } }
 @keyframes ka-rise { from { opacity: 0; transform: translateY(16px) scale(0.98); } }
+/* Opt in only on a newly mounted region, never every row or render. */
+.ka-motion-enter { animation: ka-fade var(--ka-motion-state) var(--ka-ease); }
+.ka-motion-state { transition: opacity var(--ka-motion-state) var(--ka-ease), background-color var(--ka-motion-control) var(--ka-ease), border-color var(--ka-motion-control) var(--ka-ease); }
 @keyframes ka-bump { from { transform: scale(0.6); opacity: 0; } }
 @keyframes ka-draw { to { stroke-dashoffset: 0; } }
 

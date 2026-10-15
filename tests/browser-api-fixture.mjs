@@ -13,6 +13,7 @@ let statusMode = 'normal';
 let writeStatus = 403;
 let allowMenus = true;
 let statusCalls = 0;
+let includeBankAccount = false;
 const permissions = () =>
   allowMenus
     ? ['BANK_ACCOUNTS', 'employee_licenses', 'job_orders'].map(
@@ -31,7 +32,8 @@ const permissions = () =>
 
 http
   .createServer(async (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:3030');
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin === 'http://localhost:3030'
+      ? 'http://localhost:3030' : 'http://127.0.0.1:3030');
     res.setHeader(
       'Access-Control-Allow-Headers',
       'Content-Type, Authorization',
@@ -64,8 +66,9 @@ http
         if (body.statusMode) statusMode = body.statusMode;
         if (body.writeStatus) writeStatus = body.writeStatus;
         if (typeof body.allowMenus === 'boolean') allowMenus = body.allowMenus;
+        if (typeof body.includeBankAccount === 'boolean') includeBankAccount = body.includeBankAccount;
       }
-      send(200, { statusMode, writeStatus, allowMenus, statusCalls });
+      send(200, { statusMode, writeStatus, allowMenus, statusCalls, includeBankAccount });
       return;
     }
     if (pathname === '/auth/employee-login') {
@@ -104,6 +107,14 @@ http
             permissions().map((p) => [p.menu.menu_name, p]),
           ),
         },
+      });
+      return;
+    }
+    if (pathname === '/bank-account' && req.method === 'GET' && includeBankAccount) {
+      send(200, {
+        data: [{ account_id: '01990000-0000-7000-8000-000000000163', account_number: '0000000163',
+          account_name: 'บัญชีทดสอบข้อความภาษาไทยยาวสำหรับ Motion', bank_name: 'ธนาคารกสิกรไทย', branch_name: 'สาขาทดสอบ' }],
+        meta: { total: 1, page: 1, limit: 10, last_page: 1 },
       });
       return;
     }

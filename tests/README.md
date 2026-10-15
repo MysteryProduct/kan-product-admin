@@ -18,3 +18,7 @@ Browser scenarios:
 - Check affected error states at desktop/mobile sizes and in light/dark themes.
 
 Stop both local processes after testing. No real employee credentials or production data are needed.
+
+Motion/Modal lifecycle regression: `node --test tests/motion-modal.test.mjs` transpiles the actual shared Modal with controlled React/DOM doubles. It checks both stacked cleanup orders, retained scroll locks, focus ownership and listener cleanup; it does not prove browser rendering or API behavior. Set `MOTION_TEST_SOURCE_ROOT` only to an isolated earlier `src` copy for the before-change comparison, without resetting working files. Browser checks use the existing bank-account form/result callers and the fixture above.
+
+For detail/confirmation callers, POST `{ "includeBankAccount": true }` to the fixture's `/__test/control` and reload the bank-account list. It exposes one fake row without creating data. The default remains an empty list. Both `http://127.0.0.1:3030` and `http://localhost:3030` are allowed fixture origins.
