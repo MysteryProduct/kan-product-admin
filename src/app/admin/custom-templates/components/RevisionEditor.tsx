@@ -1,0 +1,342 @@
+'use client';
+
+import type { Dispatch, SetStateAction } from 'react';
+import { emptyGroup, priceFrom } from '@/lib/custom-catalog';
+import type { MaterialChoice } from '@/models/custom-catalog';
+import type { ProductUnit } from '@/types/product-unit';
+import type { DraftForm } from '@/types/custom-catalog';
+
+interface Props {
+  form: DraftForm;
+  setForm: Dispatch<SetStateAction<DraftForm>>;
+  readOnly: boolean;
+  saleUnit: string;
+  materials: MaterialChoice[];
+  units: ProductUnit[];
+}
+
+const sectionClass = 'rounded-2xl bg-[var(--bg-surface)] p-4 shadow-sm';
+
+/** "ขนาด › 11 oz" style choices for the rule and recipe pickers. */
+function optionChoices(form: DraftForm) {
+  return form.groups.flatMap((g) =>
+    g.values
+      .filter((v) => g.group_key.trim() && v.value_key.trim())
+      .map((v) => ({
+        id: `${g.group_key.trim()}/${v.value_key.trim()}`,
+        label: `${g.group_label.trim() || g.group_key} › ${v.value_label.trim() || v.value_key}`,
+      })),
+  );
+}
+
+const split = (id: string): [string, string] => {
+  const at = id.indexOf('/');
+  return at < 0 ? ['', ''] : [id.slice(0, at), id.slice(at + 1)];
+};
+
+export default function RevisionEditor({ form, setForm, readOnly, saleUnit, materials, units }: Props) {
+  const choices = optionChoices(form);
+  const lowest = priceFrom(form);
+
+  const patch = (changes: Partial<DraftForm>) => setForm((prev) => ({ ...prev, ...changes }));
+  const patchGroup = (index: number, changes: Partial<DraftForm['groups'][number]>) =>
+    patch({ groups: form.groups.map((g, i) => (i === index ? { ...g, ...changes } : g)) });
+  const patchValue = (gi: number, vi: number, changes: Partial<DraftForm['groups'][number]['values'][number]>) =>
+    patchGroup(gi, { values: form.groups[gi].values.map((v, i) => (i === vi ? { ...v, ...changes } : v)) });
+
+  return (
+    <div className="space-y-6">
+      <section className={sectionClass} aria-labelledby="sec-general">
+        <h3 id="sec-general" className="text-base font-semibold text-[var(--ink)]">ข้อมูลทั่วไปและราคา</h3>
+        <div className="mt-4 grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+          <div className="ka-field content-start">
+            <label className="ka-label" htmlFor="f-name">ชื่อแบบสินค้า</label>
+            <input id="f-name" className="ka-input" value={form.template_name} disabled={readOnly} onChange={(e) => patch({ template_name: e.target.value })} />
+          </div>
+          <div className="ka-field content-start">
+            <label className="ka-label" htmlFor="f-model">รุ่นโมเดล 3D</label>
+            <input id="f-model" className="ka-input" value={form.model_version} disabled={readOnly} onChange={(e) => patch({ model_version: e.target.value })} placeholder="เช่น mug-v1" />
+            <p className="ka-help">อ้างถึงไฟล์โมเดลของร้าน ไม่ใช่ไฟล์ของลูกค้า</p>
+          </div>
+          <div className="ka-field content-start md:col-span-2">
+            <label className="ka-label" htmlFor="f-desc">คำอธิบาย</label>
+            <textarea id="f-desc" className="ka-textarea" value={form.description} disabled={readOnly} onChange={(e) => patch({ description: e.target.value })} />
+          </div>
+          <div className="ka-field content-start">
+            <label className="ka-label" htmlFor="f-price">ราคาต่อ{saleUnit} (บาท รวม VAT)</label>
+            <input id="f-price" className="ka-input" inputMode="decimal" value={form.base_unit_price} disabled={readOnly} onChange={(e) => patch({ base_unit_price: e.target.value })} />
+            <p className="ka-help">
+              {lowest ? `ราคาต่ำสุดที่ลูกค้าจะเห็น ${lowest} บาท/${saleUnit}` : 'ร้านเป็นผู้กำหนดราคา — ยังไม่มีราคาจะเผยแพร่ไม่ได้'}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 items-start gap-4">
+            <div className="ka-field content-start">
+              <label className="ka-label" htmlFor="f-min">จำนวนต่ำสุด ({saleUnit})</label>
+              <input id="f-min" className="ka-input" inputMode="numeric" value={form.min_quantity} disabled={readOnly} onChange={(e) => patch({ min_quantity: e.target.value })} />
+            </div>
+            <div className="ka-field content-start">
+              <label className="ka-label" htmlFor="f-max">จำนวนสูงสุด ({saleUnit})</label>
+              <input id="f-max" className="ka-input" inputMode="numeric" value={form.max_quantity} disabled={readOnly} onChange={(e) => patch({ max_quantity: e.target.value })} placeholder="ไม่จำกัด" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className={sectionClass} aria-labelledby="sec-groups">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 id="sec-groups" className="text-base font-semibold text-[var(--ink)]">กลุ่มตัวเลือก</h3>
+            <p className="text-sm text-[var(--ink-muted)]">เช่น ขนาด สี ขนาดแผ่น (A4/A5) — ราคาที่บวกเพิ่มต่อ{saleUnit}ติดลบได้</p>
+          </div>
+          {!readOnly && (
+            <button type="button" className="ka-btn ka-btn--sm" onClick={() => patch({ groups: [...form.groups, emptyGroup()] })}>
+              เพิ่มกลุ่มตัวเลือก
+            </button>
+          )}
+        </div>
+        {form.groups.length === 0 && <p className="mt-3 text-sm text-[var(--ink-muted)]">ยังไม่มีกลุ่มตัวเลือก</p>}
+        <div className="mt-4 space-y-4">
+          {form.groups.map((g, gi) => (
+            <fieldset key={gi} className="rounded-xl border border-[var(--border)] p-3" disabled={readOnly}>
+              <legend className="px-1 text-sm font-medium text-[var(--ink-muted)]">กลุ่มที่ {gi + 1}</legend>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_auto_auto] md:items-end">
+                <div className="ka-field content-start">
+                  <label className="ka-label" htmlFor={`g-label-${gi}`}>ชื่อกลุ่ม</label>
+                  <input id={`g-label-${gi}`} className="ka-input" value={g.group_label} onChange={(e) => patchGroup(gi, { group_label: e.target.value })} />
+                </div>
+                <div className="ka-field content-start">
+                  <label className="ka-label" htmlFor={`g-key-${gi}`}>รหัสกลุ่ม</label>
+                  <input id={`g-key-${gi}`} className="ka-input" value={g.group_key} onChange={(e) => patchGroup(gi, { group_key: e.target.value })} placeholder="เช่น size" />
+                </div>
+                <label className="flex min-h-11 items-center gap-2 text-sm text-[var(--ink)]">
+                  <input type="checkbox" checked={g.is_required} onChange={(e) => patchGroup(gi, { is_required: e.target.checked })} />
+                  ต้องเลือก
+                </label>
+                {!readOnly && (
+                  <button type="button" className="ka-btn ka-btn--danger ka-btn--sm" onClick={() => patch({ groups: form.groups.filter((_, i) => i !== gi) })}>
+                    ลบกลุ่ม
+                  </button>
+                )}
+              </div>
+              <div className="mt-3 space-y-2">
+                {g.values.map((v, vi) => (
+                  <div key={vi} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_9rem_auto] sm:items-end">
+                    <div className="ka-field content-start">
+                      <label className="ka-label" htmlFor={`v-label-${gi}-${vi}`}>ตัวเลือก</label>
+                      <input id={`v-label-${gi}-${vi}`} className="ka-input" value={v.value_label} onChange={(e) => patchValue(gi, vi, { value_label: e.target.value })} />
+                    </div>
+                    <div className="ka-field content-start">
+                      <label className="ka-label" htmlFor={`v-key-${gi}-${vi}`}>รหัส</label>
+                      <input id={`v-key-${gi}-${vi}`} className="ka-input" value={v.value_key} onChange={(e) => patchValue(gi, vi, { value_key: e.target.value })} placeholder="เช่น a4" />
+                    </div>
+                    <div className="ka-field content-start">
+                      <label className="ka-label" htmlFor={`v-delta-${gi}-${vi}`}>บวกเพิ่ม (บาท)</label>
+                      <input id={`v-delta-${gi}-${vi}`} className="ka-input" inputMode="decimal" value={v.unit_price_delta} onChange={(e) => patchValue(gi, vi, { unit_price_delta: e.target.value })} />
+                    </div>
+                    {!readOnly && (
+                      <button
+                        type="button"
+                        className="ka-btn ka-btn--ghost ka-btn--sm"
+                        onClick={() => patchGroup(gi, { values: g.values.filter((_, i) => i !== vi) })}
+                        aria-label={`ลบตัวเลือก ${v.value_label || vi + 1}`}
+                      >
+                        ลบ
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {!readOnly && (
+                  <button
+                    type="button"
+                    className="ka-btn ka-btn--ghost ka-btn--sm"
+                    onClick={() => patchGroup(gi, { values: [...g.values, { value_key: '', value_label: '', unit_price_delta: '0' }] })}
+                  >
+                    เพิ่มตัวเลือก
+                  </button>
+                )}
+              </div>
+            </fieldset>
+          ))}
+        </div>
+      </section>
+
+      <section className={sectionClass} aria-labelledby="sec-rules">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 id="sec-rules" className="text-base font-semibold text-[var(--ink)]">ความเข้ากันได้ของตัวเลือก</h3>
+            <p className="text-sm text-[var(--ink-muted)]">เมื่อเลือกตัวเลือกแรก ต้องเลือกร่วม หรือห้ามเลือกร่วม กับตัวเลือกที่สอง</p>
+          </div>
+          {!readOnly && (
+            <button
+              type="button"
+              className="ka-btn ka-btn--sm"
+              disabled={choices.length < 2}
+              onClick={() =>
+                patch({
+                  rules: [
+                    ...form.rules,
+                    {
+                      group_key: split(choices[0].id)[0],
+                      value_key: split(choices[0].id)[1],
+                      other_group_key: split(choices[1].id)[0],
+                      other_value_key: split(choices[1].id)[1],
+                      kind: 'excludes',
+                    },
+                  ],
+                })
+              }
+            >
+              เพิ่มกฎ
+            </button>
+          )}
+        </div>
+        {form.rules.length === 0 && <p className="mt-3 text-sm text-[var(--ink-muted)]">ไม่มีกฎ — ทุกตัวเลือกใช้ร่วมกันได้</p>}
+        <div className="mt-3 space-y-2">
+          {form.rules.map((r, i) => (
+            <div key={i} className="grid grid-cols-1 gap-2 md:grid-cols-[1fr_9rem_1fr_auto] md:items-end">
+              <div className="ka-field content-start">
+                <label className="ka-label" htmlFor={`r-a-${i}`}>ถ้าเลือก</label>
+                <select
+                  id={`r-a-${i}`}
+                  className="ka-input"
+                  disabled={readOnly}
+                  value={`${r.group_key}/${r.value_key}`}
+                  onChange={(e) => {
+                    const [g, v] = split(e.target.value);
+                    patch({ rules: form.rules.map((x, j) => (j === i ? { ...x, group_key: g, value_key: v } : x)) });
+                  }}
+                >
+                  {!choices.some((c) => c.id === `${r.group_key}/${r.value_key}`) && <option value={`${r.group_key}/${r.value_key}`}>(ไม่พบตัวเลือก)</option>}
+                  {choices.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+                </select>
+              </div>
+              <div className="ka-field content-start">
+                <label className="ka-label" htmlFor={`r-k-${i}`}>เงื่อนไข</label>
+                <select
+                  id={`r-k-${i}`}
+                  className="ka-input"
+                  disabled={readOnly}
+                  value={r.kind}
+                  onChange={(e) => patch({ rules: form.rules.map((x, j) => (j === i ? { ...x, kind: e.target.value as 'requires' | 'excludes' } : x)) })}
+                >
+                  <option value="excludes">ห้ามเลือกร่วมกับ</option>
+                  <option value="requires">ต้องเลือกร่วมกับ</option>
+                </select>
+              </div>
+              <div className="ka-field content-start">
+                <label className="ka-label" htmlFor={`r-b-${i}`}>ตัวเลือกที่สอง</label>
+                <select
+                  id={`r-b-${i}`}
+                  className="ka-input"
+                  disabled={readOnly}
+                  value={`${r.other_group_key}/${r.other_value_key}`}
+                  onChange={(e) => {
+                    const [g, v] = split(e.target.value);
+                    patch({ rules: form.rules.map((x, j) => (j === i ? { ...x, other_group_key: g, other_value_key: v } : x)) });
+                  }}
+                >
+                  {!choices.some((c) => c.id === `${r.other_group_key}/${r.other_value_key}`) && <option value={`${r.other_group_key}/${r.other_value_key}`}>(ไม่พบตัวเลือก)</option>}
+                  {choices.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+                </select>
+              </div>
+              {!readOnly && (
+                <button type="button" className="ka-btn ka-btn--ghost ka-btn--sm" onClick={() => patch({ rules: form.rules.filter((_, j) => j !== i) })} aria-label={`ลบกฎข้อ ${i + 1}`}>
+                  ลบ
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className={sectionClass} aria-labelledby="sec-recipe">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h3 id="sec-recipe" className="text-base font-semibold text-[var(--ink)]">สูตรวัสดุ</h3>
+            <p className="text-sm text-[var(--ink-muted)]">
+              วัสดุที่ใช้ต่อ{saleUnit} (จำนวนเต็ม) และจำนวนเตรียมงานที่ใช้ครั้งเดียวต่อรายการ — ไม่ใช้ตัวเลือกก็ได้ และเลือกหลายวัสดุต่อตัวเลือกได้
+            </p>
+          </div>
+          {!readOnly && (
+            <button
+              type="button"
+              className="ka-btn ka-btn--sm"
+              onClick={() =>
+                patch({
+                  recipe: [...form.recipe, { group_key: '', value_key: '', material_id: '', product_unit_id: '', qty_per_unit: '1', setup_qty: '0' }],
+                })
+              }
+            >
+              เพิ่มวัสดุ
+            </button>
+          )}
+        </div>
+        {form.recipe.length === 0 && <p className="mt-3 text-sm text-[var(--ink-muted)]">ยังไม่มีสูตรวัสดุ</p>}
+        <div className="mt-3 space-y-3">
+          {form.recipe.map((l, i) => {
+            const set = (changes: Partial<DraftForm['recipe'][number]>) =>
+              patch({ recipe: form.recipe.map((x, j) => (j === i ? { ...x, ...changes } : x)) });
+            const known = l.material_id === '' || materials.some((m) => m.material_id === l.material_id);
+            return (
+              <div key={i} className="grid grid-cols-1 gap-2 rounded-xl border border-[var(--border)] p-3 md:grid-cols-6 md:items-end">
+                <div className="ka-field content-start md:col-span-2">
+                  <label className="ka-label" htmlFor={`l-use-${i}`}>ใช้เมื่อ</label>
+                  <select
+                    id={`l-use-${i}`}
+                    className="ka-input"
+                    disabled={readOnly}
+                    value={l.group_key && l.value_key ? `${l.group_key}/${l.value_key}` : ''}
+                    onChange={(e) => {
+                      const [g, v] = split(e.target.value);
+                      set({ group_key: g, value_key: v });
+                    }}
+                  >
+                    <option value="">ทุกครั้ง (สูตรพื้นฐาน)</option>
+                    {l.group_key && l.value_key && !choices.some((c) => c.id === `${l.group_key}/${l.value_key}`) && (
+                      <option value={`${l.group_key}/${l.value_key}`}>(ไม่พบตัวเลือก)</option>
+                    )}
+                    {choices.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+                  </select>
+                </div>
+                <div className="ka-field content-start md:col-span-2">
+                  <label className="ka-label" htmlFor={`l-mat-${i}`}>วัสดุ</label>
+                  <select id={`l-mat-${i}`} className="ka-input" disabled={readOnly} value={l.material_id} onChange={(e) => set({ material_id: e.target.value })}>
+                    <option value="">เลือกวัสดุ</option>
+                    {!known && <option value={l.material_id}>(วัสดุที่บันทึกไว้)</option>}
+                    {materials.map((m) => (
+                      <option key={m.material_id} value={m.material_id}>{m.material_code} · {m.material_name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="ka-field content-start">
+                  <label className="ka-label" htmlFor={`l-unit-${i}`}>หน่วย</label>
+                  <select id={`l-unit-${i}`} className="ka-input" disabled={readOnly} value={l.product_unit_id} onChange={(e) => set({ product_unit_id: e.target.value })}>
+                    <option value="">เลือก</option>
+                    {units.map((u) => <option key={u.product_unit_id} value={u.product_unit_id}>{u.product_unit_name}</option>)}
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="ka-field content-start">
+                    <label className="ka-label" htmlFor={`l-q-${i}`}>ต่อ{saleUnit}</label>
+                    <input id={`l-q-${i}`} className="ka-input" inputMode="numeric" disabled={readOnly} value={l.qty_per_unit} onChange={(e) => set({ qty_per_unit: e.target.value })} />
+                  </div>
+                  <div className="ka-field content-start">
+                    <label className="ka-label" htmlFor={`l-s-${i}`}>เตรียมงาน</label>
+                    <input id={`l-s-${i}`} className="ka-input" inputMode="numeric" disabled={readOnly} value={l.setup_qty} onChange={(e) => set({ setup_qty: e.target.value })} />
+                  </div>
+                </div>
+                {!readOnly && (
+                  <div className="md:col-span-6">
+                    <button type="button" className="ka-btn ka-btn--ghost ka-btn--sm" onClick={() => patch({ recipe: form.recipe.filter((_, j) => j !== i) })}>
+                      ลบวัสดุข้อ {i + 1}
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    </div>
+  );
+}

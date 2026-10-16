@@ -48,6 +48,7 @@ export const adminMenu: AdminMenuSection[] = [
         icon: icon('M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4'),
         subItems: [
           { title: 'สินค้า', menu_name: 'products', href: '/admin/products' },
+          { title: 'แบบสินค้า Custom', menu_name: 'products', href: '/admin/custom-templates' },
           { title: 'ผลิตสินค้า', menu_name: 'job_orders', href: '/admin/job-orders' },
         ],
       },
