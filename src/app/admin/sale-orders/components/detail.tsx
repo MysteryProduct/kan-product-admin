@@ -14,6 +14,7 @@ import DocumentHistoryPanel from '@/components/document-history/DocumentHistoryP
 import DocumentCancellationAction from '@/components/DocumentCancellationAction';
 import { SALE_ORDER_STATUS_TONE } from '@/lib/status-tones';
 import StatusBadge from '@/components/StatusBadge';
+import CustomPayment from './custom-payment';
 
 interface SaleOrderDetailModalProps {
     isOpen: boolean;
@@ -91,6 +92,8 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
 
 
     const typeLabels: Record<string, string> = {
+        custom: 'งานผลิต Custom',
+        store: 'หน้าร้านออนไลน์',
         online: 'ขายบนเว็บไซต์',
         order: 'ขายจากการสั่งซื้อ',
     };
@@ -153,6 +156,8 @@ export default function SaleOrderDetailModal({ isOpen, onClose, onSuccess, saleO
                 }
             >
                 <div>
+                    {saleOrder.sale_order_type === 'custom' && <CustomPayment
+                        orderId={saleOrder.sale_order_id} status={saleOrder.sale_order_status} onSuccess={onSuccess} />}
                     <div className="mb-6">
                         <DocumentHistoryPanel endpoint={`/sale-order/${saleOrder.sale_order_id}/history`} />
                         {can('sale_orders', 'reject') && ['pending'].includes(saleOrder.sale_order_status) && <DocumentCancellationAction endpoint={`/sale-order/${saleOrder.sale_order_id}/cancel`} onSuccess={() => { onSuccess?.(); onClose(); }} />}

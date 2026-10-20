@@ -56,10 +56,12 @@ class SaleOrderModel {
     search?: string,
     sortField?: 'sale_order_total' | null,
     sortOrder?: 'ASC' | 'DESC',
+    saleOrderType?: string,
   ): Promise<SaleOrderResponse> {
     try {
       const response = await axiosInstance.get<SaleOrderResponse>('/sale-order', {
         params: {
+          ...(saleOrderType && { type: saleOrderType }),
           page,
           limit,
           ...(search && { search }),

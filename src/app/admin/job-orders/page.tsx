@@ -385,6 +385,7 @@ const JobCard = memo(function JobCard({
 
 export default function JobOrdersPage() {
 	const { can } = usePermissions();
+	const canView = can('job_orders', 'view');
 	// The job order API checks job_orders only, so other menus' rights would only show buttons that fail.
 	const canAdd = can('job_orders', 'add');
 	const canEdit = can('job_orders', 'edit');
@@ -445,6 +446,25 @@ export default function JobOrdersPage() {
 	});
 	const startDateInputRef = useRef<HTMLInputElement | null>(null);
 	const endDateInputRef = useRef<HTMLInputElement | null>(null);
+
+	// A sale-order link opens its exact job, including jobs outside the board's date filter.
+	useEffect(() => {
+		const jobId = new URLSearchParams(window.location.search).get('jobId');
+		if (!canView || !jobId) return;
+		let active = true;
+		void jobOrderModel.getJobOrderById(jobId).then((job) => {
+			if (!active) return;
+			setSelectedJobOrder(job);
+			setIsDetailOpen(true);
+		}).catch((error: unknown) => {
+			if (active) setResultDialog({
+				isOpen: true,
+				status: 'error',
+				message: error instanceof Error ? error.message : 'ไม่สามารถเปิดงานผลิตได้',
+			});
+		});
+		return () => { active = false; };
+	}, [canView]);
 
 	const openNativeDatePicker = (input: HTMLInputElement | null) => {
 		if (!input) {

@@ -48,6 +48,7 @@ export default function SaleOrderPage() {
     const [fetchSaleOrderAppliedSearch, setFetchSaleOrderAppliedSearch] = useState('');
     const [saleOrderSearch, setSaleOrderSearch] = useState('');
     const [saleOrderAppliedSearch, setSaleOrderAppliedSearch] = useState('');
+    const [saleOrderType, setSaleOrderType] = useState('');
 
     const [isInsertOpen, setIsInsertOpen] = useState(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState(false);
@@ -76,7 +77,7 @@ export default function SaleOrderPage() {
 
     useEffect(() => {
         void loadSaleOrders();
-    }, [saleOrderPage, saleOrderAppliedSearch, saleOrderSortField, saleOrderSortOrder]);
+    }, [saleOrderPage, saleOrderAppliedSearch, saleOrderSortField, saleOrderSortOrder, saleOrderType]);
 
     const loadFetchSaleOrders = async (page = fetchSaleOrderPage, search = fetchSaleOrderAppliedSearch) => {
         try {
@@ -102,7 +103,7 @@ export default function SaleOrderPage() {
         try {
             setLoading(true);
             setListError(null);
-            const result = await saleOrderModel.getSaleOrders(page, 10, search, sortField, sortOrder);
+            const result = await saleOrderModel.getSaleOrders(page, 10, search, sortField, sortOrder, saleOrderType);
             setSaleOrders(result);
             setSaleOrderMeta(result.meta);
         } catch (error) {
@@ -282,6 +283,11 @@ export default function SaleOrderPage() {
             label: 'ชื่อใบขายสินค้า',
         },
         {
+            key: 'sale_order_type',
+            label: 'ประเภท',
+            render: (value) => value === 'custom' ? 'งานผลิต Custom' : value === 'store' ? 'หน้าร้านออนไลน์' : value === 'order' ? 'ขายจากการสั่งซื้อ' : 'ขายบนเว็บไซต์',
+        },
+        {
             key: 'shipping_address_name',
             label: 'ที่อยู่จัดส่ง',
             render: (value) => (value as string) || '-',
@@ -334,7 +340,7 @@ export default function SaleOrderPage() {
                         </svg>
                     </button>
 
-                    {canEditSaleOrder && row.sale_order_status === 'pending' && (
+                    {canEditSaleOrder && row.sale_order_status === 'pending' && row.sale_order_type !== 'custom' && (
                         <button
                             onClick={() => void openSaleOrderUpdate(row)}
                             className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
@@ -347,7 +353,7 @@ export default function SaleOrderPage() {
                         </button>
                     )}
 
-                    {canDeleteSaleOrder && row.sale_order_status === 'pending' && (
+                    {canDeleteSaleOrder && row.sale_order_status === 'pending' && row.sale_order_type !== 'custom' && (
                         <button
                             onClick={() => {
                                 setSaleOrderToDelete(row);
@@ -435,6 +441,17 @@ export default function SaleOrderPage() {
                 <section className="ka-card">
                     <div className="border-b border-[var(--border)] p-4">
                         <h2 className="text-lg font-semibold text-[var(--ink)]">รายการใบขายสินค้า</h2>
+                        <label className="mt-3 block">ประเภทใบขาย
+                            <select className="ka-input w-full sm:w-auto" value={saleOrderType} onChange={e => {
+                                setSaleOrderType(e.target.value); setSaleOrderPage(1);
+                            }}>
+                                <option value="">ทั้งหมด</option>
+                                <option value="custom">งานผลิต Custom</option>
+                                <option value="store">หน้าร้านออนไลน์</option>
+                                <option value="order">ขายจากการสั่งซื้อ</option>
+                                <option value="online">ขายบนเว็บไซต์</option>
+                            </select>
+                        </label>
                         <p className="mt-1 text-sm text-[var(--ink-muted)]">
                             ตารางใบขายสินค้าทั้งหมด พร้อมดูรายละเอียด แก้ไข และลบ
                         </p>
@@ -523,6 +540,7 @@ export default function SaleOrderPage() {
                     }}
                     onSuccess={async () => {
                         await loadSaleOrders();
+                        setSelectedSaleOrder(await saleOrderModel.getSaleOrderById(selectedSaleOrder.sale_order_id));
                     }}
                     saleOrder={selectedSaleOrder}
                 />

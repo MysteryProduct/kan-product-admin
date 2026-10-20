@@ -88,8 +88,8 @@ class JobOrderModel {
 
   async getJobOrderById(id: string): Promise<JobOrder> {
     try {
-      const response = await axiosInstance.get<SingleJobOrderResponse>(`/job-order/${id}`);
-      return response.data.data;
+      const response = await axiosInstance.get<JobOrder>(`/job-order/${id}`);
+      return response.data;
     } catch (error) {
       console.error(`Error fetching job order ${id}:`, error);
       throw error;

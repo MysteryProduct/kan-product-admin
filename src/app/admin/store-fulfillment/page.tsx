@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePermissions } from "@/hooks/usePermissions";
 import StoreFulfillmentModel from "@/models/store-fulfillment";
 import { StoreOrderWithParcels } from "@/types/store-fulfillment";
@@ -31,7 +31,7 @@ export default function StoreFulfillmentPage() {
 
   // Staff find an order in the list below by its code and phone; the id only
   // travels from a row to this call (ADR-0001).
-  async function loadOrder(storeOrderId: string) {
+  const loadOrder = useCallback(async (storeOrderId: string) => {
     const request = ++latestRequest.current;
     setError("");
     try {
@@ -44,7 +44,15 @@ export default function StoreFulfillmentPage() {
     } finally {
       if (request === latestRequest.current) setOpening(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    const orderId = new URLSearchParams(window.location.search).get("orderId");
+    if (!canView || !orderId) return;
+    chosenOrderId.current = orderId;
+    void loadOrder(orderId);
+    return () => { latestRequest.current += 1; };
+  }, [canView, loadOrder]);
 
   // A row of either list below opens its order at the top of the page.
   function openOrder(storeOrderId: string) {
