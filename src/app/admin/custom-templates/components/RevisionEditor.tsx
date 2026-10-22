@@ -4,9 +4,17 @@ import type { Dispatch, SetStateAction } from 'react';
 import { emptyGroup, priceFrom } from '@/lib/custom-catalog';
 import type { MaterialChoice } from '@/models/custom-catalog';
 import type { ProductUnit } from '@/types/product-unit';
-import type { DraftForm } from '@/types/custom-catalog';
+import type { DraftForm, ModelFileInfo } from '@/types/custom-catalog';
+import { ModelSection, ShapeSection } from './ModelSection';
+
+const COLOR = /^#[0-9a-fA-F]{6}$/;
 
 interface Props {
+  modelFile: ModelFileInfo | null;
+  modelBusy: boolean;
+  loadModelBytes: () => Promise<ArrayBuffer>;
+  onUploadModel: (file: File) => Promise<void>;
+  onRemoveModel: () => Promise<void>;
   form: DraftForm;
   setForm: Dispatch<SetStateAction<DraftForm>>;
   readOnly: boolean;
@@ -34,7 +42,7 @@ const split = (id: string): [string, string] => {
   return at < 0 ? ['', ''] : [id.slice(0, at), id.slice(at + 1)];
 };
 
-export default function RevisionEditor({ form, setForm, readOnly, saleUnit, materials, units }: Props) {
+export default function RevisionEditor({ form, setForm, readOnly, saleUnit, materials, units, modelFile, modelBusy, loadModelBytes, onUploadModel, onRemoveModel }: Props) {
   const choices = optionChoices(form);
   const lowest = priceFrom(form);
 
@@ -43,6 +51,11 @@ export default function RevisionEditor({ form, setForm, readOnly, saleUnit, mate
     patch({ groups: form.groups.map((g, i) => (i === index ? { ...g, ...changes } : g)) });
   const patchValue = (gi: number, vi: number, changes: Partial<DraftForm['groups'][number]['values'][number]>) =>
     patchGroup(gi, { values: form.groups[gi].values.map((v, i) => (i === vi ? { ...v, ...changes } : v)) });
+
+  const colorGroup = form.groups.find((g) => g.is_color_group);
+  const colors = (colorGroup?.values ?? [])
+    .filter((v) => COLOR.test((v.color_hex ?? '').trim()))
+    .map((v) => ({ key: v.value_key, label: v.value_label.trim() || v.value_key, hex: (v.color_hex ?? '').trim().toLowerCase() }));
 
   return (
     <div className="space-y-6">
@@ -56,7 +69,7 @@ export default function RevisionEditor({ form, setForm, readOnly, saleUnit, mate
           <div className="ka-field content-start">
             <label className="ka-label" htmlFor="f-model">รุ่นโมเดล 3D</label>
             <input id="f-model" className="ka-input" value={form.model_version} disabled={readOnly} onChange={(e) => patch({ model_version: e.target.value })} placeholder="เช่น mug-v1" />
-            <p className="ka-help">อ้างถึงไฟล์โมเดลของร้าน ไม่ใช่ไฟล์ของลูกค้า</p>
+            <p className="ka-help">ชื่อรุ่นที่ใช้ระบุโมเดล (ไฟล์ GLB อัปโหลดด้านล่าง) — ไม่ใช่ไฟล์ของลูกค้า</p>
           </div>
           <div className="ka-field content-start md:col-span-2">
             <label className="ka-label" htmlFor="f-desc">คำอธิบาย</label>
@@ -82,6 +95,20 @@ export default function RevisionEditor({ form, setForm, readOnly, saleUnit, mate
         </div>
       </section>
 
+      <ShapeSection form={form.model} onChange={(model) => patch({ model })} readOnly={readOnly} hasFile={modelFile !== null} />
+
+      <ModelSection
+        form={form.model}
+        onChange={(model) => patch({ model })}
+        readOnly={readOnly}
+        file={modelFile}
+        busy={modelBusy}
+        loadBytes={loadModelBytes}
+        onUpload={onUploadModel}
+        onRemove={onRemoveModel}
+        colors={colors}
+      />
+
       <section className={sectionClass} aria-labelledby="sec-groups">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
@@ -99,7 +126,7 @@ export default function RevisionEditor({ form, setForm, readOnly, saleUnit, mate
           {form.groups.map((g, gi) => (
             <fieldset key={gi} className="rounded-xl border border-[var(--border)] p-3" disabled={readOnly}>
               <legend className="px-1 text-sm font-medium text-[var(--ink-muted)]">กลุ่มที่ {gi + 1}</legend>
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_auto_auto] md:items-end">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_auto_auto_auto] md:items-end">
                 <div className="ka-field content-start">
                   <label className="ka-label" htmlFor={`g-label-${gi}`}>ชื่อกลุ่ม</label>
                   <input id={`g-label-${gi}`} className="ka-input" value={g.group_label} onChange={(e) => patchGroup(gi, { group_label: e.target.value })} />
@@ -112,6 +139,15 @@ export default function RevisionEditor({ form, setForm, readOnly, saleUnit, mate
                   <input type="checkbox" checked={g.is_required} onChange={(e) => patchGroup(gi, { is_required: e.target.checked })} />
                   ต้องเลือก
                 </label>
+                <label className="flex min-h-11 items-center gap-2 text-sm text-[var(--ink)]">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(g.is_color_group)}
+                    disabled={Boolean(colorGroup) && colorGroup !== g}
+                    onChange={(e) => patchGroup(gi, { is_color_group: e.target.checked })}
+                  />
+                  กลุ่มนี้คือสีสินค้า
+                </label>
                 {!readOnly && (
                   <button type="button" className="ka-btn ka-btn--danger ka-btn--sm" onClick={() => patch({ groups: form.groups.filter((_, i) => i !== gi) })}>
                     ลบกลุ่ม
@@ -120,7 +156,7 @@ export default function RevisionEditor({ form, setForm, readOnly, saleUnit, mate
               </div>
               <div className="mt-3 space-y-2">
                 {g.values.map((v, vi) => (
-                  <div key={vi} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_9rem_auto] sm:items-end">
+                  <div key={vi} className={`grid grid-cols-1 gap-2 sm:items-end ${g.is_color_group ? 'sm:grid-cols-[1fr_1fr_9rem_9rem_auto]' : 'sm:grid-cols-[1fr_1fr_9rem_auto]'}`}>
                     <div className="ka-field content-start">
                       <label className="ka-label" htmlFor={`v-label-${gi}-${vi}`}>ตัวเลือก</label>
                       <input id={`v-label-${gi}-${vi}`} className="ka-input" value={v.value_label} onChange={(e) => patchValue(gi, vi, { value_label: e.target.value })} />
@@ -133,6 +169,30 @@ export default function RevisionEditor({ form, setForm, readOnly, saleUnit, mate
                       <label className="ka-label" htmlFor={`v-delta-${gi}-${vi}`}>บวกเพิ่ม (บาท)</label>
                       <input id={`v-delta-${gi}-${vi}`} className="ka-input" inputMode="decimal" value={v.unit_price_delta} onChange={(e) => patchValue(gi, vi, { unit_price_delta: e.target.value })} />
                     </div>
+                    {g.is_color_group && (
+                      <div className="ka-field content-start">
+                        <label className="ka-label" htmlFor={`v-color-${gi}-${vi}`}>สี (#rrggbb)</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            aria-label={`เลือกสี ${v.value_label || vi + 1}`}
+                            className="size-11 shrink-0 cursor-pointer rounded-lg border border-[var(--border-control)] bg-[var(--bg-surface)] p-1 disabled:cursor-not-allowed"
+                            value={COLOR.test((v.color_hex ?? '').trim()) ? (v.color_hex ?? '').trim().toLowerCase() : '#ffffff'}
+                            onChange={(e) => patchValue(gi, vi, { color_hex: e.target.value })}
+                          />
+                          <input
+                            id={`v-color-${gi}-${vi}`}
+                            className="ka-input min-w-0 tabular-nums"
+                            value={v.color_hex ?? ''}
+                            aria-invalid={Boolean(v.color_hex) && !COLOR.test(v.color_hex!.trim())}
+                            onChange={(e) => patchValue(gi, vi, { color_hex: e.target.value })}
+                            placeholder="#c0392b"
+                            maxLength={7}
+                            spellCheck={false}
+                          />
+                        </div>
+                      </div>
+                    )}
                     {!readOnly && (
                       <button
                         type="button"
@@ -149,7 +209,7 @@ export default function RevisionEditor({ form, setForm, readOnly, saleUnit, mate
                   <button
                     type="button"
                     className="ka-btn ka-btn--ghost ka-btn--sm"
-                    onClick={() => patchGroup(gi, { values: [...g.values, { value_key: '', value_label: '', unit_price_delta: '0' }] })}
+                    onClick={() => patchGroup(gi, { values: [...g.values, { value_key: '', value_label: '', unit_price_delta: '0', color_hex: '' }] })}
                   >
                     เพิ่มตัวเลือก
                   </button>
@@ -193,7 +253,7 @@ export default function RevisionEditor({ form, setForm, readOnly, saleUnit, mate
         {form.rules.length === 0 && <p className="mt-3 text-sm text-[var(--ink-muted)]">ไม่มีกฎ — ทุกตัวเลือกใช้ร่วมกันได้</p>}
         <div className="mt-3 space-y-2">
           {form.rules.map((r, i) => (
-            <div key={i} className="grid grid-cols-1 gap-2 md:grid-cols-[1fr_9rem_1fr_auto] md:items-end">
+            <div key={i} className="grid grid-cols-1 gap-2 md:grid-cols-[1fr_12rem_1fr_auto] md:items-end">
               <div className="ka-field content-start">
                 <label className="ka-label" htmlFor={`r-a-${i}`}>ถ้าเลือก</label>
                 <select

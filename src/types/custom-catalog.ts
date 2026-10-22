@@ -33,13 +33,50 @@ export interface OptionValue {
   value_key: string;
   value_label: string;
   unit_price_delta: string;
+  /** `#rrggbb`; set on every value of the colour group, empty elsewhere. */
+  color_hex?: string | null;
 }
 
 export interface OptionGroup {
   group_key: string;
   group_label: string;
   is_required: boolean;
+  /** The one group whose values colour the product body. */
+  is_color_group?: boolean;
   values: OptionValue[];
+}
+
+export interface ModelFace {
+  width_mm: number;
+  height_mm: number;
+  mesh?: string;
+}
+
+/** Print areas (mm), cup profile and the mesh names picked in the GLB. */
+export interface ModelConfig {
+  faces: { front: ModelFace; back?: ModelFace };
+  cup?: {
+    top_diameter_mm: number;
+    bottom_diameter_mm: number;
+    height_mm: number;
+    margin_top_mm: number;
+    margin_bottom_mm: number;
+  };
+  body_mesh?: string;
+}
+
+export interface ModelMesh {
+  name: string;
+  triangles: number;
+  has_uv: boolean;
+}
+
+export interface ModelFileInfo {
+  custom_model_file_id: string;
+  original_name: string;
+  size_bytes: number;
+  triangle_count: number;
+  meshes: ModelMesh[];
 }
 
 export interface OptionRule {
@@ -73,13 +110,27 @@ export interface RevisionDetail {
   min_quantity: number;
   max_quantity: number | null;
   published_at: string | null;
+  model_config: ModelConfig | null;
+  model_file: ModelFileInfo | null;
   groups: (OptionGroup & { sort_order: number })[];
   rules: OptionRule[];
   recipe: (RecipeLine & { material_code: string; material_name: string })[];
 }
 
+export type ModelShape = 'flat' | 'shirt' | 'cup';
+
+/** Millimetres typed as text, like every other number in the form. */
+export interface ModelForm {
+  shape: ModelShape;
+  front: { width: string; height: string; mesh: string };
+  back: { width: string; height: string; mesh: string };
+  cup: { top: string; bottom: string; height: string; marginTop: string; marginBottom: string };
+  body_mesh: string;
+}
+
 /** What the form edits and the API stores back whole. */
 export interface DraftForm {
+  model: ModelForm;
   template_name: string;
   description: string;
   model_version: string;

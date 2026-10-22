@@ -1,4 +1,4 @@
-import type { DraftForm, RevisionDetail, RevisionStatus } from '@/types/custom-catalog';
+import type { DraftForm, ModelConfig, ModelForm, RevisionDetail, RevisionStatus } from '@/types/custom-catalog';
 
 export const REVISION_STATUS_LABEL: Record<RevisionStatus, string> = {
   draft: 'ฉบับร่าง',
@@ -25,9 +25,108 @@ export const emptyGroup = () => ({
   values: [{ value_key: '', value_label: '', unit_price_delta: '0' }],
 });
 
+// ---- print area, shape and model picks (millimetres) -----------------------
+
+const MM = /^\d{1,4}(\.\d)?$/;
+const HEX = /^#[0-9a-fA-F]{6}$/;
+const MM_MAX = 2000;
+
+export const emptyModel = (): ModelForm => ({
+  shape: 'flat',
+  front: { width: '', height: '', mesh: '' },
+  back: { width: '', height: '', mesh: '' },
+  cup: { top: '', bottom: '', height: '', marginTop: '0', marginBottom: '0' },
+  body_mesh: '',
+});
+
+const mmText = (n: number | undefined) => (n === undefined ? '' : String(n));
+
+export function modelFromConfig(c: ModelConfig | null): ModelForm {
+  if (!c) return emptyModel();
+  return {
+    shape: c.cup ? 'cup' : c.faces.back ? 'shirt' : 'flat',
+    front: { width: mmText(c.faces.front.width_mm), height: mmText(c.faces.front.height_mm), mesh: c.faces.front.mesh ?? '' },
+    back: {
+      width: mmText(c.faces.back?.width_mm),
+      height: mmText(c.faces.back?.height_mm),
+      mesh: c.faces.back?.mesh ?? '',
+    },
+    cup: {
+      top: mmText(c.cup?.top_diameter_mm),
+      bottom: mmText(c.cup?.bottom_diameter_mm),
+      height: mmText(c.cup?.height_mm),
+      marginTop: mmText(c.cup?.margin_top_mm ?? 0),
+      marginBottom: mmText(c.cup?.margin_bottom_mm ?? 0),
+    },
+    body_mesh: c.body_mesh ?? '',
+  };
+}
+
+/** The config the API stores; null while the front print area is still blank. */
+export function configFromModel(m: ModelForm): ModelConfig | null {
+  if (!m.front.width.trim() || !m.front.height.trim()) return null;
+  const face = (f: ModelForm['front']) => ({
+    width_mm: Number(f.width),
+    height_mm: Number(f.height),
+    ...(f.mesh && { mesh: f.mesh }),
+  });
+  return {
+    faces: {
+      front: face(m.front),
+      ...(m.shape === 'shirt' && { back: face(m.back) }),
+    },
+    ...(m.shape === 'cup' && {
+      cup: {
+        top_diameter_mm: Number(m.cup.top),
+        bottom_diameter_mm: Number(m.cup.bottom),
+        height_mm: Number(m.cup.height),
+        margin_top_mm: Number(m.cup.marginTop || 0),
+        margin_bottom_mm: Number(m.cup.marginBottom || 0),
+      },
+    }),
+    ...(m.body_mesh && { body_mesh: m.body_mesh }),
+  };
+}
+
+/** The largest width a straight-sided cup can print all the way round. */
+export function wrapLimitMm(m: ModelForm): number | null {
+  const top = Number(m.cup.top);
+  const bottom = Number(m.cup.bottom);
+  if (!MM.test(m.cup.top) || !MM.test(m.cup.bottom)) return null;
+  return Math.PI * Math.max(top, bottom);
+}
+
+/** Tallest print area that fits between the cup's margins. */
+export function printHeightLimitMm(m: ModelForm): number | null {
+  if (!MM.test(m.cup.height)) return null;
+  const room = Number(m.cup.height) - Number(m.cup.marginTop || 0) - Number(m.cup.marginBottom || 0);
+  return room > 0 ? room : null;
+}
+
+/** Width : height of the front print area, for the preview of its proportions. */
+export function printAspect(f: ModelForm['front']): number | null {
+  const w = Number(f.width);
+  const h = Number(f.height);
+  return MM.test(f.width) && MM.test(f.height) && w > 0 && h > 0 ? w / h : null;
+}
+
+/** Drops the mesh picks (a new file or none means the old names are gone). */
+export function clearMeshPicks(f: DraftForm): DraftForm {
+  return {
+    ...f,
+    model: {
+      ...f.model,
+      front: { ...f.model.front, mesh: '' },
+      back: { ...f.model.back, mesh: '' },
+      body_mesh: '',
+    },
+  };
+}
+
 /** The editable form for a revision; absent numbers become empty text. */
 export function formFromRevision(r: RevisionDetail): DraftForm {
   return {
+    model: modelFromConfig(r.model_config),
     template_name: r.template_name,
     description: r.description ?? '',
     model_version: r.model_version ?? '',
@@ -38,7 +137,13 @@ export function formFromRevision(r: RevisionDetail): DraftForm {
       group_key: g.group_key,
       group_label: g.group_label,
       is_required: g.is_required,
-      values: g.values.map((v) => ({ ...v })),
+      is_color_group: g.is_color_group ?? false,
+      values: g.values.map((v) => ({
+        value_key: v.value_key,
+        value_label: v.value_label,
+        unit_price_delta: v.unit_price_delta,
+        color_hex: v.color_hex ?? '',
+      })),
     })),
     rules: r.rules.map((x) => ({ ...x })),
     recipe: r.recipe.map((l) => ({
@@ -54,7 +159,9 @@ export function formFromRevision(r: RevisionDetail): DraftForm {
 
 /** The body PUT to the API: blanks are left out, numbers are numbers. */
 export function bodyFromForm(f: DraftForm) {
+  const model_config = configFromModel(f.model);
   return {
+    ...(model_config && { model_config }),
     template_name: f.template_name.trim(),
     ...(f.description.trim() && { description: f.description.trim() }),
     ...(f.model_version.trim() && { model_version: f.model_version.trim() }),
@@ -65,11 +172,13 @@ export function bodyFromForm(f: DraftForm) {
       group_key: g.group_key.trim(),
       group_label: g.group_label.trim(),
       is_required: g.is_required,
+      ...(g.is_color_group && { is_color_group: true }),
       sort_order: groupIndex,
       values: g.values.map((v, valueIndex) => ({
         value_key: v.value_key.trim(),
         value_label: v.value_label.trim(),
         unit_price_delta: v.unit_price_delta.trim() || '0',
+        ...(g.is_color_group && { color_hex: (v.color_hex ?? '').trim().toLowerCase() }),
         sort_order: valueIndex,
       })),
     })),
@@ -82,6 +191,46 @@ export function bodyFromForm(f: DraftForm) {
       setup_qty: Number(l.setup_qty || 0),
     })),
   };
+}
+
+/** Print-area and shape mistakes, in the order the section shows its fields. */
+export function modelProblems(m: ModelForm): string[] {
+  const out: string[] = [];
+  const anyFront = m.front.width.trim() || m.front.height.trim();
+  const picked = m.front.mesh || m.back.mesh || m.body_mesh;
+  if (m.shape === 'flat' && !anyFront && !picked) return out;
+  const dims = (label: string, w: string, h: string) => {
+    for (const [name, v] of [['กว้าง', w], ['สูง', h]] as const) {
+      if (!MM.test(v.trim()) || Number(v) < 1 || Number(v) > MM_MAX) {
+        out.push(`${label}: ${name}ต้องเป็นตัวเลข 1–${MM_MAX} มม. ทศนิยมไม่เกิน 1 ตำแหน่ง`);
+      }
+    }
+  };
+  dims(m.shape === 'cup' ? 'พื้นที่พิมพ์รอบแก้ว' : 'พื้นที่พิมพ์ด้านหน้า', m.front.width, m.front.height);
+  if (m.shape === 'shirt') dims('พื้นที่พิมพ์ด้านหลัง', m.back.width, m.back.height);
+  if (m.shape === 'cup') {
+    for (const [name, v, min, max] of [
+      ['เส้นผ่านศูนย์กลางปาก', m.cup.top, 10, 500],
+      ['เส้นผ่านศูนย์กลางก้น', m.cup.bottom, 10, 500],
+      ['ความสูงแก้ว', m.cup.height, 10, 500],
+      ['ระยะขอบบน', m.cup.marginTop || '0', 0, 250],
+      ['ระยะขอบล่าง', m.cup.marginBottom || '0', 0, 250],
+    ] as const) {
+      if (!MM.test(v.trim()) || Number(v) < min || Number(v) > max) out.push(`แก้ว: ${name}ต้องเป็นตัวเลข ${min}–${max} มม.`);
+    }
+    if (out.length === 0) {
+      const wrap = wrapLimitMm(m);
+      const room = printHeightLimitMm(m);
+      if (room === null) out.push('แก้ว: ระยะขอบบนและล่างรวมกันต้องน้อยกว่าความสูงแก้ว');
+      else if (Number(m.front.height) > room + 0.05) out.push(`แก้ว: ความสูงพื้นที่พิมพ์เกินช่วงระหว่างระยะขอบ (${room.toFixed(1)} มม.)`);
+      if (wrap !== null && Number(m.front.width) > wrap * 1.001) out.push(`แก้ว: ความกว้างรอบเกินเส้นรอบวงของแก้ว (${wrap.toFixed(1)} มม.)`);
+    }
+  }
+  if (m.front.mesh && m.shape === 'shirt' && m.front.mesh === m.back.mesh) out.push('ด้านหน้าและด้านหลังใช้ mesh เดียวกันไม่ได้');
+  if (m.body_mesh && (m.body_mesh === m.front.mesh || (m.shape === 'shirt' && m.body_mesh === m.back.mesh))) {
+    out.push('mesh ตัวสินค้า (รับสี) ต้องไม่ใช่ mesh พื้นที่พิมพ์');
+  }
+  return out;
 }
 
 /**
@@ -102,6 +251,8 @@ export function formProblems(f: DraftForm): string[] {
       out.push(`จำนวนสูงสุดต้องเป็นจำนวนเต็ม ไม่น้อยกว่าจำนวนต่ำสุด และไม่เกิน ${MAX_WHOLE}`);
     }
   }
+  out.push(...modelProblems(f.model));
+  if (f.groups.filter((g) => g.is_color_group).length > 1) out.push('กำหนดกลุ่มสีสินค้าได้เพียงหนึ่งกลุ่ม');
   const groupKeys = new Set<string>();
   f.groups.forEach((g, i) => {
     const name = g.group_label.trim() || `กลุ่มที่ ${i + 1}`;
@@ -117,6 +268,7 @@ export function formProblems(f: DraftForm): string[] {
       valueKeys.add(v.value_key.trim());
       if (!v.value_label.trim()) out.push(`${name}: ตัวเลือกที่ ${j + 1} ยังไม่มีชื่อ`);
       if (!MONEY.test(v.unit_price_delta.trim() || '0')) out.push(`${name} / ${vname}: ราคาที่บวกเพิ่มไม่ถูกต้อง`);
+      if (g.is_color_group && !HEX.test((v.color_hex ?? '').trim())) out.push(`${name} / ${vname}: กรุณาระบุรหัสสีแบบ #rrggbb`);
     });
   });
   const known = new Set(f.groups.flatMap((g) => g.values.map((v) => `${g.group_key.trim()}/${v.value_key.trim()}`)));

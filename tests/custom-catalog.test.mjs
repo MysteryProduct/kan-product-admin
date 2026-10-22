@@ -2,7 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import sourceLoader from './load-source.mjs';
 
-const { bodyFromForm, formFromRevision, formProblems, priceFrom } = sourceLoader()('src/lib/custom-catalog.ts');
+const { bodyFromForm, clearMeshPicks, formFromRevision, formProblems, modelProblems, priceFrom, wrapLimitMm } =
+  sourceLoader()('src/lib/custom-catalog.ts');
 const plain = (value) => JSON.parse(JSON.stringify(value));
 
 const revision = () => ({
@@ -82,4 +83,108 @@ test('the lowest price counts required groups at their cheapest value', () => {
   assert.equal(priceFrom(form), '179.00');
   form.base_unit_price = '';
   assert.equal(priceFrom(form), null);
+});
+
+// TASK-0224: print area, cup shape, model picks and the product colour.
+const cupConfig = () => ({
+  faces: { front: { width_mm: 200, height_mm: 80, mesh: 'Print' } },
+  cup: { top_diameter_mm: 82, bottom_diameter_mm: 60, height_mm: 95, margin_top_mm: 5, margin_bottom_mm: 8 },
+  body_mesh: 'Body',
+});
+const withConfig = (config) => ({ ...revision(), model_config: config, model_file: null });
+
+test('a revision without model data keeps the default and sends no model_config', () => {
+  const form = formFromRevision(revision());
+  assert.equal(form.model.shape, 'flat');
+  assert.deepEqual(plain(modelProblems(form.model)), []);
+  assert.equal('model_config' in plain(bodyFromForm(form)), false);
+});
+
+test('a cup config round-trips as millimetres and numbers', () => {
+  const form = formFromRevision(withConfig(cupConfig()));
+  assert.equal(form.model.shape, 'cup');
+  assert.equal(form.model.front.width, '200');
+  assert.equal(form.model.cup.marginBottom, '8');
+  assert.deepEqual(plain(bodyFromForm(form).model_config), cupConfig());
+  assert.deepEqual(plain(formProblems(form)), []);
+});
+
+test('a shirt sends a back face only while it is a shirt', () => {
+  const config = {
+    faces: { front: { width_mm: 280, height_mm: 350, mesh: 'Chest' }, back: { width_mm: 300, height_mm: 380, mesh: 'Back' } },
+  };
+  const form = formFromRevision(withConfig(config));
+  assert.equal(form.model.shape, 'shirt');
+  assert.deepEqual(plain(bodyFromForm(form).model_config), config);
+  form.model.shape = 'flat';
+  assert.equal('back' in plain(bodyFromForm(form).model_config.faces), false);
+  form.model.shape = 'shirt';
+  form.model.back.width = '';
+  assert.equal(modelProblems(form.model).length, 1);
+});
+
+test('the form names a cup print area wider or taller than the cup allows', () => {
+  const form = formFromRevision(withConfig(cupConfig()));
+  assert.ok(Math.abs(wrapLimitMm(form.model) - Math.PI * 82) < 1e-9);
+  form.model.front.width = '300';
+  assert.match(modelProblems(form.model).join(), /เส้นรอบวง/);
+  form.model.front.width = '200';
+  form.model.front.height = '90';
+  assert.match(modelProblems(form.model).join(), /ช่วงระหว่างระยะขอบ/);
+  form.model.front.height = '80';
+  form.model.cup.marginTop = '60';
+  form.model.cup.marginBottom = '40';
+  assert.match(modelProblems(form.model).join(), /ระยะขอบบนและล่าง/);
+});
+
+test('sizes must be millimetres with one decimal and a mesh cannot be both print and dye', () => {
+  const form = formFromRevision(withConfig(cupConfig()));
+  form.model.front.width = '100.55';
+  assert.equal(modelProblems(form.model).length, 1);
+  form.model.front.width = '100.5';
+  form.model.body_mesh = 'Print';
+  assert.match(modelProblems(form.model).join(), /ต้องไม่ใช่ mesh พื้นที่พิมพ์/);
+  form.model.shape = 'cup';
+  form.model.front = { width: '', height: '', mesh: '' };
+  assert.ok(modelProblems(form.model).length >= 2);
+});
+
+test('a new model file clears the mesh picks and keeps the sizes', () => {
+  const form = clearMeshPicks(formFromRevision(withConfig(cupConfig())));
+  assert.equal(form.model.front.mesh, '');
+  assert.equal(form.model.body_mesh, '');
+  assert.equal(form.model.front.width, '200');
+  assert.equal(form.model.cup.top, '82');
+});
+
+test('the colour group sends a lower-case hex on each value and nowhere else', () => {
+  const r = revision();
+  r.groups.push({
+    group_key: 'color',
+    group_label: 'สี',
+    is_required: true,
+    is_color_group: true,
+    sort_order: 1,
+    values: [{ value_key: 'red', value_label: 'แดง', unit_price_delta: '0.00', color_hex: '#C0392B' }],
+  });
+  const form = formFromRevision(r);
+  const body = plain(bodyFromForm(form));
+  assert.equal(body.groups[1].is_color_group, true);
+  assert.equal(body.groups[1].values[0].color_hex, '#c0392b');
+  assert.equal('is_color_group' in body.groups[0], false);
+  assert.equal('color_hex' in body.groups[0].values[0], false);
+  // A leftover hex typed before the box was unticked is not sent.
+  form.groups[1].is_color_group = false;
+  assert.equal('color_hex' in plain(bodyFromForm(form)).groups[1].values[0], false);
+});
+
+test('the form names a colour value without a valid hex and a second colour group', () => {
+  const r = revision();
+  r.groups[0].is_color_group = true;
+  const form = formFromRevision(r);
+  assert.equal(formProblems(form).length, 2);
+  form.groups[0].values.forEach((v) => (v.color_hex = '#336699'));
+  assert.deepEqual(plain(formProblems(form)), []);
+  form.groups.push({ ...form.groups[0], group_key: 'other', is_color_group: true });
+  assert.match(formProblems(form).join(), /หนึ่งกลุ่ม/);
 });

@@ -9,6 +9,7 @@ import StatusBadge from '@/components/StatusBadge';
 import { usePermissions } from '@/hooks/usePermissions';
 import {
   bodyFromForm,
+  clearMeshPicks,
   formFromRevision,
   formProblems,
   REVISION_STATUS_LABEL,
@@ -43,6 +44,7 @@ export default function CustomTemplateEditorPage() {
   const [choiceError, setChoiceError] = useState<string | null>(null);
   const [notice, setNotice] = useState<Notice>(null);
   const [confirm, setConfirm] = useState<'publish' | 'discard' | null>(null);
+  const [modelBusy, setModelBusy] = useState(false);
 
   const dirty = useMemo(() => form !== null && JSON.stringify(form) !== saved, [form, saved]);
 
@@ -118,6 +120,46 @@ export default function CustomTemplateEditorPage() {
       ok = true;
     }, 'บันทึกฉบับร่างไม่สำเร็จ');
     return ok;
+  };
+
+  /**
+   * The file is stored on the server at once (it is too big to hold back until
+   * "save"), and the server drops the old mesh picks with the old file. The
+   * other unsaved edits stay; the saved snapshot loses the same picks so the
+   * "unsaved" marker stays honest.
+   */
+  const afterModelChange = (detail: RevisionDetail) => {
+    setRevision(detail);
+    setForm((prev) => (prev ? clearMeshPicks(prev) : prev));
+    setSaved((prev) => (prev ? JSON.stringify(clearMeshPicks(JSON.parse(prev) as DraftForm)) : prev));
+  };
+
+  const uploadModel = async (file: File) => {
+    if (!revision) return;
+    setModelBusy(true);
+    setNotice(null);
+    try {
+      afterModelChange(await model.uploadModel(id, revision.revision, file));
+      setNotice({ tone: 'success', text: 'อัปโหลดไฟล์โมเดลแล้ว เลือก mesh ที่รับภาพพิมพ์แล้วบันทึกฉบับร่าง' });
+    } catch (error) {
+      setNotice({ tone: 'error', text: error instanceof Error && error.message ? error.message : 'อัปโหลดไฟล์โมเดลไม่สำเร็จ' });
+    } finally {
+      setModelBusy(false);
+    }
+  };
+
+  const removeModel = async () => {
+    if (!revision) return;
+    setModelBusy(true);
+    setNotice(null);
+    try {
+      afterModelChange(await model.deleteModel(id, revision.revision));
+      setNotice({ tone: 'success', text: 'ลบไฟล์โมเดลแล้ว ลูกค้าจะเห็นโมเดลพื้นฐาน' });
+    } catch (error) {
+      setNotice({ tone: 'error', text: error instanceof Error && error.message ? error.message : 'ลบไฟล์โมเดลไม่สำเร็จ' });
+    } finally {
+      setModelBusy(false);
+    }
   };
 
   const publish = async () => {
@@ -218,7 +260,19 @@ export default function CustomTemplateEditorPage() {
             </div>
           )}
 
-          <RevisionEditor form={form} setForm={setForm as never} readOnly={!editable} saleUnit={head.sale_unit} materials={materials} units={units} />
+          <RevisionEditor
+            form={form}
+            setForm={setForm as never}
+            readOnly={!editable}
+            saleUnit={head.sale_unit}
+            materials={materials}
+            units={units}
+            modelFile={revision.model_file}
+            modelBusy={modelBusy}
+            loadModelBytes={() => model.getModelBytes(id, revision.revision)}
+            onUploadModel={uploadModel}
+            onRemoveModel={removeModel}
+          />
 
           {editable && (
             <section className="sticky bottom-0 z-10 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-3 shadow-sm" aria-label="การดำเนินการกับฉบับร่าง">

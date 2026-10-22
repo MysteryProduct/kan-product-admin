@@ -58,6 +58,30 @@ class CustomCatalogModel {
     await axiosInstance.delete(`${BASE}/templates/${id}/revisions/${revision}`);
   }
 
+  /** One GLB for a draft; the API reads the file itself and keeps it on its own disk. */
+  async uploadModel(id: string, revision: number, file: File): Promise<RevisionDetail> {
+    const body = new FormData();
+    body.append('file', file);
+    // Up to 15 MB, so the shared 10 s limit is too short on a slow line.
+    return (
+      await axiosInstance.post<RevisionDetail>(`${BASE}/templates/${id}/revisions/${revision}/model`, body, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 120_000,
+      })
+    ).data;
+  }
+
+  async deleteModel(id: string, revision: number): Promise<RevisionDetail> {
+    return (await axiosInstance.delete<RevisionDetail>(`${BASE}/templates/${id}/revisions/${revision}/model`)).data;
+  }
+
+  /** The stored GLB (staff may read a draft's), as bytes for the preview. */
+  async getModelBytes(id: string, revision: number): Promise<ArrayBuffer> {
+    return (
+      await axiosInstance.get<ArrayBuffer>(`${BASE}/templates/${id}/revisions/${revision}/model`, { responseType: 'arraybuffer', timeout: 120_000 })
+    ).data;
+  }
+
   async publish(id: string, revision: number): Promise<RevisionDetail> {
     return (await axiosInstance.post<RevisionDetail>(`${BASE}/templates/${id}/revisions/${revision}/publish`)).data;
   }
