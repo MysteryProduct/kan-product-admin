@@ -42,6 +42,12 @@ const split = (id: string): [string, string] => {
   return at < 0 ? ['', ''] : [id.slice(0, at), id.slice(at + 1)];
 };
 
+const DECORATIONS: { value: DraftForm['decoration']; label: string }[] = [
+  { value: '', label: 'ไม่ระบุ (ถือเป็นเลเซอร์)' },
+  { value: 'laser', label: 'เลเซอร์' },
+  { value: 'sticker', label: 'สติกเกอร์' },
+];
+
 export default function RevisionEditor({ form, setForm, readOnly, saleUnit, materials, units, modelFile, modelBusy, loadModelBytes, onUploadModel, onRemoveModel }: Props) {
   const choices = optionChoices(form);
   const lowest = priceFrom(form);
@@ -71,6 +77,25 @@ export default function RevisionEditor({ form, setForm, readOnly, saleUnit, mate
             <input id="f-model" className="ka-input" value={form.model_version} disabled={readOnly} onChange={(e) => patch({ model_version: e.target.value })} placeholder="เช่น mug-v1" />
             <p className="ka-help">ชื่อรุ่นที่ใช้ระบุโมเดล (ไฟล์ GLB อัปโหลดด้านล่าง) — ไม่ใช่ไฟล์ของลูกค้า</p>
           </div>
+          <fieldset className="ka-field content-start md:col-span-2" disabled={readOnly}>
+            <legend className="ka-label">วิธีตกแต่ง (ใช้กับแก้วเท่านั้น)</legend>
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              {DECORATIONS.map((d) => (
+                <label key={d.value || 'unset'} className="flex min-h-[44px] items-center gap-2 text-sm text-[var(--ink)]">
+                  <input type="radio" name="f-decoration" checked={form.decoration === d.value} onChange={() => patch({ decoration: d.value })} />
+                  {d.label}
+                </label>
+              ))}
+            </div>
+            <p className="ka-help">
+              {readOnly
+                ? 'ฉบับที่เผยแพร่แล้วแก้ไม่ได้ ถ้าต้องการเปลี่ยนวิธีตกแต่ง ให้สร้างฉบับใหม่'
+                : 'เลเซอร์: ข้อความสีเดียวและรูปเป็นขาวดำตัดขอบ · สติกเกอร์: รูปและข้อความใช้สีได้เต็มที่ · ไม่ระบุ: ระบบถือเป็นเลเซอร์'}
+            </p>
+            {readOnly && form.decoration === '' && (
+              <p className="ka-help">ฉบับนี้ยังไม่ระบุวิธีตกแต่ง ลูกค้าจึงเห็นเป็นเลเซอร์</p>
+            )}
+          </fieldset>
           <div className="ka-field content-start md:col-span-2">
             <label className="ka-label" htmlFor="f-desc">คำอธิบาย</label>
             <textarea id="f-desc" className="ka-textarea" value={form.description} disabled={readOnly} onChange={(e) => patch({ description: e.target.value })} />

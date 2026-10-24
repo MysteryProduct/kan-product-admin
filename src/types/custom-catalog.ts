@@ -97,6 +97,8 @@ export interface RecipeLine {
   setup_qty: number;
 }
 
+export type Decoration = 'laser' | 'sticker';
+
 export interface RevisionDetail {
   custom_template_id: string;
   template_code: string;
@@ -105,6 +107,8 @@ export interface RevisionDetail {
   revision: number;
   status: RevisionStatus;
   model_version: string | null;
+  // How a cup is decorated; null = never set (the Store reads laser).
+  decoration: Decoration | null;
   description: string | null;
   base_unit_price: string | null;
   min_quantity: number;
@@ -134,6 +138,8 @@ export interface DraftForm {
   template_name: string;
   description: string;
   model_version: string;
+  // '' = not set.
+  decoration: Decoration | '';
   base_unit_price: string;
   min_quantity: string;
   max_quantity: string;

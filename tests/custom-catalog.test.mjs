@@ -188,3 +188,13 @@ test('the form names a colour value without a valid hex and a second colour grou
   form.groups.push({ ...form.groups[0], group_key: 'other', is_color_group: true });
   assert.match(formProblems(form).join(), /หนึ่งกลุ่ม/);
 });
+
+test('TASK-0229: decoration round-trips and an unset one is left out of the body', () => {
+  assert.equal(formFromRevision(revision()).decoration, '');
+  assert.equal('decoration' in plain(bodyFromForm(formFromRevision(revision()))), false);
+  for (const decoration of ['laser', 'sticker']) {
+    const form = formFromRevision({ ...revision(), decoration });
+    assert.equal(form.decoration, decoration);
+    assert.equal(plain(bodyFromForm(form)).decoration, decoration);
+  }
+});
