@@ -1,7 +1,7 @@
 'use client';
 
 import type { Dispatch, SetStateAction } from 'react';
-import { emptyGroup, priceFrom } from '@/lib/custom-catalog';
+import { emptyGroup, isCupVersion, priceFrom } from '@/lib/custom-catalog';
 import type { MaterialChoice } from '@/models/custom-catalog';
 import type { ProductUnit } from '@/types/product-unit';
 import type { DraftForm, ModelFileInfo } from '@/types/custom-catalog';
@@ -77,6 +77,7 @@ export default function RevisionEditor({ form, setForm, readOnly, saleUnit, mate
             <input id="f-model" className="ka-input" value={form.model_version} disabled={readOnly} onChange={(e) => patch({ model_version: e.target.value })} placeholder="เช่น mug-v1" />
             <p className="ka-help">ชื่อรุ่นที่ใช้ระบุโมเดล (ไฟล์ GLB อัปโหลดด้านล่าง) — ไม่ใช่ไฟล์ของลูกค้า</p>
           </div>
+          {(isCupVersion(form.model_version) || form.decoration !== '') && (
           <fieldset className="ka-field content-start md:col-span-2" disabled={readOnly}>
             <legend className="ka-label">วิธีตกแต่ง (ใช้กับแก้วเท่านั้น)</legend>
             <div className="flex flex-wrap gap-x-6 gap-y-2">
@@ -89,13 +90,14 @@ export default function RevisionEditor({ form, setForm, readOnly, saleUnit, mate
             </div>
             <p className="ka-help">
               {readOnly
-                ? 'ฉบับที่เผยแพร่แล้วแก้ไม่ได้ ถ้าต้องการเปลี่ยนวิธีตกแต่ง ให้สร้างฉบับใหม่'
+                ? 'ฉบับนี้แก้ไม่ได้ ถ้าต้องการเปลี่ยนวิธีตกแต่ง ให้สร้างฉบับใหม่'
                 : 'เลเซอร์: ข้อความสีเดียวและรูปเป็นขาวดำตัดขอบ · สติกเกอร์: รูปและข้อความใช้สีได้เต็มที่ · ไม่ระบุ: ระบบถือเป็นเลเซอร์'}
             </p>
             {readOnly && form.decoration === '' && (
               <p className="ka-help">ฉบับนี้ยังไม่ระบุวิธีตกแต่ง ลูกค้าจึงเห็นเป็นเลเซอร์</p>
             )}
           </fieldset>
+          )}
           <div className="ka-field content-start md:col-span-2">
             <label className="ka-label" htmlFor="f-desc">คำอธิบาย</label>
             <textarea id="f-desc" className="ka-textarea" value={form.description} disabled={readOnly} onChange={(e) => patch({ description: e.target.value })} />

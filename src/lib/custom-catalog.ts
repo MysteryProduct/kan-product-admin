@@ -123,6 +123,11 @@ export function clearMeshPicks(f: DraftForm): DraftForm {
   };
 }
 
+/** The Store draws a cup for these model versions (same rule as its
+ *  modelKind), and only a cup has a decoration. */
+export const isCupVersion = (modelVersion: string) =>
+  /^(cup|mug|glass|tumbler)/i.test(modelVersion.trim());
+
 /** The editable form for a revision; absent numbers become empty text. */
 export function formFromRevision(r: RevisionDetail): DraftForm {
   return {

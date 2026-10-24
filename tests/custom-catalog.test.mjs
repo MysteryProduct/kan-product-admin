@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import sourceLoader from './load-source.mjs';
 
-const { bodyFromForm, clearMeshPicks, formFromRevision, formProblems, modelProblems, priceFrom, wrapLimitMm } =
+const { bodyFromForm, clearMeshPicks, formFromRevision, formProblems, isCupVersion, modelProblems, priceFrom, wrapLimitMm } =
   sourceLoader()('src/lib/custom-catalog.ts');
 const plain = (value) => JSON.parse(JSON.stringify(value));
 
@@ -197,4 +197,9 @@ test('TASK-0229: decoration round-trips and an unset one is left out of the body
     assert.equal(form.decoration, decoration);
     assert.equal(plain(bodyFromForm(form)).decoration, decoration);
   }
+});
+
+test('TASK-0229: only a cup model version offers a decoration', () => {
+  for (const v of ['cup-v1', 'Mug-2', ' tumbler', 'glass_x']) assert.equal(isCupVersion(v), true, v);
+  for (const v of ['', 'tee-v1', 'sticker-a4', 'panel']) assert.equal(isCupVersion(v), false, v);
 });
