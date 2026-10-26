@@ -168,6 +168,9 @@
   "POST /fulfillment/parcels/:id/void": {
     "reason": "string"
   },
+  "POST /fulfillment/payment-events/:webhookEventId/replay": {
+    "reason": "string"
+  },
   "POST /fulfillment/pickup/orders/:storeOrderId/contact-log": {
     "channel": "string",
     "note": "string",
@@ -269,9 +272,11 @@
     "tax_invoice_tax_id": "string"
   },
   "POST /store/checkout/:id/payment/card": {
+    "attempt_key": "string",
     "token": "string"
   },
   "POST /store/checkout/:id/shipping-charge/card": {
+    "attempt_key": "string",
     "token": "string"
   },
   "POST /store/contact-requests": {
@@ -342,6 +347,11 @@
     "tax_invoice_name": "string",
     "tax_invoice_tax_id": "string"
   },
+  "POST /system-state/override": {
+    "expiresInMinutes": "number",
+    "reason": "string",
+    "state": "string"
+  },
   "POST /user/insertUser": {
     "email": "string",
     "password": "string",
@@ -356,6 +366,7 @@
   },
   "PUT /custom-catalog/templates/:id/revisions/:revision": {
     "base_unit_price": "string",
+    "decoration": "string",
     "description": "string",
     "groups": "array",
     "groups[].group_key": "string",
