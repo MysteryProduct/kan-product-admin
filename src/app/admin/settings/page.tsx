@@ -421,6 +421,33 @@ export default function SettingsPage() {
 								</div>
 							))}
 							<div className="md:col-span-2">
+								<label htmlFor="promptpay_account_name" className="mb-2 block text-sm font-medium text-[var(--ink)]">ชื่อบัญชีพร้อมเพย์</label>
+								<input
+									id="promptpay_account_name"
+									type="text"
+									maxLength={SHOP_CONTACT_LIMITS.promptpay_account_name}
+									placeholder="เช่น บจก. กันโปรดักส์"
+									value={formData.promptpay_account_name}
+									onChange={(event) => setFormData((prev) => ({ ...prev, promptpay_account_name: event.target.value }))}
+									className={inputClass}
+									aria-invalid={Boolean(errors.promptpay_account_name)}
+									aria-describedby={
+										errors.promptpay_account_name
+											? 'promptpay_account_name_error promptpay_account_name_hint'
+											: 'promptpay_account_name_hint'
+									}
+									disabled={!canSave || saving}
+								/>
+								<p id="promptpay_account_name_hint" className="mt-1 text-[13px] text-[var(--ink-muted)]">
+									ต้องตรงกับชื่อที่แอปธนาคารแสดงเมื่อสแกน QR ของร้าน หน้าชำระเงินแสดงชื่อนี้ให้ลูกค้าเทียบก่อนกดยืนยัน เว้นว่างได้ (หน้าชำระเงินจะให้ลูกค้าตรวจยอดเงินอย่างเดียว)
+								</p>
+								{errors.promptpay_account_name && (
+									<p id="promptpay_account_name_error" className="mt-1 text-[13px] text-[var(--danger)]">
+										{errors.promptpay_account_name}
+									</p>
+								)}
+							</div>
+							<div className="md:col-span-2">
 								<label htmlFor="shop_address" className="mb-2 block text-sm font-medium text-[var(--ink)]">ที่อยู่ร้าน (แสดงบนหน้าร้าน และใช้เป็นที่อยู่บนใบกำกับภาษี)</label>
 								<textarea
 									id="shop_address"

@@ -26,13 +26,28 @@ test('the owner values are valid', () => {
 test('blank fields are valid and are sent as null so they are cleared', () => {
   assert.deepEqual(validateShopContact(emptyShopContact), {});
   assert.deepEqual(
-    shopContactPayload({ shop_phone: '  ', shop_email: '', shop_line: ' ', shop_hours: '' }),
-    { shop_phone: null, shop_email: null, shop_line: null, shop_hours: null },
+    shopContactPayload({
+      shop_phone: '  ',
+      shop_email: '',
+      shop_line: ' ',
+      shop_hours: '',
+      promptpay_account_name: '   ',
+    }),
+    {
+      shop_phone: null,
+      shop_email: null,
+      shop_line: null,
+      shop_hours: null,
+      promptpay_account_name: null,
+    },
   );
 });
 
 test('values are trimmed before they are sent', () => {
-  assert.deepEqual(shopContactPayload({ ...owner, shop_phone: ' 0645914468 ' }), owner);
+  assert.deepEqual(
+    shopContactPayload({ ...emptyShopContact, ...owner, shop_phone: ' 0645914468 ' }),
+    { ...owner, promptpay_account_name: null },
+  );
 });
 
 test('a missing settings row gives empty form fields, not "null"', () => {
@@ -69,5 +84,34 @@ test('phone needs 8-15 digits', () => {
   }
   for (const bad of ['1234567', '1234567890123456', '+66+645914468', '064 591 4468 ext']) {
     assert.ok(validateShopContact({ ...emptyShopContact, shop_phone: bad }).shop_phone, bad);
+  }
+});
+
+// TASK-0290: the PromptPay account name a banking app shows for the shop's QR.
+const NAME = 'บจก. กันโปรดักส์ (ร้านทดสอบ)';
+
+test('a one-line PromptPay account name up to 120 characters is valid and sent trimmed', () => {
+  assert.deepEqual(validateShopContact({ ...emptyShopContact, promptpay_account_name: NAME }), {});
+  assert.deepEqual(
+    validateShopContact({ ...emptyShopContact, promptpay_account_name: 'ก'.repeat(120) }),
+    {},
+  );
+  assert.equal(
+    shopContactPayload({ ...emptyShopContact, promptpay_account_name: ` ${NAME} ` })
+      .promptpay_account_name,
+    NAME,
+  );
+  assert.equal(
+    shopContactFrom({ promptpay_account_name: NAME }).promptpay_account_name,
+    NAME,
+  );
+  assert.equal(shopContactFrom(null).promptpay_account_name, '');
+});
+
+test('a PromptPay account name too long or over two lines is refused, in Thai', () => {
+  for (const bad of ['ก'.repeat(121), 'ร้านทดสอบ\nบรรทัดสอง', 'ร้าน\tทดสอบ', 'ร้าน\u2028ทดสอบ']) {
+    const errors = validateShopContact({ ...emptyShopContact, promptpay_account_name: bad });
+    assert.deepEqual(Object.keys(errors), ['promptpay_account_name'], JSON.stringify(bad));
+    assert.match(errors.promptpay_account_name, /ชื่อบัญชีพร้อมเพย์/);
   }
 });

@@ -16,6 +16,9 @@ export interface ShopContactChannels {
   shop_email?: string | null;
   shop_line?: string | null;
   shop_hours?: string | null;
+  // TASK-0290: the PromptPay account name a banking app shows for the shop's
+  // QR; the Store's payment page shows it so the shopper can compare.
+  promptpay_account_name?: string | null;
 }
 
 export interface AppSettings extends ShopTaxIdentity, ShopContactChannels {
