@@ -14,6 +14,7 @@ export const SHOP_CONTACT_LIMITS = {
   shop_email: 120,
   shop_line: 200,
   shop_hours: 200,
+  promptpay_account_name: 120,
 } as const;
 
 // 8-15 digits, optionally led by +, with spaces, dashes or brackets between.
@@ -21,12 +22,15 @@ const PHONE = /^\+?(?=(?:\D*\d){8,15}\D*$)\d[\d ()-]*$/;
 const EMAIL = /^[^\s@<>"',;:()]+@[^\s@<>"',;:()]+\.[^\s@<>"',;:()]+$/;
 // A LINE Official Account id (@shop) or a line.me / lin.ee page.
 const LINE = /^(?:@[A-Za-z0-9._-]{2,40}|https:\/\/(?:line\.me|lin\.ee)(?:\/\S*)?)$/;
+// One line: no control characters (line break, tab) and no line/paragraph separator.
+const ONE_LINE = /^[^\p{Cc}\u2028\u2029]+$/u;
 
 export const emptyShopContact: ShopContactForm = {
   shop_phone: '',
   shop_email: '',
   shop_line: '',
   shop_hours: '',
+  promptpay_account_name: '',
 };
 
 export const shopContactFrom = (
@@ -36,6 +40,7 @@ export const shopContactFrom = (
   shop_email: settings?.shop_email ?? '',
   shop_line: settings?.shop_line ?? '',
   shop_hours: settings?.shop_hours ?? '',
+  promptpay_account_name: settings?.promptpay_account_name ?? '',
 });
 
 /** Error text per field; a blank field is fine (it is cleared and not shown). */
@@ -45,6 +50,8 @@ export function validateShopContact(form: ShopContactForm): Record<string, strin
   const email = form.shop_email.trim();
   const line = form.shop_line.trim();
   const hours = form.shop_hours.trim();
+  // Older callers may leave the field out; it is then simply blank.
+  const promptpayName = (form.promptpay_account_name ?? '').trim();
 
   if (phone && (phone.length > SHOP_CONTACT_LIMITS.shop_phone || !PHONE.test(phone))) {
     errors.shop_phone = 'เบอร์โทรร้านต้องเป็นตัวเลข 8-15 หลัก (ขึ้นต้นด้วย + ได้)';
@@ -59,6 +66,11 @@ export function validateShopContact(form: ShopContactForm): Record<string, strin
   if (hours.length > SHOP_CONTACT_LIMITS.shop_hours) {
     errors.shop_hours = 'เวลาทำการยาวเกินไป (ไม่เกิน 200 ตัวอักษร)';
   }
+  if (promptpayName.length > SHOP_CONTACT_LIMITS.promptpay_account_name) {
+    errors.promptpay_account_name = 'ชื่อบัญชีพร้อมเพย์ยาวเกินไป (ไม่เกิน 120 ตัวอักษร)';
+  } else if (promptpayName && !ONE_LINE.test(promptpayName)) {
+    errors.promptpay_account_name = 'ชื่อบัญชีพร้อมเพย์ต้องเป็นข้อความบรรทัดเดียว';
+  }
   return errors;
 }
 
@@ -68,4 +80,5 @@ export const shopContactPayload = (form: ShopContactForm): ShopContactChannels =
   shop_email: form.shop_email.trim() || null,
   shop_line: form.shop_line.trim() || null,
   shop_hours: form.shop_hours.trim() || null,
+  promptpay_account_name: (form.promptpay_account_name ?? '').trim() || null,
 });
