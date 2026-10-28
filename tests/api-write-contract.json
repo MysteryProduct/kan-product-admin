@@ -273,10 +273,12 @@
   },
   "POST /store/checkout/:id/payment/card": {
     "attempt_key": "string",
+    "promptpay_qr_acknowledged": "boolean",
     "token": "string"
   },
   "POST /store/checkout/:id/shipping-charge/card": {
     "attempt_key": "string",
+    "promptpay_qr_acknowledged": "boolean",
     "token": "string"
   },
   "POST /store/contact-requests": {
