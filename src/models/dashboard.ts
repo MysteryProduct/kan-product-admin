@@ -12,6 +12,16 @@ import type {
   TopProducts,
 } from '@/types/dashboard';
 
+/** Bangkok calendar days as YYYY-MM-DD; `to` is included. */
+export interface DashboardDates {
+  from: string;
+  to: string;
+}
+
+// A preset goes as `range`, days as `from` and `to`; the API refuses both together.
+const periodParams = (period: TopProductRange | DashboardDates) =>
+  typeof period === 'string' ? { range: period } : period;
+
 export default class DashboardModel {
   async getSummary(): Promise<DashboardSummary> {
     const response = await axiosInstance.get<DashboardSummary>('/dashboard/summary');
@@ -19,8 +29,8 @@ export default class DashboardModel {
   }
 
   /** Sales and receipts for today and this month, for the sales dashboard page. */
-  async getSalesSummary(): Promise<SalesDashboard> {
-    const response = await axiosInstance.get<SalesDashboard>('/dashboard/sales-summary');
+  async getSalesSummary(dates?: DashboardDates): Promise<SalesDashboard> {
+    const response = await axiosInstance.get<SalesDashboard>('/dashboard/sales-summary', { params: dates });
     return response.data;
   }
 
@@ -33,14 +43,14 @@ export default class DashboardModel {
   }
 
   /** The ten best-selling products of a period. */
-  async getTopProducts(range: TopProductRange): Promise<TopProducts> {
-    const response = await axiosInstance.get<TopProducts>('/dashboard/top-products', { params: { range } });
+  async getTopProducts(period: TopProductRange | DashboardDates): Promise<TopProducts> {
+    const response = await axiosInstance.get<TopProducts>('/dashboard/top-products', { params: periodParams(period) });
     return response.data;
   }
 
   /** Receipts by payment method and sales by channel for a period. */
-  async getSalesMix(range: TopProductRange): Promise<SalesMix> {
-    const response = await axiosInstance.get<SalesMix>('/dashboard/sales-mix', { params: { range } });
+  async getSalesMix(period: TopProductRange | DashboardDates): Promise<SalesMix> {
+    const response = await axiosInstance.get<SalesMix>('/dashboard/sales-mix', { params: periodParams(period) });
     return response.data;
   }
 

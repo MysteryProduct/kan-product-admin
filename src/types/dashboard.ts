@@ -14,6 +14,14 @@ export interface SalesSummary {
   approved?: PeriodPair<{ amount: number; count: number }>;
   /** Store orders whose first payment falls in the period. */
   store_orders?: PeriodPair<number>;
+  /** The same three figures over the days asked for with `from` and `to` (`to` included); present only then. */
+  period?: {
+    from: string;
+    to: string;
+    received?: { net: number; refunded: number };
+    approved?: { amount: number; count: number };
+    store_orders?: number;
+  };
 }
 
 /** Current counts of work waiting for an employee; each is present only if its menu can be viewed. */
@@ -122,7 +130,8 @@ export interface TopProduct {
 export interface TopProducts {
   timezone: 'Asia/Bangkok';
   generated_at: string;
-  range: TopProductRange;
+  /** `custom` when days were asked for instead of a preset. */
+  range: TopProductRange | 'custom';
   /** The period as Bangkok dates: from (included) to (not included). */
   from: string;
   to: string;
@@ -149,7 +158,8 @@ export interface SalesChannelShare {
 export interface SalesMix {
   timezone: 'Asia/Bangkok';
   generated_at: string;
-  range: TopProductRange;
+  /** `custom` when days were asked for instead of a preset. */
+  range: TopProductRange | 'custom';
   /** The period as Bangkok dates: from (included) to (not included). */
   from: string;
   to: string;
