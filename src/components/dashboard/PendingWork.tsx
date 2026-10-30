@@ -1,3 +1,4 @@
+import StatusBadge from "@/components/StatusBadge";
 import type { OpenList } from "@/components/dashboard/DashboardListModal";
 import type {
   DashboardListKey,
@@ -10,99 +11,113 @@ interface Item {
   key: DashboardListKey & keyof PendingWorkData;
   href: string;
   title: string;
-  unit: string;
   hint: string;
   /** What the date column means for this list. */
   dateLabel: string;
+  /** Needs a decision or is at risk now: listed first and marked with this word while the count is above 0. */
+  urgent?: string;
+  /** False for a count that is part of another row, or waits on the customer rather than on staff. */
+  counted?: boolean;
 }
 
-// Each count opens the rows behind it; `href` is the page where that work is done.
+// Urgent work first, then the rest in the order the work usually moves. Each row opens the rows behind
+// its count; `href` is the page where that work is done.
 const ITEMS: Item[] = [
-  {
-    key: "sale_orders_to_approve",
-    href: "/admin/sale-orders",
-    title: "ใบขายรออนุมัติ",
-    unit: "ใบ",
-    hint: "ไม่นับใบที่รอลูกค้าจ่ายเงิน",
-    dateLabel: "วันที่สร้าง",
-  },
   {
     key: "store_orders_to_review",
     href: "/admin/store-fulfillment",
     title: "คำสั่งซื้อหน้าร้านที่รอตรวจ",
-    unit: "คำสั่งซื้อ",
     hint: "ชำระเงินหลังหมดเวลา",
     dateLabel: "วันที่สั่งซื้อ",
+    urgent: "ต้องตรวจสอบ",
   },
   {
     key: "store_cancellations_to_decide",
     href: "/admin/store-fulfillment",
     title: "คำขอยกเลิกรอพิจารณา",
-    unit: "คำขอ",
     hint: "พักส่งและส่งมอบไว้จนกว่าจะพิจารณา",
     dateLabel: "วันที่ขอยกเลิก",
+    urgent: "รอพิจารณา",
   },
   {
     key: "store_refunds_unfinished",
     href: "/admin/store-fulfillment",
     title: "เงินคืนที่ยังไม่เสร็จ",
-    unit: "คำสั่งซื้อ",
     hint: "คืนไม่สำเร็จ ต้องโอนคืน หรือรอปิดคำสั่งซื้อ",
     dateLabel: "วันที่สั่งซื้อ",
-  },
-  {
-    key: "store_orders_to_ship",
-    href: "/admin/store-fulfillment",
-    title: "รอจัดส่ง",
-    unit: "คำสั่งซื้อ",
-    hint: "ชำระแล้ว สินค้ายังไม่ส่ง ไม่นับที่รอค่าจัดส่ง",
-    dateLabel: "วันที่สั่งซื้อ",
-  },
-  {
-    key: "store_shipping_unpaid",
-    href: "/admin/store-fulfillment",
-    title: "รอลูกค้าชำระค่าจัดส่ง",
-    unit: "คำสั่งซื้อ",
-    hint: "สร้างพัสดุได้เมื่อลูกค้าชำระแล้ว",
-    dateLabel: "วันที่แจ้งค่าจัดส่ง",
-  },
-  {
-    key: "store_orders_to_pickup",
-    href: "/admin/store-fulfillment",
-    title: "รอรับที่ร้าน",
-    unit: "คำสั่งซื้อ",
-    hint: "ชำระแล้ว ลูกค้ายังไม่มารับ",
-    dateLabel: "วันที่สั่งซื้อ",
+    urgent: "เงินคืนค้าง",
   },
   {
     key: "store_pickups_overdue",
     href: "/admin/store-fulfillment",
     title: "รับที่ร้านเลยกำหนด",
-    unit: "คำสั่งซื้อ",
     hint: "เป็นส่วนหนึ่งของ “รอรับที่ร้าน” ที่เลยวันนัดรับแล้ว",
     dateLabel: "กำหนดรับ",
+    urgent: "เลยกำหนด",
+    counted: false,
   },
   {
-    key: "contact_requests_new",
-    href: "/admin/contact-requests",
-    title: "คำขอติดต่อกลับใหม่",
-    unit: "รายการ",
-    hint: "ยังไม่มีใครติดต่อ",
-    dateLabel: "วันที่ส่งคำขอ",
+    key: "sale_orders_to_approve",
+    href: "/admin/sale-orders",
+    title: "ใบขายรออนุมัติ",
+    hint: "ไม่นับใบที่รอลูกค้าจ่ายเงิน",
+    dateLabel: "วันที่สร้าง",
+  },
+  {
+    key: "store_orders_to_ship",
+    href: "/admin/store-fulfillment",
+    title: "รอจัดส่ง",
+    hint: "ชำระแล้ว สินค้ายังไม่ส่ง ไม่นับที่รอค่าจัดส่ง",
+    dateLabel: "วันที่สั่งซื้อ",
+  },
+  {
+    key: "store_orders_to_pickup",
+    href: "/admin/store-fulfillment",
+    title: "รอรับที่ร้าน",
+    hint: "ชำระแล้ว ลูกค้ายังไม่มารับ",
+    dateLabel: "วันที่สั่งซื้อ",
   },
   {
     key: "purchase_orders_to_approve",
     href: "/admin/purchase-orders",
     title: "ใบสั่งซื้อรออนุมัติ",
-    unit: "ใบ",
     hint: "ดูใบสั่งซื้อ",
     dateLabel: "วันที่สั่งซื้อ",
   },
+  {
+    key: "contact_requests_new",
+    href: "/admin/contact-requests",
+    title: "คำขอติดต่อกลับใหม่",
+    hint: "ยังไม่มีใครติดต่อ",
+    dateLabel: "วันที่ส่งคำขอ",
+  },
+  {
+    key: "store_shipping_unpaid",
+    href: "/admin/store-fulfillment",
+    title: "รอลูกค้าชำระค่าจัดส่ง",
+    hint: "สร้างพัสดุได้เมื่อลูกค้าชำระแล้ว",
+    dateLabel: "วันที่แจ้งค่าจัดส่ง",
+    counted: false,
+  },
 ];
 
+/** The totals the greeting shows: rows that count, and how many of those are urgent. */
+export function summarizePending(work: PendingWorkData | undefined) {
+  if (!work) return undefined;
+  let waiting = 0;
+  let urgent = 0;
+  for (const item of ITEMS) {
+    const value = work[item.key] ?? 0;
+    if (item.counted === false) continue;
+    waiting += value;
+    if (item.urgent) urgent += value;
+  }
+  return { waiting, urgent };
+}
+
 /**
- * Work waiting for an employee. Only the counts the API returned are drawn, so
- * a count the employee may not see leaves no empty card behind.
+ * Work waiting for an employee, most urgent first. Only the counts the API returned are drawn,
+ * so a count the employee may not see leaves no empty row behind; rows at 0 share one line.
  */
 export default function PendingWork({
   work,
@@ -113,42 +128,60 @@ export default function PendingWork({
 }) {
   const visible = ITEMS.filter((item) => work[item.key] !== undefined);
   if (visible.length === 0) return null;
+  const open = visible.filter((item) => (work[item.key] ?? 0) > 0);
+  const empty = visible.filter((item) => (work[item.key] ?? 0) === 0);
 
   return (
-    <section aria-labelledby="dashboard-pending" className="mb-6">
-      <h2
-        id="dashboard-pending"
-        className="mb-3 text-[19px] font-semibold text-[var(--ink)]"
-      >
-        งานที่รอทำ
-      </h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {visible.map((item) => (
-          <button
-            key={item.key}
-            type="button"
-            aria-haspopup="dialog"
-            onClick={() =>
-              onOpen({
-                key: item.key,
-                title: item.title,
-                href: item.href,
-                dateLabel: item.dateLabel,
-              })
-            }
-            className="ka-card ka-card--link ka-stat block w-full text-left"
-          >
-            <span className="ka-stat__label">{item.title}</span>
-            <p className="ka-stat__value">
-              {count(work[item.key] ?? 0)}
-              <span className="ml-2 text-[14px] font-normal text-[var(--ink-muted)]">
-                {item.unit}
-              </span>
-            </p>
-            <p className="ka-stat__foot">{item.hint}</p>
-          </button>
-        ))}
+    <section aria-labelledby="dashboard-pending" className="ka-card ka-todo">
+      <div className="ka-card__head">
+        <h2 id="dashboard-pending" className="ka-card__title">
+          งานที่รอทำ
+        </h2>
+        <span className="ka-todo__cap">เรียงตามความเร่งด่วน</span>
       </div>
+      {open.length > 0 && (
+        <ul className="ka-todo__list">
+          {open.map((item) => (
+            <li key={item.key}>
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                onClick={() =>
+                  onOpen({
+                    key: item.key,
+                    title: item.title,
+                    href: item.href,
+                    dateLabel: item.dateLabel,
+                  })
+                }
+                className="ka-todo__row"
+              >
+                <span className="ka-todo__text">
+                  <span className="ka-todo__title">
+                    {item.title}
+                    {item.urgent && (
+                      <StatusBadge tone="danger" live>
+                        {item.urgent}
+                      </StatusBadge>
+                    )}
+                  </span>
+                  <span className="ka-todo__cap">{item.hint}</span>
+                </span>
+                <span className="ka-todo__count numeric">{count(work[item.key] ?? 0)}</span>
+                <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true" className="ka-todo__chev">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {open.length === 0 && <p className="ka-todo__none">ไม่มีงานค้างที่รอทำ</p>}
+      {empty.length > 0 && open.length > 0 && (
+        <p className="ka-todo__zero">
+          ไม่มีงานค้าง: {empty.map((item) => item.title).join(" · ")}
+        </p>
+      )}
     </section>
   );
 }

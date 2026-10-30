@@ -95,4 +95,76 @@
 .ka-rowcard__foot { display: flex; justify-content: flex-end; }
 .ka-empty__action { margin-top: var(--space-2); }
 
+/* ---------- Dashboard (TASK-0316 4.1) ---------- */
+.ka-page-body { padding: var(--space-4); }
+@media (min-width: 640px) { .ka-page-body { padding: var(--space-6); } }
+.ka-hello {
+  position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4);
+  margin-bottom: var(--space-6); padding: var(--space-6); overflow: hidden; border-radius: var(--radius-panel);
+  background: var(--bg-sidebar); color: var(--ink-on-sidebar);
+}
+/* The logo's two slashes, cut across the right edge. Decoration only: it sits behind the text. */
+.ka-hello::before, .ka-hello::after {
+  content: ""; position: absolute; top: -20%; bottom: -20%; width: 56px; background: var(--brand); transform: skewX(-24deg); opacity: 0.9; pointer-events: none;
+}
+.ka-hello::before { right: 72px; }
+.ka-hello::after { right: 8px; width: 28px; opacity: 0.55; }
+.ka-hello__text, .ka-hello__actions { position: relative; z-index: 1; }
+.ka-hello__date { margin: 0; font: 400 14px/22px var(--ka-font); }
+.ka-hello__title { margin: 2px 0 0; color: #fff; font: 700 24px/36px var(--ka-font); }
+.ka-hello__sub { margin: 2px 0 0; color: var(--ink-on-sidebar-active); font: 500 15px/24px var(--ka-font); }
+.ka-hello__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.ka-hello :focus-visible { outline-color: var(--ink-on-sidebar-active); }
+@media (max-width: 639px) { .ka-hello { padding: var(--space-4); } .ka-hello::before { right: 40px; } .ka-hello__actions { width: 100%; } .ka-hello__actions .ka-btn { flex: 1; } }
+
+.ka-dash { display: grid; gap: var(--space-4); margin-bottom: var(--space-6); }
+.ka-dash__side { display: grid; gap: var(--space-4); align-content: start; }
+@media (min-width: 1024px) { .ka-dash { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); } }
+
+.ka-todo { overflow: hidden; }
+.ka-todo__cap { color: var(--ink-muted); font: 400 13px/20px var(--ka-font); }
+.ka-todo__list { margin: 0; padding: 0; list-style: none; }
+.ka-todo__list > li + li { border-top: 1px solid var(--border); }
+.ka-todo__row {
+  display: flex; align-items: center; gap: var(--space-3); width: 100%; min-height: 64px; padding: var(--space-3) var(--space-6);
+  border: 0; background: transparent; color: var(--ink); text-align: left; cursor: pointer;
+  transition: background-color var(--ka-fast) var(--ka-ease);
+}
+.ka-todo__row:hover { background: var(--bg-subtle); }
+.ka-todo__text { display: grid; flex: 1; min-width: 0; }
+.ka-todo__title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); font: 500 16px/26px var(--ka-font); }
+.ka-todo__count { font: 700 22px/32px var(--ka-font); }
+.ka-todo__chev { width: 18px; height: 18px; color: var(--ink-subtle); flex: none; }
+.ka-todo__zero, .ka-todo__none { margin: 0; padding: var(--space-3) var(--space-6); border-top: 1px solid var(--border); background: var(--bg-subtle); color: var(--ink-muted); font: 400 14px/22px var(--ka-font); }
+.ka-todo__none { border-top: 0; }
+@media (max-width: 639px) { .ka-todo__row { padding: var(--space-3) var(--space-4); } .ka-todo__zero, .ka-todo__none { padding: var(--space-3) var(--space-4); } }
+
+.ka-panel { display: grid; gap: var(--space-2); align-content: start; padding: var(--space-4) var(--space-6) var(--space-6); }
+.ka-panel__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.ka-panel__stat { margin: 0; font: 700 28px/36px var(--ka-font); letter-spacing: -0.01em; }
+.ka-panel__figure { display: flex; align-items: baseline; gap: var(--space-2); margin: 0; font: 700 28px/36px var(--ka-font); }
+.ka-panel__figure span { color: var(--ink-muted); font: 400 14px/22px var(--ka-font); }
+.ka-panel__note { margin: 0; color: var(--ink-muted); font: 400 13px/20px var(--ka-font); }
+.ka-panel__link { color: var(--brand-ink); font: 500 15px/24px var(--ka-font); text-decoration: none; }
+.ka-panel__link:hover { text-decoration: underline; text-underline-offset: 4px; }
+.ka-kv { display: grid; gap: var(--space-1); margin: 0; }
+.ka-kv > div { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.ka-kv dt { color: var(--ink-muted); font: 400 15px/24px var(--ka-font); }
+.ka-kv dd { margin: 0; font: 600 16px/26px var(--ka-font); }
+.ka-kv dd button { font: inherit; }
+
+/* A bar made of status colours; the legend under it names every colour, so it never stands alone. */
+.ka-stack { display: flex; gap: 2px; height: 10px; overflow: hidden; border-radius: var(--radius-pill); background: var(--bg-muted); }
+.ka-stack > span { min-width: 6px; background: var(--seg); }
+.ka-stack > [data-tone="warning"], .ka-legend [data-tone="warning"] { --seg: var(--warning); }
+.ka-stack > [data-tone="info"], .ka-legend [data-tone="info"] { --seg: var(--info); }
+.ka-stack > [data-tone="success"], .ka-legend [data-tone="success"] { --seg: var(--success); }
+.ka-stack > [data-tone="neutral"], .ka-legend [data-tone="neutral"] { --seg: var(--neutral); }
+.ka-stack > [data-tone="danger"], .ka-legend [data-tone="danger"] { --seg: var(--danger); }
+.ka-legend { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); margin: 0; padding: 0; list-style: none; }
+.ka-legend button { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 32px; padding: 0; border: 0; background: none; color: var(--ink); font: 400 14px/22px var(--ka-font); cursor: pointer; }
+.ka-legend button:hover { text-decoration: underline; text-underline-offset: 4px; }
+.ka-legend i { width: 10px; height: 10px; border-radius: 50%; background: var(--seg); }
+@media (max-width: 767px) { .ka-legend button { min-height: var(--touch-target); } }
+
 }

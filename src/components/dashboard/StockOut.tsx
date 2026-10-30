@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { OpenList } from "@/components/dashboard/DashboardListModal";
 import type { StockOut as StockOutData } from "@/types/dashboard";
 
@@ -9,6 +10,8 @@ interface StockOutCardProps {
   total: number;
   names: string[];
   onOpen: (list: OpenList) => void;
+  /** A shortcut under the card, shown while something is out. */
+  action?: { href: string; label: string };
 }
 
 function StockOutCard({
@@ -17,14 +20,16 @@ function StockOutCard({
   total,
   names,
   onOpen,
+  action,
 }: StockOutCardProps) {
   const hidden = total - names.length;
   return (
+    <div className="ka-card ka-card--link ka-stat">
     <button
       type="button"
       aria-haspopup="dialog"
       onClick={() => onOpen(target)}
-      className="ka-card ka-card--link ka-stat block w-full text-left"
+      className="block w-full text-left"
     >
       <span className="ka-stat__label">{target.title}</span>
       <p className="ka-stat__value">
@@ -50,6 +55,12 @@ function StockOutCard({
         </ul>
       )}
     </button>
+    {action && total > 0 && (
+      <Link href={action.href} className="ka-btn ka-btn--sm mt-3">
+        {action.label}
+      </Link>
+    )}
+    </div>
   );
 }
 
@@ -62,11 +73,14 @@ export default function StockOut({
   stock,
   onOpen,
   hideProducts = false,
+  canOrder = false,
 }: {
   stock: StockOutData;
   onOpen: (list: OpenList) => void;
   /** The stock overview already shows the out-of-stock variants, so the same card is left out. */
   hideProducts?: boolean;
+  /** The employee may add purchase orders, so the materials card offers the shortcut. */
+  canOrder?: boolean;
 }) {
   const { materials } = stock;
   const products = hideProducts ? undefined : stock.products;
@@ -109,6 +123,7 @@ export default function StockOut({
             total={materials.count}
             names={materials.items.map((item) => item.material_name)}
             onOpen={onOpen}
+            action={canOrder ? { href: "/admin/purchase-orders", label: "สร้างใบสั่งซื้อ" } : undefined}
           />
         )}
       </div>

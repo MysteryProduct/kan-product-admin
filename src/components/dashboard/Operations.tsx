@@ -1,3 +1,4 @@
+import StatusBadge from "@/components/StatusBadge";
 import type { OpenList } from "@/components/dashboard/DashboardListModal";
 import type {
   DashboardListKey,
@@ -92,32 +93,6 @@ function NumberButton({
   );
 }
 
-function Stat({
-  label,
-  value,
-  target,
-  onOpen,
-}: {
-  label: string;
-  value: number;
-  target: Target;
-  onOpen: OpenProps["onOpen"];
-}) {
-  return (
-    <div className="min-w-0">
-      <dt className="text-[13px] text-[var(--ink-muted)]">{label}</dt>
-      <dd>
-        <NumberButton
-          target={target}
-          value={value}
-          onOpen={onOpen}
-          label={label}
-        />
-      </dd>
-    </div>
-  );
-}
-
 /** A late count is worded, not just coloured, so the state does not rest on colour alone. */
 function Late({
   label,
@@ -150,6 +125,13 @@ function Late({
   );
 }
 
+const SEGMENTS = [
+  { id: "pending", label: "รอ", tone: "warning" },
+  { id: "in_progress", label: "กำลังผลิต", tone: "info" },
+  { id: "completed", label: "เสร็จ", tone: "success" },
+  { id: "cancelled", label: "ยกเลิก", tone: "neutral" },
+] as const;
+
 /**
  * Production and purchasing. Only the blocks the API returned are drawn, so a
  * block the employee may not see leaves no empty card behind. Every number
@@ -164,111 +146,97 @@ export default function Operations({
     purchase_orders_to_receive: toReceive,
     supplier_invoices: invoices,
   } = operations;
-  if (!jobs && toReceive === undefined && !invoices) return null;
+  const hasPurchasing = toReceive !== undefined || Boolean(invoices);
+  if (!jobs && !hasPurchasing) return null;
+
+  const total = jobs ? SEGMENTS.reduce((sum, segment) => sum + jobs[segment.id], 0) : 0;
 
   return (
-    <section aria-labelledby="dashboard-operations" className="mb-6">
-      <h2
-        id="dashboard-operations"
-        className="mb-3 text-[19px] font-semibold text-[var(--ink)]"
-      >
-        งานผลิตและจัดซื้อ
-      </h2>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {jobs && (
-          <div className="ka-card ka-stat">
-            <span className="ka-stat__label">งานผลิตแยกตามสถานะ</span>
-            <dl className="mt-2 grid grid-cols-2 gap-4">
-              <Stat
-                label="รอดำเนินการ"
-                value={jobs.pending}
-                target={TARGETS.pending}
-                onOpen={onOpen}
-              />
-              <Stat
-                label="กำลังผลิต"
-                value={jobs.in_progress}
-                target={TARGETS.in_progress}
-                onOpen={onOpen}
-              />
-              <Stat
-                label="ผลิตเสร็จแล้ว"
-                value={jobs.completed}
-                target={TARGETS.completed}
-                onOpen={onOpen}
-              />
-              <Stat
-                label="ยกเลิกการผลิต"
-                value={jobs.cancelled}
-                target={TARGETS.cancelled}
-                onOpen={onOpen}
-              />
-            </dl>
-            <Late
-              label="เลยกำหนด"
-              value={jobs.overdue}
-              target={TARGETS.overdue}
-              tone="danger"
-              onOpen={onOpen}
-            />
-            <p className="ka-stat__foot">
-              เลยกำหนด = ยังไม่เสร็จและเลยวันที่เป้าหมาย (รวมงานทั้งหมด{" "}
-              {count(jobs.all)} งาน)
-            </p>
+    <>
+      {jobs && (
+        <section className="ka-card ka-panel" aria-labelledby="dashboard-production">
+          <div className="ka-panel__head">
+            <h2 id="dashboard-production" className="ka-card__title">งานผลิต</h2>
+            {jobs.overdue > 0 ? (
+              <StatusBadge tone="danger">เลยกำหนด {count(jobs.overdue)} งาน</StatusBadge>
+            ) : (
+              <StatusBadge tone="success">ไม่มีงานเลยกำหนด</StatusBadge>
+            )}
           </div>
-        )}
-        {toReceive !== undefined && (
-          <button
-            type="button"
-            aria-haspopup="dialog"
-            onClick={() => onOpen(TARGETS.toReceive)}
-            className="ka-card ka-card--link ka-stat block w-full text-left"
+          <p className="ka-panel__figure numeric">
+            {count(jobs.all)}
+            <span>งานทั้งหมด</span>
+          </p>
+          <div
+            className="ka-stack"
+            role="img"
+            aria-label={SEGMENTS.map((segment) => `${segment.label} ${count(jobs[segment.id])}`).join(" ")}
           >
-            <span className="ka-stat__label">ใบสั่งซื้อรอรับสินค้า</span>
-            <p className="ka-stat__value">
-              {count(toReceive)}
-              <span className="ml-2 text-[14px] font-normal text-[var(--ink-muted)]">
-                ใบ
-              </span>
-            </p>
-            <p className="ka-stat__foot">อนุมัติแล้ว ยังรับสินค้าไม่ครบ</p>
-          </button>
-        )}
-        {invoices && (
-          <div className="ka-card ka-stat">
-            <span className="ka-stat__label">
-              ใบแจ้งหนี้ผู้จัดจำหน่ายที่ยังไม่จ่ายครบ
-            </span>
-            <p className="ka-stat__value">
-              <NumberButton
-                target={TARGETS.unpaid}
-                value={invoices.unpaid}
-                onOpen={onOpen}
-                label="ยังไม่จ่ายครบ"
-                className=""
-              />
-              <span className="ml-2 text-[14px] font-normal text-[var(--ink-muted)]">
-                ใบ
-              </span>
-            </p>
-            <Late
-              label="เลยกำหนด"
-              value={invoices.overdue}
-              target={TARGETS.invoiceOverdue}
-              tone="danger"
-              onOpen={onOpen}
-            />
-            <Late
-              label="ใกล้ครบกำหนด"
-              value={invoices.due_soon}
-              target={TARGETS.dueSoon}
-              tone="warning"
-              onOpen={onOpen}
-            />
-            <p className="ka-stat__foot">ใกล้ครบกำหนด = ครบกำหนดภายใน 7 วัน</p>
+            {total > 0 &&
+              SEGMENTS.map((segment) =>
+                jobs[segment.id] > 0 ? (
+                  <span key={segment.id} data-tone={segment.tone} style={{ flexGrow: jobs[segment.id] }} />
+                ) : null,
+              )}
           </div>
-        )}
-      </div>
-    </section>
+          <ul className="ka-legend">
+            {SEGMENTS.map((segment) => (
+              <li key={segment.id} data-tone={segment.tone}>
+                <button
+                  type="button"
+                  aria-haspopup="dialog"
+                  aria-label={`${segment.label} ${count(jobs[segment.id])} ดูรายการ`}
+                  onClick={() => onOpen(TARGETS[segment.id])}
+                >
+                  <i aria-hidden="true" />
+                  {segment.label} <span className="numeric">{count(jobs[segment.id])}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          {jobs.overdue > 0 && (
+            <Late label="เลยกำหนด" value={jobs.overdue} target={TARGETS.overdue} tone="danger" onOpen={onOpen} />
+          )}
+          <p className="ka-panel__note">เลยกำหนด = ยังไม่เสร็จและเลยวันที่เป้าหมาย</p>
+        </section>
+      )}
+      {hasPurchasing && (
+        <section className="ka-card ka-panel" aria-labelledby="dashboard-purchasing">
+          <h2 id="dashboard-purchasing" className="ka-card__title">จัดซื้อ</h2>
+          <dl className="ka-kv">
+            {toReceive !== undefined && (
+              <div>
+                <dt>ใบสั่งซื้อรอรับสินค้า</dt>
+                <dd>
+                  <NumberButton target={TARGETS.toReceive} value={toReceive} onOpen={onOpen} label="ใบสั่งซื้อรอรับสินค้า" className="numeric" />
+                </dd>
+              </div>
+            )}
+            {invoices && (
+              <>
+                <div>
+                  <dt>ใบแจ้งหนี้ค้างจ่าย</dt>
+                  <dd>
+                    <NumberButton target={TARGETS.unpaid} value={invoices.unpaid} onOpen={onOpen} label="ใบแจ้งหนี้ค้างจ่าย" className="numeric" />
+                  </dd>
+                </div>
+                <div>
+                  <dt>เลยกำหนดชำระ</dt>
+                  <dd>
+                    <NumberButton target={TARGETS.invoiceOverdue} value={invoices.overdue} onOpen={onOpen} label="ใบแจ้งหนี้เลยกำหนดชำระ" className="numeric" />
+                  </dd>
+                </div>
+                <div>
+                  <dt>ใกล้ครบกำหนด (7 วัน)</dt>
+                  <dd>
+                    <NumberButton target={TARGETS.dueSoon} value={invoices.due_soon} onOpen={onOpen} label="ใบแจ้งหนี้ใกล้ครบกำหนด" className="numeric" />
+                  </dd>
+                </div>
+              </>
+            )}
+          </dl>
+        </section>
+      )}
+    </>
   );
 }
