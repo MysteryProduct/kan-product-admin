@@ -1,0 +1,98 @@
+/* Shared interaction components of the Kan Product Admin design system (TASK-0315): drawer and
+   sheet placements, popover, menu, filter chip, bulk bar, toast and the table's card list.
+   Tokens only; every effect is CSS and stops under prefers-reduced-motion (globals.css). */
+@layer components {
+
+/* ---------- Drawer and bottom sheet (Modal placements) ---------- */
+.ka-scrim--sheet { align-items: flex-end; padding: 0; }
+.ka-modal--sheet { border-radius: var(--radius-panel) var(--radius-panel) 0 0; max-height: calc(100dvh - 16px); }
+@media (min-width: 640px) {
+  .ka-scrim--drawer { align-items: stretch; justify-content: flex-end; padding: 0; }
+  .ka-modal--drawer { height: 100dvh; max-height: none; border-radius: var(--radius-panel) 0 0 var(--radius-panel); animation: ka-slide-in var(--ka-motion-enter) var(--ka-ease); }
+  .ka-modal--sheet { border-radius: var(--radius-panel) var(--radius-panel) 0 0; max-height: calc(100dvh - 16px); }
+}
+@keyframes ka-slide-in { from { opacity: 0; transform: translateX(32px); } }
+
+/* ---------- Popover, menu, filter chip ---------- */
+.ka-popover {
+  position: fixed; z-index: 75; display: flex; flex-direction: column; max-width: calc(100vw - 16px); max-height: min(420px, calc(100dvh - 16px));
+  border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--bg-surface); color: var(--ink);
+  box-shadow: var(--shadow-raise); animation: ka-pop var(--ka-base) var(--ka-ease);
+}
+.ka-popover__body { flex: 1; min-height: 0; overflow-y: auto; padding: var(--space-2); overscroll-behavior: contain; }
+.ka-popover__foot { display: flex; justify-content: space-between; gap: var(--space-2); padding: var(--space-2) var(--space-3); border-top: 1px solid var(--border); }
+.ka-menu { display: grid; gap: 2px; }
+.ka-menu__item { display: flex; align-items: center; min-height: 40px; width: 100%; padding: 8px 12px; border: 0; border-radius: var(--radius-sm); background: none; color: var(--ink); font: 400 15px/22px var(--ka-font); text-align: left; cursor: pointer; }
+.ka-menu__item:hover, .ka-menu__item:focus-visible { background: var(--bg-subtle); }
+.ka-menu__item[data-tone="danger"] { color: var(--danger); }
+.ka-menu__item[data-tone="danger"]:hover { background: var(--danger-soft); }
+.ka-menu__item:disabled { opacity: 0.5; cursor: not-allowed; }
+.ka-modal__body .ka-menu__item { min-height: var(--touch-target); }
+.ka-chip {
+  display: inline-flex; align-items: center; gap: var(--space-2); min-height: 36px; padding: 0 var(--space-3);
+  border: 1px dashed var(--border-control); border-radius: var(--radius-pill); background: transparent; color: var(--ink);
+  font: 500 14px/22px var(--ka-font); cursor: pointer;
+  transition: background-color var(--ka-fast) var(--ka-ease), border-color var(--ka-fast) var(--ka-ease);
+}
+.ka-chip:hover { background: var(--bg-subtle); }
+.ka-chip[data-active] { border-style: solid; border-color: var(--action); background: var(--brand-soft); color: var(--brand-ink); }
+.ka-chip svg { width: 16px; height: 16px; }
+.ka-chip-options { display: grid; gap: 2px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.ka-chip-options .ka-option { min-height: 40px; cursor: pointer; }
+@media (max-width: 767px) { .ka-chip { min-height: var(--touch-target); } .ka-chip-options .ka-option { min-height: var(--touch-target); } }
+
+/* ---------- Bulk bar ---------- */
+.ka-bulk {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); padding: var(--space-2) var(--space-3) var(--space-2) var(--space-4);
+  border-radius: var(--radius-card); background: var(--bg-sidebar); color: var(--ink-on-sidebar); box-shadow: var(--shadow-raise);
+}
+.ka-bulk :focus-visible { outline-color: var(--ink-on-sidebar-active); }
+.ka-bulk__count { margin: 0; color: var(--ink-on-sidebar-active); font: 600 15px/24px var(--ka-font); }
+.ka-bulk__actions { display: flex; flex-wrap: wrap; flex: 1; gap: var(--space-2); }
+.ka-bulk__btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); min-height: 36px; padding: 0 var(--space-3);
+  border: 1px solid var(--ink-on-sidebar); border-radius: var(--radius-control); background: transparent; color: var(--ink-on-sidebar);
+  font: 500 14px/22px var(--ka-font); cursor: pointer; transition: background-color var(--ka-fast) var(--ka-ease), transform var(--ka-fast) var(--ka-ease);
+}
+.ka-bulk__btn:hover { background: var(--bg-sidebar-hover); }
+.ka-bulk__btn:active { transform: translateY(1px); }
+.ka-bulk__btn[data-tone="danger"] { color: var(--danger); border-color: var(--danger); }
+.ka-bulk__btn--icon { width: 36px; padding: 0; border-color: transparent; }
+.ka-bulk__btn svg { width: 18px; height: 18px; }
+@media (max-width: 767px) { .ka-bulk__btn { min-height: var(--touch-target); } .ka-bulk__btn--icon { width: var(--touch-target); } }
+
+/* ---------- Toast ---------- */
+.ka-toasts { position: fixed; z-index: 90; right: var(--space-4); bottom: var(--space-4); display: grid; gap: var(--space-2); width: min(420px, calc(100vw - 32px)); pointer-events: none; }
+.ka-toast {
+  pointer-events: auto; display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  border-left: 4px solid var(--success); border-radius: var(--radius-card); background: var(--bg-sidebar); color: var(--ink-on-sidebar);
+  box-shadow: var(--shadow-overlay); animation: ka-rise var(--ka-motion-enter) var(--ka-ease);
+}
+.ka-toast[data-tone="info"] { border-left-color: var(--info); }
+.ka-toast[data-tone="danger"] { border-left-color: var(--danger); }
+.ka-toast__text { flex: 1; margin: 0; font: 400 15px/24px var(--ka-font); }
+.ka-toast__btn {
+  display: inline-flex; align-items: center; justify-content: center; min-height: var(--touch-target); padding: 0 var(--space-3); border: 0; border-radius: var(--radius-control);
+  background: transparent; color: var(--ink-on-sidebar-active); font: 600 14px/22px var(--ka-font); cursor: pointer;
+}
+.ka-toast__btn:hover { background: var(--bg-sidebar-hover); }
+.ka-toast__btn--icon { min-width: var(--touch-target); padding: 0; color: var(--ink-on-sidebar); }
+.ka-toast__btn svg { width: 18px; height: 18px; }
+.ka-toast :focus-visible { outline-color: var(--ink-on-sidebar-active); }
+@media (max-width: 639px) { .ka-toasts { right: 16px; left: 16px; width: auto; } }
+
+/* ---------- DataTable: toolbar, card list ---------- */
+.ka-table-tools { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--border); }
+.ka-table-tools__spacer { flex: 1; }
+.ka-cards { display: grid; gap: var(--space-3); padding: var(--space-3); }
+.ka-rowcard { display: grid; gap: var(--space-2); padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--bg-surface); }
+.ka-rowcard[data-selected] { background: var(--brand-soft); }
+.ka-rowcard__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); font-weight: 600; }
+.ka-rowcard__fields { display: grid; gap: var(--space-2); margin: 0; }
+.ka-rowcard__field { display: grid; grid-template-columns: minmax(96px, 36%) 1fr; gap: var(--space-3); font: 400 15px/24px var(--ka-font); }
+.ka-rowcard__field dt { color: var(--ink-muted); font-size: 14px; }
+.ka-rowcard__field dd { min-width: 0; margin: 0; overflow-wrap: anywhere; }
+.ka-rowcard__foot { display: flex; justify-content: flex-end; }
+.ka-empty__action { margin-top: var(--space-2); }
+
+}

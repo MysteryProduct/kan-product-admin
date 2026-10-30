@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "./components.css";
+@import "./components-ui.css";
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* Values follow the Kan Product Admin design system (TASK-0049). Light is :root; html.dark is set by ThemeContext. */

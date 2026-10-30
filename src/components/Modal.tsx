@@ -3,7 +3,11 @@
 import { ReactNode, useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
-type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
+// `compact`, `standard` and `wide` are the design system's 440 / 520 / 600px. `sm` to `xl` keep the
+// widths pages were built with; a page moves to the new names when it is redesigned.
+type ModalSize = 'compact' | 'standard' | 'wide' | 'sm' | 'md' | 'lg' | 'xl';
+/** `drawer` slides in from the right on wide screens; `sheet` rises from the bottom at every width. */
+type ModalPlacement = 'center' | 'drawer' | 'sheet';
 
 interface ModalProps {
   isOpen: boolean;
@@ -17,9 +21,13 @@ interface ModalProps {
   closeOnBackdrop?: boolean;
   closeOnEscape?: boolean;
   layer?: 'default' | 'elevated';
+  placement?: ModalPlacement;
 }
 
 const sizeClasses: Record<ModalSize, string> = {
+  compact: 'max-w-[440px]',
+  standard: 'max-w-[520px]',
+  wide: 'max-w-[600px]',
   sm: 'max-w-md',
   md: 'max-w-xl',
   lg: 'max-w-3xl',
@@ -52,6 +60,7 @@ export default function Modal({
   closeOnBackdrop = true,
   closeOnEscape = true,
   layer = 'default',
+  placement = 'center',
 }: ModalProps) {
   const titleId = useId();
   const descriptionId = useId();
@@ -127,7 +136,7 @@ export default function Modal({
 
   return createPortal(
     <div
-      className={`ka-scrim ${layer === 'elevated' ? 'z-[80]' : 'z-[70]'}`}
+      className={`ka-scrim ${placement === 'center' ? '' : `ka-scrim--${placement}`} ${layer === 'elevated' ? 'z-[80]' : 'z-[70]'}`}
       onMouseDown={(event) => {
         if (closeOnBackdrop && event.target === event.currentTarget) onClose();
       }}
@@ -139,7 +148,7 @@ export default function Modal({
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
-        className={`ka-modal overscroll-contain ${sizeClasses[size]}`}
+        className={`ka-modal overscroll-contain ${placement === 'center' ? '' : `ka-modal--${placement}`} ${sizeClasses[size]}`}
       >
         <header className="ka-modal__head shrink-0 px-5 sm:px-6">
           <div className="min-w-0">

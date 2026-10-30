@@ -2,6 +2,12 @@
 
 import React, { useState } from 'react';
 import Pagination from '@/components/Pagination';
+import BulkBar from '@/components/BulkBar';
+import Button from '@/components/Button';
+import FilterChip from '@/components/FilterChip';
+import Popover from '@/components/Popover';
+import RowMenu, { type RowMenuItem } from '@/components/RowMenu';
+import { useIsPhone } from '@/hooks/useMediaQuery';
 import { PaginationMeta } from '@/types/pagination';
 
 export interface DataTableColumn<T> {
@@ -12,6 +18,10 @@ export interface DataTableColumn<T> {
   filterOptions?: Array<{ label: string; value: string }>;
   filterValue?: (row: T) => string;
   sortable?: boolean;
+  /** Stays in the table when the column picker is used (the code or name a row is known by). */
+  alwaysVisible?: boolean;
+  /** Starts hidden; the column picker can show it. */
+  defaultHidden?: boolean;
   render?: (value: T[keyof T], row: T) => React.ReactNode;
   width?: string;
 }
@@ -48,6 +58,18 @@ export interface DataTableProps<T> {
   footerClassName?: string;
   disabled?: boolean;
   selection?: DataTableSelection<T>;
+  /** Draws skeleton rows (or cards) in place of the data while it loads. */
+  loading?: boolean;
+  /** Below 640px rows become cards (default). `scroll` keeps the table and scrolls it sideways. */
+  mobileLayout?: 'cards' | 'scroll';
+  /** Adds a "คอลัมน์" button that shows or hides columns. */
+  columnPicker?: boolean;
+  /** A "⋯" menu at the end of each row. `getLabel` names the row for screen readers. */
+  rowActions?: { getLabel: (row: T) => string; items: (row: T) => RowMenuItem[] };
+  /** The commands for the selected rows, as `BulkAction` buttons; shown on a `BulkBar` once a row is checked. */
+  bulkActions?: (selectedKeys: ReadonlySet<string>) => React.ReactNode;
+  /** Replaces the hint under "ไม่พบข้อมูล" when no filter is the cause. */
+  emptyHint?: string;
 }
 
 // The filter menu is `w-56` (14rem = 224px); the margin keeps it off the screen edge.
@@ -84,6 +106,12 @@ function DataTableInner<T>(
     footerClassName = '',
     disabled = false,
     selection,
+    loading = false,
+    mobileLayout = 'cards',
+    columnPicker = false,
+    rowActions,
+    bulkActions,
+    emptyHint,
   }: DataTableProps<T>,
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
@@ -95,6 +123,16 @@ function DataTableInner<T>(
     const filterRefs = React.useRef<Record<string, HTMLElement | null>>({});
 
     const tableScrollRef = React.useRef<HTMLDivElement | null>(null);
+
+    const isPhone = useIsPhone();
+    const isCards = isPhone && mobileLayout === 'cards';
+    const [hiddenKeys, setHiddenKeys] = useState<Set<string>>(
+      () => new Set(columns.filter((col) => col.defaultHidden).map((col) => String(col.key))),
+    );
+    const [columnsOpen, setColumnsOpen] = useState(false);
+    const columnsButtonRef = React.useRef<HTMLButtonElement | null>(null);
+    const visibleColumns = columns.filter((col) => col.alwaysVisible || !hiddenKeys.has(String(col.key)));
+    const hasPicker = columnPicker && columns.some((col) => !col.alwaysVisible);
 
     const rowKey = (row: T) => String(row[keyField]);
     const pageKeys = data.map(rowKey);
@@ -222,6 +260,121 @@ function DataTableInner<T>(
       }
     };
 
+    const clearFilters = () => {
+      setFilterConfigs([]);
+      setFilterSearches({});
+      setShowFilterKey(null);
+      onFilterChange?.({});
+    };
+
+    const columnSpan = visibleColumns.length + (selection ? 1 : 0) + (rowActions ? 1 : 0);
+    const sortableColumns = columns.filter((col) => col.sortable);
+    const filterableColumns = columns.filter((col) => col.filterable);
+
+    const emptyBlock = (
+      <div className="ka-empty p-0">
+        <div className="ka-empty__art">
+          <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+            />
+          </svg>
+        </div>
+        <p className="text-base font-semibold text-[var(--ink)]">ไม่พบข้อมูล</p>
+        {/* filterConfigs keeps only columns whose filter has a value. */}
+        {filterConfigs.length > 0 ? (
+          <>
+            <p className="text-sm text-[var(--ink-muted)]">
+              กำลังกรอง {filterConfigs
+                .map((filter) => columns.find((col) => String(col.key) === filter.key)?.label)
+                .filter(Boolean)
+                .join(' · ')}
+            </p>
+            <Button variant="secondary" size="sm" className="ka-empty__action" onClick={clearFilters}>
+              ล้างตัวกรองทั้งหมด
+            </Button>
+          </>
+        ) : (
+          emptyHint && <p className="text-sm text-[var(--ink-muted)]">{emptyHint}</p>
+        )}
+      </div>
+    );
+
+    const skeletonRows = Array.from({ length: 5 }, (_, index) => (
+      <tr key={`skeleton-${index}`} aria-hidden="true">
+        {Array.from({ length: columnSpan }, (_cell, cellIndex) => (
+          <td key={cellIndex} className="px-4 py-4">
+            <span className="ka-skel" style={{ width: `${60 + ((index + cellIndex) % 3) * 15}%` }} />
+          </td>
+        ))}
+      </tr>
+    ));
+
+    const cardList = (
+      <div className="ka-cards" aria-busy={loading || undefined}>
+        {loading ? (
+          Array.from({ length: 3 }, (_, index) => (
+            <div key={index} className="ka-rowcard" aria-hidden="true">
+              <span className="ka-skel ka-skel--title" />
+              <span className="ka-skel" />
+              <span className="ka-skel" style={{ width: '70%' }} />
+            </div>
+          ))
+        ) : data.length === 0 ? (
+          emptyBlock
+        ) : (
+          data.map((row, idx) => {
+            const selected = Boolean(selection?.selectedKeys.has(rowKey(row)));
+            const [first, ...rest] = visibleColumns;
+            const cell = (col: DataTableColumn<T>) =>
+              col.render ? col.render(row[col.key], row) : String(row[col.key] || '');
+            return (
+              <article
+                key={String(row[keyField]) || idx}
+                className="ka-rowcard"
+                data-selected={selected || undefined}
+                onClick={() => onRowClick?.(row)}
+              >
+                <div className="ka-rowcard__head">
+                  <div className="min-w-0">{first && cell(first)}</div>
+                  {selection && (
+                    <label className="ka-check-hit" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        className="ka-check"
+                        checked={selected}
+                        disabled={selectionLocked}
+                        onChange={(e) => toggleRow(rowKey(row), e.target.checked)}
+                        aria-label={`เลือก ${selection.getRowLabel(row)}`}
+                      />
+                    </label>
+                  )}
+                </div>
+                <dl className="ka-rowcard__fields">
+                  {rest.map((col) => (
+                    <div key={String(col.key)} className="ka-rowcard__field">
+                      <dt>{col.label}</dt>
+                      <dd>{cell(col)}</dd>
+                    </div>
+                  ))}
+                </dl>
+                {rowActions && (
+                  <div className="ka-rowcard__foot" onClick={(e) => e.stopPropagation()}>
+                    <RowMenu label={`จัดการ ${rowActions.getLabel(row)}`} items={rowActions.items(row)} />
+                  </div>
+                )}
+              </article>
+            );
+          })
+        )}
+      </div>
+    );
+
+    const showTools = hasPicker || isCards;
+
     const canShowPagination =
       Boolean(paginationMeta) &&
       (paginationMeta?.last_page || 0) > 1 &&
@@ -240,9 +393,129 @@ function DataTableInner<T>(
         ref={ref}
         className={`w-full ${disabled ? 'select-none' : ''} ${className}`}
       >
+        {selection && bulkActions && (
+          <BulkBar count={selection.selectedKeys.size} onClear={() => selection.onChange(new Set())}>
+            {bulkActions(selection.selectedKeys)}
+          </BulkBar>
+        )}
         {/* Table Container */}
         <div className="ka-card ka-table-card">
-          <div className="ka-table-scroll" ref={tableScrollRef}>
+          {showTools && (
+            <div className="ka-table-tools">
+              {isCards && (
+                <>
+                  {filterableColumns.map((col) => {
+                    const current = getFilterValue(String(col.key));
+                    const selectedValues = Array.isArray(current) ? current : current ? [current] : [];
+                    if (col.filterType === 'select' || col.filterType === 'multi-select') {
+                      return (
+                        <FilterChip
+                          key={String(col.key)}
+                          label={col.label}
+                          single={col.filterType === 'select'}
+                          options={(col.filterOptions ?? []).map((opt) => ({ value: opt.value.toLowerCase(), label: opt.label }))}
+                          selected={selectedValues}
+                          onChange={(values) => handleFilter(String(col.key), values)}
+                        />
+                      );
+                    }
+                    return (
+                      <input
+                        key={String(col.key)}
+                        type="search"
+                        className="ka-input"
+                        placeholder={`ค้นหา${col.label}`}
+                        aria-label={`ค้นหา${col.label}`}
+                        value={(current as string) || ''}
+                        onChange={(e) => handleFilter(String(col.key), e.target.value)}
+                      />
+                    );
+                  })}
+                  {sortableColumns.length > 0 && (
+                    <div role="group" aria-label="เรียงลำดับ" className="flex flex-wrap gap-2">
+                      {sortableColumns.map((col) => {
+                        const direction = sortConfig?.key === String(col.key) ? sortConfig.direction : null;
+                        return (
+                          <Button
+                            key={String(col.key)}
+                            size="sm"
+                            variant="secondary"
+                            aria-pressed={direction !== null}
+                            disabled={disabled}
+                            onClick={() => handleSort(String(col.key))}
+                          >
+                            เรียง{col.label}
+                            {direction && <span aria-hidden="true">{direction === 'ASC' ? ' ↑' : ' ↓'}</span>}
+                            {direction && <span className="sr-only">{direction === 'ASC' ? ' น้อยไปมาก' : ' มากไปน้อย'}</span>}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
+              <span className="ka-table-tools__spacer" />
+              {hasPicker && (
+                <>
+                  <button
+                    ref={columnsButtonRef}
+                    type="button"
+                    className="ka-chip"
+                    aria-haspopup="dialog"
+                    aria-expanded={columnsOpen}
+                    onClick={() => setColumnsOpen((value) => !value)}
+                  >
+                    คอลัมน์
+                  </button>
+                  <Popover
+                    open={columnsOpen}
+                    onClose={() => setColumnsOpen(false)}
+                    anchorRef={columnsButtonRef}
+                    title="แสดงคอลัมน์"
+                    align="end"
+                    footer={
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setHiddenKeys(new Set(columns.filter((col) => col.defaultHidden).map((col) => String(col.key))))}
+                        >
+                          ค่าเริ่มต้น
+                        </Button>
+                        <Button variant="action" size="sm" onClick={() => setColumnsOpen(false)}>เสร็จ</Button>
+                      </>
+                    }
+                  >
+                    <fieldset className="ka-chip-options">
+                      <legend className="sr-only">แสดงคอลัมน์</legend>
+                      {columns.filter((col) => !col.alwaysVisible).map((col) => (
+                        <label key={String(col.key)} className="ka-option">
+                          <span className="flex min-w-0 items-center gap-2">
+                            <input
+                              type="checkbox"
+                              className="ka-check"
+                              checked={!hiddenKeys.has(String(col.key))}
+                              onChange={(e) =>
+                                setHiddenKeys((prev) => {
+                                  const next = new Set(prev);
+                                  if (e.target.checked) next.delete(String(col.key));
+                                  else next.add(String(col.key));
+                                  return next;
+                                })
+                              }
+                            />
+                            <span className="break-words">{col.label}</span>
+                          </span>
+                        </label>
+                      ))}
+                    </fieldset>
+                  </Popover>
+                </>
+              )}
+            </div>
+          )}
+          {isCards ? cardList : (
+          <div className="ka-table-scroll" ref={tableScrollRef} aria-busy={loading || undefined}>
             <table className="w-full text-[15px] leading-6 text-[var(--ink)]">
               <thead>
                 <tr className={`border-b border-[var(--border)] bg-[var(--bg-subtle)] ${headerClassName}`}>
@@ -261,7 +534,7 @@ function DataTableInner<T>(
                       </label>
                     </th>
                   )}
-                  {columns.map((col) => (
+                  {visibleColumns.map((col) => (
                     <th
                       key={String(col.key)}
                       data-filter-col={col.key}
@@ -478,10 +751,15 @@ function DataTableInner<T>(
                       </div>
                     </th>
                   ))}
+                  {rowActions && (
+                    <th className="w-14 px-2 py-3 text-right align-middle">
+                      <span className="sr-only">จัดการ</span>
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)] bg-[var(--bg-surface)]">
-                {data.length > 0 ? (
+                {loading ? skeletonRows : data.length > 0 ? (
                   data.map((row, idx) => {
                     const selected = Boolean(selection?.selectedKeys.has(rowKey(row)));
                     return (
@@ -512,7 +790,7 @@ function DataTableInner<T>(
                           </label>
                         </td>
                       )}
-                      {columns.map((col) => (
+                      {visibleColumns.map((col) => (
                         <td
                           key={String(col.key)}
                           className="px-4 py-3 text-[var(--ink)]"
@@ -523,40 +801,25 @@ function DataTableInner<T>(
                             : String(row[col.key] || '')}
                         </td>
                       ))}
+                      {rowActions && (
+                        <td className="px-2 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                          <RowMenu label={`จัดการ ${rowActions.getLabel(row)}`} items={rowActions.items(row)} />
+                        </td>
+                      )}
                     </tr>
                     );
                   })
                 ) : (
                   <tr>
-                    <td colSpan={columns.length + (selection ? 1 : 0)} className="px-4 py-16 text-center">
-                      <div className="ka-empty p-0">
-                        <div className="ka-empty__art">
-                          <svg
-                            className="w-7 h-7"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={1.5}
-                              d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-                            />
-                          </svg>
-                        </div>
-                        <p className="text-base font-semibold text-[var(--ink)]">ไม่พบข้อมูล</p>
-                        {/* filterConfigs keeps only columns whose filter has a value. */}
-                        {filterConfigs.length > 0 && (
-                          <p className="text-sm text-[var(--ink-muted)]">ลองเปลี่ยนหรือล้างตัวกรอง</p>
-                        )}
-                      </div>
+                    <td colSpan={columnSpan} className="px-4 py-16 text-center">
+                      {emptyBlock}
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
+          )}
         </div>
 
         {canShowPagination && (
