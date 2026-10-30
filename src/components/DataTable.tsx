@@ -62,6 +62,8 @@ export interface DataTableProps<T> {
   loading?: boolean;
   /** Below 640px rows become cards (default). `scroll` keeps the table and scrolls it sideways. */
   mobileLayout?: 'cards' | 'scroll';
+  /** The column that names a row on its card (a code or a name). Defaults to the first column. */
+  cardTitleKey?: keyof T;
   /** Adds a "คอลัมน์" button that shows or hides columns. */
   columnPicker?: boolean;
   /** A "⋯" menu at the end of each row. `getLabel` names the row for screen readers. */
@@ -108,6 +110,7 @@ function DataTableInner<T>(
     selection,
     loading = false,
     mobileLayout = 'cards',
+    cardTitleKey,
     columnPicker = false,
     rowActions,
     bulkActions,
@@ -328,7 +331,8 @@ function DataTableInner<T>(
         ) : (
           data.map((row, idx) => {
             const selected = Boolean(selection?.selectedKeys.has(rowKey(row)));
-            const [first, ...rest] = visibleColumns;
+            const first = visibleColumns.find((col) => col.key === cardTitleKey) ?? visibleColumns[0];
+            const rest = visibleColumns.filter((col) => col !== first);
             const cell = (col: DataTableColumn<T>) =>
               col.render ? col.render(row[col.key], row) : String(row[col.key] || '');
             return (

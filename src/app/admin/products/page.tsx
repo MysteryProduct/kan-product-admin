@@ -617,6 +617,7 @@ export default function ProductsPage() {
           data={pageProducts}
           columns={visibleColumns}
           keyField="product_id"
+          cardTitleKey="product_code"
           disabled={loading}
           className="bg-[var(--bg-surface)] p-1"
           paginationMeta={meta}

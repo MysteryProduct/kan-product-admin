@@ -482,6 +482,7 @@ export default function SupplierPage() {
                     data={tableData}
                     columns={columns}
                     keyField="supplier_id"
+                    cardTitleKey="supplier_name"
                     className="bg-[var(--bg-surface)] p-1"
                     paginationMeta={meta}
                     currentPage={currentPage}
