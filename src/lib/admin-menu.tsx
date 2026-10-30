@@ -1,9 +1,12 @@
 import type { ReactNode } from 'react';
+import type { PendingWork } from '@/types/dashboard';
 
 export interface AdminMenuLeaf {
   title: string;
   menu_name: string;
   href: string;
+  /** Dashboard pending-work counts that add up to the number shown beside this page. */
+  pending?: (keyof PendingWork)[];
 }
 
 export interface AdminMenuItem {
@@ -56,7 +59,7 @@ export const adminMenu: AdminMenuSection[] = [
         title: 'จัดซื้อ',
         icon: icon('M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4'),
         subItems: [
-          { title: 'ใบสั่งซื้อ', menu_name: 'purchase_orders', href: '/admin/purchase-orders' },
+          { title: 'ใบสั่งซื้อ', menu_name: 'purchase_orders', href: '/admin/purchase-orders', pending: ['purchase_orders_to_approve'] },
           { title: 'ใบรับสินค้า', menu_name: 'purchase_receipt', href: '/admin/purchase-receipt' },
           { title: 'ใบจ่ายชำระหนี้', menu_name: 'invoice_supplier', href: '/admin/invoice-supplier' },
         ],
@@ -65,7 +68,7 @@ export const adminMenu: AdminMenuSection[] = [
         title: 'ขายสินค้า',
         icon: icon('M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z'),
         subItems: [
-          { title: 'ใบสั่งขาย', menu_name: 'sale_orders', href: '/admin/sale-orders' },
+          { title: 'ใบสั่งขาย', menu_name: 'sale_orders', href: '/admin/sale-orders', pending: ['sale_orders_to_approve'] },
           { title: 'ใบเสร็จรับเงิน', menu_name: 'payment_receipts', href: '/admin/payment-receipts' },
         ],
       },
@@ -73,8 +76,9 @@ export const adminMenu: AdminMenuSection[] = [
         title: 'หน้าร้านออนไลน์',
         icon: icon('M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4l-3 3-3-3z'),
         subItems: [
-          { title: 'คำขอติดต่อกลับ', menu_name: 'contact_requests', href: '/admin/contact-requests' },
-          { title: 'จัดส่งพัสดุ', menu_name: 'store_fulfillment', href: '/admin/store-fulfillment' },
+          { title: 'คำขอติดต่อกลับ', menu_name: 'contact_requests', href: '/admin/contact-requests', pending: ['contact_requests_new'] },
+          { title: 'จัดส่งพัสดุ', menu_name: 'store_fulfillment', href: '/admin/store-fulfillment',
+            pending: ['store_orders_to_review', 'store_cancellations_to_decide', 'store_orders_to_ship', 'store_orders_to_pickup', 'store_refunds_unfinished'] },
           { title: 'เปิดล็อตขาย', menu_name: 'store_fulfillment', href: '/admin/store-lots' },
         ],
       },
@@ -114,4 +118,12 @@ export function getMenuTrail(pathname: string): string[] {
     }
   }
   return [];
+}
+
+/** Work waiting on this page: undefined when the API sent none of its counts (no permission, or not loaded). */
+export function pendingCount(leaf: AdminMenuLeaf, work: PendingWork | undefined): number | undefined {
+  if (!work || !leaf.pending) return undefined;
+  const known = leaf.pending.filter((key) => work[key] !== undefined);
+  if (known.length === 0) return undefined;
+  return known.reduce((sum, key) => sum + (work[key] ?? 0), 0);
 }

@@ -6,14 +6,29 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { usePermissions } from '@/hooks/usePermissions';
-import { adminMenu, isMenuHrefActive, type AdminMenuItem } from '@/lib/admin-menu';
+import { usePendingWork } from '@/hooks/usePendingWork';
+import { adminMenu, isMenuHrefActive, pendingCount, type AdminMenuItem } from '@/lib/admin-menu';
 
 const isLeafActive = (href: string, pathname: string) => pathname === href || pathname.startsWith(`${href}/`);
+
+const formatCount = (value: number) => new Intl.NumberFormat('th-TH').format(value);
+
+/** The number of jobs waiting on a page. Hidden at 0: the badge means "something needs you". */
+function PendingBadge({ value }: { value: number | undefined }) {
+  if (!value) return null;
+  return (
+    <span className="ka-count">
+      <span className="sr-only">รอดำเนินการ </span>
+      {formatCount(value)}
+    </span>
+  );
+}
 
 export default function Sidebar() {
   const { isOpen, closeSidebar } = useSidebar();
   const pathname = usePathname();
   const { can } = usePermissions();
+  const pendingWork = usePendingWork(true);
   // The group holding the current page starts open.
   const [expandedItems, setExpandedItems] = useState<string[]>(() =>
     adminMenu.flatMap((section) => section.items)
@@ -83,6 +98,11 @@ export default function Sidebar() {
         <summary>
           {item.icon}
           {item.title}
+          <PendingBadge
+            value={item.subItems
+              .filter((sub) => can(sub.menu_name, 'view'))
+              .reduce((sum, sub) => sum + (pendingCount(sub, pendingWork) ?? 0), 0)}
+          />
           <svg className="ka-chev" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
@@ -100,6 +120,7 @@ export default function Sidebar() {
                 aria-current={isLeafActive(subItem.href, pathname) ? 'page' : undefined}
               >
                 {subItem.title}
+                <PendingBadge value={pendingCount(subItem, pendingWork)} />
               </Link>
             );
           })}

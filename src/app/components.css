@@ -271,7 +271,12 @@ a.ka-card:hover, .ka-card--link:hover { transform: translateY(-2px); box-shadow:
 .ka-subnav { display: grid; gap: 2px; margin: 2px 0 var(--space-2) 22px; padding-left: 12px; border-left: 1px solid rgba(255, 255, 255, 0.10); }
 .ka-subnav .ka-nav-item { min-height: 36px; padding: 6px 10px; font-size: 14px; }
 .ka-subnav .ka-nav-item::before { left: -13px; }
-.ka-nav-item .ka-count { margin-left: auto; }
+@media (max-width: 767px) { .ka-nav-item, .ka-nav-group > summary, .ka-subnav .ka-nav-item { min-height: var(--touch-target); } }
+.ka-nav-item .ka-count, .ka-nav-group > summary .ka-count { margin-left: auto; }
+.ka-nav-group > summary .ka-count + .ka-chev { margin-left: var(--space-2); }
+/* The group's total is for a closed group; an open one shows the numbers beside its pages. */
+.ka-nav-group[open] > summary .ka-count { display: none; }
+.ka-nav-group[open] > summary .ka-count + .ka-chev { margin-left: auto; }
 .ka-sidebar__foot { padding: var(--space-3) var(--space-4); border-top: 1px solid rgba(255, 255, 255, 0.06); font-size: 12px; color: var(--ink-on-sidebar); }
 
 /* ---------- Header ---------- */
@@ -293,8 +298,21 @@ a.ka-card:hover, .ka-card--link:hover { transform: translateY(-2px); box-shadow:
 .ka-user__text strong { font-size: 14px; font-weight: 600; }
 .ka-user__text span { font-size: 13px; color: var(--ink-muted); }
 .ka-dot { position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--brand); box-shadow: 0 0 0 2px var(--bg-surface); }
-@media (max-width: 1023px) { .ka-header__search { display: none; } }
-@media (max-width: 639px) { .ka-header { gap: var(--space-2); padding: 0 var(--space-4); } .ka-user__text, .ka-crumbs { display: none; } }
+@media (max-width: 1023px) {
+  .ka-header__search { display: none; }
+  /* Below 1024px the field opens over the whole header, so it has the room of a phone screen. */
+  .ka-header__search.is-open { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; width: auto; padding: 0 var(--space-4); background: var(--bg-surface); }
+  .ka-header__search.is-open .ka-input-wrap { flex: 1; max-width: none; }
+}
+.ka-header__search { position: relative; }
+.ka-search-results { position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 5; margin: 0; padding: 6px; list-style: none; border: 1px solid var(--border); border-radius: var(--radius-card); background: var(--bg-surface); box-shadow: var(--shadow-raise); animation: ka-pop var(--ka-base) var(--ka-ease); }
+.ka-header__search.is-open .ka-search-results { top: calc(100% - 8px); left: var(--space-4); right: var(--space-4); }
+.ka-search-result, .ka-search-empty { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: 40px; padding: 8px 10px; border-radius: var(--radius-sm); font: 400 15px/22px var(--ka-font); }
+.ka-search-result { cursor: pointer; }
+.ka-search-result[aria-selected="true"] { background: var(--brand-soft); color: var(--brand-ink); font-weight: 600; }
+.ka-search-result__group, .ka-search-empty { font-size: 13px; color: var(--ink-muted); font-weight: 400; }
+@media (max-width: 767px) { .ka-search-result, .ka-search-empty { min-height: var(--touch-target); } }
+@media (max-width: 639px) { .ka-header { gap: var(--space-2); padding: 0 var(--space-4); } .ka-user__text, .ka-crumbs, .ka-avatar { display: none; } }
 
 /* ---------- ThemeToggle ---------- */
 .ka-theme {
