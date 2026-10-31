@@ -199,7 +199,7 @@ export const getDelayBadge = (job: JobOrder) => {
 
 
 export const initial = (name: string) => (name.trim()[0] || '?').toUpperCase();
-export const TYPE_LABEL: Record<string, string> = { website: 'Website', purchase: 'สั่งซื้อ' };
+export const TYPE_LABEL: Record<string, string> = { website: 'Website', purchase: 'สั่งซื้อ', custom: 'Custom' };
 
 /** The weeks of a month as day cells, each with the jobs whose target date falls on it. */
 export function buildCalendarCells(calendarDate: Date, filteredJobOrders: JobOrder[]): CalendarCell[] {

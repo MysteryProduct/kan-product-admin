@@ -41,7 +41,7 @@ export default function JobOrdersPage() {
 	const [copySeed, setCopySeed] = useState<Partial<CreateJobOrderDto> | null>(null);
 	const [searchText, setSearchText] = useState('');
 	const [selectedAssignee, setSelectedAssignee] = useState('all');
-	const [selectedType, setSelectedType] = useState<'all' | 'website' | 'purchase'>('all');
+	const [selectedType, setSelectedType] = useState<'all' | 'website' | 'purchase' | 'custom'>('all');
 	const [viewMode, setViewMode] = useState<ViewMode>('board');
 	const [calendarMonth, setCalendarMonth] = useState(() => {
 		const now = new Date();

@@ -98,8 +98,9 @@ class JobOrderModel {
 
   async createJobOrder(data: CreateJobOrderDto): Promise<JobOrder> {
     try {
-      const response = await axiosInstance.post<SingleJobOrderResponse>('/job-order', data);
-      return response.data.data;
+      // POST /job-order sends the job itself, not wrapped in `data`.
+      const response = await axiosInstance.post<JobOrder | SingleJobOrderResponse>('/job-order', data);
+      return 'job_order_id' in response.data ? response.data : response.data.data;
     } catch (error) {
       console.error('Error creating job order:', error);
       throw error;

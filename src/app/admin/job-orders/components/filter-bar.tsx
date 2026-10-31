@@ -6,7 +6,7 @@ import Popover from '@/components/Popover';
 import { formatThaiDate } from '@/lib/date-format';
 import { toIsoDate, type ViewMode } from '../board-model';
 
-type JobType = 'all' | 'website' | 'purchase';
+type JobType = 'all' | 'website' | 'purchase' | 'custom';
 
 interface FilterBarProps {
 	isLoading: boolean;
@@ -88,7 +88,7 @@ export default function FilterBar({ isLoading, hasLoaded, viewMode, searchText, 
 			</>
 		)}
 		<FilterChip label="ผู้รับผิดชอบ" single options={assigneeOptions} selected={selectedAssignee === 'all' ? [] : [selectedAssignee]} onChange={(values) => setSelectedAssignee(values[0] ?? 'all')} />
-		<FilterChip label="ประเภท" single options={[{ value: 'website', label: 'ขายบน Website' }, { value: 'purchase', label: 'ตามคำสั่งซื้อ' }]} selected={selectedType === 'all' ? [] : [selectedType]} onChange={(values) => setSelectedType((values[0] as JobType | undefined) ?? 'all')} />
+		<FilterChip label="ประเภท" single options={[{ value: 'website', label: 'ขายบน Website' }, { value: 'purchase', label: 'ตามคำสั่งซื้อ' }, { value: 'custom', label: 'สินค้า Custom' }]} selected={selectedType === 'all' ? [] : [selectedType]} onChange={(values) => setSelectedType((values[0] as JobType | undefined) ?? 'all')} />
 		{activeChipCount > 0 && (
 			<button type="button" className="ka-btn ka-btn--ghost" onClick={() => { setSearchText(''); setSelectedAssignee('all'); setSelectedType('all'); }}>ล้างตัวกรอง</button>
 		)}

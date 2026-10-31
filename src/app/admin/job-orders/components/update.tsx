@@ -428,7 +428,9 @@ export default function UpdateJobOrderForm({
 							required
 							value={jobOrderType}
 							onChange={handleTypeChange}
-							options={JOB_ORDER_TYPES}
+							// A Custom job stays one: the API refuses moving into or out of it (TASK-0219).
+							options={jobOrderType === 'custom' ? [{ value: 'custom', label: 'สินค้า Custom' }] : JOB_ORDER_TYPES}
+							disabled={jobOrderType === 'custom'}
 							placeholder="เลือกประเภทงาน"
 						/>
 

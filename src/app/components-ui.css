@@ -477,7 +477,7 @@ ul.ka-kv { margin: 0; padding: 0; list-style: none; }
 .ka-daycard:hover { background: var(--bg-subtle); }
 .ka-daycard > span > b { font: 600 15px/22px var(--ka-font); }
 
-.ka-types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+.ka-types { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); }
 @media (max-width: 639px) { .ka-types { grid-template-columns: minmax(0, 1fr); } }
 .ka-opt { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border: 1px solid var(--border-control); border-radius: 10px; background: var(--bg-surface); color: var(--ink); font: 400 14px/22px var(--ka-font); text-align: left; cursor: pointer; transition: background-color var(--ka-fast) var(--ka-ease), border-color var(--ka-fast) var(--ka-ease); }
 .ka-opt:hover { background: var(--bg-subtle); }

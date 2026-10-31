@@ -58,6 +58,7 @@ const sizeModel = new SizeModel();
 const TYPES: { value: JobOrderType; label: string; hint: string }[] = [
   { value: 'website', label: 'ขายบน Website', hint: 'เติมสต็อกหน้าร้าน' },
   { value: 'purchase', label: 'ตามคำสั่งซื้อ', hint: 'ผูกกับใบขาย' },
+  { value: 'custom', label: 'สินค้า Custom', hint: 'จากแบบของลูกค้า ไม่เข้าสต็อกขาย' },
 ];
 
 const DAY_MS = 24 * 60 * 60 * 1000;

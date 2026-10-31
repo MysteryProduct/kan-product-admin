@@ -1,7 +1,8 @@
 import { PaginationMeta } from './pagination';
 
 export type JobOrderStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
-export type JobOrderType = 'website' | 'purchase';
+// `custom` (TASK-0219): made for a Custom request; completing it adds no store stock.
+export type JobOrderType = 'website' | 'purchase' | 'custom';
 
 export interface JobOrderMaterial {
   job_order_material_id?: number;

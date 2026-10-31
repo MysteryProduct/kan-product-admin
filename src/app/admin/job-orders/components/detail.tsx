@@ -41,7 +41,7 @@ const normalize = (status?: string) => {
   return 'pending';
 };
 
-const typeLabel = (type?: string) => (type === 'website' ? 'ขายบน Website' : type === 'purchase' ? 'ตามคำสั่งซื้อ' : type || '-');
+const typeLabel = (type?: string) => (type === 'website' ? 'ขายบน Website' : type === 'purchase' ? 'ตามคำสั่งซื้อ' : type === 'custom' ? 'สินค้า Custom' : type || '-');
 const count = (value: number) => new Intl.NumberFormat('th-TH').format(value);
 const baht = (value: number) => `฿${new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value)}`;
 
