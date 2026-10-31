@@ -1,0 +1,29 @@
+/* Job order page v2 (TASK-0323): board, list and calendar from the "ผลิตสินค้า v2" artboards.
+   Tokens only; rules are scoped under .ka-jo so the shared ka-* classes keep their look elsewhere. */
+
+/* ---------- Job card (C) ---------- */
+.ka-jo .ka-jo-card { min-width: 0; gap: var(--space-2); cursor: default; }
+.ka-jo .ka-jo-card.ka-kc--grab { cursor: grab; }
+.ka-jo .ka-jo-card:hover, .ka-jo .ka-jo-card:focus-within { box-shadow: var(--shadow-raise); transform: translateY(-1px); }
+.ka-jo .ka-jo-card--late { border-color: color-mix(in srgb, var(--danger) 30%, var(--border)); box-shadow: inset 3px 0 0 var(--danger); }
+.ka-jo .ka-jo-card--late:hover, .ka-jo .ka-jo-card--late:focus-within { box-shadow: inset 3px 0 0 var(--danger), var(--shadow-raise); }
+.ka-jo-card__top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); min-width: 0; }
+.ka-jo .ka-kc__title { flex: 1 1 auto; font: 600 15px/22px var(--ka-font); overflow-wrap: anywhere; }
+.ka-jo-type { flex: none; padding: 0 8px; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--ink-muted); font: 400 12px/20px var(--ka-font); white-space: nowrap; }
+.ka-jo-pills { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
+.ka-jo-pill { max-width: 100%; padding: 0 8px; border-radius: var(--radius-pill); background: var(--bg-subtle); color: var(--ink-muted); font: 400 12px/20px var(--ka-font); overflow-wrap: anywhere; }
+.ka-jo .ka-kc__meta { min-width: 0; color: var(--ink-muted); }
+.ka-jo .ka-kc__meta > span { min-width: 0; overflow-wrap: anywhere; }
+.ka-jo-due { align-self: flex-start; max-width: 100%; padding: 0 8px; border-radius: var(--radius-pill); background: var(--neutral-soft); color: var(--ink-muted); font: 600 12px/22px var(--ka-font); white-space: normal; overflow-wrap: anywhere; }
+.ka-jo-due[data-tone="success"] { background: var(--success-soft); color: var(--success); }
+.ka-jo-due[data-tone="warning"] { background: var(--warning-soft); color: var(--warning); }
+.ka-jo-due[data-tone="danger"] { background: var(--danger-soft); color: var(--danger); }
+.ka-jo-card__foot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; padding-top: var(--space-2); border-top: 1px solid var(--border); }
+.ka-jo-card__who { flex: 1 1 80px; min-width: 0; overflow: hidden; color: var(--ink); font: 400 14px/22px var(--ka-font); white-space: nowrap; text-overflow: ellipsis; }
+.ka-jo-card__foot > .ka-jo-next { margin-left: auto; }
+
+/* The forward-step button: outlined in the action colour, 32px (44px on touch widths). */
+.ka-jo-next { display: inline-flex; flex: none; align-items: center; justify-content: center; gap: 6px; min-height: 32px; padding: 0 10px; border: 1px solid var(--action); border-radius: var(--radius-control); background: var(--bg-surface); color: var(--brand-ink); font: 600 13px/20px var(--ka-font); white-space: nowrap; cursor: pointer; transition: background-color var(--ka-fast) var(--ka-ease); }
+.ka-jo-next:hover { background: var(--brand-soft); }
+.ka-jo-next > svg { width: 16px; height: 16px; }
+@media (max-width: 767px) { .ka-jo-next { min-height: var(--touch-target); } }

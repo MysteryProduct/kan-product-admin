@@ -1,7 +1,7 @@
 import { useState, type Dispatch, type SetStateAction } from 'react';
 import JobOrderModel from '@/models/job-order';
 import type { JobOrder } from '@/types/job-order';
-import { ALLOWED_TRANSITIONS, mapStatusToLabel, normalizeStatus, type BoardStatus } from './board-model';
+import { ALLOWED_TRANSITIONS, normalizeStatus, type BoardStatus } from './board-model';
 
 type ResultDialog = { isOpen: boolean; status: 'success' | 'error'; message: string };
 
@@ -13,13 +13,15 @@ interface StatusMoveDeps {
 	setResultDialog: Dispatch<SetStateAction<ResultDialog>>;
 	setSelectedJobOrder: (job: JobOrder | null) => void;
 	setIsDetailOpen: (open: boolean) => void;
+	/** Says where a job went after a move the server accepted. */
+	onMoved: (job: JobOrder, status: BoardStatus) => void;
 }
 
 /**
  * Status changes of the job order page: a move to completed opens the quantity dialog, a move to
  * cancelled opens the reason dialog, and any other allowed move is saved at once.
  */
-export function useStatusMoves({ jobOrderModel, jobOrders, setJobOrders, employeeId, setResultDialog, setSelectedJobOrder, setIsDetailOpen }: StatusMoveDeps) {
+export function useStatusMoves({ jobOrderModel, jobOrders, setJobOrders, employeeId, setResultDialog, setSelectedJobOrder, setIsDetailOpen, onMoved }: StatusMoveDeps) {
 	const [draggingJobId, setDraggingJobId] = useState<string | null>(null);
 	const [dragOverColumn, setDragOverColumn] = useState<BoardStatus | null>(null);
 	const [pendingCompleteJob, setPendingCompleteJob] = useState<JobOrder | null>(null);
@@ -29,8 +31,8 @@ export function useStatusMoves({ jobOrderModel, jobOrders, setJobOrders, employe
 	const [pendingCancelJob, setPendingCancelJob] = useState<JobOrder | null>(null);
 
 	const updateJobStatus = async (jobId: string, targetStatus: BoardStatus, qty?: number, defectQty?: number, reason?: string): Promise<boolean> => {
-		const targetLabel = mapStatusToLabel(targetStatus);
 		const previous = [...jobOrders];
+		const moved = previous.find((job) => job.job_order_id === jobId);
 		setJobOrders((prev) =>
 			prev.map((job) =>
 				job.job_order_id === jobId
@@ -47,11 +49,7 @@ export function useStatusMoves({ jobOrderModel, jobOrders, setJobOrders, employe
 
 		try {
 			await jobOrderModel.updateJobOrderStatus(jobId, targetStatus, employeeId, qty, defectQty, reason);
-			setResultDialog({
-				isOpen: true,
-				status: 'success',
-				message: `ย้ายสถานะงานเป็น ${targetLabel} สำเร็จ`,
-			});
+			if (moved) onMoved(moved, targetStatus);
 			return true;
 		} catch (error) {
 			setJobOrders(previous);

@@ -5,13 +5,14 @@ import ActionResultDialog from '@/components/ActionResultDialog';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import CancellationDialog from '@/components/CancellationDialog';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useToast } from '@/components/Toast';
 import JobOrderModel from '@/models/job-order';
 import CreateJobOrderDrawer from './components/create-drawer';
 import UpdateJobOrderForm from './components/update';
 import JobOrderDetailModal from './components/detail';
 import { CreateJobOrderDto, JobOrder } from '@/types/job-order';
 import { toDateValue, toLocalIsoDate } from '@/lib/date-format';
-import { ALLOWED_TRANSITIONS, BOARD_COLUMNS, count, DEFAULT_VISIBLE, getDelayDays, getUserFromCookie, normalizeStatus, PAGE_SIZE, buildCalendarCells, parseCalendarMonth, toDateKey, toIsoDate, type CalendarCell, type ViewMode } from './board-model';
+import { ALLOWED_TRANSITIONS, BOARD_COLUMNS, count, DEFAULT_VISIBLE, getDelayDays, getUserFromCookie, mapStatusToLabel, normalizeStatus, PAGE_SIZE, buildCalendarCells, parseCalendarMonth, toDateKey, toIsoDate, type BoardStatus, type CalendarCell, type ViewMode } from './board-model';
 import BoardView from './components/board-view';
 import FilterBar from './components/filter-bar';
 import { useBoardFilters } from './use-board-filters';
@@ -32,6 +33,8 @@ export default function JobOrdersPage() {
 	const canDelete = can('job_orders', 'delete');
 
 	const user = useMemo(() => getUserFromCookie(), []);
+	const toast = useToast();
+	const toastMoved = (job: JobOrder, status: BoardStatus) => toast({ message: `ย้าย ${job.job_order_code} ไป ${mapStatusToLabel(status)} แล้ว` });
 
 	const [isInsertOpen, setIsInsertOpen] = useState(false);
 	const [isUpdateOpen, setIsUpdateOpen] = useState(false);
@@ -129,7 +132,7 @@ export default function JobOrdersPage() {
 		draggingJobId, setDraggingJobId, dragOverColumn, setDragOverColumn, pendingCompleteJob, completionQty, setCompletionQty,
 		completionDefectQty, setCompletionDefectQty, isConfirmingComplete, pendingCancelJob, setPendingCancelJob,
 		closeDetailModal, moveJob, handleConfirmComplete, handleDrop,
-	} = useStatusMoves({ jobOrderModel, jobOrders, setJobOrders, employeeId: user?.employee_id, setResultDialog, setSelectedJobOrder, setIsDetailOpen });
+	} = useStatusMoves({ jobOrderModel, jobOrders, setJobOrders, employeeId: user?.employee_id, setResultDialog, setSelectedJobOrder, setIsDetailOpen, onMoved: toastMoved });
 	// Cards are memoised with one actions object; the ref hands them the move of the latest render,
 	// so a failed move rolls back to the current jobs instead of those of the first render.
 	const moveJobRef = useRef(moveJob);
@@ -254,7 +257,7 @@ export default function JobOrdersPage() {
 	}, [canAdd]);
 
 	return (
-		<div className="ka-page-body">
+		<div className="ka-page-body ka-jo">
 			<div className="ka-ph">
 				<div>
 					<h1 className="ka-ph__title">งานผลิต</h1>
@@ -392,6 +395,7 @@ export default function JobOrdersPage() {
 					onClose={() => setPendingCancelJob(null)}
 					onConfirm={async (reason) => {
 						await jobOrderModel.updateJobOrderStatus(pendingCancelJob.job_order_id, 'cancelled', user?.employee_id, undefined, undefined, reason);
+						toastMoved(pendingCancelJob, 'cancelled');
 						closeDetailModal();
 						await fetchJobOrders();
 					}}
