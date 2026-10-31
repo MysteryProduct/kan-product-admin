@@ -140,3 +140,14 @@
   .ka-jo-more { display: none; }
   .ka-jo-pj { flex-wrap: wrap; }
 }
+
+/* ---------- States and motion (E, A) ---------- */
+.ka-jo-row--skel { cursor: default; }
+.ka-jo-row--skel:hover { background: none; }
+.ka-jo .ka-empty { padding: var(--space-8) var(--space-4); }
+@media (prefers-reduced-motion: reduce) {
+  .ka-jo .ka-jo-card:hover, .ka-jo .ka-jo-card:focus-within, .ka-jo .ka-kc--grab:hover { transform: none; }
+}
+/* Scrolling rows clip an outside outline, so their controls draw focus inside or get room for it. */
+.ka-jo-views > button:focus-visible { outline-offset: -2px; }
+.ka-jo-tabs, .ka-jo-fbar__chips { padding: 3px; margin: -3px; }

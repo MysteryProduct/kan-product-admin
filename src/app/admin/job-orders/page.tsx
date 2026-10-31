@@ -6,12 +6,13 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import CancellationDialog from '@/components/CancellationDialog';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/components/Toast';
+import LoadErrorBanner from '@/components/LoadErrorBanner';
 import JobOrderModel from '@/models/job-order';
 import CreateJobOrderDrawer from './components/create-drawer';
 import UpdateJobOrderForm from './components/update';
 import JobOrderDetailModal from './components/detail';
 import { CreateJobOrderDto, JobOrder } from '@/types/job-order';
-import { ALLOWED_TRANSITIONS, BOARD_COLUMNS, count, DEFAULT_VISIBLE, getUserFromCookie, mapStatusToLabel, normalizeStatus, PAGE_SIZE, type BoardStatus, type StatusTab } from './board-model';
+import { ALLOWED_TRANSITIONS, count, DEFAULT_VISIBLE, getUserFromCookie, mapStatusToLabel, normalizeStatus, PAGE_SIZE, STATUS_META, type BoardStatus, type StatusTab } from './board-model';
 import BoardView from './components/board-view';
 import FilterBar, { type JobType } from './components/filter-bar';
 import StatusTabs from './components/status-tabs';
@@ -25,6 +26,9 @@ import ViewSwitch from './components/view-switch';
 import { useStatusMoves } from './use-status-moves';
 import { useJobOrders } from './use-job-orders';
 import { useCalendarState } from './use-calendar-state';
+import { usePageLinks } from './use-page-links';
+import { NoJobsState, NoMatchState, ViewSkeleton } from './components/view-states';
+import { TYPE_FILTER_OPTIONS } from './components/filter-bar';
 
 const jobOrderModel = new JobOrderModel();
 
@@ -80,33 +84,12 @@ export default function JobOrdersPage() {
 	});
 	const calendar = useCalendarState();
 
-	// A sale-order link opens its exact job, including jobs outside the board's date filter.
-	useEffect(() => {
-		const jobId = new URLSearchParams(window.location.search).get('jobId');
-		if (!canView || !jobId) return;
-		let active = true;
-		void jobOrderModel.getJobOrderById(jobId).then((job) => {
-			if (!active) return;
-			setSelectedJobOrder(job);
-			setIsDetailOpen(true);
-		}).catch((error: unknown) => {
-			if (active) setResultDialog({
-				isOpen: true,
-				status: 'error',
-				message: error instanceof Error ? error.message : 'ไม่สามารถเปิดงานผลิตได้',
-			});
-		});
-		return () => { active = false; };
-	}, [canView]);
-
 	// The board and list show the chosen target-date range; the calendar shows its month. Whichever view
 	// is open decides what is loaded, so switching back to the board reloads the board's range.
 	const boardRange = useMemo(() => ({ start: dateStart, end: dateEnd }), [dateStart, dateEnd]);
 	const activeRange = viewMode === 'calendar' ? calendar.monthRange : boardRange;
 
-	const { jobOrders, setJobOrders, isLoading, hasLoaded, fetchJobOrders } = useJobOrders(jobOrderModel, activeRange, sortDirection, (message) =>
-		setResultDialog({ isOpen: true, status: 'error', message }),
-	);
+	const { jobOrders, setJobOrders, isLoading, hasLoaded, loadError, fetchJobOrders } = useJobOrders(jobOrderModel, activeRange, sortDirection);
 
 	const { assigneeOptions, filteredJobOrders, grouped, tabCounts, tabJobs } = useBoardFilters(jobOrders, deferredSearchText, selectedAssignee, selectedType, sortDirection, statusTab);
 
@@ -195,6 +178,20 @@ export default function JobOrdersPage() {
 
 	const totalCards = filteredJobOrders.length;
 	const overdueCards = tabCounts.late;
+	// What the "no match" state says is on, and what "ล้างตัวกรอง" turns off.
+	const activeFilters = [
+		...(deferredSearchText.trim() ? [`ค้นหา “${deferredSearchText.trim()}”`] : []),
+		...(selectedAssignee !== 'all' ? [`ผู้รับผิดชอบ ${assigneeOptions.find((option) => option.value === selectedAssignee)?.label ?? ''}`] : []),
+		...(selectedType !== 'all' ? [`ประเภท ${TYPE_FILTER_OPTIONS.find((option) => option.value === selectedType)?.label ?? ''}`] : []),
+		...(statusTab !== 'all' && viewMode !== 'board' ? [`สถานะ ${STATUS_META[statusTab].label}`] : []),
+	];
+	const clearFilters = () => {
+		setSearchText('');
+		setSelectedAssignee('all');
+		setSelectedType('all');
+		setStatusTab('all');
+	};
+	const visibleCount = viewMode === 'board' ? filteredJobOrders.length : tabJobs.length;
 	const lead = `${count(totalCards)} งานในช่วงนี้ · ${overdueCards > 0 ? `เลยกำหนด ${count(overdueCards)} งาน` : 'ไม่มีงานเลยกำหนด'}`;
 
 	const openCreate = (seed: Partial<CreateJobOrderDto> | null) => {
@@ -202,20 +199,16 @@ export default function JobOrdersPage() {
 		setIsInsertOpen(true);
 	};
 
-	// "สร้างงานผลิต" on the Dashboard links here with ?create=1: open the drawer once, then drop the
-	// query so a reload or the back button does not open it again (TASK-0321 R6).
-	useEffect(() => {
-		if (!canAdd) return;
-		const url = new URL(window.location.href);
-		if (url.searchParams.get('create') !== '1') return;
-		const frame = requestAnimationFrame(() => {
-			url.searchParams.delete('create');
-			window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
-			setCopySeed(null);
-			setIsInsertOpen(true);
-		});
-		return () => cancelAnimationFrame(frame);
-	}, [canAdd]);
+	usePageLinks(jobOrderModel, {
+		canView,
+		canAdd,
+		openJob: (job) => {
+			setSelectedJobOrder(job);
+			setIsDetailOpen(true);
+		},
+		openCreate: () => openCreate(null),
+		onError: (message) => setResultDialog({ isOpen: true, status: 'error', message }),
+	});
 
 	return (
 		<div className="ka-page-body ka-jo">
@@ -273,16 +266,14 @@ export default function JobOrdersPage() {
 				setSortDirection={setSortDirection}
 			/>
 
+			<LoadErrorBanner message={loadError} onRetry={() => void fetchJobOrders()} />
+
 			{isLoading && !hasLoaded ? (
-				<div className="ka-board" aria-busy="true">
-					{BOARD_COLUMNS.map((column) => (
-						<section key={column.key} className="ka-col" style={{ ['--c' as string]: column.color }}>
-							<div className="ka-col__head"><b>{column.label}</b></div>
-							<span className="ka-skel" style={{ height: 96 }} />
-							<span className="ka-skel" style={{ height: 96 }} />
-						</section>
-					))}
-				</div>
+				<ViewSkeleton viewMode={viewMode} />
+			) : viewMode !== 'calendar' && hasLoaded && jobOrders.length === 0 ? (
+				<NoJobsState canAdd={canAdd} onCreate={() => openCreate(null)} />
+			) : viewMode !== 'calendar' && visibleCount === 0 && jobOrders.length > 0 ? (
+				<NoMatchState filters={activeFilters} onClear={clearFilters} />
 			) : viewMode === 'board' ? (
 				<BoardView
 					isLoading={isLoading}
