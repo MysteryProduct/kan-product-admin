@@ -753,6 +753,20 @@ export default function ProductsPage() {
           setSelectedDetailProduct(null);
         }}
         product={selectedDetailProduct}
+        policy={selectedDetailProduct ? policies.get(selectedDetailProduct.product_id) : undefined}
+        colorHexes={colorHexes}
+        onEdit={canEditProduct ? (product) => router.push(`/admin/products/${product.product_id}/edit`) : undefined}
+        onDelete={
+          canDeleteProduct
+            ? (product) => {
+                setIsDetailFormOpen(false);
+                setSelectedDetailProduct(null);
+                setProductToDelete(product);
+                setIsDeleteDialogOpen(true);
+              }
+            : undefined
+        }
+        onEditPolicy={canEditProduct ? (product) => openBulk('policy', [product]) : undefined}
       />
       {bulk && canEditProduct && (
         <BulkDialog
