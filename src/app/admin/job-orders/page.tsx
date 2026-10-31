@@ -11,8 +11,7 @@ import CreateJobOrderDrawer from './components/create-drawer';
 import UpdateJobOrderForm from './components/update';
 import JobOrderDetailModal from './components/detail';
 import { CreateJobOrderDto, JobOrder } from '@/types/job-order';
-import { toLocalIsoDate } from '@/lib/date-format';
-import { ALLOWED_TRANSITIONS, BOARD_COLUMNS, count, DEFAULT_VISIBLE, getUserFromCookie, mapStatusToLabel, normalizeStatus, PAGE_SIZE, buildCalendarCells, parseCalendarMonth, toDateKey, toIsoDate, type BoardStatus, type CalendarCell, type StatusTab } from './board-model';
+import { ALLOWED_TRANSITIONS, BOARD_COLUMNS, count, DEFAULT_VISIBLE, getUserFromCookie, mapStatusToLabel, normalizeStatus, PAGE_SIZE, type BoardStatus, type StatusTab } from './board-model';
 import BoardView from './components/board-view';
 import FilterBar, { type JobType } from './components/filter-bar';
 import StatusTabs from './components/status-tabs';
@@ -25,6 +24,7 @@ import type { JobCardActions } from './components/job-card';
 import ViewSwitch from './components/view-switch';
 import { useStatusMoves } from './use-status-moves';
 import { useJobOrders } from './use-job-orders';
+import { useCalendarState } from './use-calendar-state';
 
 const jobOrderModel = new JobOrderModel();
 
@@ -51,10 +51,6 @@ export default function JobOrdersPage() {
 	const [statusTab, setStatusTab] = useState<StatusTab>('all');
 	const [searchOpen, setSearchOpen] = useState(false);
 	const [viewMode, setViewMode] = useViewMode();
-	const [calendarMonth, setCalendarMonth] = useState(() => {
-		const now = new Date();
-		return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-	});
 	const [dateStart, setDateStart] = useState(() => {
 		const now = new Date();
 		return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
@@ -82,7 +78,7 @@ export default function JobOrdersPage() {
 		status: 'success',
 		message: '',
 	});
-	const [selectedDay, setSelectedDay] = useState<string>(() => toLocalIsoDate(new Date()));
+	const calendar = useCalendarState();
 
 	// A sale-order link opens its exact job, including jobs outside the board's date filter.
 	useEffect(() => {
@@ -103,36 +99,16 @@ export default function JobOrdersPage() {
 		return () => { active = false; };
 	}, [canView]);
 
-	// The board shows the chosen target-date range; the calendar shows its month. Whichever view is open
-	// decides what is loaded, so switching back to the board reloads the board's range.
-	const activeRange = useMemo(() => {
-		if (viewMode === 'calendar') {
-			const monthStart = parseCalendarMonth(calendarMonth);
-			const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
-			return { start: toIsoDate(monthStart), end: toIsoDate(monthEnd) };
-		}
-		return { start: dateStart, end: dateEnd };
-	}, [viewMode, calendarMonth, dateStart, dateEnd]);
+	// The board and list show the chosen target-date range; the calendar shows its month. Whichever view
+	// is open decides what is loaded, so switching back to the board reloads the board's range.
+	const boardRange = useMemo(() => ({ start: dateStart, end: dateEnd }), [dateStart, dateEnd]);
+	const activeRange = viewMode === 'calendar' ? calendar.monthRange : boardRange;
 
 	const { jobOrders, setJobOrders, isLoading, hasLoaded, fetchJobOrders } = useJobOrders(jobOrderModel, activeRange, sortDirection, (message) =>
 		setResultDialog({ isOpen: true, status: 'error', message }),
 	);
 
 	const { assigneeOptions, filteredJobOrders, grouped, tabCounts, tabJobs } = useBoardFilters(jobOrders, deferredSearchText, selectedAssignee, selectedType, sortDirection, statusTab);
-
-	const calendarDate = useMemo(() => parseCalendarMonth(calendarMonth), [calendarMonth]);
-
-	const calendarTitle = useMemo(() => {
-		return calendarDate.toLocaleDateString('th-TH', {
-			month: 'long',
-			year: 'numeric',
-		});
-	}, [calendarDate]);
-
-	const calendarCells = useMemo<CalendarCell[]>(
-		() => (viewMode === 'calendar' ? buildCalendarCells(calendarDate, tabJobs) : []),
-		[viewMode, calendarDate, tabJobs],
-	);
 
 	const {
 		draggingJobId, setDraggingJobId, dragOverColumn, setDragOverColumn, pendingCompleteJob, completionQty, setCompletionQty,
@@ -218,25 +194,8 @@ export default function JobOrdersPage() {
 	};
 
 	const totalCards = filteredJobOrders.length;
-	const todayDateKey = toDateKey(new Date());
-
-	// The day panel only knows the month on screen, so moving the month also moves the selected day
-	// to that month's first day; a day of another month would otherwise show "0 งาน" wrongly.
-	const moveCalendarMonth = (direction: -1 | 1) => {
-		const [yearText, monthText] = calendarMonth.split('-');
-		const year = Number(yearText);
-		const month = Number(monthText);
-		const baseDate = !Number.isNaN(year) && !Number.isNaN(month) ? new Date(year, month - 1, 1) : new Date();
-		baseDate.setMonth(baseDate.getMonth() + direction);
-		const next = `${baseDate.getFullYear()}-${String(baseDate.getMonth() + 1).padStart(2, '0')}`;
-		setCalendarMonth(next);
-		setSelectedDay(next === todayDateKey.slice(0, 7) ? todayDateKey : `${next}-01`);
-	};
-
 	const overdueCards = tabCounts.late;
 	const lead = `${count(totalCards)} งานในช่วงนี้ · ${overdueCards > 0 ? `เลยกำหนด ${count(overdueCards)} งาน` : 'ไม่มีงานเลยกำหนด'}`;
-	const selectedDayJobs = calendarCells.find((cell) => cell.dateKey === selectedDay)?.jobs ?? [];
-	const selectedDayDate = selectedDay ? new Date(`${selectedDay}T00:00:00`) : null;
 
 	const openCreate = (seed: Partial<CreateJobOrderDto> | null) => {
 		setCopySeed(seed);
@@ -344,25 +303,17 @@ export default function JobOrdersPage() {
 			) : (
 				<CalendarView
 					isLoading={isLoading}
-					calendarTitle={calendarTitle}
-					calendarCells={calendarCells}
-					todayDateKey={todayDateKey}
-					selectedDay={selectedDay}
-					selectedDayJobs={selectedDayJobs}
-					selectedDayDate={selectedDayDate}
-					onSelectDay={setSelectedDay}
-					onMoveMonth={moveCalendarMonth}
-					onToday={() => {
-						const now = new Date();
-						setCalendarMonth(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
-						setSelectedDay(todayDateKey);
-					}}
-					onOpenJob={(job) => {
-						setSelectedJobOrder(job);
-						setIsDetailOpen(true);
-					}}
+					monthDate={calendar.monthDate}
+					jobs={tabJobs}
+					todayKey={calendar.todayKey}
+					selectedDay={calendar.selectedDay}
+					onSelectDay={calendar.selectDay}
+					onMoveMonth={calendar.moveMonth}
+					onToday={calendar.goToday}
 					onCreate={(targetDate) => openCreate({ target_date: targetDate })}
 					canAdd={canAdd}
+					canEdit={canEdit}
+					actions={cardActions}
 				/>
 			)}
 

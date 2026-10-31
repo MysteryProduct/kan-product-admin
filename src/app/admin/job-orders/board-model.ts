@@ -1,7 +1,7 @@
 import Cookies from 'js-cookie';
 import type { BadgeTone } from '@/components/StatusBadge';
 import type { JobOrder } from '@/types/job-order';
-import { toDateValue, toLocalIsoDate } from '@/lib/date-format';
+import { toLocalIsoDate } from '@/lib/date-format';
 
 // Board columns, transitions and date helpers shared by the job order page and its views.
 
@@ -127,76 +127,7 @@ export const getUserFromCookie = () => {
 
 export const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
-export const startOfDay = (value: Date) => new Date(value.getFullYear(), value.getMonth(), value.getDate());
-
 export const toDateKey = toLocalIsoDate;
-
-export const getDelayDays = (targetDate: Date, compareDate: Date) => {
-	const target = startOfDay(targetDate);
-	const compare = startOfDay(compareDate);
-	return Math.floor((compare.getTime() - target.getTime()) / DAY_IN_MS);
-};
-
-export const getFinishDate = (job: JobOrder): Date | null => {
-	return (
-		toDateValue(job.finish_date) ||
-		toDateValue(job.completed_date) ||
-		toDateValue(job.completed_at) ||
-		toDateValue(job.finish_at)
-	);
-};
-
-export const getDelayBadge = (job: JobOrder) => {
-	const status = normalizeStatus(job.job_order_status);
-	if (status === 'cancelled') {
-		return null;
-	}
-
-	const targetDate = toDateValue(job.target_date);
-	if (!targetDate) {
-		return {
-			label: 'ไม่มีวันเป้าหมาย',
-			tone: 'neutral' as BadgeTone,
-		};
-	}
-
-	if (status === 'completed') {
-		const finishDate = getFinishDate(job);
-		if (!finishDate) {
-			return {
-				label: 'ไม่มีวันเสร็จ',
-				tone: 'neutral' as BadgeTone,
-			};
-		}
-
-		const delayedDays = getDelayDays(targetDate, finishDate);
-		if (delayedDays > 0) {
-			return {
-				label: `ล่าช้า ${delayedDays} วัน`,
-				tone: 'danger' as BadgeTone,
-			};
-		}
-
-		return {
-			label: 'ตรงเวลา',
-			tone: 'success' as BadgeTone,
-		};
-	}
-
-	const delayedDays = getDelayDays(targetDate, new Date());
-	if (delayedDays > 0) {
-		return {
-			label: `ล่าช้า ${delayedDays} วัน`,
-			tone: 'danger' as BadgeTone,
-		};
-	}
-
-	return {
-		label: 'ตรงเวลา',
-		tone: 'success' as BadgeTone,
-	};
-};
-
 
 export type StatusTab = 'all' | 'late' | BoardStatus;
 
@@ -301,13 +232,14 @@ export function buildCalendarCells(calendarDate: Date, filteredJobOrders: JobOrd
 	const totalSlots = Math.ceil((leadingDays + daysInMonth) / 7) * 7;
 
 	const jobsByDate = new Map<string, JobOrder[]>();
+	const monthKey = toDateKey(monthStart).slice(0, 7);
 	filteredJobOrders.forEach((job) => {
-		const targetDate = toDateValue(job.target_date);
-		if (!targetDate || targetDate.getFullYear() !== currentYear || targetDate.getMonth() !== currentMonth) {
+		// Grouped by the Bangkok day, the same day the card's due label counts from.
+		const key = bangkokDayKey(job.target_date ?? null);
+		if (!key || key.slice(0, 7) !== monthKey) {
 			return;
 		}
 
-		const key = toDateKey(targetDate);
 		const previous = jobsByDate.get(key) || [];
 		jobsByDate.set(key, [...previous, job]);
 	});
