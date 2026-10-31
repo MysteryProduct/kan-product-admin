@@ -408,6 +408,20 @@ function DataTableInner<T>(
             <div className="ka-table-tools">
               {isCards && (
                 <>
+                  {selection && (
+                    <label className="ka-check-hit ka-table-tools__all">
+                      <input
+                        ref={selectAllRef}
+                        type="checkbox"
+                        className="ka-check"
+                        checked={allChecked}
+                        disabled={selectionLocked || pageKeys.length === 0}
+                        onChange={(e) => toggleAll(e.target.checked)}
+                        aria-label="เลือกทุกรายการในหน้านี้"
+                      />
+                      <span>ทั้งหน้า</span>
+                    </label>
+                  )}
                   {filterableColumns.map((col) => {
                     const current = getFilterValue(String(col.key));
                     const selectedValues = Array.isArray(current) ? current : current ? [current] : [];
@@ -419,7 +433,11 @@ function DataTableInner<T>(
                           single={col.filterType === 'select'}
                           options={(col.filterOptions ?? []).map((opt) => ({ value: opt.value.toLowerCase(), label: opt.label }))}
                           selected={selectedValues}
-                          onChange={(values) => handleFilter(String(col.key), values)}
+                          // A `select` column keeps the string the table header sends, so the radio
+                          // there still shows the choice after the viewport grows past 640px.
+                          onChange={(values) =>
+                            handleFilter(String(col.key), col.filterType === 'select' ? values[0] ?? '' : values)
+                          }
                         />
                       );
                     }

@@ -84,6 +84,9 @@ const daysAway = (date: string) => {
   return `ผ่านมาแล้ว ${count(-days)} วัน`;
 };
 
+/** `GET /stock-materials/material/:id` needs the stock-material view permission; without it the form still saves, only the warning is missing. */
+const STOCK_FORBIDDEN = -1;
+
 /** Remaining stock of each material, summed over the lots a job can draw from (`available` and `partial`, as the job-order service does). */
 async function readStock(ids: string[]): Promise<Map<string, number>> {
   const entries = await Promise.all(
@@ -94,8 +97,9 @@ async function readStock(ids: string[]): Promise<Map<string, number>> {
           .filter((lot) => ['available', 'partial'].includes(lot.stock_material_status || 'available'))
           .reduce((sum, lot) => sum + Number(lot.stock_material_remain_qty || 0), 0);
         return [id, total] as const;
-      } catch {
-        return [id, Number.NaN] as const;
+      } catch (error) {
+        const status = (error as { response?: { status?: number } }).response?.status;
+        return [id, status === 403 ? STOCK_FORBIDDEN : Number.NaN] as const;
       }
     }),
   );
@@ -240,7 +244,7 @@ export default function CreateJobOrderDrawer({ isOpen, onClose, onSuccess, initi
     .map((row) => {
       const need = row.material_qty * quantity;
       const have = stock.get(row.material_id);
-      return { row, need, have, short: have !== undefined && !Number.isNaN(have) ? Math.max(0, need - have) : 0 };
+      return { row, need, have, short: have !== undefined && !Number.isNaN(have) && have !== STOCK_FORBIDDEN ? Math.max(0, need - have) : 0 };
     });
   const shortCount = shortages.filter((item) => item.short > 0).length;
 
@@ -515,7 +519,7 @@ export default function CreateJobOrderDrawer({ isOpen, onClose, onSuccess, initi
                       </select>
                       {picked && info && (
                         <span className={`ka-todo__cap numeric ${info.short > 0 ? 'text-[var(--danger)]' : ''}`}>
-                          {info.have === undefined ? 'กำลังอ่านสต็อก…' : Number.isNaN(info.have) ? 'อ่านสต็อกไม่ได้' : `คงเหลือ ${count(info.have)}${info.short > 0 ? ` · ขาด ${count(info.short)}` : ''}`}
+                          {info.have === undefined ? 'กำลังอ่านสต็อก…' : info.have === STOCK_FORBIDDEN ? 'ไม่มีสิทธิ์ดูสต็อกวัตถุดิบ' : Number.isNaN(info.have) ? 'อ่านสต็อกไม่ได้' : `คงเหลือ ${count(info.have)}${info.short > 0 ? ` · ขาด ${count(info.short)}` : ''}`}
                         </span>
                       )}
                     </div>

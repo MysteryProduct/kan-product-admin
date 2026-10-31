@@ -11,6 +11,11 @@ interface BottomSheetProps {
   children: ReactNode;
   footer?: ReactNode;
   closeLabel?: string;
+  /** Pass `false` while the sheet holds unsaved input, as with `Drawer`. */
+  closeOnBackdrop?: boolean;
+  closeOnEscape?: boolean;
+  /** `elevated` stacks the sheet above an open Modal. */
+  layer?: 'default' | 'elevated';
 }
 
 /** A panel that rises from the bottom edge at every width. Menus and filters use it on phones. */

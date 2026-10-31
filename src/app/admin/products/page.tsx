@@ -130,6 +130,9 @@ export default function ProductsPage() {
   const [policiesLoaded, setPoliciesLoaded] = useState(false);
   const [policiesFailed, setPoliciesFailed] = useState(false);
   const [bulk, setBulk] = useState<{ mode: BulkMode; targets: Product[] } | null>(null);
+  // Deleting many uses the one-product endpoint in turn (the API has no bulk delete).
+  const [bulkDelete, setBulkDelete] = useState<Product[] | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [quickEditProduct, setQuickEditProduct] = useState<Product | null>(null);
   const [hiddenColumns, setHiddenColumns] = useState<string[]>([]);
   const [preferenceSaved, setPreferenceSaved] = useState(true);
@@ -519,6 +522,33 @@ export default function ProductsPage() {
     void handleRefreshProduct();
   };
 
+  const runBulkDelete = async () => {
+    if (!bulkDelete || bulkDeleting) return;
+    setBulkDeleting(true);
+    const failed: string[] = [];
+    for (const product of bulkDelete) {
+      try {
+        await productModel.deleteProduct(product.product_id);
+      } catch {
+        failed.push(product.product_name);
+      }
+    }
+    setBulkDeleting(false);
+    setBulkDelete(null);
+    clearSelection();
+    await handleRefreshProduct(true);
+    const done = bulkDelete.length - failed.length;
+    setResultDialog({
+      isOpen: true,
+      status: failed.length === 0 ? 'success' : 'error',
+      action: 'delete',
+      message:
+        failed.length === 0
+          ? `ลบสินค้าแล้ว ${count(done)} รายการ`
+          : `ลบแล้ว ${count(done)} รายการ ลบไม่ได้ ${count(failed.length)} รายการ: ${failed.join(', ')}`,
+    });
+  };
+
   const activeFilterCount = chipFilters.category.length + chipFilters.color.length + (searchQuery.trim() ? 1 : 0);
   const chipOptions = (options: { label: string; value: string }[]) => options.map((option) => ({ value: option.value, label: option.label }));
 
@@ -615,6 +645,9 @@ export default function ProductsPage() {
               <BulkAction disabled={loading} onClick={() => openBulk('category', chosenProducts)}>เปลี่ยนหมวดหมู่</BulkAction>
               <BulkAction disabled={loading} onClick={() => openBulk('policy', chosenProducts)}>ตั้งค่าหน้าร้าน</BulkAction>
               <BulkAction disabled={loading} onClick={() => openBulk('status', chosenProducts)}>เปลี่ยนสถานะตัวเลือก</BulkAction>
+              {canDeleteProduct && (
+                <BulkAction tone="danger" disabled={loading} onClick={() => setBulkDelete(chosenProducts)}>ลบ</BulkAction>
+              )}
             </BulkBar>
           </div>
         )}
@@ -730,6 +763,17 @@ export default function ProductsPage() {
             setProductToDelete(null);
           }
         }}
+      />
+
+      <ConfirmDialog
+        isOpen={canDeleteProduct && bulkDelete !== null}
+        title={`ลบสินค้า ${count(bulkDelete?.length ?? 0)} รายการ?`}
+        message={`${(bulkDelete ?? []).slice(0, 5).map((product) => product.product_name).join(', ')}${(bulkDelete?.length ?? 0) > 5 ? ` และอีก ${count((bulkDelete?.length ?? 0) - 5)} รายการ` : ''} จะหายจากหน้าร้านทันที ระบบลบทีละรายการและย้อนกลับไม่ได้ ใบขายเดิมยังเก็บไว้ครบ`}
+        confirmLabel={bulkDeleting ? 'กำลังลบ…' : `ลบ ${count(bulkDelete?.length ?? 0)} รายการ`}
+        onCancel={() => {
+          if (!bulkDeleting) setBulkDelete(null);
+        }}
+        onConfirm={() => void runBulkDelete()}
       />
 
       <ActionResultDialog

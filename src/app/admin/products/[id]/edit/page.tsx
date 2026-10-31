@@ -3,7 +3,9 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import ProductEditor from '../../components/product-editor';
+import NoPermissionNote from '../../components/no-permission-note';
 import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
+import { usePermissions } from '@/hooks/usePermissions';
 import ProductModel, { type StorePolicyState } from '@/models/product';
 import type { Product } from '@/types/product';
 
@@ -13,12 +15,14 @@ const productModel = new ProductModel();
 export default function EditProductPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id;
+  const { can } = usePermissions();
+  const canEdit = can('products', 'edit');
   const [state, setState] = useState<{ product: Product; policy?: Omit<StorePolicyState, 'product_id'> } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || !canEdit) return;
     let active = true;
     setError(null);
     Promise.all([productModel.getProductById(id), productModel.getStorePolicies([id]).catch(() => [])])
@@ -33,8 +37,9 @@ export default function EditProductPage() {
     return () => {
       active = false;
     };
-  }, [id, attempt]);
+  }, [id, attempt, canEdit]);
 
+  if (!canEdit) return <NoPermissionNote action="แก้ไขสินค้า" />;
   if (error) {
     return (
       <div className="ka-page-body">

@@ -16,6 +16,8 @@
   --ink-subtle: #636b75;
   --ink-on-sidebar: #c9ced4;
   --ink-on-sidebar-active: #ffb299;
+  /* Text on a surface that stays dark in both themes (greeting panel, scrim captions, switch knob). */
+  --ink-on-dark: #ffffff;
   --border: #e3ded9;
   --border-control: #7c848e;
   --brand: #e4572e;

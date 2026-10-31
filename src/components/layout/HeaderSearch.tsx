@@ -121,7 +121,7 @@ export default function HeaderSearch() {
             type="search"
             role="combobox"
             aria-label="ค้นหาหน้า"
-            aria-expanded={results.length > 0}
+            aria-expanded={Boolean(term)}
             aria-controls={listId}
             aria-activedescendant={results.length ? `${listId}-${active}` : undefined}
             aria-autocomplete="list"

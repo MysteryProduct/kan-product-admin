@@ -228,12 +228,15 @@ const TYPE_LABEL: Record<string, string> = { website: 'Website', purchase: 'ส�
 // The card opens the job; the row menu holds the commands, including "เปลี่ยนสถานะ" for touch screens.
 const JobCard = memo(function JobCard({
 	job,
+	canAdd,
 	canEdit,
 	canDelete,
 	isDragging,
 	actions,
 }: {
 	job: JobOrder;
+	/** A copy is a new job, so it needs the add permission, not edit. */
+	canAdd: boolean;
 	canEdit: boolean;
 	canDelete: boolean;
 	isDragging: boolean;
@@ -290,7 +293,7 @@ const JobCard = memo(function JobCard({
 					items={[
 						{ label: 'ดูรายละเอียด', onSelect: () => actions.onView(job) },
 						...(canMove ? moves.map((status) => ({ label: `เปลี่ยนสถานะ → ${mapStatusToLabel(status)}`, onSelect: () => actions.onMove(job, status), tone: status === 'cancelled' ? ('danger' as const) : undefined })) : []),
-						...(canEdit ? [{ label: 'ทำสำเนาเป็นงานใหม่', onSelect: () => actions.onCopy(job) }] : []),
+						...(canAdd ? [{ label: 'ทำสำเนาเป็นงานใหม่', onSelect: () => actions.onCopy(job) }] : []),
 						...(canEdit && !isClosed ? [{ label: 'แก้ไขงาน', onSelect: () => actions.onEdit(job) }] : []),
 						...(canDelete && jobStatus !== 'completed' ? [{ label: 'ลบงาน', tone: 'danger' as const, onSelect: () => actions.onDelete(job) }] : []),
 					]}
@@ -747,15 +750,17 @@ export default function JobOrdersPage() {
 	const doneCards = grouped.completed?.length || 0;
 	const todayDateKey = toDateKey(new Date());
 
+	// The day panel only knows the month on screen, so moving the month also moves the selected day
+	// to that month's first day; a day of another month would otherwise show "0 งาน" wrongly.
 	const moveCalendarMonth = (direction: -1 | 1) => {
-		setCalendarMonth((prev) => {
-			const [yearText, monthText] = prev.split('-');
-			const year = Number(yearText);
-			const month = Number(monthText);
-			const baseDate = !Number.isNaN(year) && !Number.isNaN(month) ? new Date(year, month - 1, 1) : new Date();
-			baseDate.setMonth(baseDate.getMonth() + direction);
-			return `${baseDate.getFullYear()}-${String(baseDate.getMonth() + 1).padStart(2, '0')}`;
-		});
+		const [yearText, monthText] = calendarMonth.split('-');
+		const year = Number(yearText);
+		const month = Number(monthText);
+		const baseDate = !Number.isNaN(year) && !Number.isNaN(month) ? new Date(year, month - 1, 1) : new Date();
+		baseDate.setMonth(baseDate.getMonth() + direction);
+		const next = `${baseDate.getFullYear()}-${String(baseDate.getMonth() + 1).padStart(2, '0')}`;
+		setCalendarMonth(next);
+		setSelectedDay(next === todayDateKey.slice(0, 7) ? todayDateKey : `${next}-01`);
 	};
 
 	const overdueCards = filteredJobOrders.filter((job) => {
@@ -912,7 +917,7 @@ export default function JobOrdersPage() {
 									</div>
 									{cards.length === 0 && <div className="ka-col__empty">{column.empty}</div>}
 									{visibleCards.map((job) => (
-										<JobCard key={job.job_order_id} job={job} canEdit={canEdit} canDelete={canDelete} isDragging={draggingJobId === job.job_order_id} actions={cardActions} />
+										<JobCard key={job.job_order_id} job={job} canAdd={canAdd} canEdit={canEdit} canDelete={canDelete} isDragging={draggingJobId === job.job_order_id} actions={cardActions} />
 									))}
 									{remaining > 0 && (
 										<button type="button" className="ka-btn ka-btn--sm" onClick={() => setVisibleByFilter({ key: filterKey, counts: { ...columnVisible, [column.key]: columnVisible[column.key] + PAGE_SIZE } })}>
