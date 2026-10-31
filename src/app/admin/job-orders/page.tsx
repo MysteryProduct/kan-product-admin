@@ -11,12 +11,15 @@ import UpdateJobOrderForm from './components/update';
 import JobOrderDetailModal from './components/detail';
 import { CreateJobOrderDto, JobOrder } from '@/types/job-order';
 import { toDateValue, toLocalIsoDate } from '@/lib/date-format';
-import { ALLOWED_TRANSITIONS, BOARD_COLUMNS, count, DEFAULT_VISIBLE, getDelayDays, getUserFromCookie, mapStatusToLabel, normalizeStatus, PAGE_SIZE, buildCalendarCells, parseCalendarMonth, toDateKey, toIsoDate, type BoardStatus, type CalendarCell, type ViewMode } from './board-model';
+import { ALLOWED_TRANSITIONS, BOARD_COLUMNS, count, DEFAULT_VISIBLE, getDelayDays, getUserFromCookie, normalizeStatus, PAGE_SIZE, buildCalendarCells, parseCalendarMonth, toDateKey, toIsoDate, type CalendarCell, type ViewMode } from './board-model';
 import BoardView from './components/board-view';
 import FilterBar from './components/filter-bar';
 import { useBoardFilters } from './use-board-filters';
 import CalendarView from './components/calendar-view';
 import type { JobCardActions } from './components/job-card';
+import ViewSwitch from './components/view-switch';
+import { useStatusMoves } from './use-status-moves';
+import { useJobOrders } from './use-job-orders';
 
 const jobOrderModel = new JobOrderModel();
 
@@ -30,10 +33,6 @@ export default function JobOrdersPage() {
 
 	const user = useMemo(() => getUserFromCookie(), []);
 
-	const [jobOrders, setJobOrders] = useState<JobOrder[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
-	const [hasLoaded, setHasLoaded] = useState(false);
-	const requestIdRef = useRef(0);
 	const [isInsertOpen, setIsInsertOpen] = useState(false);
 	const [isUpdateOpen, setIsUpdateOpen] = useState(false);
 	const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -57,19 +56,12 @@ export default function JobOrdersPage() {
 		return `${last.getFullYear()}-${String(last.getMonth() + 1).padStart(2, '0')}-${String(last.getDate()).padStart(2, '0')}`;
 	});
 	const [sortDirection, setSortDirection] = useState<'ASC' | 'DESC'>('ASC');
-	const [draggingJobId, setDraggingJobId] = useState<string | null>(null);
-	const [dragOverColumn, setDragOverColumn] = useState<BoardStatus | null>(null);
 	// Typing stays immediate; the board catches up at lower priority.
 	const deferredSearchText = useDeferredValue(searchText);
 	// "Load more" counts belong to one filter set and fall back to the default when the filters change.
 	const filterKey = [deferredSearchText, selectedAssignee, selectedType, sortDirection, dateStart, dateEnd].join('|');
 	const [visibleByFilter, setVisibleByFilter] = useState({ key: filterKey, counts: DEFAULT_VISIBLE });
 	const columnVisible = visibleByFilter.key === filterKey ? visibleByFilter.counts : DEFAULT_VISIBLE;
-	const [pendingCompleteJob, setPendingCompleteJob] = useState<JobOrder | null>(null);
-	const [completionQty, setCompletionQty] = useState('');
-	const [completionDefectQty, setCompletionDefectQty] = useState('');
-	const [isConfirmingComplete, setIsConfirmingComplete] = useState(false);
-	const [pendingCancelJob, setPendingCancelJob] = useState<JobOrder | null>(null);
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const [jobOrderToDelete, setJobOrderToDelete] = useState<JobOrder | null>(null);
 	const [resultDialog, setResultDialog] = useState<{
@@ -102,6 +94,21 @@ export default function JobOrdersPage() {
 		return () => { active = false; };
 	}, [canView]);
 
+	// The board shows the chosen target-date range; the calendar shows its month. Whichever view is open
+	// decides what is loaded, so switching back to the board reloads the board's range.
+	const activeRange = useMemo(() => {
+		if (viewMode === 'calendar') {
+			const monthStart = parseCalendarMonth(calendarMonth);
+			const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
+			return { start: toIsoDate(monthStart), end: toIsoDate(monthEnd) };
+		}
+		return { start: dateStart, end: dateEnd };
+	}, [viewMode, calendarMonth, dateStart, dateEnd]);
+
+	const { jobOrders, setJobOrders, isLoading, hasLoaded, fetchJobOrders } = useJobOrders(jobOrderModel, activeRange, sortDirection, (message) =>
+		setResultDialog({ isOpen: true, status: 'error', message }),
+	);
+
 	const { assigneeOptions, filteredJobOrders, grouped } = useBoardFilters(jobOrders, deferredSearchText, selectedAssignee, selectedType);
 
 	const calendarDate = useMemo(() => parseCalendarMonth(calendarMonth), [calendarMonth]);
@@ -118,178 +125,17 @@ export default function JobOrdersPage() {
 		[viewMode, calendarDate, filteredJobOrders],
 	);
 
-	// The board shows the chosen target-date range; the calendar shows its month. Whichever view is open
-	// decides what is loaded, so switching back to the board reloads the board's range.
-	const activeRange = useMemo(() => {
-		if (viewMode === 'calendar') {
-			const monthStart = parseCalendarMonth(calendarMonth);
-			const monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
-			return { start: toIsoDate(monthStart), end: toIsoDate(monthEnd) };
-		}
-		return { start: dateStart, end: dateEnd };
-	}, [viewMode, calendarMonth, dateStart, dateEnd]);
-
-	const fetchJobOrders = useCallback(async () => {
-		// Only the latest request may update the board, so a slow earlier response cannot overwrite a newer range.
-		const requestId = ++requestIdRef.current;
-		setIsLoading(true);
-		try {
-			const response = await jobOrderModel.getJobOrders(1, 300, sortDirection, undefined, undefined, activeRange.start || undefined, activeRange.end || undefined);
-			if (requestId !== requestIdRef.current) {
-				return;
-			}
-			setJobOrders(response.data || []);
-			setHasLoaded(true);
-		} catch (error) {
-			if (requestId !== requestIdRef.current) {
-				return;
-			}
-			console.error('Failed to fetch job orders:', error);
-			setResultDialog({
-				isOpen: true,
-				status: 'error',
-				message: error instanceof Error ? error.message : 'ไม่สามารถดึงข้อมูลงานผลิตได้',
-			});
-		} finally {
-			if (requestId === requestIdRef.current) {
-				setIsLoading(false);
-			}
-		}
-	}, [activeRange, sortDirection]);
-
+	const {
+		draggingJobId, setDraggingJobId, dragOverColumn, setDragOverColumn, pendingCompleteJob, completionQty, setCompletionQty,
+		completionDefectQty, setCompletionDefectQty, isConfirmingComplete, pendingCancelJob, setPendingCancelJob,
+		closeDetailModal, moveJob, handleConfirmComplete, handleDrop,
+	} = useStatusMoves({ jobOrderModel, jobOrders, setJobOrders, employeeId: user?.employee_id, setResultDialog, setSelectedJobOrder, setIsDetailOpen });
+	// Cards are memoised with one actions object; the ref hands them the move of the latest render,
+	// so a failed move rolls back to the current jobs instead of those of the first render.
+	const moveJobRef = useRef(moveJob);
 	useEffect(() => {
-		void fetchJobOrders();
-	}, [fetchJobOrders]);
-
-	const updateJobStatus = async (jobId: string, targetStatus: BoardStatus, qty?: number, defectQty?: number, reason?: string): Promise<boolean> => {
-		const targetLabel = mapStatusToLabel(targetStatus);
-		const previous = [...jobOrders];
-		setJobOrders((prev) =>
-			prev.map((job) =>
-				job.job_order_id === jobId
-					? {
-							...job,
-							job_order_status: targetStatus,
-							...(typeof qty === 'number' ? { job_order_qty: qty } : {}),
-							...(typeof defectQty === 'number' ? { job_order_defect_qty: defectQty } : {}),
-							...(targetStatus === 'completed' ? { finish_date: new Date().toISOString() } : {}),
-						}
-					: job,
-			),
-		);
-
-		try {
-			await jobOrderModel.updateJobOrderStatus(jobId, targetStatus, user?.employee_id, qty, defectQty, reason);
-			setResultDialog({
-				isOpen: true,
-				status: 'success',
-				message: `ย้ายสถานะงานเป็น ${targetLabel} สำเร็จ`,
-			});
-			return true;
-		} catch (error) {
-			setJobOrders(previous);
-			setResultDialog({
-				isOpen: true,
-				status: 'error',
-				message: error instanceof Error ? error.message : 'ไม่สามารถอัปเดตสถานะงานได้',
-			});
-			return false;
-		}
-	};
-
-	const closeDetailModal = () => {
-		setIsDetailOpen(false);
-		setSelectedJobOrder(null);
-		setPendingCompleteJob(null);
-		setCompletionQty('');
-		setCompletionDefectQty('');
-	};
-
-	const handleConfirmComplete = async () => {
-		if (!pendingCompleteJob) {
-			return;
-		}
-
-		// Quantities are stored as whole numbers.
-		const qty = Number(completionQty);
-		if (!Number.isInteger(qty) || qty <= 0) {
-			setResultDialog({
-				isOpen: true,
-				status: 'error',
-				message: 'กรุณาระบุจำนวนที่ผลิตจริงเป็นจำนวนเต็มที่มากกว่า 0 ก่อนยืนยันปิดงาน',
-			});
-			return;
-		}
-
-		const defectQty = completionDefectQty.trim() === '' ? 0 : Number(completionDefectQty);
-		if (!Number.isInteger(defectQty) || defectQty < 0) {
-			setResultDialog({
-				isOpen: true,
-				status: 'error',
-				message: 'กรุณาระบุจำนวนสินค้าเสียหายเป็นจำนวนเต็ม 0 ขึ้นไป',
-			});
-			return;
-		}
-
-		if (defectQty > qty) {
-			setResultDialog({
-				isOpen: true,
-				status: 'error',
-				message: 'จำนวนสินค้าเสียหายต้องไม่มากกว่าจำนวนที่ผลิตจริง',
-			});
-			return;
-		}
-
-		setIsConfirmingComplete(true);
-		try {
-			const succeeded = await updateJobStatus(pendingCompleteJob.job_order_id, 'completed', qty, defectQty);
-			// Keep the dialog and the entered quantities when the server refuses, so they can be corrected.
-			if (succeeded) {
-				closeDetailModal();
-			}
-		} finally {
-			setIsConfirmingComplete(false);
-		}
-	};
-
-	const handleDrop = async (column: BoardStatus) => {
-		if (!draggingJobId) {
-			return;
-		}
-
-		const current = jobOrders.find((item) => item.job_order_id === draggingJobId);
-		if (!current) {
-			setDraggingJobId(null);
-			setDragOverColumn(null);
-			return;
-		}
-
-		const currentStatus = normalizeStatus(current.job_order_status);
-		if (!ALLOWED_TRANSITIONS[currentStatus].includes(column)) {
-			setDraggingJobId(null);
-			setDragOverColumn(null);
-			return;
-		}
-
-		if (currentStatus !== column) {
-			if (column === 'completed') {
-				setSelectedJobOrder(current);
-				setPendingCompleteJob(current);
-				setCompletionQty(current.job_order_qty && current.job_order_qty > 0 ? String(current.job_order_qty) : '');
-					setCompletionDefectQty(
-						typeof current.job_order_defect_qty === 'number' && current.job_order_defect_qty > 0 ? String(current.job_order_defect_qty) : '0',
-					);
-				setIsDetailOpen(true);
-			} else if (column === 'cancelled') {
-				setPendingCancelJob(current);
-			} else {
-				await updateJobStatus(draggingJobId, column);
-			}
-		}
-
-		setDraggingJobId(null);
-		setDragOverColumn(null);
-	};
+		moveJobRef.current = moveJob;
+	});
 
 	// Only state setters are used here, so the functions stay the same between renders and memoised cards can skip.
 	const handleCardCopy = useCallback((jobOrder: JobOrder) => {
@@ -328,27 +174,14 @@ export default function JobOrdersPage() {
 				setJobOrderToDelete(job);
 				setIsDeleteDialogOpen(true);
 			},
-			onMove: (job, status) => {
-				if (status === 'completed') {
-					setSelectedJobOrder(job);
-					setPendingCompleteJob(job);
-					setCompletionQty(job.job_order_qty && job.job_order_qty > 0 ? String(job.job_order_qty) : '');
-					setCompletionDefectQty(typeof job.job_order_defect_qty === 'number' && job.job_order_defect_qty > 0 ? String(job.job_order_defect_qty) : '0');
-					setIsDetailOpen(true);
-				} else if (status === 'cancelled') {
-					setPendingCancelJob(job);
-				} else {
-					void updateJobStatus(job.job_order_id, status);
-				}
-			},
+			onMove: (job, status) => moveJobRef.current(job, status),
 			onDragStart: (jobId) => setDraggingJobId(jobId),
 			onDragEnd: () => {
 				setDraggingJobId(null);
 				setDragOverColumn(null);
 			},
 		}),
-		// eslint-disable-next-line react-hooks/exhaustive-deps -- updateJobStatus reads the latest jobs through state setters
-		[handleCardCopy],
+		[handleCardCopy, setDraggingJobId, setDragOverColumn],
 	);
 
 	const handleDeleteJobOrder = async () => {
@@ -428,16 +261,7 @@ export default function JobOrdersPage() {
 					<p className="ka-ph__lead">{hasLoaded ? lead : 'กำลังโหลด…'}</p>
 				</div>
 				<div className="ka-jo__acts">
-					<div className="ka-seg" role="group" aria-label="มุมมอง">
-						<button type="button" aria-pressed={viewMode === 'board'} onClick={() => setViewMode('board')}>
-							<svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h4v14H4zM10 5h4v9h-4zM16 5h4v12h-4z" /></svg>
-							บอร์ด
-						</button>
-						<button type="button" aria-pressed={viewMode === 'calendar'} onClick={() => setViewMode('calendar')}>
-							<svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14v14H5zM5 10h14M9 4v4M15 4v4" /></svg>
-							ปฏิทิน
-						</button>
-					</div>
+					<ViewSwitch viewMode={viewMode} onChange={setViewMode} />
 					{canAdd && (
 						<button type="button" onClick={() => openCreate(null)} className="ka-btn ka-btn--primary">
 							<svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
