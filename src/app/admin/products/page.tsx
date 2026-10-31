@@ -522,22 +522,25 @@ export default function ProductsPage() {
     void handleRefreshProduct();
   };
 
+  // ConfirmDialog closes itself after confirm, so the targets are taken before that; the
+  // BulkBar shows the progress and stays disabled until the loop and the reload are done.
   const runBulkDelete = async () => {
-    if (!bulkDelete || bulkDeleting) return;
+    const targets = bulkDelete;
+    if (!targets || bulkDeleting) return;
+    setBulkDelete(null);
     setBulkDeleting(true);
     const failed: string[] = [];
-    for (const product of bulkDelete) {
+    for (const product of targets) {
       try {
         await productModel.deleteProduct(product.product_id);
       } catch {
         failed.push(product.product_name);
       }
     }
-    setBulkDeleting(false);
-    setBulkDelete(null);
     clearSelection();
     await handleRefreshProduct(true);
-    const done = bulkDelete.length - failed.length;
+    setBulkDeleting(false);
+    const done = targets.length - failed.length;
     setResultDialog({
       isOpen: true,
       status: failed.length === 0 ? 'success' : 'error',
@@ -642,11 +645,17 @@ export default function ProductsPage() {
         {canEditProduct && chosenProducts.length > 0 && (
           <div className="px-4 pt-3">
             <BulkBar count={chosenProducts.length} onClear={clearSelection}>
-              <BulkAction disabled={loading} onClick={() => openBulk('category', chosenProducts)}>เปลี่ยนหมวดหมู่</BulkAction>
-              <BulkAction disabled={loading} onClick={() => openBulk('policy', chosenProducts)}>ตั้งค่าหน้าร้าน</BulkAction>
-              <BulkAction disabled={loading} onClick={() => openBulk('status', chosenProducts)}>เปลี่ยนสถานะตัวเลือก</BulkAction>
-              {canDeleteProduct && (
-                <BulkAction tone="danger" disabled={loading} onClick={() => setBulkDelete(chosenProducts)}>ลบ</BulkAction>
+              {bulkDeleting ? (
+                <span role="status" className="ka-bulk__count">กำลังลบ {count(chosenProducts.length)} รายการ…</span>
+              ) : (
+                <>
+                  <BulkAction disabled={loading} onClick={() => openBulk('category', chosenProducts)}>เปลี่ยนหมวดหมู่</BulkAction>
+                  <BulkAction disabled={loading} onClick={() => openBulk('policy', chosenProducts)}>ตั้งค่าหน้าร้าน</BulkAction>
+                  <BulkAction disabled={loading} onClick={() => openBulk('status', chosenProducts)}>เปลี่ยนสถานะตัวเลือก</BulkAction>
+                  {canDeleteProduct && (
+                    <BulkAction tone="danger" disabled={loading} onClick={() => setBulkDelete(chosenProducts)}>ลบ</BulkAction>
+                  )}
+                </>
               )}
             </BulkBar>
           </div>
@@ -769,10 +778,8 @@ export default function ProductsPage() {
         isOpen={canDeleteProduct && bulkDelete !== null}
         title={`ลบสินค้า ${count(bulkDelete?.length ?? 0)} รายการ?`}
         message={`${(bulkDelete ?? []).slice(0, 5).map((product) => product.product_name).join(', ')}${(bulkDelete?.length ?? 0) > 5 ? ` และอีก ${count((bulkDelete?.length ?? 0) - 5)} รายการ` : ''} จะหายจากหน้าร้านทันที ระบบลบทีละรายการและย้อนกลับไม่ได้ ใบขายเดิมยังเก็บไว้ครบ`}
-        confirmLabel={bulkDeleting ? 'กำลังลบ…' : `ลบ ${count(bulkDelete?.length ?? 0)} รายการ`}
-        onCancel={() => {
-          if (!bulkDeleting) setBulkDelete(null);
-        }}
+        confirmLabel={`ลบ ${count(bulkDelete?.length ?? 0)} รายการ`}
+        onCancel={() => setBulkDelete(null)}
         onConfirm={() => void runBulkDelete()}
       />
 
