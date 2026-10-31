@@ -30,14 +30,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
     
     localStorage.setItem('theme', newTheme);
-    
-    // Debug info
-    const hasDarkClass = html.classList.contains('dark');
-    const htmlClass = html.className;
-    console.log('✅ Theme applied to DOM:', newTheme);
-    console.log('   → Dark class present:', hasDarkClass);
-    console.log('   → HTML className:', htmlClass);
-    console.log('   → HTML element:', html);
   };
 
   // Initialize theme on first render
@@ -50,15 +42,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setThemeState(initialTheme);
     applyThemeToDOM(initialTheme);
     setMounted(true);
-    
-    console.log('🚀 Theme initialized:', initialTheme);
   }, []);
 
   // Toggle theme function
   const toggleTheme = () => {
     const newTheme = themeRef.current === 'light' ? 'dark' : 'light';
-    console.log('🔀 Toggle theme:', themeRef.current, '→', newTheme);
-    
     themeRef.current = newTheme;
     setThemeState(newTheme);
     applyThemeToDOM(newTheme);
@@ -66,8 +54,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Set theme function
   const setTheme = (newTheme: ThemeMode) => {
-    console.log('🎨 Set theme to:', newTheme);
-    
     themeRef.current = newTheme;
     setThemeState(newTheme);
     applyThemeToDOM(newTheme);
