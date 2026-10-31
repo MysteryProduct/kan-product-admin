@@ -7,6 +7,7 @@ import type { ProductUnit } from '@/types/product-unit';
 import type { DraftForm, ModelFileInfo } from '@/types/custom-catalog';
 import { ModelSection, ShapeSection } from './ModelSection';
 import CustomSelect from '@/components/CustomSelect';
+import RevisionReadOnly from './RevisionReadOnly';
 
 const COLOR = /^#[0-9a-fA-F]{6}$/;
 
@@ -63,6 +64,23 @@ export default function RevisionEditor({ form, setForm, readOnly, saleUnit, mate
   const colors = (colorGroup?.values ?? [])
     .filter((v) => COLOR.test((v.color_hex ?? '').trim()))
     .map((v) => ({ key: v.value_key, label: v.value_label.trim() || v.value_key, hex: (v.color_hex ?? '').trim().toLowerCase() }));
+
+  const modelSection = (
+    <ModelSection
+      form={form.model}
+      onChange={(model) => patch({ model })}
+      readOnly={readOnly}
+      file={modelFile}
+      busy={modelBusy}
+      loadBytes={loadModelBytes}
+      onUpload={onUploadModel}
+      onRemove={onRemoveModel}
+      colors={colors}
+    />
+  );
+
+  // A published revision reads as text and tables (F1), not as disabled fields.
+  if (readOnly) return <RevisionReadOnly form={form} saleUnit={saleUnit} materials={materials} units={units} model={modelSection} />;
 
   return (
     <div className="space-y-6">
@@ -125,17 +143,7 @@ export default function RevisionEditor({ form, setForm, readOnly, saleUnit, mate
 
       <ShapeSection form={form.model} onChange={(model) => patch({ model })} readOnly={readOnly} hasFile={modelFile !== null} />
 
-      <ModelSection
-        form={form.model}
-        onChange={(model) => patch({ model })}
-        readOnly={readOnly}
-        file={modelFile}
-        busy={modelBusy}
-        loadBytes={loadModelBytes}
-        onUpload={onUploadModel}
-        onRemove={onRemoveModel}
-        colors={colors}
-      />
+      {modelSection}
 
       <section className={sectionClass} aria-labelledby="sec-groups">
         <div className="flex flex-wrap items-center justify-between gap-2">

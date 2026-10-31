@@ -373,6 +373,18 @@ ul.ka-kv { margin: 0; padding: 0; list-style: none; }
 .ka-ct__section { padding: var(--space-4) var(--space-6) var(--space-6); scroll-margin-top: 88px; }
 .ka-ct__section + .ka-ct__section { margin-top: var(--space-6); }
 @media (max-width: 639px) { .ka-ct__section { padding: var(--space-4); } }
+/* Published revision, read-only (F1). */
+.ka-ct__title { margin: 0; font: 600 16px/26px var(--ka-font); color: var(--ink); }
+.ka-ct__caption { margin: var(--space-4) 0 var(--space-2); font-weight: 600; }
+.ka-ct__table { margin-top: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-card); overflow: hidden; }
+.ka-ct__table > .ka-table-scroll { border: 0; }
+.ka-ct__rules { display: grid; gap: var(--space-2); margin: var(--space-3) 0 0; padding-left: 1.25rem; list-style: disc; }
+.ka-dl { display: grid; gap: 0; margin: var(--space-3) 0 0; }
+.ka-dl__row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; padding: var(--space-3) 0; border-bottom: 1px solid var(--border); }
+.ka-dl__row:last-child { border-bottom: 0; }
+.ka-dl dt { font-size: 14px; line-height: 22px; color: var(--ink-muted); }
+.ka-dl dd { margin: 0; font-size: 16px; line-height: 26px; color: var(--ink); overflow-wrap: anywhere; }
+@media (min-width: 640px) { .ka-dl__row { grid-template-columns: 200px minmax(0, 1fr); gap: var(--space-4); } }
 .ka-toc { position: sticky; top: calc(var(--header-height) + var(--space-2)); display: flex; flex-direction: column; gap: 2px; }
 .ka-toc > a { display: block; padding: 8px 12px; border-left: 2px solid var(--border); color: var(--ink-muted); font: 500 14px/22px var(--ka-font); text-decoration: none; white-space: nowrap; }
 .ka-toc > a:hover { color: var(--ink); }
