@@ -23,7 +23,7 @@ interface Props {
   units: ProductUnit[];
 }
 
-const sectionClass = 'rounded-2xl bg-[var(--bg-surface)] p-4 shadow-sm';
+const sectionClass = 'ka-card ka-ct__section';
 
 /** "ขนาด › 11 oz" style choices for the rule and recipe pickers. */
 function optionChoices(form: DraftForm) {

@@ -9,7 +9,7 @@ import { BACK_TINT, FRONT_TINT } from './ModelViewer';
 // three is large; load it only when a file is there to look at.
 const ModelViewer = dynamic(() => import('./ModelViewer'), { ssr: false });
 
-const sectionClass = 'relative rounded-2xl bg-[var(--bg-surface)] p-4 shadow-sm';
+const sectionClass = 'ka-card ka-ct__section relative';
 const MAX_BYTES = 15 * 1024 * 1024;
 
 const SHAPES: { value: ModelShape; label: string; hint: string }[] = [

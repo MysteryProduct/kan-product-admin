@@ -323,4 +323,24 @@ ul.ka-kv { margin: 0; padding: 0; list-style: none; }
 .ka-savebar { position: sticky; bottom: 0; z-index: 4; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin: 0 calc(-1 * var(--space-6)); padding: var(--space-3) var(--space-6); border-top: 1px solid var(--border); background: var(--bg-surface); box-shadow: 0 -8px 24px rgba(32, 40, 51, 0.06); }
 @media (max-width: 639px) { .ka-savebar { margin: 0 calc(-1 * var(--space-4)); padding: var(--space-3) var(--space-4); } .ka-savebar__hint { display: none; } .ka-savebar .ka-btn { flex: 1; } .ka-savebar .ka-btn--ghost { display: none; } }
 
+/* ---------- Custom template (TASK-0316 4.5) ---------- */
+.ka-code { display: inline-block; padding: 0 6px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-subtle); font: 500 13px/20px var(--ka-font); font-variant-numeric: tabular-nums; }
+.ka-ct__acts { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.ka-ct__acts .ka-input { width: auto; min-width: 200px; }
+@media (max-width: 639px) { .ka-ct__acts { width: 100%; } .ka-ct__acts > * { flex: 1; } }
+.ka-ct__layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); align-items: start; margin-bottom: var(--space-6); }
+@media (min-width: 1024px) { .ka-ct__layout { grid-template-columns: 200px minmax(0, 1fr); } }
+.ka-ct__section { padding: var(--space-4) var(--space-6) var(--space-6); scroll-margin-top: 88px; }
+.ka-ct__section + .ka-ct__section { margin-top: var(--space-6); }
+@media (max-width: 639px) { .ka-ct__section { padding: var(--space-4); } }
+.ka-toc { position: sticky; top: calc(var(--header-height) + var(--space-2)); display: flex; flex-direction: column; gap: 2px; }
+.ka-toc > a { display: block; padding: 8px 12px; border-left: 2px solid var(--border); color: var(--ink-muted); font: 500 14px/22px var(--ka-font); text-decoration: none; white-space: nowrap; }
+.ka-toc > a:hover { color: var(--ink); }
+.ka-toc > a[aria-current] { border-color: var(--brand); color: var(--ink); font-weight: 600; }
+@media (max-width: 1023px) {
+  .ka-toc { top: var(--header-height); z-index: 3; flex-direction: row; overflow-x: auto; margin: 0 calc(-1 * var(--space-4)); padding: var(--space-1) var(--space-4); background: var(--bg-page); }
+  .ka-toc > a { border-left: 0; border-bottom: 2px solid var(--border); }
+  .ka-toc > a[aria-current] { border-bottom-color: var(--brand); }
+}
+
 }

@@ -24,6 +24,16 @@ const model = new CustomCatalogModel();
 
 type Notice = { tone: 'success' | 'error'; text: string } | null;
 
+// The sections of the editor, in page order; each heading carries the id.
+const TOC = [
+  { id: 'sec-general', label: 'ข้อมูลทั่วไป' },
+  { id: 'sec-shape', label: 'รูปทรงและพื้นที่พิมพ์' },
+  { id: 'sec-model', label: 'โมเดล 3D' },
+  { id: 'sec-groups', label: 'กลุ่มตัวเลือก' },
+  { id: 'sec-rules', label: 'ความเข้ากัน' },
+  { id: 'sec-recipe', label: 'สูตรวัสดุ' },
+];
+
 export default function CustomTemplateEditorPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
@@ -43,7 +53,9 @@ export default function CustomTemplateEditorPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [choiceError, setChoiceError] = useState<string | null>(null);
   const [notice, setNotice] = useState<Notice>(null);
-  const [confirm, setConfirm] = useState<'publish' | 'discard' | null>(null);
+  const [confirm, setConfirm] = useState<'publish' | 'discard' | 'draft' | null>(null);
+  const [pendingRevision, setPendingRevision] = useState<number | null>(null);
+  const [section, setSection] = useState(TOC[0].id);
   const [modelBusy, setModelBusy] = useState(false);
 
   const dirty = useMemo(() => form !== null && JSON.stringify(form) !== saved, [form, saved]);
@@ -164,6 +176,7 @@ export default function CustomTemplateEditorPage() {
 
   const publish = async () => {
     if (!revision) return;
+    setConfirm(null);
     if (dirty && !(await save())) return;
     await run(async () => {
       await model.publish(id, revision.revision);
@@ -174,6 +187,7 @@ export default function CustomTemplateEditorPage() {
 
   const discard = async () => {
     if (!revision) return;
+    setConfirm(null);
     await run(async () => {
       await model.discardDraft(id, revision.revision);
       await open(id);
@@ -182,6 +196,7 @@ export default function CustomTemplateEditorPage() {
   };
 
   const createDraft = async () => {
+    setConfirm(null);
     await run(async () => {
       const created = await model.createDraft(id);
       await open(id, created.revision);
@@ -191,128 +206,176 @@ export default function CustomTemplateEditorPage() {
 
   const choose = async (number: number) => {
     if (revision && number === revision.revision) return;
-    if (dirty && !window.confirm('มีการแก้ไขที่ยังไม่บันทึก ต้องการเปลี่ยนฉบับและทิ้งการแก้ไขนี้หรือไม่?')) return;
+    if (dirty) {
+      setPendingRevision(number);
+      return;
+    }
     await run(() => open(id, number), 'โหลดฉบับไม่สำเร็จ');
   };
 
+  const published = head?.revisions.find((r) => r.status === 'published');
+  const latest = head ? Math.max(...head.revisions.map((r) => r.revision)) : 0;
+  const draftRevision = head?.revisions.find((r) => r.status === 'draft')?.revision;
+
   return (
-    <div className="space-y-6 bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
+    <div className="ka-page-body ka-ct">
       {(loading || busy) && <LoadingSkeleton />}
       <LoadErrorBanner message={loadError} onRetry={() => void load()} />
       <LoadErrorBanner message={choiceError} onRetry={() => void load()} />
 
       {head && revision && form && (
         <>
-          <section className="rounded-2xl bg-[var(--bg-surface)] p-4 shadow-sm">
-            <button type="button" className="ka-btn ka-btn--ghost ka-btn--sm" onClick={() => router.push('/admin/custom-templates')}>
-              ← กลับรายการแบบสินค้า
-            </button>
-            <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-[var(--ink)]">
-                  {head.template_code} · {head.template_name}
-                </h2>
-                <p className="mt-1 text-sm text-[var(--ink-muted)]">
-                  {head.type_name} · ขายเป็น{head.sale_unit}
-                </p>
+          <div className="ka-ph">
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="ka-code">{head.template_code}</span>
+                <StatusBadge tone={REVISION_STATUS_TONE[revision.status]}>{REVISION_STATUS_LABEL[revision.status]}</StatusBadge>
               </div>
-              <div className="flex flex-wrap gap-2" role="group" aria-label="เลือกฉบับ">
-                {head.revisions.map((r) => (
-                  <button
-                    key={r.revision}
-                    type="button"
-                    className={`ka-btn ka-btn--sm ${r.revision === revision.revision ? 'ka-btn--primary' : ''}`}
-                    aria-pressed={r.revision === revision.revision}
-                    onClick={() => void choose(r.revision)}
-                  >
-                    ฉบับ {r.revision} · {REVISION_STATUS_LABEL[r.status]}
-                  </button>
-                ))}
-              </div>
+              <h1 className="ka-ph__title mt-1">{head.template_name}</h1>
+              <p className="ka-ph__lead">
+                {head.type_name} · ขายเป็น{head.sale_unit}
+                {dirty ? ' · มีการแก้ไขที่ยังไม่บันทึก' : ''}
+              </p>
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-3">
-              <StatusBadge tone={REVISION_STATUS_TONE[revision.status]}>{REVISION_STATUS_LABEL[revision.status]}</StatusBadge>
-              {!isDraft && (
-                <span className="text-sm text-[var(--ink-muted)]">
-                  ฉบับที่เผยแพร่แล้วเปลี่ยนไม่ได้ ราคาและสูตรที่คำขอเก่าใช้จึงคงเดิม — ต้องการเปลี่ยนให้สร้างฉบับร่างใหม่
-                </span>
-              )}
+            <div className="ka-ct__acts">
+              <label htmlFor="ct-revision" className="sr-only">ฉบับ</label>
+              <select id="ct-revision" className="ka-input" value={revision.revision} disabled={busy} onChange={(event) => void choose(Number(event.target.value))}>
+                {head.revisions
+                  .slice()
+                  .sort((a, b) => b.revision - a.revision)
+                  .map((r) => (
+                    <option key={r.revision} value={r.revision}>
+                      ฉบับ {r.revision} · {REVISION_STATUS_LABEL[r.status]}
+                    </option>
+                  ))}
+              </select>
               {!isDraft && !hasDraft && canAdd && (
-                <button type="button" className="ka-btn ka-btn--sm ka-btn--primary" disabled={busy} onClick={() => void createDraft()}>
-                  สร้างฉบับร่างใหม่จากฉบับล่าสุด
+                <button type="button" className="ka-btn ka-btn--primary" disabled={busy} onClick={() => setConfirm('draft')}>
+                  สร้างฉบับร่างใหม่
                 </button>
               )}
-              {!isDraft && hasDraft && (
-                <button
-                  type="button"
-                  className="ka-btn ka-btn--sm"
-                  onClick={() => void choose(head.revisions.find((r) => r.status === 'draft')!.revision)}
-                >
-                  ไปที่ฉบับร่าง
+              {!isDraft && hasDraft && draftRevision !== undefined && (
+                <button type="button" className="ka-btn" onClick={() => void choose(draftRevision)}>
+                  ไปที่ฉบับร่าง {draftRevision}
                 </button>
               )}
+              <button type="button" className="ka-btn ka-btn--ghost" onClick={() => router.push('/admin/custom-templates')}>
+                ← รายการแบบสินค้า
+              </button>
             </div>
-          </section>
+          </div>
+
+          {!isDraft && (
+            <div role="note" className="ka-banner mb-4">
+              <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v5M12 8h.01" />
+              </svg>
+              <div>
+                <strong>{revision.status === 'published' ? 'ฉบับนี้เผยแพร่แล้ว แก้ไขไม่ได้' : 'ฉบับนี้เก็บถาวรแล้ว แก้ไขไม่ได้'}</strong>
+                <div className="text-[14px]">ราคาและสูตรที่ลูกค้าสั่งไปแล้วต้องคงเดิม ถ้าจะเปลี่ยน ให้สร้างฉบับร่างใหม่จากฉบับล่าสุด</div>
+              </div>
+            </div>
+          )}
+          {isDraft && !canEdit && (
+            <div role="note" className="ka-banner mb-4">
+              <span>คุณดูฉบับร่างนี้ได้ แต่ไม่มีสิทธิ์แก้ไข</span>
+            </div>
+          )}
 
           {notice && (
-            <div role={notice.tone === 'error' ? 'alert' : 'status'} className={`ka-banner ka-banner--${notice.tone === 'error' ? 'danger' : 'success'} whitespace-pre-line`}>
+            <div role={notice.tone === 'error' ? 'alert' : 'status'} className={`ka-banner ka-banner--${notice.tone === 'error' ? 'danger' : 'success'} mb-4 whitespace-pre-line`}>
               <span>{notice.text}</span>
             </div>
           )}
 
-          <RevisionEditor
-            form={form}
-            setForm={setForm as never}
-            readOnly={!editable}
-            saleUnit={head.sale_unit}
-            materials={materials}
-            units={units}
-            modelFile={revision.model_file}
-            modelBusy={modelBusy}
-            loadModelBytes={() => model.getModelBytes(id, revision.revision)}
-            onUploadModel={uploadModel}
-            onRemoveModel={removeModel}
-          />
+          <div className="ka-ct__layout">
+            <nav className="ka-toc" aria-label="ส่วนของแบบสินค้า">
+              {TOC.map((item) => (
+                <a key={item.id} href={`#${item.id}`} aria-current={section === item.id ? 'location' : undefined} onClick={() => setSection(item.id)}>
+                  {item.label}
+                </a>
+              ))}
+            </nav>
+            <div className="min-w-0">
+              <RevisionEditor
+                form={form}
+                setForm={setForm as never}
+                readOnly={!editable}
+                saleUnit={head.sale_unit}
+                materials={materials}
+                units={units}
+                modelFile={revision.model_file}
+                modelBusy={modelBusy}
+                loadModelBytes={() => model.getModelBytes(id, revision.revision)}
+                onUploadModel={uploadModel}
+                onRemoveModel={removeModel}
+              />
+            </div>
+          </div>
 
           {editable && (
-            <section className="sticky bottom-0 z-10 rounded-2xl border border-[var(--border)] bg-[var(--bg-surface)] p-3 shadow-sm" aria-label="การดำเนินการกับฉบับร่าง">
-              {problems.length > 0 && (
-                <ul className="mb-2 list-disc pl-5 text-sm text-[var(--danger)]">
-                  {problems.slice(0, 4).map((p) => <li key={p}>{p}</li>)}
-                  {problems.length > 4 && <li>และอีก {problems.length - 4} ข้อ</li>}
-                </ul>
+            <div className="ka-savebar" aria-label="การดำเนินการกับฉบับร่าง">
+              {problems.length > 0 ? (
+                <span className="ka-error ka-savebar__hint" role="status">
+                  {problems[0]}
+                  {problems.length > 1 ? ` และอีก ${problems.length - 1} ข้อ` : ''}
+                </span>
+              ) : (
+                <span className="ka-todo__cap ka-savebar__hint" role="status">{dirty ? 'มีการแก้ไขที่ยังไม่บันทึก' : 'บันทึกแล้ว'}</span>
               )}
-              <div className="flex flex-wrap items-center justify-end gap-2">
-                {dirty && <span className="mr-auto text-sm text-[var(--ink-muted)]">มีการแก้ไขที่ยังไม่บันทึก</span>}
-                {head.revisions.length > 1 && (
-                  <button type="button" className="ka-btn ka-btn--danger" disabled={busy} onClick={() => setConfirm('discard')}>
-                    ทิ้งฉบับร่าง
-                  </button>
-                )}
-                <button type="button" className="ka-btn" disabled={busy || !dirty || problems.length > 0} onClick={() => void save()}>
-                  บันทึกฉบับร่าง
+              <span className="ka-table-tools__spacer" />
+              {head.revisions.length > 1 && (
+                <button type="button" className="ka-btn ka-btn--danger" disabled={busy} onClick={() => setConfirm('discard')}>
+                  ทิ้งฉบับร่าง
                 </button>
-                <button type="button" className="ka-btn ka-btn--primary" disabled={busy || problems.length > 0} onClick={() => setConfirm('publish')}>
-                  {dirty ? 'บันทึกและเผยแพร่' : 'เผยแพร่'}
-                </button>
-              </div>
-            </section>
+              )}
+              <button type="button" className="ka-btn" disabled={busy || !dirty || problems.length > 0} onClick={() => void save()}>
+                บันทึกฉบับร่าง
+              </button>
+              <button type="button" className="ka-btn ka-btn--primary" disabled={busy || problems.length > 0} onClick={() => setConfirm('publish')}>
+                {dirty ? 'บันทึกและเผยแพร่' : 'เผยแพร่'}
+              </button>
+            </div>
           )}
 
           <ConfirmDialog
+            isOpen={confirm === 'draft'}
+            title={`สร้างฉบับ ${latest + 1} จากฉบับ ${published?.revision ?? latest}`}
+            message={`ฉบับร่างจะคัดลอกทุกอย่างจากฉบับ ${published?.revision ?? latest}${published ? ` ฉบับ ${published.revision} ยังเปิดขายต่อจนกว่าคุณจะเผยแพร่ฉบับใหม่` : ''} ขั้นตอน: ร่าง → ตรวจ → เผยแพร่`}
+            tone="neutral"
+            confirmLabel="สร้างฉบับร่าง"
+            onConfirm={() => void createDraft()}
+            onCancel={() => setConfirm(null)}
+          />
+          <ConfirmDialog
             isOpen={confirm === 'publish'}
-            title="ยืนยันการเผยแพร่"
-            message={`เผยแพร่ฉบับที่ ${revision.revision}? ลูกค้าจะเห็นตัวเลือกและราคานี้ทันที ฉบับที่เผยแพร่อยู่เดิมจะถูกเก็บถาวร และฉบับที่เผยแพร่แล้วแก้ไขไม่ได้`}
-            bottom_className="ka-btn ka-btn--primary min-h-11"
+            title={`เผยแพร่ฉบับ ${revision.revision}?`}
+            message="ลูกค้าจะเห็นตัวเลือกและราคานี้ทันที ฉบับที่เผยแพร่อยู่เดิมจะถูกเก็บถาวร และฉบับที่เผยแพร่แล้วแก้ไขไม่ได้"
+            tone="neutral"
+            confirmLabel="เผยแพร่ฉบับนี้"
             onConfirm={() => void publish()}
             onCancel={() => setConfirm(null)}
           />
           <ConfirmDialog
             isOpen={confirm === 'discard'}
-            title="ยืนยันการทิ้งฉบับร่าง"
-            message={`ทิ้งฉบับร่างที่ ${revision.revision} ทั้งหมด? การแก้ไขในฉบับร่างนี้จะหายไป`}
+            title={`ทิ้งฉบับร่าง ${revision.revision}?`}
+            message="การแก้ไขในฉบับร่างนี้จะหายไปทั้งหมด ฉบับที่เผยแพร่อยู่ไม่ได้รับผลกระทบ"
+            confirmLabel="ทิ้งฉบับร่าง"
             onConfirm={() => void discard()}
             onCancel={() => setConfirm(null)}
+          />
+          <ConfirmDialog
+            isOpen={pendingRevision !== null}
+            title="ยังไม่ได้บันทึกการแก้ไข"
+            message="ถ้าเปลี่ยนฉบับตอนนี้ การแก้ไขในฉบับร่างนี้จะหายไป"
+            confirmLabel="ทิ้งการแก้ไขและเปลี่ยนฉบับ"
+            cancelLabel="แก้ไขต่อ"
+            onConfirm={() => {
+              const target = pendingRevision;
+              setPendingRevision(null);
+              if (target !== null) void run(() => open(id, target), 'โหลดฉบับไม่สำเร็จ');
+            }}
+            onCancel={() => setPendingRevision(null)}
           />
         </>
       )}
