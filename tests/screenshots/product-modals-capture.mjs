@@ -103,9 +103,16 @@ for (const width of WIDTHS) {
     const box = await panelBox();
     if (width === 1440) check(`detail ${name} 1440: panel 720px`, box.width === 720, `${box.width}px`);
     if (width === 390) check(`detail ${name} 390: bottom sheet`, box.bottom === height && box.width === 390 && box.radius === '16px', JSON.stringify(box));
-    await dialog().locator('.ka-modal__body').evaluate((el) => el.scrollTo(0, el.scrollHeight));
-    await page.waitForTimeout(200);
-    await shot(`${file}-bottom`);
+    // A second picture only when the body really scrolls (otherwise it repeats the first).
+    const scrolls = await dialog().locator('.ka-modal__body').evaluate((el) => {
+      if (el.scrollHeight <= el.clientHeight + 1) return false;
+      el.scrollTo(0, el.scrollHeight);
+      return true;
+    });
+    if (scrolls) {
+      await page.waitForTimeout(200);
+      await shot(`${file}-bottom`);
+    }
     const parts = await page.evaluate(() => {
       const panel = [...document.querySelectorAll('[role=dialog]')].pop();
       const close = panel.querySelector('.ka-modal__head > button').getBoundingClientRect();
@@ -270,6 +277,170 @@ await page.keyboard.press('Escape');
 await settle(300);
 check('keyboard status: Esc closes', (await page.getByRole('dialog').count()) === 0);
 check('keyboard status: focus back on the bulk button', await openerIsFocused(statusOpener));
+
+// ---------- Flows the first pass did not reach (review round 1, F6) ----------
+// Requests below are answered by page.route where noted: they prove how the dialogs
+// handle those answers, not what the API does. Nothing reaches the database.
+await page.setViewportSize({ width: 1440, height: 1000 });
+
+// Stacked: "ตั้งค่า" over the detail; Esc closes one at a time and focus walks back.
+await openProducts();
+const eye2 = page.getByRole('button', { name: `ดูรายละเอียด ${OUT_OF_STOCK}` }).first();
+await eye2.click();
+await settle(900);
+const settings = dialog().getByRole('button', { name: 'ตั้งค่า', exact: true });
+await settings.click();
+await settle();
+await shot('stacked-detail-policy-1440');
+check('stacked: policy opens over the detail', (await page.getByRole('dialog').count()) === 2);
+await page.keyboard.press('Escape');
+await settle(300);
+check('stacked: first Esc closes only the policy dialog', (await page.getByRole('dialog').count()) === 1);
+check('stacked: focus back on "ตั้งค่า"', await openerIsFocused(settings));
+await page.keyboard.press('Escape');
+await settle(300);
+check('stacked: second Esc closes the detail, focus on the eye button', (await page.getByRole('dialog').count()) === 0 && (await openerIsFocused(eye2)));
+
+// Saving and a failed save (PATCH answered by the test: 1.5s delay, then 500).
+await page.route('**/product/store-policy/bulk', async (route) => {
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+  await route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ message: 'ทดสอบ: บันทึกไม่สำเร็จ' }) });
+});
+await select(OUT_OF_STOCK);
+await bulk('ตั้งค่าหน้าร้าน').click();
+await settle();
+const contact = dialog().getByRole('radiogroup', { name: 'ขอติดต่อกลับได้' });
+await contact.getByRole('radio', { name: 'ปิด', exact: true }).click();
+await dialog().getByRole('button', { name: 'ตรวจสอบก่อนบันทึก' }).click();
+await dialog().getByRole('button', { name: /ยืนยันบันทึก/ }).click();
+await page.waitForTimeout(300);
+await shot('policy-saving-1440');
+check('saving: aria-busy and "กำลังบันทึก…"', (await dialog().locator('[aria-busy="true"]').count()) > 0 && (await dialog().getByRole('button', { name: 'กำลังบันทึก…' }).isDisabled()));
+await page.keyboard.press('Escape');
+check('saving: Esc does not close while saving', (await page.getByRole('dialog').count()) === 1);
+await page.waitForTimeout(1800);
+await shot('policy-error-1440');
+check('error: danger banner with the API message', (await dialog().getByRole('alert').innerText()).includes('ทดสอบ: บันทึกไม่สำเร็จ'));
+check('error: retry offered', await dialog().getByRole('button', { name: 'ลองบันทึกอีกครั้ง' }).isVisible());
+await dialog().getByRole('button', { name: 'กลับไปแก้ไข' }).click();
+check('error: choice kept', (await contact.getByRole('radio', { checked: true }).innerText()) === 'ปิด');
+await page.keyboard.press('Escape');
+await settle(300);
+await page.unroute('**/product/store-policy/bulk');
+await unselectAll();
+
+// Delete from the detail goes to the existing confirmation; cancelled, nothing deleted.
+await page.getByRole('button', { name: `ดูรายละเอียด ${OUT_OF_STOCK}` }).first().click();
+await settle(900);
+await dialog().getByRole('button', { name: 'ลบสินค้า' }).click();
+await settle(300);
+await shot('detail-delete-confirm-1440');
+check('delete: detail closes and the existing confirmation opens', (await page.getByRole('dialog').count()) === 1 && (await dialog().innerText()).includes(`ลบ “${OUT_OF_STOCK}”?`));
+await dialog().getByRole('button', { name: 'ยกเลิก' }).click();
+await settle(300);
+check('delete: cancelled, product still listed', (await page.getByRole('button', { name: `ดูรายละเอียด ${OUT_OF_STOCK}` }).count()) > 0);
+
+// Richer data than the dev database holds (answers rewritten by the test): four product
+// tiles (one a video), a variant picture, contact switched off; then the product unpublished.
+const rewrite = async (published) => {
+  await page.route(/\/product\/store-policy\/batch/, async (route) => {
+    const response = await route.fetch();
+    const body = await response.json();
+    for (const row of body.data ?? []) {
+      row.contact_enabled = false;
+      row.published = published;
+    }
+    await route.fulfill({ response, json: body });
+  });
+  await page.route(/\/product\/[0-9a-f-]{36}$/, async (route) => {
+    if (route.request().method() !== 'GET') return route.fallback();
+    const response = await route.fetch();
+    const body = await response.json();
+    const product = body.data ?? body;
+    const [first] = product.files ?? [];
+    const variant = (product.productVariants ?? product.product_variants ?? [])[0];
+    if (first) {
+      product.files = [
+        first,
+        { ...first, product_file_id: 900001 },
+        { ...first, product_file_id: 900002 },
+        { ...first, product_file_id: 900003, product_file_category: 'video' },
+        ...(variant ? [{ ...first, product_file_id: 900004, product_variant_id: variant.product_variant_id }] : []),
+      ];
+    }
+    await route.fulfill({ response, json: body });
+  });
+};
+for (const [published, name] of [[true, 'detail-rich-1440'], [false, 'detail-unpublished-1440']]) {
+  await rewrite(published);
+  await openProducts();
+  await page.getByRole('button', { name: `ดูรายละเอียด ${OUT_OF_STOCK}` }).first().click();
+  await settle(900);
+  await dialog().getByRole('button', { name: 'รูปที่ 3' }).click();
+  await shot(name);
+  const text = await dialog().innerText();
+  if (published) {
+    check(
+      'rich: four tiles, one ringed, "ปิด" chip, contact-off sold-out note',
+      (await dialog().locator('.ka-pm__gal .ka-pm__tile:not(.ka-pm__tile--count)').count()) === 4 &&
+        (await dialog().locator('.ka-pm__tile[aria-pressed="true"]').count()) === 1 &&
+        /ขอติดต่อกลับได้\s*ปิด/.test(text) &&
+        text.includes('สินค้าหมด ลูกค้าซื้อหรือสอบถามออนไลน์ไม่ได้'),
+    );
+    check('rich: variant picture row', (await dialog().locator('.ka-pm__vfiles img').count()) === 1 && text.includes('รูปเฉพาะแบบ 1'));
+  } else {
+    check('unpublished: note says customers cannot see it', text.includes('ไม่แสดงบนหน้าร้าน ลูกค้าไม่เห็นสินค้านี้') && !text.includes('สอบถามได้'));
+  }
+  await page.keyboard.press('Escape');
+  await page.unrouteAll({ behavior: 'ignoreErrors' });
+}
+
+// Dark mode, through the app's own saved theme.
+await page.evaluate(() => localStorage.setItem('theme', 'dark'));
+for (const width of [1440, 390]) {
+  await page.setViewportSize({ width, height: width < 640 ? 844 : 1000 });
+  await openProducts();
+  await page.getByRole('button', { name: `ดูรายละเอียด ${OUT_OF_STOCK}` }).first().click();
+  await settle(900);
+  check(`dark ${width}: theme applied`, await page.evaluate(() => document.documentElement.classList.contains('dark')));
+  await shot(`detail-dark-${width}`);
+  await page.keyboard.press('Escape');
+  await settle(300);
+  await select(OUT_OF_STOCK);
+  await bulk('ตั้งค่าหน้าร้าน').click();
+  await settle();
+  await dialog().getByRole('radiogroup', { name: 'ขอติดต่อกลับได้' }).getByRole('radio', { name: 'ปิด', exact: true }).click();
+  await shot(`policy-edit-dark-${width}`);
+  await page.keyboard.press('Escape');
+  await settle(300);
+  await bulk('เปลี่ยนหมวดหมู่').click();
+  await settle();
+  await dialog().locator('.ka-pm__cat:not([aria-disabled="true"])').first().click();
+  await shot(`category-edit-dark-${width}`);
+  await page.keyboard.press('Escape');
+  await settle(300);
+  await bulk('เปลี่ยนสถานะตัวเลือก').click();
+  await settle();
+  await dialog().getByRole('checkbox').first().check();
+  await shot(`status-edit-dark-${width}`);
+  await page.keyboard.press('Escape');
+  await settle(300);
+  await unselectAll();
+}
+await page.evaluate(() => localStorage.setItem('theme', 'light'));
+
+// The shared .ka-seg elsewhere keeps its own look (review round 1, F1).
+await page.setViewportSize({ width: 1440, height: 1000 });
+await page.goto(`${base}/admin/sales-dashboard`);
+await settle(1500);
+const seg = await page.evaluate(() => {
+  const el = document.querySelector('.ka-seg');
+  if (!el) return null;
+  const box = getComputedStyle(el);
+  const button = getComputedStyle(el.querySelector('button'));
+  return { radius: box.borderTopLeftRadius, gap: box.columnGap, buttonRadius: button.borderTopLeftRadius, minWidth: button.minWidth };
+});
+check('shared .ka-seg on the sales page untouched', seg && seg.radius === '8px' && seg.buttonRadius === '6px' && seg.minWidth !== '64px', JSON.stringify(seg));
 
 writeFileSync(join(out, 'results.json'), `${JSON.stringify(results, null, 2)}\n`);
 await browser.close();

@@ -272,7 +272,7 @@
   {
     "name": "keyboard category: Tab stays in the dialog",
     "ok": true,
-    "note": "5 stops: input  | button[radio] TASK0141-02950C56-9FB7-4128-997A-24B18E3 | a สร้างหมวดหมู่ใหม่ | button ยกเลิก | button ปิด"
+    "note": "5 stops: input  | button[radio] TASK0141-02950C56-9FB7-4128-997A-24B18E3 | a สร้างหมวดหมู่ใหม่(แท็บใหม่) | button ยกเลิก | button ปิด"
   },
   {
     "name": "keyboard category: ArrowDown moves the choice",
@@ -313,5 +313,90 @@
     "name": "keyboard status: focus back on the bulk button",
     "ok": true,
     "note": ""
+  },
+  {
+    "name": "stacked: policy opens over the detail",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "stacked: first Esc closes only the policy dialog",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "stacked: focus back on \"ตั้งค่า\"",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "stacked: second Esc closes the detail, focus on the eye button",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "saving: aria-busy and \"กำลังบันทึก…\"",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "saving: Esc does not close while saving",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "error: danger banner with the API message",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "error: retry offered",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "error: choice kept",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "delete: detail closes and the existing confirmation opens",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "delete: cancelled, product still listed",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "rich: four tiles, one ringed, \"ปิด\" chip, contact-off sold-out note",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "rich: variant picture row",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "unpublished: note says customers cannot see it",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "dark 1440: theme applied",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "dark 390: theme applied",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "shared .ka-seg on the sales page untouched",
+    "ok": true,
+    "note": "{\"radius\":\"8px\",\"gap\":\"normal\",\"buttonRadius\":\"6px\",\"minWidth\":\"auto\"}"
   }
 ]
