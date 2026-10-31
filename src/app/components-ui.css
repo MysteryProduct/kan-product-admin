@@ -26,6 +26,9 @@
 .ka-menu__item[data-tone="danger"] { color: var(--danger); }
 .ka-menu__item[data-tone="danger"]:hover { background: var(--danger-soft); }
 .ka-menu__item:disabled { opacity: 0.5; cursor: not-allowed; }
+.ka-menu__item { gap: 10px; }
+.ka-menu__item svg { width: 16px; height: 16px; flex: none; }
+.ka-menu__sep { height: 1px; margin: 4px 6px; background: var(--border); }
 .ka-modal__body .ka-menu__item { min-height: var(--touch-target); }
 .ka-chip {
   display: inline-flex; align-items: center; gap: var(--space-2); min-height: 36px; padding: 0 var(--space-3);

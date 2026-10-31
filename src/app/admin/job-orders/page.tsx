@@ -291,11 +291,13 @@ const JobCard = memo(function JobCard({
 				<RowMenu
 					label={`จัดการ ${job.job_order_code}`}
 					items={[
-						{ label: 'ดูรายละเอียด', onSelect: () => actions.onView(job) },
-						...(canMove ? moves.map((status) => ({ label: `เปลี่ยนสถานะ → ${mapStatusToLabel(status)}`, onSelect: () => actions.onMove(job, status), tone: status === 'cancelled' ? ('danger' as const) : undefined })) : []),
-						...(canAdd ? [{ label: 'ทำสำเนาเป็นงานใหม่', onSelect: () => actions.onCopy(job) }] : []),
-						...(canEdit && !isClosed ? [{ label: 'แก้ไขงาน', onSelect: () => actions.onEdit(job) }] : []),
-						...(canDelete && jobStatus !== 'completed' ? [{ label: 'ลบงาน', tone: 'danger' as const, onSelect: () => actions.onDelete(job) }] : []),
+						{ label: 'ดูรายละเอียด', icon: 'view', onSelect: () => actions.onView(job) },
+						...(canMove ? moves.filter((status) => status !== 'cancelled').map((status) => ({ label: `เปลี่ยนสถานะ → ${mapStatusToLabel(status)}`, icon: 'status' as const, onSelect: () => actions.onMove(job, status) })) : []),
+						...(canAdd ? [{ label: 'ทำสำเนาเป็นงานใหม่', icon: 'copy' as const, onSelect: () => actions.onCopy(job) }] : []),
+						...(canEdit && !isClosed ? [{ label: 'แก้ไขงาน', icon: 'edit' as const, onSelect: () => actions.onEdit(job) }] : []),
+						// Destructive commands last, under the menu's divider.
+						...(canMove && moves.includes('cancelled') ? [{ label: 'ยกเลิกงาน', icon: 'cancel' as const, tone: 'danger' as const, onSelect: () => actions.onMove(job, 'cancelled') }] : []),
+						...(canDelete && jobStatus !== 'completed' ? [{ label: 'ลบงาน', icon: 'delete' as const, tone: 'danger' as const, onSelect: () => actions.onDelete(job) }] : []),
 					]}
 				/>
 			</div>
