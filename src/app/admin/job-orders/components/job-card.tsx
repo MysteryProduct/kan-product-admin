@@ -107,19 +107,22 @@ const JobCard = memo(function JobCard({
 			<div className="ka-jo-card__foot">
 				<span className="ka-kc__av" aria-hidden="true">{hasAssignee ? initial(assignee) : '?'}</span>
 				<span className="ka-jo-card__who">{hasAssignee ? assignee : 'ยังไม่มอบหมาย'}</span>
-				<NextStepButton job={job} canEdit={canEdit} onMove={actions.onMove} />
-				<RowMenu
-					label={`จัดการ ${job.job_order_code}`}
-					items={[
-						{ label: 'ดูรายละเอียด', icon: 'view', onSelect: () => actions.onView(job) },
-						...(canMove ? moves.filter((status) => status !== 'cancelled').map((status) => ({ label: `เปลี่ยนสถานะ → ${mapStatusToLabel(status)}`, icon: 'status' as const, onSelect: () => actions.onMove(job, status) })) : []),
-						...(canAdd ? [{ label: 'ทำสำเนาเป็นงานใหม่', icon: 'copy' as const, onSelect: () => actions.onCopy(job) }] : []),
-						...(canEdit && !isClosed ? [{ label: 'แก้ไขงาน', icon: 'edit' as const, onSelect: () => actions.onEdit(job) }] : []),
-						// Destructive commands last, under the menu's divider.
-						...(canMove && moves.includes('cancelled') ? [{ label: 'ยกเลิกงาน', icon: 'cancel' as const, tone: 'danger' as const, onSelect: () => actions.onMove(job, 'cancelled') }] : []),
-						...(canDelete && jobStatus !== 'completed' ? [{ label: 'ลบงาน', icon: 'delete' as const, tone: 'danger' as const, onSelect: () => actions.onDelete(job) }] : []),
-					]}
-				/>
+				{/* The step button and the menu wrap to the next line together, never the menu alone. */}
+				<span className="ka-jo-card__acts">
+					<NextStepButton job={job} canEdit={canEdit} onMove={actions.onMove} />
+					<RowMenu
+						label={`จัดการ ${job.job_order_code}`}
+						items={[
+							{ label: 'ดูรายละเอียด', icon: 'view', onSelect: () => actions.onView(job) },
+							...(canMove ? moves.filter((status) => status !== 'cancelled').map((status) => ({ label: `เปลี่ยนสถานะ → ${mapStatusToLabel(status)}`, icon: 'status' as const, onSelect: () => actions.onMove(job, status) })) : []),
+							...(canAdd ? [{ label: 'ทำสำเนาเป็นงานใหม่', icon: 'copy' as const, onSelect: () => actions.onCopy(job) }] : []),
+							...(canEdit && !isClosed ? [{ label: 'แก้ไขงาน', icon: 'edit' as const, onSelect: () => actions.onEdit(job) }] : []),
+							// Destructive commands last, under the menu's divider.
+							...(canMove && moves.includes('cancelled') ? [{ label: 'ยกเลิกงาน', icon: 'cancel' as const, tone: 'danger' as const, onSelect: () => actions.onMove(job, 'cancelled') }] : []),
+							...(canDelete && jobStatus !== 'completed' ? [{ label: 'ลบงาน', icon: 'delete' as const, tone: 'danger' as const, onSelect: () => actions.onDelete(job) }] : []),
+						]}
+					/>
+				</span>
 			</div>
 		</article>
 	);
