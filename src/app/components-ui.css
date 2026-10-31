@@ -293,6 +293,11 @@ ul.ka-kv { margin: 0; padding: 0; list-style: none; }
 .ka-prod__thumb { display: grid; flex: none; place-items: center; width: 44px; height: 44px; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--bg-subtle); color: var(--border-control); }
 .ka-prod__thumb > img { width: 100%; height: 100%; object-fit: cover; }
 .ka-prod__thumb > svg { width: 20px; height: 20px; }
+.ka-prod--card { align-items: flex-start; width: 100%; }
+.ka-prod__name { display: block; padding: 0; border: 0; background: none; color: var(--ink); font: 500 16px/24px var(--ka-font); text-align: left; cursor: pointer; overflow-wrap: anywhere; }
+.ka-prod__name:hover { color: var(--brand-ink); }
+.ka-prod__acts { display: flex; justify-content: flex-end; margin-top: var(--space-2); }
+.ka-prod__foot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin-top: 6px; }
 
 .ka-tg { display: inline-flex; gap: 4px; }
 .ka-tg > button { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-surface); color: var(--border-control); cursor: pointer; transition: background-color var(--ka-fast) var(--ka-ease), color var(--ka-fast) var(--ka-ease); }

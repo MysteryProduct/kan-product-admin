@@ -31,6 +31,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { createLatestGate } from '@/lib/latest-request';
 import { selectedProducts } from '@/lib/product-bulk';
 import { browserStorage, loadHiddenColumns, preferenceKey, saveHiddenColumns } from '@/lib/table-preferences';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/Toast';
+import { getApiErrorMessage } from '@/lib/api-error';
+import ProductCard from './components/product-card';
+import { getPrimaryVariant, getStockStatus, STOCK_STATUS_LABELS } from './components/product-stock';
 
 // Columns the employee may hide. The product (name and code) and the row commands always stay.
 const HIDEABLE_COLUMNS: { key: string; label: string }[] = [
@@ -61,34 +66,12 @@ const REQUIRED_KEYS = REQUIRED_COLUMNS.map((c) => c.key);
 type SortField = 'adddate' | 'product_variant_price' | null;
 type SortOrder = 'ASC' | 'DESC';
 
-const getPrimaryVariant = (product: Product) => {
-  const variants = product.product_variants || product.productVariants || [];
-  return variants[0];
-};
-
-// The API writes 'in stock' (job order closed) or 'available' (sale order stock
-// change) when quantity remains, and 'out stock' when none does. A product is
-// in stock when any of its variants has such a row. Stock rows only exist once
-// a job order has been closed, so a product without any has nothing in stock.
-const STOCK_STATUS_LABELS: Record<string, string> = {
-  'in stock': 'มีสินค้า',
-  'out stock': 'สินค้าหมด',
-};
-
-const getStockStatus = (product: Product): string => {
-  const rows = (product.product_variants || product.productVariants || []).flatMap(
-    (variant) => variant.stockProducts || [],
-  );
-  const inStock = rows.some((row) =>
-    ['in stock', 'available'].includes((row.stock_product_status || '').toLowerCase()),
-  );
-  return inStock ? 'in stock' : 'out stock';
-};
-
 export default function ProductsPage() {
   const { can } = usePermissions();
   const { user } = useAuth();
   const canAddProduct = can('products', 'add');
+  const router = useRouter();
+  const toast = useToast();
   const canEditProduct = can('products', 'edit');
   const canDeleteProduct = can('products', 'delete');
 
@@ -308,6 +291,26 @@ export default function ProductsPage() {
     setCurrentPage(1);
     setSearchQuery('');
     setChipFilters({ category: [], color: [] });
+    setStockTab('all');
+  };
+  const chooseStockTab = (tab: StockTab) => {
+    clearSelection();
+    setCurrentPage(1);
+    setStockTab(tab);
+  };
+  // Hides or shows a product on the store from its row menu; the switches in the row follow.
+  const toggleStorefront = async (row: Product) => {
+    const published = !(policies.get(row.product_id)?.published ?? true);
+    try {
+      await productModel.bulkUpdateStorePolicy([row.product_id], { published });
+      setPolicies((prev) => {
+        const current = prev.get(row.product_id) ?? { product_id: row.product_id, published: true, online_purchase: true, contact_enabled: true };
+        return new Map(prev).set(row.product_id, { ...current, published });
+      });
+      toast({ message: published ? `แสดง ${row.product_name} บนหน้าร้านแล้ว` : `ซ่อน ${row.product_name} จากหน้าร้านแล้ว` });
+    } catch (error) {
+      setResultDialog({ isOpen: true, status: 'error', action: 'update', message: `ตั้งค่าหน้าร้านไม่สำเร็จ ${getApiErrorMessage(error)}` });
+    }
   };
 
   const setColumnHidden = (hidden: string[]) => {
@@ -462,20 +465,38 @@ export default function ProductsPage() {
               </svg>
             </Link>
           )}
-          {(canEditProduct || canDeleteProduct) && (
+          {(
             <RowMenu
               label={`ตัวเลือกเพิ่มเติม ${row.product_code ?? ''} ${row.product_name}`}
               items={[
+                {
+                  label: 'ดูรายละเอียด',
+                  icon: 'view' as const,
+                  onSelect: () => {
+                    setSelectedDetailProduct(row);
+                    setIsDetailFormOpen(true);
+                  },
+                },
+                ...(canEditProduct
+                  ? [{ label: 'แก้ไข', icon: 'edit' as const, onSelect: () => router.push(`/admin/products/${row.product_id}/edit`) }]
+                  : []),
+                ...(canAddProduct
+                  ? [{ label: 'ทำสำเนา', icon: 'copy' as const, onSelect: () => router.push(`/admin/products/new?copy=${row.product_id}`) }]
+                  : []),
                 ...(canEditProduct
                   ? [
-                      { label: 'แก้ไขด่วน (ชื่อ/หมวดหมู่)', onSelect: () => setQuickEditProduct(row) },
-                      { label: 'เปลี่ยนสถานะตัวเลือก', onSelect: () => openBulk('status', [row]) },
+                      policies.get(row.product_id)?.published === false
+                        ? { label: 'แสดงบนหน้าร้าน', icon: 'show' as const, onSelect: () => void toggleStorefront(row) }
+                        : { label: 'ซ่อนจากหน้าร้าน', icon: 'hide' as const, onSelect: () => void toggleStorefront(row) },
+                      { label: 'แก้ไขด่วน (ชื่อ/หมวดหมู่)', icon: 'edit' as const, onSelect: () => setQuickEditProduct(row) },
+                      { label: 'เปลี่ยนสถานะตัวเลือก', icon: 'status' as const, onSelect: () => openBulk('status', [row]) },
                     ]
                   : []),
                 ...(canDeleteProduct
                   ? [
                       {
                         label: 'ลบสินค้า',
+                        icon: 'delete' as const,
                         tone: 'danger' as const,
                         onSelect: () => {
                           setProductToDelete(row);
@@ -552,7 +573,16 @@ export default function ProductsPage() {
     });
   };
 
-  const activeFilterCount = chipFilters.category.length + chipFilters.color.length + (searchQuery.trim() ? 1 : 0);
+  const activeFilterCount = chipFilters.category.length + chipFilters.color.length + (searchQuery.trim() ? 1 : 0) + (stockTab === 'all' ? 0 : 1);
+  const pickedLabels = (options: { label: string; value: string }[], values: string[]) =>
+    values.map((value) => options.find((option) => option.value === value)?.label ?? value).join(', ');
+  // Named in the empty state: "กำลังกรอง ค้นหา: แก้ว · ประเภท: กระบอกน้ำ".
+  const filterNames = [
+    ...(searchQuery.trim() ? [`ค้นหา: ${searchQuery.trim()}`] : []),
+    ...(chipFilters.category.length ? [`ประเภท: ${pickedLabels(categoryOptions, chipFilters.category)}`] : []),
+    ...(chipFilters.color.length ? [`สี: ${pickedLabels(colorOptions, chipFilters.color)}`] : []),
+    ...(stockTab === 'all' ? [] : [`สถานะ: ${STOCK_TABS.find((tab) => tab.key === stockTab)?.label}`]),
+  ];
   const chipOptions = (options: { label: string; value: string }[]) => options.map((option) => ({ value: option.value, label: option.label }));
 
   return (
@@ -585,11 +615,7 @@ export default function ProductsPage() {
               key={tab.key}
               type="button"
               aria-current={stockTab === tab.key ? 'true' : undefined}
-              onClick={() => {
-                clearSelection();
-                setCurrentPage(1);
-                setStockTab(tab.key);
-              }}
+              onClick={() => chooseStockTab(tab.key)}
             >
               {tab.label}
               {counts[tab.key] !== undefined && <span className="numeric">{count(counts[tab.key] as number)}</span>}
@@ -623,6 +649,14 @@ export default function ProductsPage() {
             options={chipOptions(colorOptions)}
             selected={chipFilters.color}
             onChange={(values) => setChip('color', values)}
+            resultCount={meta?.total}
+          />
+          <FilterChip
+            label="สถานะ"
+            single
+            options={STOCK_TABS.filter((tab) => tab.value).map((tab) => ({ value: tab.key, label: tab.label, count: counts[tab.key] }))}
+            selected={stockTab === 'all' ? [] : [stockTab]}
+            onChange={(values) => chooseStockTab((values[0] as StockTab | undefined) ?? 'all')}
             resultCount={meta?.total}
           />
           {activeFilterCount > 0 && (
@@ -685,7 +719,20 @@ export default function ProductsPage() {
               : undefined
           }
           onSortChange={handleSortChange}
-          emptyHint={activeFilterCount > 0 || stockTab !== 'all' ? 'ไม่พบสินค้าที่ตรงกับตัวกรอง ลองล้างตัวกรองหรือเลือกแท็บอื่น' : 'ยังไม่มีสินค้า กดเพิ่มสินค้าเพื่อเริ่ม'}
+          activeFilters={filterNames}
+          onClearFilters={clearAllFilters}
+          renderCard={(row) => (
+            <ProductCard
+              row={row}
+              colorHex={colorHexes}
+              actions={columns.find((column) => column.key === 'product_id')?.render?.(row.product_id as Product[keyof Product], row)}
+              onOpen={() => {
+                setSelectedDetailProduct(row);
+                setIsDetailFormOpen(true);
+              }}
+            />
+          )}
+          emptyHint="ยังไม่มีสินค้า กดเพิ่มสินค้าเพื่อเริ่ม"
         />
       </section>
 
