@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import GroupedBarChart from '@/components/charts/GroupedBarChart';
+import { useEffect, useState, type ReactNode } from 'react';
+import HBar from '@/components/dashboard/HBar';
 import LineChart from '@/components/charts/LineChart';
 import { formatBaht } from '@/components/charts/scale';
 import type { ChartSeries } from '@/components/charts/types';
@@ -17,13 +17,33 @@ const MAX_YEARS = 5;
 const YEAR_CHOICES = 10;
 const MONTHS = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
 
-type Metric = 'income' | 'expense' | 'purchases' | 'refunds';
-const METRICS: { key: Metric; label: string }[] = [
-  { key: 'income', label: 'รายรับ (สุทธิหลังคืนเงิน)' },
-  { key: 'expense', label: 'รายจ่าย (จ่ายให้ผู้จัดจำหน่าย)' },
-  { key: 'purchases', label: 'มูลค่าซื้อเข้า (ใบรับสินค้าที่อนุมัติ)' },
-  { key: 'refunds', label: 'ยอดคืนเงิน (อัตราคืนอยู่ในตาราง)' },
+type Metric = 'income' | 'expense' | 'diff' | 'purchases' | 'refunds';
+const METRICS: { key: Metric; short: string; label: string }[] = [
+  { key: 'income', short: 'รายรับ', label: 'รายรับ (สุทธิหลังคืนเงิน)' },
+  { key: 'expense', short: 'รายจ่าย', label: 'รายจ่าย (จ่ายให้ผู้จัดจำหน่าย)' },
+  { key: 'diff', short: 'ส่วนต่าง', label: 'ส่วนต่าง (รายรับ − รายจ่าย)' },
+  { key: 'purchases', short: 'ซื้อเข้า', label: 'มูลค่าซื้อเข้า (ใบรับสินค้าที่อนุมัติ)' },
+  { key: 'refunds', short: 'คืนเงิน', label: 'ยอดคืนเงิน (อัตราคืนอยู่ในตาราง)' },
 ];
+
+/** The latest year is the brand orange and the one before it a grey, as in the design; older years keep the chart tokens. */
+const yearColor = (index: number) => (index === 0 ? 'var(--brand)' : index === 1 ? 'var(--border-control)' : `var(--chart-${index + 1})`);
+
+const round2 = (value: number) => Math.round(value * 100) / 100;
+
+/** Income minus expense, month by month and per year; a month that has not begun stays empty. */
+function differenceSeries(income: CashflowSeries, expense: CashflowSeries): CashflowSeries {
+  const monthly: CashflowSeries['monthly'] = {};
+  for (const [year, months] of Object.entries(income.monthly)) {
+    monthly[year] = months.map((value, index) => {
+      const spent = expense.monthly[year]?.[index];
+      return value === null || value === undefined || spent === null || spent === undefined ? null : round2(value - spent);
+    });
+  }
+  const yearly: CashflowSeries['yearly'] = {};
+  for (const [year, value] of Object.entries(income.yearly)) yearly[year] = round2(value - (expense.yearly[year] ?? 0));
+  return { monthly, yearly };
+}
 
 const buddhist = (year: number) => year + 543;
 const bangkokYear = () => Number(new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok', year: 'numeric' }).format(new Date()));
@@ -35,7 +55,7 @@ type Loaded = { key: string; data: Cashflow } | { key: string; error: string };
  * chosen as "last year" and "how many years" so that more than five cannot be
  * asked for. Each chart has a table with the same numbers.
  */
-export default function CashflowSection() {
+export default function CashflowSection({ beside }: { beside?: ReactNode }) {
   const thisYear = bangkokYear();
   const [endYear, setEndYear] = useState(thisYear);
   const [span, setSpan] = useState(2);
@@ -65,7 +85,16 @@ export default function CashflowSection() {
   const data = loaded && 'data' in loaded ? loaded.data : null;
   const error = loaded && 'error' in loaded && !isLoading ? loaded.error : null;
 
-  const present = METRICS.filter((item) => data?.[item.key]);
+  const seriesOf: Partial<Record<Metric, CashflowSeries>> = data
+    ? {
+        income: data.income,
+        expense: data.expense,
+        purchases: data.purchases,
+        refunds: data.refunds,
+        ...(data.income && data.expense ? { diff: differenceSeries(data.income, data.expense) } : {}),
+      }
+    : {};
+  const present = METRICS.filter((item) => seriesOf[item.key]);
   const activeMetric = present.some((item) => item.key === metric) ? metric : (present[0]?.key ?? metric);
   const years = data ? Array.from({ length: data.to_year - data.from_year + 1 }, (_, index) => data.to_year - index) : [];
 
@@ -73,7 +102,7 @@ export default function CashflowSection() {
     years.map((year, index) => ({
       key: String(year),
       label: `พ.ศ. ${buddhist(year)}`,
-      color: `var(--chart-${index + 1})`,
+      color: yearColor(index),
       values: source.monthly[String(year)] ?? [],
     }));
 
@@ -88,7 +117,7 @@ export default function CashflowSection() {
       ].filter(Boolean) as ChartSeries[])
     : [];
 
-  const monthlySource = data?.[activeMetric];
+  const monthlySource = seriesOf[activeMetric];
   const hasAnyMonthly = monthlySource ? monthlySeries(monthlySource).some((line) => line.values.some((value) => value)) : false;
   const hasAnyYearly = yearlySeries.some((bar) => bar.values.some((value) => value));
   /** Refunds as a share of what was received before them, for a month or a year; null when nothing was received. */
@@ -98,8 +127,8 @@ export default function CashflowSection() {
   const metricLabel = METRICS.find((item) => item.key === activeMetric)?.label ?? '';
 
   return (
-    <section aria-labelledby="dashboard-cashflow" className="mb-6">
-      <h2 id="dashboard-cashflow" className="mb-3 text-[19px] font-semibold text-[var(--ink)]">
+    <section aria-labelledby="dashboard-cashflow" className="ka-cashflow">
+      <h2 id="dashboard-cashflow" className="sr-only">
         รายรับและรายจ่าย
       </h2>
 
@@ -136,22 +165,23 @@ export default function CashflowSection() {
       )}
 
       {!isLoading && data && monthlySource && (
-        <div className="ka-card mb-4 p-4">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h3 className="text-[16px] font-semibold text-[var(--ink)]">รายเดือน เทียบแต่ละปี</h3>
-            <select
-              aria-label="ตัวเลขที่แสดงในกราฟรายเดือน"
-              className="ka-input min-h-11 max-w-full"
-              value={activeMetric}
-              onChange={(event) => setMetric(event.target.value as Metric)}
-            >
+        <div className="ka-card ka-panel">
+          <div className="ka-panel__head">
+            <div>
+              <h3 className="ka-card__title">{`${METRICS.find((item) => item.key === activeMetric)?.short ?? ''}รายเดือน`}</h3>
+              <p className="ka-todo__cap">
+                เทียบ พ.ศ. {years.map((year) => buddhist(year)).join(' กับ ')}
+              </p>
+            </div>
+            <div className="ka-seg" role="group" aria-label="ตัวชี้วัดของกราฟ">
               {present.map((item) => (
-                <option key={item.key} value={item.key}>
-                  {item.label}
-                </option>
+                <button key={item.key} type="button" aria-pressed={activeMetric === item.key} onClick={() => setMetric(item.key)}>
+                  {item.short}
+                </button>
               ))}
-            </select>
+            </div>
           </div>
+          <p className="ka-panel__note">{metricLabel}</p>
           {hasAnyMonthly ? (
             <LineChart title={`${metricLabel} รายเดือน`} categories={MONTHS} series={monthlySeries(monthlySource)} />
           ) : (
@@ -205,15 +235,37 @@ export default function CashflowSection() {
         </div>
       )}
 
-      {!isLoading && data && yearlySeries.length > 0 && (
-        <div className="ka-card p-4">
-          <h3 className="mb-3 text-[16px] font-semibold text-[var(--ink)]">รายปี รายรับเทียบรายจ่าย</h3>
+      <div className="ka-sales-grid">
+        {beside}
+        {!isLoading && data && yearlySeries.length > 0 && (
+        <div className="ka-card ka-panel">
+          <h3 className="ka-card__title">รายปี</h3>
+          <p className="ka-todo__cap">รายรับเทียบรายจ่าย · ปีปัจจุบันนับถึงวันนี้</p>
           {hasAnyYearly ? (
-            <GroupedBarChart title="รายรับเทียบรายจ่ายรายปี" categories={yearlyCategories} series={yearlySeries} />
+            <ul aria-label="รายรับเทียบรายจ่ายรายปี" className="ka-rank">
+              {yearlyCategories.map((category, index) => {
+                const income = yearlySeries.find((line) => line.key === 'income')?.values[index] ?? 0;
+                const expense = yearlySeries.find((line) => line.key === 'expense')?.values[index] ?? 0;
+                const top = Math.max(1, ...yearlySeries.flatMap((line) => line.values.map((value) => value ?? 0)));
+                return (
+                  <li key={category}>
+                    <div className="ka-rank__row">
+                      <span>พ.ศ. {category}</span>
+                      <span className="numeric ka-rank__qty">
+                        {yearlySeries.some((line) => line.key === 'income') && <>รับ {formatBaht(income)}</>}
+                        {yearlySeries.some((line) => line.key === 'expense') && <> · จ่าย {formatBaht(expense)}</>}
+                      </span>
+                    </div>
+                    {yearlySeries.some((line) => line.key === 'income') && <HBar ratio={income / top} tone="brand" />}
+                    {yearlySeries.some((line) => line.key === 'expense') && <HBar ratio={expense / top} tone="neutral" />}
+                  </li>
+                );
+              })}
+            </ul>
           ) : (
             <p className="text-[14px] text-[var(--ink-muted)]">ไม่มีข้อมูลในช่วงปีที่เลือก</p>
           )}
-          <p className="mt-2 text-[13px] text-[var(--ink-muted)]">* ปีปัจจุบันนับถึงวันนี้</p>
+          <p className="ka-panel__note">แถบสีส้มคือรายรับ แถบสีเทาคือรายจ่าย ตัวเลขเขียนกำกับทุกแถว</p>
           <details className="mt-3">
             <summary className="cursor-pointer text-[14px] text-[var(--ink)]">ดูเป็นตาราง</summary>
             <div className="mt-2 overflow-x-auto">
@@ -265,6 +317,7 @@ export default function CashflowSection() {
           </details>
         </div>
       )}
+      </div>
     </section>
   );
 }

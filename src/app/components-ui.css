@@ -96,7 +96,8 @@
 .ka-empty__action { margin-top: var(--space-2); }
 
 /* ---------- Dashboard (TASK-0316 4.1) ---------- */
-.ka-page-body { padding: var(--space-4); }
+/* relative: a visually hidden (absolute) heading or caption inside must stay in this box, or the whole document scrolls (frontend.md, admin layout trap). */
+.ka-page-body { position: relative; padding: var(--space-4); }
 @media (min-width: 640px) { .ka-page-body { padding: var(--space-6); } }
 .ka-hello {
   position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4);
@@ -117,8 +118,8 @@
 .ka-hello :focus-visible { outline-color: var(--ink-on-sidebar-active); }
 @media (max-width: 639px) { .ka-hello { padding: var(--space-4); } .ka-hello::before { right: 40px; } .ka-hello__actions { width: 100%; } .ka-hello__actions .ka-btn { flex: 1; } }
 
-.ka-dash { display: grid; gap: var(--space-4); margin-bottom: var(--space-6); }
-.ka-dash__side { display: grid; gap: var(--space-4); align-content: start; }
+.ka-dash { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); margin-bottom: var(--space-6); }
+.ka-dash__side { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); align-content: start; }
 @media (min-width: 1024px) { .ka-dash { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); } }
 
 .ka-todo { overflow: hidden; }
@@ -139,8 +140,8 @@
 .ka-todo__none { border-top: 0; }
 @media (max-width: 639px) { .ka-todo__row { padding: var(--space-3) var(--space-4); } .ka-todo__zero, .ka-todo__none { padding: var(--space-3) var(--space-4); } }
 
-.ka-panel { display: grid; gap: var(--space-2); align-content: start; padding: var(--space-4) var(--space-6) var(--space-6); }
-.ka-panel__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.ka-panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); align-content: start; padding: var(--space-4) var(--space-6) var(--space-6); }
+.ka-panel__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); min-width: 0; }
 .ka-panel__stat { margin: 0; font: 700 28px/36px var(--ka-font); letter-spacing: -0.01em; }
 .ka-panel__figure { display: flex; align-items: baseline; gap: var(--space-2); margin: 0; font: 700 28px/36px var(--ka-font); }
 .ka-panel__figure span { color: var(--ink-muted); font: 400 14px/22px var(--ka-font); }
@@ -166,5 +167,62 @@
 .ka-legend button:hover { text-decoration: underline; text-underline-offset: 4px; }
 .ka-legend i { width: 10px; height: 10px; border-radius: 50%; background: var(--seg); }
 @media (max-width: 767px) { .ka-legend button { min-height: var(--touch-target); } }
+
+/* ---------- Sales page (TASK-0316 4.2) ---------- */
+.ka-ph { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-6); }
+.ka-ph__title { margin: 0; font: 700 24px/36px var(--ka-font); }
+.ka-ph__lead { margin: 0; color: var(--ink-muted); font: 400 15px/24px var(--ka-font); }
+@media (max-width: 639px) { .ka-ph__title { font-size: 22px; } }
+
+.ka-range { display: grid; gap: var(--space-3); justify-items: end; max-width: 100%; }
+.ka-range__custom { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-3); }
+.ka-range__custom .ka-error, .ka-range__custom .ka-help { flex-basis: 100%; margin: 0; }
+@media (max-width: 639px) { .ka-range { justify-items: stretch; width: 100%; } }
+
+/* One group of buttons where exactly one is on; aria-pressed carries it, so colour is not the only cue. */
+.ka-seg { display: inline-flex; max-width: 100%; padding: 3px; overflow-x: auto; border: 1px solid var(--border-control); border-radius: var(--radius-control); background: var(--bg-subtle); }
+.ka-seg > button {
+  min-height: 34px; padding: 0 var(--space-3); border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--ink-muted);
+  font: 500 14px/22px var(--ka-font); white-space: nowrap; cursor: pointer;
+  transition: background-color var(--ka-fast) var(--ka-ease), color var(--ka-fast) var(--ka-ease);
+}
+.ka-seg > button:hover { color: var(--ink); }
+.ka-seg > button[aria-pressed="true"] { background: var(--bg-surface); color: var(--ink); font-weight: 700; box-shadow: var(--shadow-card); }
+@media (max-width: 767px) { .ka-seg > button { min-height: var(--touch-target); } }
+
+.ka-kpis { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); margin-bottom: var(--space-4); }
+@media (min-width: 640px) { .ka-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1200px) { .ka-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.ka-kpi { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-1); align-content: start; padding: var(--space-4) var(--space-6) var(--space-5); }
+.ka-kpi__top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.ka-kpi__label { margin: 0; color: var(--ink-muted); font: 500 14px/22px var(--ka-font); }
+.ka-kpi__value { margin: 0; font: 700 28px/36px var(--ka-font); letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.ka-kpi__open { padding: 0; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; }
+.ka-kpi__open:hover { text-decoration: underline; text-underline-offset: 4px; }
+.ka-kpi__note { margin: 0; color: var(--ink-muted); font: 400 13px/20px var(--ka-font); }
+
+.ka-cashflow { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); margin-bottom: var(--space-4); }
+.ka-cashflow > .mb-4 { margin-bottom: 0; }
+.ka-sales-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
+.ka-sales-grid > :only-child { grid-column: 1 / -1; }
+@media (min-width: 1024px) { .ka-sales-grid { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); } }
+.ka-sales-mix { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
+.ka-sales-mix__banner { grid-column: 1 / -1; }
+@media (min-width: 768px) { .ka-sales-mix { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ka-sales-mix > p { grid-column: 1 / -1; } }
+
+.ka-rank { display: grid; gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
+.ka-rank > li { display: grid; gap: 4px; }
+.ka-rank__row { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); font: 400 15px/24px var(--ka-font); }
+.ka-rank__name { display: flex; align-items: baseline; gap: var(--space-3); min-width: 0; }
+.ka-rank__no { color: var(--ink-muted); font-weight: 600; }
+.ka-rank__qty { flex: none; font-weight: 600; text-align: right; }
+.ka-hbar { height: 10px; overflow: hidden; border-radius: var(--radius-pill); background: var(--bg-muted); }
+.ka-hbar > i { display: block; height: 100%; border-radius: inherit; background: var(--brand); }
+.ka-hbar > i[data-tone="neutral"] { background: var(--border-control); }
+.ka-swatch { display: inline-block; width: 10px; height: 10px; margin-right: var(--space-2); border-radius: 50%; }
+.ka-kv > li, .ka-kv__line { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); font: 400 15px/24px var(--ka-font); }
+ul.ka-kv { margin: 0; padding: 0; list-style: none; }
+.ka-kv__line { margin: 0; padding-top: var(--space-2); border-top: 1px solid var(--border); color: var(--ink-muted); }
+.ka-kv__key { display: inline-flex; align-items: center; min-width: 0; }
 
 }
