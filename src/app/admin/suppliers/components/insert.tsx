@@ -5,6 +5,7 @@ import SupplierModel, { CreateSupplierDto } from '@/models/supplier';
 import Modal from '@/components/Modal';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import { VAT_TYPE_OPTIONS } from '@/lib/vat';
+import CustomSelect from '@/components/CustomSelect';
 
 interface SupplierInsertFormProps {
     isOpen: boolean;
@@ -307,23 +308,14 @@ export default function SupplierInsertForm({ isOpen, onClose, onSuccess }: Suppl
                                         <span>รูปแบบ VAT</span>
                                     </span>
                                 </label>
-                                <select
-                                    name="vat_type"
-                                    value={formData.vat_type || 'none'}
-                                    onChange={(e) =>
-                                        setFormData((prev) => ({
+                                <CustomSelect
+                                  value={formData.vat_type || 'none'}
+                                  onChange={(value) => setFormData((prev) => ({
                                             ...prev,
-                                            vat_type: e.target.value as SupplierWithPayment['vat_type'],
-                                        }))
-                                    }
-                                    className="ka-input"
-                                >
-                                    {VAT_TYPE_OPTIONS.map((option) => (
-                                        <option key={option.value} value={option.value}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
+                                            vat_type: value as SupplierWithPayment['vat_type'],
+                                        }))}
+                                  options={VAT_TYPE_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
+                                />
                             </div>
                             <div className="space-y-2">
                                 <label className="block text-sm font-semibold text-[var(--ink)] mb-2">

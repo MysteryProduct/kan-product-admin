@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import Modal from '@/components/Modal';
 import ProductModel from '@/models/product';
 import type { Product } from '@/types/product';
+import CustomSelect from '@/components/CustomSelect';
 
 const productModel = new ProductModel();
 const NAME_MAX = 255;
@@ -134,20 +135,14 @@ export default function QuickEdit({
           <label htmlFor="quick-edit-category" className="text-sm font-medium text-[var(--ink)]">
             หมวดหมู่
           </label>
-          <select
+          <CustomSelect
             id="quick-edit-category"
-            className="ka-input"
             value={categoryId}
+            onChange={(value) => setCategoryId(value)}
+            options={categories.map((category) => ({ value: category.value, label: category.label }))}
+            placeholder="เลือกหมวดหมู่"
             disabled={pending}
-            onChange={(e) => setCategoryId(e.target.value)}
-          >
-            <option value="">เลือกหมวดหมู่</option>
-            {categories.map((category) => (
-              <option key={category.value} value={category.value}>
-                {category.label}
-              </option>
-            ))}
-          </select>
+          />
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border)] pt-3">
           <p className="text-[13px] text-[var(--ink-muted)]">

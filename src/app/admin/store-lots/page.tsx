@@ -10,6 +10,7 @@ import LoadingSkeletonProps from '@/components/LoadingSkeleton';
 import { formatThaiDate, formatThaiDateTime } from '@/lib/date-format';
 import { getApiErrorMessage } from '@/lib/api-error';
 import ReleaseLotModal, { variantLabel } from './components/release-modal';
+import CustomSelect from '@/components/CustomSelect';
 
 const storeLotModel = new StoreLotModel();
 
@@ -166,22 +167,18 @@ export default function StoreLotsPage() {
             </p>
           </div>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <select
+            <CustomSelect
               aria-label="สถานะล็อต"
               value={status}
-              onChange={(e) => {
-                setStatus(e.target.value as StoreLotStatus);
+              onChange={(value) => {
+                setStatus(value as StoreLotStatus);
                 setCurrentPage(1);
                 setNotice('');
               }}
-              className="ka-input min-h-11"
-            >
-              {(Object.keys(statusLabels) as StoreLotStatus[]).map((value) => (
-                <option key={value} value={value}>
-                  {statusLabels[value]}
-                </option>
-              ))}
-            </select>
+              options={[
+                ...(Object.keys(statusLabels) as StoreLotStatus[]).map((value) => ({ value, label: statusLabels[value] })),
+              ]}
+            />
             <form
               onSubmit={(e) => {
                 e.preventDefault();

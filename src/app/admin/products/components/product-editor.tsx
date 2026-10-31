@@ -20,6 +20,7 @@ import Button from '@/components/Button';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import LoadErrorBanner, { failedLabels, loadErrorText, partialLoadText } from '@/components/LoadErrorBanner';
 import { useToast } from '@/components/Toast';
+import CustomSelect from '@/components/CustomSelect';
 
 interface MaterialRow {
   id: string;
@@ -478,36 +479,30 @@ export default function ProductEditor({ mode, product, policy: initialPolicy }: 
                   <label htmlFor="product-category" className="ka-label">
                     ประเภทสินค้า <span className="ka-req">*</span>
                   </label>
-                  <select id="product-category" className="ka-input" value={categoryId} onChange={(event) => touch(setCategoryId)(event.target.value)} {...field('category')}>
-                    <option value="">เลือกประเภทสินค้า</option>
-                    {categories.map((category) => (
-                      <option key={category.category_id} value={category.category_id}>
-                        {category.category_name}
-                      </option>
-                    ))}
-                  </select>
+                  <CustomSelect
+                    id="product-category"
+                    value={categoryId}
+                    onChange={(value) => touch(setCategoryId)(value)}
+                    options={categories.map((category) => ({ value: category.category_id, label: category.category_name }))}
+                    placeholder="เลือกประเภทสินค้า"
+                    {...field('category')}
+                  />
                   <FieldError id="category" />
                 </div>
                 <div className="ka-field">
                   <label htmlFor="product-unit" className="ka-label">หน่วยนับ</label>
-                  <select
+                  <CustomSelect
                     id="product-unit"
-                    className="ka-input"
                     value={defaultUnit}
-                    onChange={(event) => {
-                      const unit = event.target.value;
+                    onChange={(value) => {
+                      const unit = value;
                       touch(setDefaultUnit)(unit);
                       // Fills every variant that has no unit yet; a unit already chosen on a variant stays.
                       setVariants((prev) => prev.map((variant) => (variant.product_unit_id ? variant : { ...variant, product_unit_id: unit })));
                     }}
-                  >
-                    <option value="">เลือกหน่วยนับ</option>
-                    {units.map((unit) => (
-                      <option key={unit.product_unit_id} value={unit.product_unit_id}>
-                        {unit.product_unit_name}
-                      </option>
-                    ))}
-                  </select>
+                    options={units.map((unit) => ({ value: unit.product_unit_id, label: unit.product_unit_name }))}
+                    placeholder="เลือกหน่วยนับ"
+                  />
                   <span className="ka-help">ใช้กับทุกแบบ เปลี่ยนรายแบบได้</span>
                 </div>
               </div>
@@ -547,22 +542,26 @@ export default function ProductEditor({ mode, product, policy: initialPolicy }: 
                       <div className="ka-editor__vg">
                         <div className="ka-field">
                           <label htmlFor={`${at}-size`} className="ka-label">ขนาด <span className="ka-req">*</span></label>
-                          <select id={`${at}-size`} className="ka-input" value={variant.size_id} onChange={(event) => setVariant(variant.key, { size_id: event.target.value })} {...field(`${at}.size`)}>
-                            <option value="">เลือกขนาด</option>
-                            {categorySizes.map((size) => (
-                              <option key={size.size_id} value={size.size_id}>{size.size_name}</option>
-                            ))}
-                          </select>
+                          <CustomSelect
+                            id={`${at}-size`}
+                            value={variant.size_id}
+                            onChange={(value) => setVariant(variant.key, { size_id: value })}
+                            options={categorySizes.map((size) => ({ value: size.size_id, label: size.size_name }))}
+                            placeholder="เลือกขนาด"
+                            {...field(`${at}.size`)}
+                          />
                           <FieldError id={`${at}.size`} />
                         </div>
                         <div className="ka-field">
                           <label htmlFor={`${at}-color`} className="ka-label">สี <span className="ka-req">*</span></label>
-                          <select id={`${at}-color`} className="ka-input" value={variant.color_id} onChange={(event) => setVariant(variant.key, { color_id: event.target.value })} {...field(`${at}.color`)}>
-                            <option value="">เลือกสี</option>
-                            {colors.map((color) => (
-                              <option key={color.color_id} value={color.color_id}>{color.color_name}</option>
-                            ))}
-                          </select>
+                          <CustomSelect
+                            id={`${at}-color`}
+                            value={variant.color_id}
+                            onChange={(value) => setVariant(variant.key, { color_id: value })}
+                            options={colors.map((color) => ({ value: color.color_id, label: color.color_name }))}
+                            placeholder="เลือกสี"
+                            {...field(`${at}.color`)}
+                          />
                           <FieldError id={`${at}.color`} />
                         </div>
                         <div className="ka-field">
@@ -583,19 +582,26 @@ export default function ProductEditor({ mode, product, policy: initialPolicy }: 
                         </div>
                         <div className="ka-field">
                           <label htmlFor={`${at}-status`} className="ka-label">สถานะ</label>
-                          <select id={`${at}-status`} className="ka-input" value={variant.product_variant_status} onChange={(event) => setVariant(variant.key, { product_variant_status: event.target.value as VariantRow['product_variant_status'] })}>
-                            <option value="active">เปิดขาย</option>
-                            <option value="inactive">ปิดขาย</option>
-                          </select>
+                          <CustomSelect
+                            id={`${at}-status`}
+                            value={variant.product_variant_status}
+                            onChange={(value) => setVariant(variant.key, { product_variant_status: value as VariantRow['product_variant_status'] })}
+                            options={[
+                              { value: "active", label: 'เปิดขาย' },
+                              { value: "inactive", label: 'ปิดขาย' },
+                            ]}
+                          />
                         </div>
                         <div className="ka-field">
                           <label htmlFor={`${at}-unit`} className="ka-label">หน่วยนับ <span className="ka-req">*</span></label>
-                          <select id={`${at}-unit`} className="ka-input" value={variant.product_unit_id} onChange={(event) => setVariant(variant.key, { product_unit_id: event.target.value })} {...field(`${at}.unit`)}>
-                            <option value="">เลือกหน่วยนับ</option>
-                            {units.map((unit) => (
-                              <option key={unit.product_unit_id} value={unit.product_unit_id}>{unit.product_unit_name}</option>
-                            ))}
-                          </select>
+                          <CustomSelect
+                            id={`${at}-unit`}
+                            value={variant.product_unit_id}
+                            onChange={(value) => setVariant(variant.key, { product_unit_id: value })}
+                            options={units.map((unit) => ({ value: unit.product_unit_id, label: unit.product_unit_name }))}
+                            placeholder="เลือกหน่วยนับ"
+                            {...field(`${at}.unit`)}
+                          />
                           <FieldError id={`${at}.unit`} />
                         </div>
                       </div>
@@ -612,14 +618,13 @@ export default function ProductEditor({ mode, product, policy: initialPolicy }: 
                           const taken = new Set(variant.materials.filter((other) => other.id !== row.id && other.material_id).map((other) => other.material_id));
                           return (
                             <div key={row.id} className="ka-mrow">
-                              <select className="ka-input" aria-label={`วัตถุดิบ ${rowIndex + 1}`} value={row.material_id} onChange={(event) => setMaterialRow(variant.key, row.id, { material_id: event.target.value })}>
-                                <option value="">เลือกวัตถุดิบ</option>
-                                {materials.map((material) => (
-                                  <option key={material.material_id} value={material.material_id} disabled={taken.has(material.material_id)}>
-                                    {materialLabel(material)}
-                                  </option>
-                                ))}
-                              </select>
+                              <CustomSelect
+                                aria-label={`วัตถุดิบ ${rowIndex + 1}`}
+                                value={row.material_id}
+                                onChange={(value) => setMaterialRow(variant.key, row.id, { material_id: value })}
+                                options={materials.map((material) => ({ value: material.material_id, label: materialLabel(material), disabled: taken.has(material.material_id) }))}
+                                placeholder="เลือกวัตถุดิบ"
+                              />
                               <input
                                 type="number"
                                 min="1"

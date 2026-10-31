@@ -28,6 +28,7 @@ import type {
   StockFilter,
   StockStatusFilter,
 } from "@/types/dashboard";
+import CustomSelect from '@/components/CustomSelect';
 
 const dashboardModel = new DashboardModel();
 
@@ -279,21 +280,15 @@ export default function DashboardListModal({
                 <label htmlFor="stock-status" className="mb-1 block text-[13px] font-medium text-[var(--ink)]">
                   สถานะสต็อก
                 </label>
-                <select
+                <CustomSelect
                   id="stock-status"
-                  className="ka-input"
                   value={stockStatus}
-                  onChange={(event) => {
-                    setStockStatus(event.target.value as StockStatusFilter | "");
+                  onChange={(value) => {
+                    setStockStatus(value as StockStatusFilter | "");
                     setPage(1);
                   }}
-                >
-                  {STOCK_STATUS_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+                  options={STOCK_STATUS_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
+                />
               </div>
               <p className="text-[13px] text-[var(--ink-muted)]">
                 หมวดหมู่: {list.stock?.categoryName ?? (stockFilter?.category_id ? `#${stockFilter.category_id}` : "ทั้งหมด")}

@@ -13,6 +13,7 @@ import {
     INVOICE_PAYMENT_METHOD_OPTIONS,
     INVOICE_STATUS_OPTIONS,
 } from '@/types/invoice-supplier';
+import CustomSelect from '@/components/CustomSelect';
 
 interface InsertInvoiceSupplierFormProps {
     isOpen: boolean;
@@ -218,13 +219,11 @@ export default function InsertInvoiceSupplierForm({
 
                     <div>
                         <label className="mb-1 block text-sm font-semibold text-[var(--ink)]">สถานะเอกสาร</label>
-                        <select value={invoiceStatus} onChange={(event) => setInvoiceStatus(event.target.value as 'pending' | 'partial' | 'paid' | 'cancelled')} className={INPUT_CLASSNAME}>
-                            {INVOICE_STATUS_OPTIONS.map((status) => (
-                                <option key={status.value} value={status.value}>
-                                    {status.label}
-                                </option>
-                            ))}
-                        </select>
+                        <CustomSelect aria-label="สถานะเอกสาร"
+                          value={invoiceStatus}
+                          onChange={(value) => setInvoiceStatus(value as 'pending' | 'partial' | 'paid' | 'cancelled')}
+                          options={INVOICE_STATUS_OPTIONS.map((status) => ({ value: status.value, label: status.label }))}
+                        />
                     </div>
 
                     <div>
@@ -260,41 +259,29 @@ export default function InsertInvoiceSupplierForm({
                                 <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
                                     <div>
                                         <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">วิธีชำระ</label>
-                                        <select
-                                            value={payment.payment_method}
-                                            onChange={(event) => {
-                                                const nextMethod = event.target.value as 'cash' | 'bank';
+                                        <CustomSelect aria-label="วิธีชำระ"
+                                          value={payment.payment_method}
+                                          onChange={(value) => {
+                                                const nextMethod = value as 'cash' | 'bank';
                                                 updatePaymentRow(payment.invoice_payment_id, (prev) => ({
                                                     ...prev,
                                                     payment_method: nextMethod,
                                                     payment_id: nextMethod === 'bank' ? prev.payment_id || availablePayments[0]?.payment_id : undefined,
                                                 }));
                                             }}
-                                            className={INPUT_CLASSNAME}
-                                        >
-                                            {INVOICE_PAYMENT_METHOD_OPTIONS.map((option) => (
-                                                <option key={option.value} value={option.value}>
-                                                    {option.label}
-                                                </option>
-                                            ))}
-                                        </select>
+                                          options={INVOICE_PAYMENT_METHOD_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
+                                        />
                                     </div>
 
                                     <div>
                                         <label className="mb-1 block text-[13px] font-semibold text-[var(--ink-muted)]">บัญชีธนาคาร</label>
-                                        <select
-                                            value={payment.payment_id || ''}
-                                            onChange={(event) => updatePaymentRow(payment.invoice_payment_id, (prev) => ({ ...prev, payment_id: event.target.value }))}
-                                            disabled={payment.payment_method !== 'bank'}
-                                            className={`${INPUT_CLASSNAME} disabled:cursor-not-allowed disabled:opacity-60`}
-                                        >
-                                            <option value="">เลือกบัญชี</option>
-                                            {availablePayments.map((bank) => (
-                                                <option key={bank.payment_id} value={bank.payment_id}>
-                                                    {bank.bank_name} - {bank.account_number}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <CustomSelect aria-label="บัญชีธนาคาร"
+                                          value={payment.payment_id || ''}
+                                          onChange={(value) => updatePaymentRow(payment.invoice_payment_id, (prev) => ({ ...prev, payment_id: value }))}
+                                          options={availablePayments.map((bank) => ({ value: bank.payment_id, label: `${bank.bank_name}- ${bank.account_number}` }))}
+                                          placeholder="เลือกบัญชี"
+                                          disabled={payment.payment_method !== 'bank'}
+                                        />
                                         {errors[`payment_id_${index}`] && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors[`payment_id_${index}`]}</p>}
                                     </div>
 

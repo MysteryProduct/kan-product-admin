@@ -12,6 +12,7 @@ import { getApiErrorMessage } from '@/lib/api-error';
 import ContactRequestDetailModal from './components/detail';
 import { CONTACT_REQUEST_STATUS_TONE } from '@/lib/status-tones';
 import StatusBadge from '@/components/StatusBadge';
+import CustomSelect from '@/components/CustomSelect';
 
 const contactRequestModel = new ContactRequestModel();
 
@@ -112,23 +113,19 @@ export default function ContactRequestsPage() {
           <h1 className="text-lg font-semibold text-[var(--color-text-primary)]">
             คำขอติดต่อกลับ
           </h1>
-          <select
+          <CustomSelect
+            aria-label="สถานะคำขอ"
+            className="sm:w-56"
             value={statusFilter}
-            onChange={(e) => {
-              setStatusFilter(e.target.value as ContactRequestStatus | '');
+            onChange={(value) => {
+              setStatusFilter(value as ContactRequestStatus | '');
               setCurrentPage(1);
             }}
-            className="ka-input min-h-11"
-          >
-            <option value="">ทุกสถานะ</option>
-            {(Object.keys(statusLabels) as ContactRequestStatus[]).map(
-              (value) => (
-                <option key={value} value={value}>
-                  {statusLabels[value]}
-                </option>
-              ),
-            )}
-          </select>
+            options={[
+              { value: "", label: 'ทุกสถานะ' },
+              ...(Object.keys(statusLabels) as ContactRequestStatus[]).map((value) => ({ value, label: statusLabels[value] })),
+            ]}
+          />
         </div>
       </div>
 

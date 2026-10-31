@@ -5,6 +5,7 @@ import Link from "next/link";
 import axios from "@/lib/axios";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { BankAccount } from "@/types/bank-account";
+import CustomSelect from '@/components/CustomSelect';
 
 type Info = {
   code: string;
@@ -213,19 +214,13 @@ export default function CustomPayment({
                 </label>
                 <label className="block">
                   บัญชีรับเงิน
-                  <select
-                    className="ka-input w-full"
-                    required
+                  <CustomSelect
                     value={account}
-                    onChange={(e) => setAccount(e.target.value)}
-                  >
-                    <option value="">เลือกบัญชีรับเงิน</option>
-                    {accounts.map((a) => (
-                      <option key={a.account_id} value={a.account_id}>
-                        {a.bank_name} · {a.account_number} · {a.account_name}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(value) => setAccount(value)}
+                    options={accounts.map((a) => ({ value: a.account_id, label: `${a.bank_name}· ${a.account_number}· ${a.account_name}` }))}
+                    placeholder="เลือกบัญชีรับเงิน"
+                    required
+                  />
                 </label>
                 <button
                   className="ka-btn ka-btn--primary"

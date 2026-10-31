@@ -6,6 +6,7 @@ import ContactRequestModel from '@/models/contact-request';
 import { ContactRequest, ContactRequestStatus } from '@/types/contact-request';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { formatThaiDate } from '@/lib/date-format';
+import CustomSelect from '@/components/CustomSelect';
 
 const contactRequestModel = new ContactRequestModel();
 
@@ -108,25 +109,20 @@ export default function ContactRequestDetailModal({
 
         <label className="grid gap-1 text-sm">
           <span className="font-medium">สถานะ</span>
-          <select
+          <CustomSelect
             value={status}
-            disabled={!canEdit || pending}
-            onChange={(e) => setStatus(e.target.value as ContactRequestStatus)}
-            className="ka-input min-h-11"
-          >
-            {(Object.keys(statusLabels) as ContactRequestStatus[])
+            onChange={(value) => setStatus(value as ContactRequestStatus)}
+            options={[
+              ...(Object.keys(statusLabels) as ContactRequestStatus[])
               // R4: a closed request never returns to 'new', so the option is
               // not offered rather than letting the API reject the save.
               .filter(
                 (value) =>
                   !(contactRequest.status === 'closed' && value === 'new'),
-              )
-              .map((value) => (
-                <option key={value} value={value}>
-                  {statusLabels[value]}
-                </option>
-              ))}
-          </select>
+              ).map((value) => ({ value, label: statusLabels[value] })),
+            ]}
+            disabled={!canEdit || pending}
+          />
         </label>
 
         <label className="grid gap-1 text-sm">

@@ -17,6 +17,7 @@ import { SALE_ORDER_STATUS_TONE } from '@/lib/status-tones';
 import StatusBadge from '@/components/StatusBadge';
 import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 import DocumentCode from '@/components/DocumentCode';
+import CustomSelect from '@/components/CustomSelect';
 
 const saleOrderModel = new SaleOrderModel();
 
@@ -442,15 +443,20 @@ export default function SaleOrderPage() {
                     <div className="border-b border-[var(--border)] p-4">
                         <h2 className="text-lg font-semibold text-[var(--ink)]">รายการใบขายสินค้า</h2>
                         <label className="mt-3 block">ประเภทใบขาย
-                            <select className="ka-input w-full sm:w-auto" value={saleOrderType} onChange={e => {
-                                setSaleOrderType(e.target.value); setSaleOrderPage(1);
-                            }}>
-                                <option value="">ทั้งหมด</option>
-                                <option value="custom">งานผลิต Custom</option>
-                                <option value="store">หน้าร้านออนไลน์</option>
-                                <option value="order">ขายจากการสั่งซื้อ</option>
-                                <option value="online">ขายบนเว็บไซต์</option>
-                            </select>
+                            <CustomSelect
+                              value={saleOrderType}
+                              onChange={(value) => {
+                                setSaleOrderType(value); setSaleOrderPage(1);
+                            }}
+                              options={[
+                                { value: "", label: 'ทั้งหมด' },
+                                { value: "custom", label: 'งานผลิต Custom' },
+                                { value: "store", label: 'หน้าร้านออนไลน์' },
+                                { value: "order", label: 'ขายจากการสั่งซื้อ' },
+                                { value: "online", label: 'ขายบนเว็บไซต์' },
+                              ]}
+                              className="sm:w-64"
+                            />
                         </label>
                         <p className="mt-1 text-sm text-[var(--ink-muted)]">
                             ตารางใบขายสินค้าทั้งหมด พร้อมดูรายละเอียด แก้ไข และลบ

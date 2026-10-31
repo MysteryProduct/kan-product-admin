@@ -456,18 +456,12 @@ export default function UpdatePurchaseOrderForm({
                         <label className="block text-sm font-semibold text-[var(--ink)] mb-2">
                             รูปแบบ VAT
                         </label>
-                        <select
-                            value={vatType}
-                            onChange={(e) => setVatType(e.target.value as VatType)}
-                            className="ka-input w-full"
-                            disabled={isSubmitting}
-                        >
-                            {VAT_TYPE_OPTIONS.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select>
+                        <CustomSelect aria-label="รูปแบบ VAT"
+                          value={vatType}
+                          onChange={(value) => setVatType(value as VatType)}
+                          options={VAT_TYPE_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
+                          disabled={isSubmitting}
+                        />
                     </div>
                 </div>
 

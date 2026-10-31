@@ -17,6 +17,7 @@ import {
 } from '@/types/payment-receipt';
 import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 import { todayLocalIso } from '@/lib/date-format';
+import CustomSelect from '@/components/CustomSelect';
 
 interface UpdatePaymentReceiptFormProps {
 	isOpen: boolean;
@@ -221,53 +222,31 @@ export default function UpdatePaymentReceiptForm({
 
 						<div>
 							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">ประเภทรายการชำระ</label>
-							<select
-								value={formData.payment_receipt_type}
-								onChange={(event) =>
-									setFormData((prev) => ({ ...prev, payment_receipt_type: event.target.value as PaymentReceiptType }))
-								}
-								className={INPUT_CLASSNAME}
-							>
-								{PAYMENT_RECEIPT_TYPE_OPTIONS.map((option) => (
-									<option key={option.value} value={option.value}>
-										{option.label}
-									</option>
-								))}
-							</select>
+							<CustomSelect aria-label="ประเภทรายการชำระ"
+							  value={formData.payment_receipt_type}
+							  onChange={(value) => setFormData((prev) => ({ ...prev, payment_receipt_type: value as PaymentReceiptType }))}
+							  options={PAYMENT_RECEIPT_TYPE_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
+							/>
 						</div>
 
 						<div>
 							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">วิธีชำระเงิน</label>
-							<select
-								value={formData.payment_method}
-								onChange={(event) =>
-									setFormData((prev) => ({ ...prev, payment_method: event.target.value as 'cash' | 'bank' }))
-								}
-								className={INPUT_CLASSNAME}
-							>
-								{PAYMENT_METHOD_OPTIONS.map((option) => (
-									<option key={option.value} value={option.value}>
-										{option.label}
-									</option>
-								))}
-							</select>
+							<CustomSelect aria-label="วิธีชำระเงิน"
+							  value={formData.payment_method}
+							  onChange={(value) => setFormData((prev) => ({ ...prev, payment_method: value as 'cash' | 'bank' }))}
+							  options={PAYMENT_METHOD_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
+							/>
 						</div>
 
 						<div>
 							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">บัญชีรับเงิน</label>
-							<select
-								value={formData.account_id}
-								disabled={formData.payment_method !== 'bank' || loadingAccounts}
-								onChange={(event) => setFormData((prev) => ({ ...prev, account_id: event.target.value }))}
-								className={`${INPUT_CLASSNAME} disabled:cursor-not-allowed disabled:opacity-60`}
-							>
-								<option value="">เลือกบัญชี</option>
-								{bankAccounts.map((bankAccount) => (
-									<option key={bankAccount.account_id} value={bankAccount.account_id}>
-										{bankAccount.bank_name} - {bankAccount.account_number}
-									</option>
-								))}
-							</select>
+							<CustomSelect aria-label="บัญชีรับเงิน"
+							  value={formData.account_id}
+							  onChange={(value) => setFormData((prev) => ({ ...prev, account_id: value }))}
+							  options={bankAccounts.map((bankAccount) => ({ value: bankAccount.account_id, label: `${bankAccount.bank_name}- ${bankAccount.account_number}` }))}
+							  placeholder="เลือกบัญชี"
+							  disabled={formData.payment_method !== 'bank' || loadingAccounts}
+							/>
 							{errors.account_id && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.account_id}</p>}
 						</div>
 
@@ -297,19 +276,11 @@ export default function UpdatePaymentReceiptForm({
 
 						<div>
 							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">สถานะ</label>
-							<select
-								value={formData.payment_status}
-								onChange={(event) =>
-									setFormData((prev) => ({ ...prev, payment_status: event.target.value as PaymentReceiptStatus }))
-								}
-								className={INPUT_CLASSNAME}
-							>
-								{PAYMENT_RECEIPT_STATUS_OPTIONS.map((option) => (
-									<option key={option.value} value={option.value}>
-										{option.label}
-									</option>
-								))}
-							</select>
+							<CustomSelect aria-label="สถานะ"
+							  value={formData.payment_status}
+							  onChange={(value) => setFormData((prev) => ({ ...prev, payment_status: value as PaymentReceiptStatus }))}
+							  options={PAYMENT_RECEIPT_STATUS_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
+							/>
 						</div>
 
 						<div className="md:col-span-2">

@@ -6,6 +6,7 @@ import type { MaterialChoice } from '@/models/custom-catalog';
 import type { ProductUnit } from '@/types/product-unit';
 import type { DraftForm, ModelFileInfo } from '@/types/custom-catalog';
 import { ModelSection, ShapeSection } from './ModelSection';
+import CustomSelect from '@/components/CustomSelect';
 
 const COLOR = /^#[0-9a-fA-F]{6}$/;
 
@@ -283,48 +284,48 @@ export default function RevisionEditor({ form, setForm, readOnly, saleUnit, mate
             <div key={i} className="grid grid-cols-1 gap-2 md:grid-cols-[1fr_12rem_1fr_auto] md:items-end">
               <div className="ka-field content-start">
                 <label className="ka-label" htmlFor={`r-a-${i}`}>ถ้าเลือก</label>
-                <select
+                <CustomSelect
                   id={`r-a-${i}`}
-                  className="ka-input"
-                  disabled={readOnly}
                   value={`${r.group_key}/${r.value_key}`}
-                  onChange={(e) => {
-                    const [g, v] = split(e.target.value);
+                  onChange={(value) => {
+                    const [g, v] = split(value);
                     patch({ rules: form.rules.map((x, j) => (j === i ? { ...x, group_key: g, value_key: v } : x)) });
                   }}
-                >
-                  {!choices.some((c) => c.id === `${r.group_key}/${r.value_key}`) && <option value={`${r.group_key}/${r.value_key}`}>(ไม่พบตัวเลือก)</option>}
-                  {choices.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-                </select>
+                  options={[
+                    ...(!choices.some((c) => c.id === `${r.group_key}/${r.value_key}`) ? [{ value: `${r.group_key}/${r.value_key}`, label: '(ไม่พบตัวเลือก)' }] : []),
+                    ...choices.map((c) => ({ value: c.id, label: c.label })),
+                  ]}
+                  disabled={readOnly}
+                />
               </div>
               <div className="ka-field content-start">
                 <label className="ka-label" htmlFor={`r-k-${i}`}>เงื่อนไข</label>
-                <select
+                <CustomSelect
                   id={`r-k-${i}`}
-                  className="ka-input"
-                  disabled={readOnly}
                   value={r.kind}
-                  onChange={(e) => patch({ rules: form.rules.map((x, j) => (j === i ? { ...x, kind: e.target.value as 'requires' | 'excludes' } : x)) })}
-                >
-                  <option value="excludes">ห้ามเลือกร่วมกับ</option>
-                  <option value="requires">ต้องเลือกร่วมกับ</option>
-                </select>
+                  onChange={(value) => patch({ rules: form.rules.map((x, j) => (j === i ? { ...x, kind: value as 'requires' | 'excludes' } : x)) })}
+                  options={[
+                    { value: "excludes", label: 'ห้ามเลือกร่วมกับ' },
+                    { value: "requires", label: 'ต้องเลือกร่วมกับ' },
+                  ]}
+                  disabled={readOnly}
+                />
               </div>
               <div className="ka-field content-start">
                 <label className="ka-label" htmlFor={`r-b-${i}`}>ตัวเลือกที่สอง</label>
-                <select
+                <CustomSelect
                   id={`r-b-${i}`}
-                  className="ka-input"
-                  disabled={readOnly}
                   value={`${r.other_group_key}/${r.other_value_key}`}
-                  onChange={(e) => {
-                    const [g, v] = split(e.target.value);
+                  onChange={(value) => {
+                    const [g, v] = split(value);
                     patch({ rules: form.rules.map((x, j) => (j === i ? { ...x, other_group_key: g, other_value_key: v } : x)) });
                   }}
-                >
-                  {!choices.some((c) => c.id === `${r.other_group_key}/${r.other_value_key}`) && <option value={`${r.other_group_key}/${r.other_value_key}`}>(ไม่พบตัวเลือก)</option>}
-                  {choices.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-                </select>
+                  options={[
+                    ...(!choices.some((c) => c.id === `${r.other_group_key}/${r.other_value_key}`) ? [{ value: `${r.other_group_key}/${r.other_value_key}`, label: '(ไม่พบตัวเลือก)' }] : []),
+                    ...choices.map((c) => ({ value: c.id, label: c.label })),
+                  ]}
+                  disabled={readOnly}
+                />
               </div>
               {!readOnly && (
                 <button type="button" className="ka-btn ka-btn--ghost ka-btn--sm" onClick={() => patch({ rules: form.rules.filter((_, j) => j !== i) })} aria-label={`ลบกฎข้อ ${i + 1}`}>
@@ -368,39 +369,45 @@ export default function RevisionEditor({ form, setForm, readOnly, saleUnit, mate
               <div key={i} className="grid grid-cols-1 gap-2 rounded-xl border border-[var(--border)] p-3 md:grid-cols-6 md:items-end">
                 <div className="ka-field content-start md:col-span-2">
                   <label className="ka-label" htmlFor={`l-use-${i}`}>ใช้เมื่อ</label>
-                  <select
+                  <CustomSelect
                     id={`l-use-${i}`}
-                    className="ka-input"
-                    disabled={readOnly}
                     value={l.group_key && l.value_key ? `${l.group_key}/${l.value_key}` : ''}
-                    onChange={(e) => {
-                      const [g, v] = split(e.target.value);
+                    onChange={(value) => {
+                      const [g, v] = split(value);
                       set({ group_key: g, value_key: v });
                     }}
-                  >
-                    <option value="">ทุกครั้ง (สูตรพื้นฐาน)</option>
-                    {l.group_key && l.value_key && !choices.some((c) => c.id === `${l.group_key}/${l.value_key}`) && (
-                      <option value={`${l.group_key}/${l.value_key}`}>(ไม่พบตัวเลือก)</option>
-                    )}
-                    {choices.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-                  </select>
+                    options={[
+                      { value: "", label: 'ทุกครั้ง (สูตรพื้นฐาน)' },
+                      ...(l.group_key && l.value_key && !choices.some((c) => c.id === `${l.group_key}/${l.value_key}`) ? [{ value: `${l.group_key}/${l.value_key}`, label: '(ไม่พบตัวเลือก)' }] : []),
+                      ...choices.map((c) => ({ value: c.id, label: c.label })),
+                    ]}
+                    disabled={readOnly}
+                  />
                 </div>
                 <div className="ka-field content-start md:col-span-2">
                   <label className="ka-label" htmlFor={`l-mat-${i}`}>วัสดุ</label>
-                  <select id={`l-mat-${i}`} className="ka-input" disabled={readOnly} value={l.material_id} onChange={(e) => set({ material_id: e.target.value })}>
-                    <option value="">เลือกวัสดุ</option>
-                    {!known && <option value={l.material_id}>(วัสดุที่บันทึกไว้)</option>}
-                    {materials.map((m) => (
-                      <option key={m.material_id} value={m.material_id}>{m.material_code} · {m.material_name}</option>
-                    ))}
-                  </select>
+                  <CustomSelect
+                    id={`l-mat-${i}`}
+                    value={l.material_id}
+                    onChange={(value) => set({ material_id: value })}
+                    options={[
+                      ...(!known ? [{ value: l.material_id, label: '(วัสดุที่บันทึกไว้)' }] : []),
+                      ...materials.map((m) => ({ value: m.material_id, label: `${m.material_code}· ${m.material_name}` })),
+                    ]}
+                    placeholder="เลือกวัสดุ"
+                    disabled={readOnly}
+                  />
                 </div>
                 <div className="ka-field content-start">
                   <label className="ka-label" htmlFor={`l-unit-${i}`}>หน่วย</label>
-                  <select id={`l-unit-${i}`} className="ka-input" disabled={readOnly} value={l.product_unit_id} onChange={(e) => set({ product_unit_id: e.target.value })}>
-                    <option value="">เลือก</option>
-                    {units.map((u) => <option key={u.product_unit_id} value={u.product_unit_id}>{u.product_unit_name}</option>)}
-                  </select>
+                  <CustomSelect
+                    id={`l-unit-${i}`}
+                    value={l.product_unit_id}
+                    onChange={(value) => set({ product_unit_id: value })}
+                    options={units.map((u) => ({ value: u.product_unit_id, label: u.product_unit_name }))}
+                    placeholder="เลือก"
+                    disabled={readOnly}
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="ka-field content-start">

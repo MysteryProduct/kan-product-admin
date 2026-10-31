@@ -12,6 +12,7 @@ import type {
   StockOverview as StockOverviewData,
   StockStatusFilter,
 } from "@/types/dashboard";
+import CustomSelect from '@/components/CustomSelect';
 
 const dashboardModel = new DashboardModel();
 const categoryModel = new CategoryModel();
@@ -207,14 +208,15 @@ export default function StockOverview({ reloadToken, onOpen, onState }: StockOve
         <div className="mt-2 grid gap-2">
           <label htmlFor="stock-category" className="ka-field">
             <span className="ka-label">หมวดหมู่</span>
-            <select id="stock-category" className="ka-input" value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>
-              <option value="">ทุกหมวดหมู่</option>
-              {categories.map((item) => (
-                <option key={item.category_id} value={item.category_id}>
-                  {item.category_name}
-                </option>
-              ))}
-            </select>
+            <CustomSelect
+              id="stock-category"
+              value={categoryId}
+              onChange={(value) => setCategoryId(value)}
+              options={[
+                { value: "", label: 'ทุกหมวดหมู่' },
+                ...categories.map((item) => ({ value: item.category_id, label: item.category_name })),
+              ]}
+            />
           </label>
           <label htmlFor="stock-search" className="ka-field">
             <span className="ka-label">ค้นหารหัสหรือชื่อสินค้า</span>

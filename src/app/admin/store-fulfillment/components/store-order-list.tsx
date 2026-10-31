@@ -20,6 +20,7 @@ import {
   STORE_ORDER_SEARCH_MAX_LENGTH,
   STORE_ORDER_STATUS_LABELS,
 } from '@/lib/store-order-list';
+import CustomSelect from '@/components/CustomSelect';
 
 const storeFulfillmentModel = new StoreFulfillmentModel();
 const PAGE_SIZE = 20;
@@ -238,44 +239,33 @@ export default function StoreOrderList({
               <label htmlFor="store-order-status" className="ka-label">
                 สถานะ
               </label>
-              <select
+              <CustomSelect
                 id="store-order-status"
                 value={filters.status}
-                onChange={(event) =>
-                  apply({ status: event.target.value as StoreOrderListFilters['status'] })
-                }
-                className="ka-input min-h-11"
-              >
-                <option value="">ทุกสถานะ</option>
-                {(Object.keys(STORE_ORDER_STATUS_LABELS) as StoreOrderListStatus[]).map(
-                  (value) => (
-                    <option key={value} value={value}>
-                      {STORE_ORDER_STATUS_LABELS[value]}
-                    </option>
-                  ),
-                )}
-              </select>
+                onChange={(value) => apply({ status: value as StoreOrderListFilters['status'] })}
+                options={[
+                  { value: "", label: 'ทุกสถานะ' },
+                  ...(Object.keys(STORE_ORDER_STATUS_LABELS) as StoreOrderListStatus[]).map((value) => ({ value, label: STORE_ORDER_STATUS_LABELS[value] })),
+                ]}
+              />
             </div>
 
             <div className="ka-field">
               <label htmlFor="store-order-method" className="ka-label">
                 วิธีรับสินค้า
               </label>
-              <select
+              <CustomSelect
                 id="store-order-method"
                 value={filters.fulfillmentMethod}
-                onChange={(event) =>
-                  apply({
-                    fulfillmentMethod: event.target
-                      .value as StoreOrderListFilters['fulfillmentMethod'],
-                  })
-                }
-                className="ka-input min-h-11"
-              >
-                <option value="">ทุกวิธี</option>
-                <option value="delivery">{STORE_ORDER_METHOD_LABELS.delivery}</option>
-                <option value="pickup">{STORE_ORDER_METHOD_LABELS.pickup}</option>
-              </select>
+                onChange={(value) => apply({
+                    fulfillmentMethod: value as StoreOrderListFilters['fulfillmentMethod'],
+                  })}
+                options={[
+                  { value: "", label: 'ทุกวิธี' },
+                  { value: "delivery", label: STORE_ORDER_METHOD_LABELS.delivery },
+                  { value: "pickup", label: STORE_ORDER_METHOD_LABELS.pickup },
+                ]}
+              />
             </div>
 
             <div className="ka-field">

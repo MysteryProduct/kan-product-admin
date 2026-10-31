@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Modal from '@/components/Modal';
 import CustomCatalogModel from '@/models/custom-catalog';
 import type { CustomProductType } from '@/types/custom-catalog';
+import CustomSelect from '@/components/CustomSelect';
 
 const model = new CustomCatalogModel();
 
@@ -177,14 +178,13 @@ export function TemplateModal({ isOpen, types, onClose, onCreated }: TemplateMod
         </div>
         <div className="ka-field">
           <label className="ka-label" htmlFor="tpl-type">ประเภทงาน</label>
-          <select id="tpl-type" className="ka-input" value={typeId} onChange={(e) => setTypeId(e.target.value)}>
-            <option value="">เลือกประเภทงาน</option>
-            {active.map((t) => (
-              <option key={t.custom_product_type_id} value={t.custom_product_type_id}>
-                {t.type_name} ({t.sale_unit})
-              </option>
-            ))}
-          </select>
+          <CustomSelect
+            id="tpl-type"
+            value={typeId}
+            onChange={(value) => setTypeId(value)}
+            options={active.map((t) => ({ value: t.custom_product_type_id, label: `${t.type_name}(${t.sale_unit})` }))}
+            placeholder="เลือกประเภทงาน"
+          />
           {active.length === 0 && <p className="ka-help">ยังไม่มีประเภทงานที่เปิดใช้ กรุณาเพิ่มประเภทงานก่อน</p>}
         </div>
         {error && <p role="alert" className="ka-error whitespace-pre-line">{error}</p>}

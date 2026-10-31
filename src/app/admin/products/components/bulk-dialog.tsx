@@ -15,6 +15,7 @@ import {
   variantStatusOf,
   variantsOf,
 } from '@/lib/product-bulk';
+import CustomSelect from '@/components/CustomSelect';
 
 const productModel = new ProductModel();
 
@@ -177,20 +178,14 @@ export default function BulkDialog({ mode, products, policies, categories, onClo
           <label htmlFor="bulk-category" className="text-sm font-medium text-[var(--ink)]">
             หมวดหมู่ใหม่ของสินค้าที่เลือก
           </label>
-          <select
+          <CustomSelect
             id="bulk-category"
-            className="ka-input"
             value={categoryId}
+            onChange={(value) => setCategoryId(value)}
+            options={categories.map((category) => ({ value: category.value, label: category.label }))}
+            placeholder="เลือกหมวดหมู่"
             disabled={pending}
-            onChange={(e) => setCategoryId(e.target.value)}
-          >
-            <option value="">เลือกหมวดหมู่</option>
-            {categories.map((category) => (
-              <option key={category.value} value={category.value}>
-                {category.label}
-              </option>
-            ))}
-          </select>
+          />
           <p className="text-[13px] text-[var(--ink-muted)]">
             เปลี่ยนเฉพาะหมวดหมู่ ราคา รูป สูตร และรหัสสินค้าไม่เปลี่ยน
           </p>
@@ -207,21 +202,19 @@ export default function BulkDialog({ mode, products, policies, categories, onClo
               <label htmlFor={`bulk-policy-${field}`} className="text-sm font-medium text-[var(--ink)]">
                 {POLICY_LABELS[field]}
               </label>
-              <select
+              <CustomSelect
                 id={`bulk-policy-${field}`}
-                className="ka-input"
                 value={policyChoice[field]}
-                onChange={(e) =>
-                  setPolicyChoice((prev) => ({
+                onChange={(value) => setPolicyChoice((prev) => ({
                     ...prev,
-                    [field]: e.target.value as PolicyChoice,
-                  }))
-                }
-              >
-                <option value="keep">ไม่เปลี่ยน</option>
-                <option value="on">เปิด</option>
-                <option value="off">ปิด</option>
-              </select>
+                    [field]: value as PolicyChoice,
+                  }))}
+                options={[
+                  { value: "keep", label: 'ไม่เปลี่ยน' },
+                  { value: "on", label: 'เปิด' },
+                  { value: "off", label: 'ปิด' },
+                ]}
+              />
             </div>
           ))}
         </fieldset>

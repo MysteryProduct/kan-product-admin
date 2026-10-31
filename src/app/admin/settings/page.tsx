@@ -18,6 +18,7 @@ import {
 } from '@/lib/shop-contact';
 import { usePermissions } from '@/hooks/usePermissions';
 import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
+import CustomSelect from '@/components/CustomSelect';
 
 const settingsModel = new SettingsModel();
 const bankAccountModel = new BankAccountModel();
@@ -256,19 +257,13 @@ export default function SettingsPage() {
 					<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 						<div>
 							<label className="mb-2 block text-sm font-medium text-[var(--ink)]">บัญชีรับเงินเริ่มต้น</label>
-							<select
-								value={formData.account_id}
-								onChange={(event) => setFormData((prev) => ({ ...prev, account_id: event.target.value }))}
-								className="ka-input"
-								disabled={!canSave || saving}
-							>
-								<option value="">เลือกบัญชี</option>
-								{bankAccounts.map((account) => (
-									<option key={account.account_id} value={account.account_id}>
-										{account.bank_name} - {account.account_number} ({account.account_name})
-									</option>
-								))}
-							</select>
+							<CustomSelect aria-label="บัญชีรับเงินเริ่มต้น"
+							  value={formData.account_id}
+							  onChange={(value) => setFormData((prev) => ({ ...prev, account_id: value }))}
+							  options={bankAccounts.map((account) => ({ value: account.account_id, label: `${account.bank_name}- ${account.account_number}(${account.account_name})` }))}
+							  placeholder="เลือกบัญชี"
+							  disabled={!canSave || saving}
+							/>
 							{errors.account_id && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.account_id}</p>}
 						</div>
 
@@ -359,17 +354,17 @@ export default function SettingsPage() {
 							</div>
 							<div>
 								<label htmlFor="shop_branch_type" className="mb-2 block text-sm font-medium text-[var(--ink)]">สำนักงานใหญ่/สาขา</label>
-								<select
-									id="shop_branch_type"
-									value={formData.shop_branch_type}
-									onChange={(event) => setFormData((prev) => ({ ...prev, shop_branch_type: event.target.value }))}
-									className={inputClass}
-									disabled={!canSave || saving}
-								>
-									<option value="">ยังไม่ระบุ</option>
-									<option value="head_office">สำนักงานใหญ่</option>
-									<option value="branch">สาขา</option>
-								</select>
+								<CustomSelect
+								  id="shop_branch_type"
+								  value={formData.shop_branch_type}
+								  onChange={(value) => setFormData((prev) => ({ ...prev, shop_branch_type: value }))}
+								  options={[
+								    { value: "", label: 'ยังไม่ระบุ' },
+								    { value: "head_office", label: 'สำนักงานใหญ่' },
+								    { value: "branch", label: 'สาขา' },
+								  ]}
+								  disabled={!canSave || saving}
+								/>
 							</div>
 							{formData.shop_branch_type === 'branch' && (
 								<div>

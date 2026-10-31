@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { printAspect, printHeightLimitMm, wrapLimitMm } from '@/lib/custom-catalog';
 import type { ModelFileInfo, ModelForm, ModelShape } from '@/types/custom-catalog';
 import { BACK_TINT, FRONT_TINT } from './ModelViewer';
+import CustomSelect from '@/components/CustomSelect';
 
 // three is large; load it only when a file is there to look at.
 const ModelViewer = dynamic(() => import('./ModelViewer'), { ssr: false });
@@ -200,17 +201,11 @@ export function ModelSection({ form, onChange, readOnly, file, busy, loadBytes, 
   };
 
   const meshes = file?.meshes ?? [];
-  const printOptions = (current: string) => (
-    <>
-      <option value="">ยังไม่เลือก</option>
-      {current && !meshes.some((m) => m.name === current) && <option value={current}>{current} (ไม่พบในไฟล์)</option>}
-      {meshes.map((m) => (
-        <option key={m.name} value={m.name} disabled={!m.has_uv}>
-          {m.name}{m.has_uv ? '' : ' — ไม่มี UV รับภาพไม่ได้'}
-        </option>
-      ))}
-    </>
-  );
+  const printOptions = (current: string) => [
+    { value: '', label: 'ยังไม่เลือก' },
+    ...(current && !meshes.some((m) => m.name === current) ? [{ value: current, label: `${current} (ไม่พบในไฟล์)` }] : []),
+    ...meshes.map((m) => ({ value: m.name, label: `${m.name}${m.has_uv ? '' : ' — ไม่มี UV รับภาพไม่ได้'}`, disabled: !m.has_uv })),
+  ];
   const preview = colors.find((c) => c.key === previewKey) ?? colors[0];
 
   return (
@@ -249,35 +244,40 @@ export function ModelSection({ form, onChange, readOnly, file, busy, loadBytes, 
           <div className="space-y-3">
             <div className="ka-field content-start">
               <label className="ka-label" htmlFor="mesh-front">{form.shape === 'shirt' ? 'mesh พิมพ์ด้านหน้า' : 'mesh ที่รับภาพพิมพ์'}</label>
-              <select id="mesh-front" className="ka-input" disabled={readOnly} value={form.front.mesh} onChange={(e) => patch({ front: { ...form.front, mesh: e.target.value } })}>
-                {printOptions(form.front.mesh)}
-              </select>
+              <CustomSelect id="mesh-front" disabled={readOnly} value={form.front.mesh} onChange={(value) => patch({ front: { ...form.front, mesh: value } })} options={printOptions(form.front.mesh)} />
               <p className="ka-help"><span aria-hidden="true" className="mr-1 inline-block size-2.5 rounded-sm align-baseline" style={{ background: FRONT_TINT }} />ไฮไลต์ส้มในตัวอย่าง</p>
             </div>
             {form.shape === 'shirt' && (
               <div className="ka-field content-start">
                 <label className="ka-label" htmlFor="mesh-back">mesh พิมพ์ด้านหลัง</label>
-                <select id="mesh-back" className="ka-input" disabled={readOnly} value={form.back.mesh} onChange={(e) => patch({ back: { ...form.back, mesh: e.target.value } })}>
-                  {printOptions(form.back.mesh)}
-                </select>
+                <CustomSelect id="mesh-back" disabled={readOnly} value={form.back.mesh} onChange={(value) => patch({ back: { ...form.back, mesh: value } })} options={printOptions(form.back.mesh)} />
                 <p className="ka-help"><span aria-hidden="true" className="mr-1 inline-block size-2.5 rounded-sm align-baseline" style={{ background: BACK_TINT }} />ไฮไลต์เขียวในตัวอย่าง</p>
               </div>
             )}
             <div className="ka-field content-start">
               <label className="ka-label" htmlFor="mesh-body">mesh ตัวสินค้า (รับสี)</label>
-              <select id="mesh-body" className="ka-input" disabled={readOnly} value={form.body_mesh} onChange={(e) => patch({ body_mesh: e.target.value })}>
-                <option value="">ไม่ย้อมสี</option>
-                {form.body_mesh && !meshes.some((m) => m.name === form.body_mesh) && <option value={form.body_mesh}>{form.body_mesh} (ไม่พบในไฟล์)</option>}
-                {meshes.map((m) => <option key={m.name} value={m.name}>{m.name}</option>)}
-              </select>
+              <CustomSelect
+                id="mesh-body"
+                value={form.body_mesh}
+                onChange={(value) => patch({ body_mesh: value })}
+                options={[
+                  { value: "", label: 'ไม่ย้อมสี' },
+                  ...(form.body_mesh && !meshes.some((m) => m.name === form.body_mesh) ? [{ value: form.body_mesh, label: `${form.body_mesh}(ไม่พบในไฟล์)` }] : []),
+                  ...meshes.map((m) => ({ value: m.name, label: m.name })),
+                ]}
+                disabled={readOnly}
+              />
               <p className="ka-help">สีที่ลูกค้าเลือกจะย้อมเฉพาะ mesh นี้ ไม่ย้อมผิวพิมพ์</p>
             </div>
             {colors.length > 0 && (
               <div className="ka-field content-start">
                 <label className="ka-label" htmlFor="preview-color">ดูตัวอย่างสี</label>
-                <select id="preview-color" className="ka-input" value={preview?.key ?? ''} onChange={(e) => setPreviewKey(e.target.value)}>
-                  {colors.map((c) => <option key={c.key} value={c.key}>{c.label} ({c.hex})</option>)}
-                </select>
+                <CustomSelect
+                  id="preview-color"
+                  value={preview?.key ?? ''}
+                  onChange={(value) => setPreviewKey(value)}
+                  options={colors.map((c) => ({ value: c.key, label: `${c.label}(${c.hex})` }))}
+                />
               </div>
             )}
           </div>

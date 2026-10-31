@@ -19,6 +19,7 @@ import CustomCatalogModel, { MaterialChoice } from '@/models/custom-catalog';
 import type { ProductUnit } from '@/types/product-unit';
 import type { CustomTemplateHead, DraftForm, RevisionDetail } from '@/types/custom-catalog';
 import RevisionEditor from '../components/RevisionEditor';
+import CustomSelect from '@/components/CustomSelect';
 
 const model = new CustomCatalogModel();
 
@@ -239,16 +240,15 @@ export default function CustomTemplateEditorPage() {
             </div>
             <div className="ka-ct__acts">
               <label htmlFor="ct-revision" className="sr-only">ฉบับ</label>
-              <select id="ct-revision" className="ka-input" value={revision.revision} disabled={busy} onChange={(event) => void choose(Number(event.target.value))}>
-                {head.revisions
+              <CustomSelect
+                id="ct-revision"
+                value={revision.revision}
+                onChange={(value) => void choose(Number(value))}
+                options={head.revisions
                   .slice()
-                  .sort((a, b) => b.revision - a.revision)
-                  .map((r) => (
-                    <option key={r.revision} value={r.revision}>
-                      ฉบับ {r.revision} · {REVISION_STATUS_LABEL[r.status]}
-                    </option>
-                  ))}
-              </select>
+                  .sort((a, b) => b.revision - a.revision).map((r) => ({ value: r.revision, label: `ฉบับ ${r.revision}· ${REVISION_STATUS_LABEL[r.status]}` }))}
+                disabled={busy}
+              />
               {!isDraft && !hasDraft && canAdd && (
                 <button type="button" className="ka-btn ka-btn--primary" disabled={busy} onClick={() => setConfirm('draft')}>
                   สร้างฉบับร่างใหม่

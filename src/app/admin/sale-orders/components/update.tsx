@@ -10,6 +10,7 @@ import { FetchSaleOrder, FetchSaleOrderResponse, SaleOrder, SaleOrderList } from
 import { PaginationMeta } from '@/types/pagination';
 import { calculateVatSummary, VAT_TYPE_OPTIONS, VatType } from '@/lib/vat';
 import useVatRate from '@/hooks/useVatRate';
+import CustomSelect from '@/components/CustomSelect';
 
 interface SaleOrderItemForm {
     id: string;
@@ -355,30 +356,24 @@ export default function UpdateSaleOrderForm({ isOpen, onClose, onSuccess, initia
                         </div>
                         <div>
                             <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">รูปแบบ VAT</label>
-                            <select
-                                value={vatType}
-                                onChange={(e) => setVatType(e.target.value as VatType)}
-                                className="ka-input h-11 w-full"
-                                disabled={isSubmitting}
-                            >
-                                {VAT_TYPE_OPTIONS.map((option) => (
-                                    <option key={option.value} value={option.value}>
-                                        {option.label}
-                                    </option>
-                                ))}
-                            </select>
+                            <CustomSelect aria-label="รูปแบบ VAT"
+                              value={vatType}
+                              onChange={(value) => setVatType(value as VatType)}
+                              options={VAT_TYPE_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
+                              disabled={isSubmitting}
+                            />
                         </div>
                         <div>
                             <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">ประเภท</label>
-                            <select
-                                value={saleOrderType}
-                                onChange={(e) => setSaleOrderType(e.target.value)}
-                                className="ka-input h-11 w-full"
-                                disabled={true}
-                            >
-                                <option value="online">ขายบนเว็บไซต์</option>
-                                <option value="order">ขายจากการสั่งซื้อ</option>
-                            </select>
+                            <CustomSelect aria-label="ประเภท"
+                              value={saleOrderType}
+                              onChange={(value) => setSaleOrderType(value)}
+                              options={[
+                                { value: "online", label: 'ขายบนเว็บไซต์' },
+                                { value: "order", label: 'ขายจากการสั่งซื้อ' },
+                              ]}
+                              disabled={true}
+                            />
                         </div>
                         <div className="md:col-span-2">
                             <label className="mb-2 block text-sm font-semibold text-[var(--ink)]">ที่อยู่จัดส่ง</label>

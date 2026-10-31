@@ -6,6 +6,7 @@ import { getApiErrorMessage } from "@/lib/api-error";
 import { formatThaiDate } from "@/lib/date-format";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { RefundPanel } from "./cancellation-card";
+import CustomSelect from '@/components/CustomSelect';
 
 const storeFulfillmentModel = new StoreFulfillmentModel();
 
@@ -227,21 +228,15 @@ export default function ReturnCard({
           })}
           <label className="grid gap-1 text-sm">
             <span className="font-medium">เหตุผลที่รับคืน</span>
-            <select
+            <CustomSelect
               value={reason}
+              onChange={(value) => setReason(value as StoreReturnReason)}
+              options={[
+                ...(Object.keys(reasonLabels) as StoreReturnReason[]).map((value) => ({ value, label: reasonLabels[value] })),
+              ]}
+              placeholder="เลือกเหตุผล"
               disabled={pending}
-              onChange={(e) => setReason(e.target.value as StoreReturnReason)}
-              className="ka-input min-h-11"
-            >
-              <option value="">เลือกเหตุผล</option>
-              {(Object.keys(reasonLabels) as StoreReturnReason[]).map(
-                (value) => (
-                  <option key={value} value={value}>
-                    {reasonLabels[value]}
-                  </option>
-                ),
-              )}
-            </select>
+            />
           </label>
           <label className="grid gap-1 text-sm">
             <span className="font-medium">หมายเหตุ (ไม่บังคับ)</span>

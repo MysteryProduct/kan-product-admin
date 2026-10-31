@@ -13,6 +13,7 @@ import { PaginationMeta } from '@/types/pagination';
 import { calculateVatSummary, VAT_TYPE_LABELS, VAT_TYPE_OPTIONS, VatType } from '@/lib/vat';
 import useVatRate from '@/hooks/useVatRate';
 import { todayLocalIso } from '@/lib/date-format';
+import CustomSelect from '@/components/CustomSelect';
 
 interface ReceiptItemForm {
 	id: string;
@@ -441,18 +442,12 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 						</div>
 						<div>
 							<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">รูปแบบ VAT</label>
-							<select
-								value={vatType}
-								onChange={(e) => setVatType(e.target.value as VatType)}
-								className="ka-input w-full"
-								disabled={isSubmitting}
-							>
-								{VAT_TYPE_OPTIONS.map((option) => (
-									<option key={option.value} value={option.value}>
-										{option.label}
-									</option>
-								))}
-							</select>
+							<CustomSelect aria-label="รูปแบบ VAT"
+							  value={vatType}
+							  onChange={(value) => setVatType(value as VatType)}
+							  options={VAT_TYPE_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
+							  disabled={isSubmitting}
+							/>
 						</div>
 						<div>
 							<label className="mb-2 block text-sm font-semibold text-[var(--ink)]">วันที่รับสินค้า</label>

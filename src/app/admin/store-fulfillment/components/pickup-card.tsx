@@ -10,6 +10,7 @@ import { getApiErrorMessage } from '@/lib/api-error';
 import { formatThaiDate } from '@/lib/date-format';
 import { STORE_PICKUP_STATUS_TONE } from '@/lib/status-tones';
 import StatusBadge from '@/components/StatusBadge';
+import CustomSelect from '@/components/CustomSelect';
 
 const storeFulfillmentModel = new StoreFulfillmentModel();
 
@@ -192,38 +193,24 @@ export default function PickupCard({
             }}
             className="grid gap-2 border-t border-[var(--color-border)] pt-4 sm:grid-cols-[auto_auto_1fr_auto]"
           >
-            <select
+            <CustomSelect
+              aria-label="ช่องทางติดต่อ"
               value={contact.channel}
-              onChange={(e) =>
-                setContact((prev) => ({
+              onChange={(value) => setContact((prev) => ({
                   ...prev,
-                  channel: e.target.value as PickupContactLogDto['channel'],
-                }))
-              }
-              className={inputClass}
-            >
-              {Object.entries(channelLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
-            <select
+                  channel: value as PickupContactLogDto['channel'],
+                }))}
+              options={Object.entries(channelLabels).map(([value, label]) => ({ value, label }))}
+            />
+            <CustomSelect
+              aria-label="ผลการติดต่อ"
               value={contact.outcome}
-              onChange={(e) =>
-                setContact((prev) => ({
+              onChange={(value) => setContact((prev) => ({
                   ...prev,
-                  outcome: e.target.value as PickupContactLogDto['outcome'],
-                }))
-              }
-              className={inputClass}
-            >
-              {Object.entries(outcomeLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
+                  outcome: value as PickupContactLogDto['outcome'],
+                }))}
+              options={Object.entries(outcomeLabels).map(([value, label]) => ({ value, label }))}
+            />
             <input
               placeholder="บันทึกผลการติดต่อ"
               value={contact.note}

@@ -10,6 +10,7 @@ import { getApiErrorMessage } from '@/lib/api-error';
 import { formatThaiDate } from '@/lib/date-format';
 import { STORE_PARCEL_STATUS_TONE } from '@/lib/status-tones';
 import StatusBadge from '@/components/StatusBadge';
+import CustomSelect from '@/components/CustomSelect';
 
 const storeFulfillmentModel = new StoreFulfillmentModel();
 
@@ -381,22 +382,14 @@ export default function ParcelCard({
           </label>
           <label className="grid gap-1 text-sm">
             <span className="font-medium">ผลการติดต่อลูกค้า</span>
-            <select
+            <CustomSelect
               value={returnForm.contact_outcome}
-              onChange={(e) =>
-                setReturnForm((prev) => ({
+              onChange={(value) => setReturnForm((prev) => ({
                   ...prev,
-                  contact_outcome: e.target.value as RecordParcelReturnDto['contact_outcome'],
-                }))
-              }
-              className={inputClass}
-            >
-              {Object.entries(contactOutcomeLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
+                  contact_outcome: value as RecordParcelReturnDto['contact_outcome'],
+                }))}
+              options={Object.entries(contactOutcomeLabels).map(([value, label]) => ({ value, label }))}
+            />
           </label>
           <label className="grid gap-1 text-sm">
             <span className="font-medium">บันทึกเพิ่มเติม (ไม่บังคับ)</span>

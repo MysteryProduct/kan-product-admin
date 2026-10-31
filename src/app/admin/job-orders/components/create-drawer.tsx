@@ -19,6 +19,7 @@ import type { Product } from '@/types/product';
 import type { Color } from '@/types/color';
 import type { Size } from '@/types/size';
 import { formatThaiDate, todayLocalIso } from '@/lib/date-format';
+import CustomSelect from '@/components/CustomSelect';
 
 interface MaterialRow {
   id: string;
@@ -452,18 +453,26 @@ export default function CreateJobOrderDrawer({ isOpen, onClose, onSuccess, initi
             </div>
             <div className="ka-field">
               <label htmlFor="jo-size" className="ka-label">ขนาด <span className="ka-req">*</span></label>
-              <select id="jo-size" className="ka-input" value={sizeId} onChange={(event) => { touch(); setSizeId(event.target.value); }} {...aria('size')}>
-                <option value="">เลือกขนาด</option>
-                {sizes.map((size) => <option key={size.size_id} value={size.size_id}>{size.size_name}</option>)}
-              </select>
+              <CustomSelect
+                id="jo-size"
+                value={sizeId}
+                onChange={(value) => { touch(); setSizeId(value); }}
+                options={sizes.map((size) => ({ value: size.size_id, label: size.size_name }))}
+                placeholder="เลือกขนาด"
+                {...aria('size')}
+              />
               <FieldError id="size" />
             </div>
             <div className="ka-field">
               <label htmlFor="jo-color" className="ka-label">สี <span className="ka-req">*</span></label>
-              <select id="jo-color" className="ka-input" value={colorId} onChange={(event) => { touch(); setColorId(event.target.value); }} {...aria('color')}>
-                <option value="">เลือกสี</option>
-                {colors.map((color) => <option key={color.color_id} value={color.color_id}>{color.color_name}</option>)}
-              </select>
+              <CustomSelect
+                id="jo-color"
+                value={colorId}
+                onChange={(value) => { touch(); setColorId(value); }}
+                options={colors.map((color) => ({ value: color.color_id, label: color.color_name }))}
+                placeholder="เลือกสี"
+                {...aria('color')}
+              />
               <FieldError id="color" />
             </div>
             <div className="ka-field">
@@ -500,23 +509,17 @@ export default function CreateJobOrderDrawer({ isOpen, onClose, onSuccess, initi
                 return (
                   <div key={row.id} className="ka-mat">
                     <div className="ka-mat__pick">
-                      <select
-                        className="ka-input"
+                      <CustomSelect
                         aria-label={`วัตถุดิบ ${index + 1}`}
                         value={row.material_id}
-                        onChange={(event) => {
+                        onChange={(value) => {
                           touch();
-                          const next = materialName(event.target.value);
-                          setRows((prev) => prev.map((other) => (other.id === row.id ? { ...other, material_id: event.target.value, material_name: next?.material_name } : other)));
+                          const next = materialName(value);
+                          setRows((prev) => prev.map((other) => (other.id === row.id ? { ...other, material_id: value, material_name: next?.material_name } : other)));
                         }}
-                      >
-                        <option value="">เลือกวัตถุดิบ</option>
-                        {materials.map((material) => (
-                          <option key={material.material_id} value={material.material_id} disabled={taken.has(material.material_id)}>
-                            {material.material_code ? `${material.material_code} · ` : ''}{material.material_name}
-                          </option>
-                        ))}
-                      </select>
+                        options={materials.map((material) => ({ value: material.material_id, label: `${material.material_code ? `${material.material_code} · ` : ''}${material.material_name}`, disabled: taken.has(material.material_id) }))}
+                        placeholder="เลือกวัตถุดิบ"
+                      />
                       {picked && info && (
                         <span className={`ka-todo__cap numeric ${info.short > 0 ? 'text-[var(--danger)]' : ''}`}>
                           {info.have === undefined ? 'กำลังอ่านสต็อก…' : info.have === STOCK_FORBIDDEN ? 'ไม่มีสิทธิ์ดูสต็อกวัตถุดิบ' : Number.isNaN(info.have) ? 'อ่านสต็อกไม่ได้' : `คงเหลือ ${count(info.have)}${info.short > 0 ? ` · ขาด ${count(info.short)}` : ''}`}

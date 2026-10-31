@@ -6,6 +6,7 @@ import ActionResultDialog from '@/components/ActionResultDialog';
 import BankAccountModel from '@/models/bank-account';
 import { THAI_BANK_OPTIONS } from '@/lib/bank';
 import Modal from '@/components/Modal';
+import CustomSelect from '@/components/CustomSelect';
 
 interface InsertBankAccountFormProps {
 	isOpen: boolean;
@@ -158,17 +159,11 @@ export default function InsertBankAccountForm({ isOpen, onClose, onSuccess }: In
 
 						<div>
 							<label className="mb-1 block text-sm font-medium text-[var(--ink)]">ธนาคาร</label>
-							<select
-								value={formData.bank_name}
-								onChange={(event) => setFormData((prev) => ({ ...prev, bank_name: event.target.value }))}
-								className={INPUT_CLASSNAME}
-							>
-								{THAI_BANK_OPTIONS.map((bank) => (
-									<option key={bank.value} value={bank.value}>
-										{bank.label}
-									</option>
-								))}
-							</select>
+							<CustomSelect aria-label="ธนาคาร"
+							  value={formData.bank_name}
+							  onChange={(value) => setFormData((prev) => ({ ...prev, bank_name: value }))}
+							  options={THAI_BANK_OPTIONS.map((bank) => ({ value: bank.value, label: bank.label }))}
+							/>
 							{errors.bank_name && <p className="mt-1 text-[13px] text-[var(--danger)]">{errors.bank_name}</p>}
 						</div>
 

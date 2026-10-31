@@ -9,6 +9,7 @@ import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 import { unavailableText } from '@/components/dashboard/blockLabels';
 import DashboardModel from '@/models/dashboard';
 import type { Cashflow, CashflowSeries } from '@/types/dashboard';
+import CustomSelect from '@/components/CustomSelect';
 
 const dashboardModel = new DashboardModel();
 
@@ -135,23 +136,19 @@ export default function CashflowSection({ beside }: { beside?: ReactNode }) {
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <label className="grid gap-1 text-[13px] text-[var(--ink-muted)]">
           ปีสุดท้าย
-          <select className="ka-input min-h-11" value={endYear} onChange={(event) => setEndYear(Number(event.target.value))}>
-            {Array.from({ length: YEAR_CHOICES }, (_, index) => thisYear - index).map((year) => (
-              <option key={year} value={year}>
-                พ.ศ. {buddhist(year)}
-              </option>
-            ))}
-          </select>
+          <CustomSelect
+            value={endYear}
+            onChange={(value) => setEndYear(Number(value))}
+            options={Array.from({ length: YEAR_CHOICES }, (_, index) => thisYear - index).map((year) => ({ value: year, label: `พ.ศ. ${buddhist(year)}` }))}
+          />
         </label>
         <label className="grid gap-1 text-[13px] text-[var(--ink-muted)]">
           เทียบย้อนหลัง
-          <select className="ka-input min-h-11" value={span} onChange={(event) => setSpan(Number(event.target.value))}>
-            {Array.from({ length: MAX_YEARS }, (_, index) => index + 1).map((count) => (
-              <option key={count} value={count}>
-                {count} ปี
-              </option>
-            ))}
-          </select>
+          <CustomSelect
+            value={span}
+            onChange={(value) => setSpan(Number(value))}
+            options={Array.from({ length: MAX_YEARS }, (_, index) => index + 1).map((count) => ({ value: count, label: `${count}ปี` }))}
+          />
         </label>
         <p className="pb-2 text-[13px] text-[var(--ink-muted)]">
           ช่วง พ.ศ. {buddhist(fromYear)}–{buddhist(endYear)} (เทียบได้ไม่เกิน {MAX_YEARS} ปี)
