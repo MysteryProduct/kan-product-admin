@@ -9,7 +9,8 @@
 .ka-pm .ka-modal__head > .ka-btn--icon:hover { --btn-bg: var(--bg-subtle); --btn-ink: var(--ink); }
 .ka-pm .ka-modal__body { font-size: 16px; line-height: 26px; }
 .ka-pm .ka-modal__foot { align-items: center; gap: var(--space-2); padding-top: 14px; padding-bottom: 14px; background: color-mix(in srgb, var(--bg-subtle) 50%, var(--bg-surface)); }
-.ka-pm .ka-modal__foot > .ka-btn { flex: 0 1 auto; min-width: 0; min-height: 40px; }
+.ka-pm .ka-modal__foot > .ka-btn { flex: none; min-height: 40px; }
+.ka-pm .ka-modal__foot > .ka-btn--primary { flex: 0 1 auto; min-width: 0; }
 /* A long category name in "ย้ายไป …" is cut with an ellipsis instead of pushing the footer wide. */
 .ka-pm__btn-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .ka-pm__hint { margin-right: auto; font-size: 13px; line-height: 20px; color: var(--ink-muted); }
