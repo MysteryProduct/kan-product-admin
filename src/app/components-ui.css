@@ -148,7 +148,8 @@
 .ka-hello :focus-visible { outline-color: var(--ink-on-sidebar-active); }
 .ka-hello .ka-btn:not(.ka-btn--primary) { --btn-bg: transparent; --btn-ink: var(--ink-on-dark); --btn-edge: var(--ink-muted); }
 .ka-hello .ka-btn:not(.ka-btn--primary):hover { --btn-bg: var(--bg-sidebar-hover); }
-@media (max-width: 639px) { .ka-hello { padding: var(--space-4); } .ka-hello::before { right: 40px; } .ka-hello__actions { width: 100%; } .ka-hello__actions .ka-btn { flex: 1; } }
+/* Phones: the diagonal cuts would sit under the text, so they go; the actions share the full width. */
+@media (max-width: 639px) { .ka-hello { padding: var(--space-5); } .ka-hello::before, .ka-hello::after { display: none; } .ka-hello__actions { width: 100%; } .ka-hello__actions .ka-btn { flex: 1; } }
 
 .ka-dash { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); margin-bottom: var(--space-6); }
 .ka-dash__side { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); align-content: start; }
