@@ -479,8 +479,8 @@ export default function CreateJobOrderDrawer({ isOpen, onClose, onSuccess, initi
               <FieldError id="color" />
             </div>
             <div className="ka-field">
-              <span className="ka-label">ผู้รับผิดชอบ</span>
-              <span className="ka-input flex items-center" aria-readonly="true">{assigneeName} (คุณ)</span>
+              <label htmlFor="jo-owner" className="ka-label">ผู้รับผิดชอบ</label>
+              <input id="jo-owner" className="ka-input" readOnly value={`${assigneeName} (คุณ)`} />
             </div>
             <div className="ka-field">
               <label htmlFor="jo-price" className="ka-label">ราคาสินค้า (บาท)</label>
