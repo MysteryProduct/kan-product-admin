@@ -107,18 +107,18 @@ a.ka-pm__tile--count:hover, button.ka-pm__tile--count:hover { background: var(--
 .ka-pm__prow:first-child { padding-top: 0; border-top: 0; }
 .ka-pm__prow > div:first-child { flex: 1; min-width: 0; }
 .ka-pm__pname { font-weight: 600; }
-.ka-seg { display: inline-flex; flex: none; gap: 2px; padding: 3px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-subtle); }
-.ka-seg button { min-width: 64px; height: 34px; padding: 0 12px; border: 0; border-radius: 7px; background: transparent; font: 500 14px/1 var(--ka-font); color: var(--ink-muted); cursor: pointer; }
-.ka-seg button:hover { color: var(--ink); }
-.ka-seg button[aria-checked="true"] { background: var(--bg-surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 12%, transparent); }
-.ka-seg button[aria-checked="true"][data-tone="on"] { color: var(--success); }
-.ka-seg button[aria-checked="true"][data-tone="off"] { color: var(--danger); }
-.ka-seg button:disabled { cursor: not-allowed; opacity: 0.5; }
+.ka-pm__seg { display: inline-flex; flex: none; gap: 2px; padding: 3px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-subtle); }
+.ka-pm__seg button { min-width: 64px; height: 34px; padding: 0 12px; border: 0; border-radius: 7px; background: transparent; font: 500 14px/1 var(--ka-font); color: var(--ink-muted); cursor: pointer; }
+.ka-pm__seg button:hover { color: var(--ink); }
+.ka-pm__seg button[aria-checked="true"] { background: var(--bg-surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 12%, transparent); }
+.ka-pm__seg button[aria-checked="true"][data-tone="on"] { color: var(--success); }
+.ka-pm__seg button[aria-checked="true"][data-tone="off"] { color: var(--danger); }
+.ka-pm__seg button:disabled { cursor: not-allowed; opacity: 0.5; }
 
 @media (max-width: 639px) {
   .ka-pm__prow { flex-direction: column; align-items: stretch; gap: 10px; }
-  .ka-seg { width: 100%; }
-  .ka-seg button { flex: 1; height: 40px; }
+  .ka-pm__seg { width: 100%; }
+  .ka-pm__seg button { flex: 1; height: 40px; }
 }
 
 /* ---------- Category picker ---------- */

@@ -111,7 +111,7 @@ function Segmented<T extends string>({
 }) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   return (
-    <div className="ka-seg" role="radiogroup" aria-label={label}>
+    <div className="ka-pm__seg" role="radiogroup" aria-label={label}>
       {options.map((option, index) => (
         <button
           key={option.value}
