@@ -41,8 +41,9 @@ class MaterialModel {
 
   async getMaterialById(id: string): Promise<Material> {
     try {
-      const response = await axiosInstance.get<SingleMaterialResponse>(`/materials/${id}`);
-      return response.data.data;
+      // GET /materials/:id sends the material itself, not wrapped in `data`.
+      const response = await axiosInstance.get<Material | SingleMaterialResponse>(`/materials/${id}`);
+      return 'material_id' in response.data ? response.data : response.data.data;
     } catch (error) {
       console.error(`Error fetching material ${id}:`, error);
       throw error;

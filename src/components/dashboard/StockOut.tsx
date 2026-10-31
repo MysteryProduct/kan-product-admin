@@ -1,6 +1,9 @@
-import Link from "next/link";
+"use client";
+
+import { useState } from "react";
 import StatusBadge from "@/components/StatusBadge";
 import type { OpenList } from "@/components/dashboard/DashboardListModal";
+import PurchaseDraftDialog from "@/components/dashboard/PurchaseDraftDialog";
 import type { StockOut as StockOutData } from "@/types/dashboard";
 
 const count = (value: number) => new Intl.NumberFormat("th-TH").format(value);
@@ -13,7 +16,7 @@ interface StockOutCardProps {
   names: string[];
   onOpen: (list: OpenList) => void;
   /** A shortcut under the card, shown while something is out. */
-  action?: { href: string; label: string };
+  action?: { onClick: () => void; label: string };
 }
 
 function StockOutCard({ id, target, emptyText, total, names, onOpen, action }: StockOutCardProps) {
@@ -48,9 +51,9 @@ function StockOutCard({ id, target, emptyText, total, names, onOpen, action }: S
           </button>
         )}
         {action && total > 0 && (
-          <Link href={action.href} className="ka-btn ka-btn--sm">
+          <button type="button" aria-haspopup="dialog" className="ka-btn ka-btn--primary ka-btn--sm" onClick={action.onClick}>
             {action.label}
-          </Link>
+          </button>
         )}
       </div>
     </section>
@@ -76,6 +79,7 @@ export default function StockOut({
   canOrder?: boolean;
 }) {
   const { materials } = stock;
+  const [ordering, setOrdering] = useState(false);
   const products = hideProducts ? undefined : stock.products;
   if (!products && !materials) return null;
 
@@ -99,8 +103,11 @@ export default function StockOut({
           total={materials.count}
           names={materials.items.map((item) => item.material_name)}
           onOpen={onOpen}
-          action={canOrder ? { href: "/admin/purchase-orders", label: "สร้างใบสั่งซื้อ" } : undefined}
+          action={canOrder ? { onClick: () => setOrdering(true), label: "สร้างใบสั่งซื้อ" } : undefined}
         />
+      )}
+      {materials && canOrder && ordering && (
+        <PurchaseDraftDialog isOpen onClose={() => setOrdering(false)} materials={materials.items} />
       )}
     </>
   );
