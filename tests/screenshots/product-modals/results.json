@@ -1,0 +1,402 @@
+[
+  {
+    "name": "detail แก้วมีหูจับพร้อมหลอด 390: bottom sheet",
+    "ok": true,
+    "note": "{\"width\":390,\"height\":717,\"bottom\":844,\"radius\":\"16px\"}"
+  },
+  {
+    "name": "detail แก้วมีหูจับพร้อมหลอด 390: close 44px \"ปิด\"",
+    "ok": true,
+    "note": "{\"close\":44,\"closeLabel\":\"ปิด\",\"footHeights\":[48,48,48],\"primaryRightmost\":true}"
+  },
+  {
+    "name": "detail แก้วมีหูจับพร้อมหลอด 390: footer buttons 48px",
+    "ok": true,
+    "note": "[48,48,48]"
+  },
+  {
+    "name": "detail แก้วมีหูจับพร้อมหลอด 390: no \"แบบ ER\" / \"ID:\"",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "detail แก้วมีหูจับพร้อมหลอด 390: no sideways scroll",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "detail แก้วเก็บความเย็น 350 ml. 390: bottom sheet",
+    "ok": true,
+    "note": "{\"width\":390,\"height\":717,\"bottom\":844,\"radius\":\"16px\"}"
+  },
+  {
+    "name": "detail แก้วเก็บความเย็น 350 ml. 390: close 44px \"ปิด\"",
+    "ok": true,
+    "note": "{\"close\":44,\"closeLabel\":\"ปิด\",\"footHeights\":[48,48,48],\"primaryRightmost\":true}"
+  },
+  {
+    "name": "detail แก้วเก็บความเย็น 350 ml. 390: footer buttons 48px",
+    "ok": true,
+    "note": "[48,48,48]"
+  },
+  {
+    "name": "detail แก้วเก็บความเย็น 350 ml. 390: no \"แบบ ER\" / \"ID:\"",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "detail แก้วเก็บความเย็น 350 ml. 390: no sideways scroll",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "policy 390: summary shown",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "policy 390: no select",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "policy 390: review button",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "category 390: summary shown",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "category 390: review button \"ย้ายไป\"",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "detail แก้วมีหูจับพร้อมหลอด 834: close 36px \"ปิด\"",
+    "ok": true,
+    "note": "{\"close\":36,\"closeLabel\":\"ปิด\",\"footHeights\":[40,40,40],\"primaryRightmost\":true}"
+  },
+  {
+    "name": "detail แก้วมีหูจับพร้อมหลอด 834: primary button rightmost",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "detail แก้วมีหูจับพร้อมหลอด 834: no \"แบบ ER\" / \"ID:\"",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "detail แก้วมีหูจับพร้อมหลอด 834: no sideways scroll",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "detail แก้วเก็บความเย็น 350 ml. 834: close 36px \"ปิด\"",
+    "ok": true,
+    "note": "{\"close\":36,\"closeLabel\":\"ปิด\",\"footHeights\":[40,40,40],\"primaryRightmost\":true}"
+  },
+  {
+    "name": "detail แก้วเก็บความเย็น 350 ml. 834: primary button rightmost",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "detail แก้วเก็บความเย็น 350 ml. 834: no \"แบบ ER\" / \"ID:\"",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "detail แก้วเก็บความเย็น 350 ml. 834: no sideways scroll",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "policy 834: summary shown",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "policy 834: no select",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "policy 834: review button",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "category 834: summary shown",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "category 834: review button \"ย้ายไป\"",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "detail แก้วมีหูจับพร้อมหลอด 1440: panel 720px",
+    "ok": true,
+    "note": "720px"
+  },
+  {
+    "name": "detail แก้วมีหูจับพร้อมหลอด 1440: close 36px \"ปิด\"",
+    "ok": true,
+    "note": "{\"close\":36,\"closeLabel\":\"ปิด\",\"footHeights\":[40,40,40],\"primaryRightmost\":true}"
+  },
+  {
+    "name": "detail แก้วมีหูจับพร้อมหลอด 1440: primary button rightmost",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "detail แก้วมีหูจับพร้อมหลอด 1440: no \"แบบ ER\" / \"ID:\"",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "detail แก้วมีหูจับพร้อมหลอด 1440: no sideways scroll",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "detail แก้วเก็บความเย็น 350 ml. 1440: panel 720px",
+    "ok": true,
+    "note": "720px"
+  },
+  {
+    "name": "detail แก้วเก็บความเย็น 350 ml. 1440: close 36px \"ปิด\"",
+    "ok": true,
+    "note": "{\"close\":36,\"closeLabel\":\"ปิด\",\"footHeights\":[40,40,40],\"primaryRightmost\":true}"
+  },
+  {
+    "name": "detail แก้วเก็บความเย็น 350 ml. 1440: primary button rightmost",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "detail แก้วเก็บความเย็น 350 ml. 1440: no \"แบบ ER\" / \"ID:\"",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "detail แก้วเก็บความเย็น 350 ml. 1440: no sideways scroll",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "policy 1440: summary shown",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "policy 1440: no select",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "policy 1440: review button",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "category 1440: summary shown",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "category 1440: review button \"ย้ายไป\"",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "keyboard detail: focus moves into the dialog",
+    "ok": true,
+    "note": "button ปิด"
+  },
+  {
+    "name": "keyboard detail: Tab stays in the dialog",
+    "ok": true,
+    "note": "7 stops: button รูปที่ 1 | button เพิ่มรูป มี 1 จาก 7 รูป | button ตั้งค่า | button ลบสินค้า | button ปิด | button แก้ไขสินค้า | button ปิด"
+  },
+  {
+    "name": "keyboard detail: Esc closes",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "keyboard detail: focus back on the eye button",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "keyboard policy: Tab stays in the dialog",
+    "ok": true,
+    "note": "5 stops: button[radio] ไม่เปลี่ยน | button[radio] ไม่เปลี่ยน | button[radio] ไม่เปลี่ยน | button ยกเลิก | button ปิด"
+  },
+  {
+    "name": "keyboard policy: ArrowRight picks เปิด",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "keyboard policy: ArrowRight again picks ปิด",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "keyboard policy: ArrowLeft back to ไม่เปลี่ยน",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "keyboard policy: review disabled with no change",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "keyboard policy: Esc closes",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "keyboard policy: focus back on the bulk button",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "keyboard category: Tab stays in the dialog",
+    "ok": true,
+    "note": "5 stops: input  | button[radio] TASK0141-02950C56-9FB7-4128-997A-24B18E3 | a สร้างหมวดหมู่ใหม่(แท็บใหม่) | button ยกเลิก | button ปิด"
+  },
+  {
+    "name": "keyboard category: ArrowDown moves the choice",
+    "ok": true,
+    "note": "TASK0141-0818D5D6-0FEB-4396-8C93-5A9E93A64327OTHER-RENAMED → TASK0141-5B4593F9-D742-4A7D-9478-955B7FE1558COTHER-RENAMED"
+  },
+  {
+    "name": "keyboard category: current category never picked",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "keyboard category: Esc closes",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "keyboard category: focus back on the bulk button",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "keyboard status: Tab stays in the dialog",
+    "ok": true,
+    "note": "4 stops: input  | button[radio] ปิดใช้งาน | button ยกเลิก | button ปิด"
+  },
+  {
+    "name": "keyboard status: ArrowRight switches the status",
+    "ok": true,
+    "note": "ปิดใช้งาน → เปิดใช้งาน"
+  },
+  {
+    "name": "keyboard status: Esc closes",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "keyboard status: focus back on the bulk button",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "stacked: policy opens over the detail",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "stacked: first Esc closes only the policy dialog",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "stacked: focus back on \"ตั้งค่า\"",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "stacked: second Esc closes the detail, focus on the eye button",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "saving: aria-busy and \"กำลังบันทึก…\"",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "saving: Esc does not close while saving",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "error: danger banner with the API message",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "error: retry offered",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "error: choice kept",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "delete: detail closes and the existing confirmation opens",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "delete: cancelled, product still listed",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "rich: four tiles, one ringed, \"ปิด\" chip, contact-off sold-out note",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "rich: variant picture row",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "unpublished: note says customers cannot see it",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "dark 1440: theme applied",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "dark 390: theme applied",
+    "ok": true,
+    "note": ""
+  },
+  {
+    "name": "shared .ka-seg on the sales page untouched",
+    "ok": true,
+    "note": "{\"radius\":\"8px\",\"gap\":\"normal\",\"buttonRadius\":\"6px\",\"minWidth\":\"auto\"}"
+  }
+]

@@ -3,10 +3,10 @@
 import { ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-// `compact`, `standard`, `wide` and `list` are the design's 440 / 520 / 600 / 680px (`list` for a
-// modal of records). `sm` to `xl` keep the widths pages were built with; a page moves to the new
-// names when it is redesigned.
-type ModalSize = 'compact' | 'standard' | 'wide' | 'list' | 'sm' | 'md' | 'lg' | 'xl';
+// `compact`, `standard`, `wide`, `list` and `detail` are the design's 440 / 520 / 600 / 680 / 720px
+// (`list` for a modal of records, `detail` for a record's read-only detail). `sm` to `xl` keep the
+// widths pages were built with; a page moves to the new names when it is redesigned.
+type ModalSize = 'compact' | 'standard' | 'wide' | 'list' | 'detail' | 'sm' | 'md' | 'lg' | 'xl';
 /** `drawer` slides in from the right on wide screens; `sheet` rises from the bottom at every width. */
 type ModalPlacement = 'center' | 'drawer' | 'sheet';
 
@@ -32,6 +32,12 @@ interface ModalProps {
   /** A status icon before the title, tinted by `iconTone`. */
   icon?: ReactNode;
   iconTone?: 'danger' | 'warning' | 'info' | 'success';
+  /** Content before the title block, drawn as given (a record's picture). */
+  media?: ReactNode;
+  /** A line above the title (a code chip and a status badge). */
+  eyebrow?: ReactNode;
+  /** Extra classes on the dialog panel, for a family of modals that shares one look. */
+  className?: string;
 }
 
 const sizeClasses: Record<ModalSize, string> = {
@@ -39,6 +45,7 @@ const sizeClasses: Record<ModalSize, string> = {
   standard: 'max-w-[520px]',
   wide: 'max-w-[600px]',
   list: 'max-w-[680px]',
+  detail: 'max-w-[720px]',
   sm: 'max-w-md',
   md: 'max-w-xl',
   lg: 'max-w-3xl',
@@ -76,6 +83,9 @@ export default function Modal({
   dirty,
   icon,
   iconTone = 'info',
+  media,
+  eyebrow,
+  className = '',
 }: ModalProps) {
   const titleId = useId();
   const descriptionId = useId();
@@ -180,12 +190,14 @@ export default function Modal({
           // Typing in a select's search box changes nothing yet.
           if (guardUnsaved && (event.target as HTMLElement).getAttribute('role') !== 'searchbox') setEdited(true);
         }}
-        className={`ka-modal overscroll-contain ${placement === 'center' ? '' : `ka-modal--${placement}`} ${sizeClasses[size]}`}
+        className={`ka-modal overscroll-contain ${placement === 'center' ? '' : `ka-modal--${placement}`} ${sizeClasses[size]} ${className}`}
       >
         <div className="ka-modal__grab" aria-hidden="true" />
         <header className="ka-modal__head shrink-0 px-5 sm:px-6">
           {icon && <span className="ka-modal__icon" data-tone={iconTone}>{icon}</span>}
+          {media}
           <div className="min-w-0 flex-1">
+            {eyebrow}
             <h2 id={titleId} className="ka-modal__title">{title}</h2>
             {description && <p id={descriptionId} className="ka-modal__desc">{description}</p>}
           </div>
