@@ -17,6 +17,7 @@ import BoardView from './components/board-view';
 import FilterBar from './components/filter-bar';
 import { useBoardFilters } from './use-board-filters';
 import CalendarView from './components/calendar-view';
+import ListView from './components/list-view';
 import type { JobCardActions } from './components/job-card';
 import ViewSwitch from './components/view-switch';
 import { useStatusMoves } from './use-status-moves';
@@ -318,6 +319,8 @@ export default function JobOrdersPage() {
 					canDelete={canDelete}
 					actions={cardActions}
 				/>
+			) : viewMode === 'list' ? (
+				<ListView isLoading={isLoading} jobs={filteredJobOrders} statusTab="all" canEdit={canEdit} actions={cardActions} />
 			) : (
 				<CalendarView
 					isLoading={isLoading}

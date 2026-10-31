@@ -41,7 +41,7 @@ export default function FilterBar({ isLoading, hasLoaded, viewMode, searchText, 
 			<svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
 			<input type="search" className="ka-input" aria-label="ค้นหางานผลิต" placeholder="ชื่องานหรือเลข JO" value={searchText} onChange={(e) => setSearchText(e.target.value)} />
 		</div>
-		{viewMode === 'board' && (
+		{viewMode !== 'calendar' && (
 			<>
 				<button ref={rangeChipRef} type="button" className="ka-chip" data-active={dateStart || dateEnd ? true : undefined} aria-haspopup="dialog" aria-expanded={rangeOpen} onClick={() => setRangeOpen((value) => !value)}>
 					<svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14v14H5zM5 10h14M9 4v4M15 4v4" /></svg>
@@ -93,7 +93,7 @@ export default function FilterBar({ isLoading, hasLoaded, viewMode, searchText, 
 			<button type="button" className="ka-btn ka-btn--ghost" onClick={() => { setSearchText(''); setSelectedAssignee('all'); setSelectedType('all'); }}>ล้างตัวกรอง</button>
 		)}
 		<span className="ka-table-tools__spacer" />
-		{viewMode === 'board' && (
+		{viewMode !== 'calendar' && (
 			<button type="button" className="ka-chip" style={{ borderStyle: 'solid', borderRadius: 'var(--radius-control)' }} aria-label={`เรียงตามวันเป้าหมาย ${sortDirection === 'ASC' ? 'เก่าไปใหม่' : 'ใหม่ไปเก่า'}`} onClick={() => setSortDirection((value) => (value === 'ASC' ? 'DESC' : 'ASC'))}>
 				<svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" d="M4 7h16M7 12h10M10 17h4" /></svg>
 				วันเป้าหมาย {sortDirection === 'ASC' ? '↑' : '↓'}

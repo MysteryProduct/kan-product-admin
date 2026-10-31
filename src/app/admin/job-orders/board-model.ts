@@ -8,7 +8,7 @@ import { toDateValue, toLocalIsoDate } from '@/lib/date-format';
 export const count = (value: number) => new Intl.NumberFormat('th-TH').format(value);
 
 export type BoardStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
-export type ViewMode = 'board' | 'calendar';
+export type ViewMode = 'board' | 'list' | 'calendar';
 
 export interface CalendarCell {
 	date: Date;
