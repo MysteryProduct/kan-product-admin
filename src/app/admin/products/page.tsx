@@ -616,12 +616,14 @@ export default function ProductsPage() {
             options={chipOptions(categoryOptions)}
             selected={chipFilters.category}
             onChange={(values) => setChip('category', values)}
+            resultCount={meta?.total}
           />
           <FilterChip
             label="สี"
             options={chipOptions(colorOptions)}
             selected={chipFilters.color}
             onChange={(values) => setChip('color', values)}
+            resultCount={meta?.total}
           />
           {activeFilterCount > 0 && (
             <button type="button" className="ka-btn ka-btn--ghost" onClick={clearAllFilters}>
