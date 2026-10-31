@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DataTable, DataTableColumn } from '@/components/DataTable';
 import { PaginationMeta } from '@/types/pagination';
 import LoadingSkeletonProps from '@/components/LoadingSkeleton';
@@ -378,15 +378,26 @@ export default function SaleOrderPage() {
         },
     ];
 
-    // The Dashboard's "สร้างใบขาย" opens this page at #ready: once the first load is done, bring the
-    // ready-to-sell table into view and move focus to its heading (TASK-0321 D3).
+    // The Dashboard's "สร้างใบขาย" opens this page at #ready: once, after the ready-to-sell table has
+    // loaded, bring it into view, move focus to its heading and drop the hash, so later loads (paging,
+    // search, saving) leave the user where they are (TASK-0321 D3, review F1).
+    const readyJumpDone = useRef(false);
     useEffect(() => {
-        if (loading || window.location.hash !== '#ready') return;
+        if (readyJumpDone.current) return;
+        if (window.location.hash !== '#ready') {
+            readyJumpDone.current = true;
+            return;
+        }
+        if (loading || (!fetchSaleOrders && !readyItemsError)) return;
+        readyJumpDone.current = true;
+        const url = new URL(window.location.href);
+        url.hash = '';
+        window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}`);
         const heading = document.getElementById('ready-title');
         if (!heading) return;
         heading.scrollIntoView({ block: 'start' });
         heading.focus({ preventScroll: true });
-    }, [loading]);
+    }, [loading, fetchSaleOrders, readyItemsError]);
 
     return (
         <div className="bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">

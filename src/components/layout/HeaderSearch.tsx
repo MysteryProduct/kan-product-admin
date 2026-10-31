@@ -125,6 +125,7 @@ export default function HeaderSearch() {
             aria-controls={listId}
             aria-activedescendant={results.length ? `${listId}-${active}` : undefined}
             aria-autocomplete="list"
+            aria-keyshortcuts="Control+K Meta+K"
             autoComplete="off"
             placeholder="ค้นหาหน้า"
             value={query}

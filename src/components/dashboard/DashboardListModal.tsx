@@ -50,8 +50,6 @@ export interface OpenList {
   stock?: {
     filter: StockFilter;
     status?: StockStatusFilter;
-    /** The name of the chosen category, for the line that says what is filtered. */
-    categoryName?: string;
   };
 }
 
@@ -111,7 +109,7 @@ export default function DashboardListModal({ list, onClose, onChanged }: Dashboa
   const [detail, setDetail] = useState<DashboardListRow | null>(null);
   const [query, setQuery] = useState("");
   const [now] = useState(() => Date.now());
-  // The stock list's status can be changed here; the category and search stay the card's.
+  // The stock list's status can be changed here; the card opens it for every category (TASK-0321 Q2).
   const [stockStatus, setStockStatus] = useState<StockStatusFilter | "">(list.stock?.status ?? "");
   const stockFilter = list.stock?.filter;
   const isStock = list.key === "stock_variants";
@@ -232,8 +230,7 @@ export default function DashboardListModal({ list, onClose, onChanged }: Dashboa
                 />
               </div>
               <p className="ka-todo__cap">
-                หมวดหมู่: {list.stock?.categoryName ?? (stockFilter?.category_id ? `#${stockFilter.category_id}` : "ทั้งหมด")}
-                {stockFilter?.q ? ` · ค้นหา: ${stockFilter.q}` : ""} · จำนวนคงเหลือรวมทุกล็อต (ชิ้น) ไม่ใช่จำนวนที่ซื้อออนไลน์ได้
+                จำนวนคงเหลือรวมทุกล็อต (ชิ้น) ไม่ใช่จำนวนที่ซื้อออนไลน์ได้
               </p>
             </div>
           )}
