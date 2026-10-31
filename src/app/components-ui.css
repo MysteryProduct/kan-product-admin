@@ -108,19 +108,30 @@
 .ka-hello::before, .ka-hello::after {
   content: ""; position: absolute; top: -20%; bottom: -20%; width: 56px; background: var(--brand); transform: skewX(-24deg); opacity: 0.9; pointer-events: none;
 }
-.ka-hello::before { right: 72px; }
-.ka-hello::after { right: 8px; width: 28px; opacity: 0.55; }
+.ka-hello::before { right: 120px; width: 44px; }
+.ka-hello::after { right: 52px; width: 22px; opacity: 0.55; }
 .ka-hello__text, .ka-hello__actions { position: relative; z-index: 1; }
-.ka-hello__date { margin: 0; font: 400 14px/22px var(--ka-font); }
+.ka-hello__date { margin: 0; color: var(--ink-on-sidebar-active); font: 600 13px/20px var(--ka-font); }
 .ka-hello__title { margin: 2px 0 0; color: #fff; font: 700 24px/36px var(--ka-font); }
-.ka-hello__sub { margin: 2px 0 0; color: var(--ink-on-sidebar-active); font: 500 15px/24px var(--ka-font); }
+.ka-hello__sub { margin: 2px 0 0; color: var(--ink-on-sidebar); font: 400 15px/24px var(--ka-font); }
 .ka-hello__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .ka-hello :focus-visible { outline-color: var(--ink-on-sidebar-active); }
+.ka-hello .ka-btn:not(.ka-btn--primary) { --btn-bg: transparent; --btn-ink: #ffffff; --btn-edge: var(--ink-muted); }
+.ka-hello .ka-btn:not(.ka-btn--primary):hover { --btn-bg: var(--bg-sidebar-hover); }
 @media (max-width: 639px) { .ka-hello { padding: var(--space-4); } .ka-hello::before { right: 40px; } .ka-hello__actions { width: 100%; } .ka-hello__actions .ka-btn { flex: 1; } }
 
 .ka-dash { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); margin-bottom: var(--space-6); }
 .ka-dash__side { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); align-content: start; }
-@media (min-width: 1024px) { .ka-dash { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); } }
+@media (min-width: 1024px) { .ka-dash { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); align-items: start; } }
+.ka-g3 { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); margin-bottom: var(--space-6); }
+@media (min-width: 640px) { .ka-g3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1024px) { .ka-g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.ka-outlist { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.ka-outlist > li { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2); padding: var(--space-3); border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--bg-subtle); font: 400 15px/24px var(--ka-font); }
+.ka-panel__more > summary { cursor: pointer; list-style: none; }
+.ka-panel__more > summary::-webkit-details-marker { display: none; }
+.ka-panel__more > summary::before { content: '▸ '; }
+.ka-panel__more[open] > summary::before { content: '▾ '; }
 
 .ka-todo { overflow: hidden; }
 .ka-todo__cap { color: var(--ink-muted); font: 400 13px/20px var(--ka-font); }
@@ -149,7 +160,7 @@
 .ka-panel__link { color: var(--brand-ink); font: 500 15px/24px var(--ka-font); text-decoration: none; }
 .ka-panel__link:hover { text-decoration: underline; text-underline-offset: 4px; }
 .ka-kv { display: grid; gap: var(--space-1); margin: 0; }
-.ka-kv > div { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.ka-kv > div { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) 0; border-top: 1px solid var(--border); }
 .ka-kv dt { color: var(--ink-muted); font: 400 15px/24px var(--ka-font); }
 .ka-kv dd { margin: 0; font: 600 16px/26px var(--ka-font); }
 .ka-kv dd button { font: inherit; }
@@ -220,6 +231,7 @@
 .ka-hbar > i { display: block; height: 100%; border-radius: inherit; background: var(--brand); }
 .ka-hbar > i[data-tone="neutral"] { background: var(--border-control); }
 .ka-swatch { display: inline-block; width: 10px; height: 10px; margin-right: var(--space-2); border-radius: 50%; }
+.ka-kv > li { padding: var(--space-2) 0; border-top: 1px solid var(--border); }
 .ka-kv > li, .ka-kv__line { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); font: 400 15px/24px var(--ka-font); }
 ul.ka-kv { margin: 0; padding: 0; list-style: none; }
 .ka-kv__line { margin: 0; padding-top: var(--space-2); border-top: 1px solid var(--border); color: var(--ink-muted); }

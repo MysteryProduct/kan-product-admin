@@ -21,48 +21,11 @@ const count = (value: number) => new Intl.NumberFormat("th-TH").format(value);
 // A typed search waits this long before it asks the server, so one request is not sent per key.
 const SEARCH_DELAY_MS = 300;
 
-type Tone = "neutral" | "success" | "warning" | "danger";
-
-const TONE_VALUE: Record<Tone, string> = {
-  neutral: "text-[var(--ink)]",
-  success: "text-[var(--success)]",
-  warning: "text-[var(--warning)]",
-  danger: "text-[var(--danger)]",
-};
-
-interface StatCardProps {
-  label: string;
-  value: number | undefined;
-  unit: string;
-  hint: string;
-  tone?: Tone;
-  /** Present for a card whose rows can be opened; a card without it is not a button. */
-  onOpen?: () => void;
-}
-
-function StatCard({ label, value, unit, hint, tone = "neutral", onOpen }: StatCardProps) {
-  const body = (
-    <>
-      <span className="ka-stat__label">{label}</span>
-      <p className={`ka-stat__value ${TONE_VALUE[tone]}`}>
-        {value === undefined ? "-" : count(value)}
-        <span className="ml-2 text-[14px] font-normal text-[var(--ink-muted)]">{unit}</span>
-      </p>
-      <p className="ka-stat__foot">{hint}</p>
-    </>
-  );
-  if (!onOpen) return <div className="ka-card ka-stat">{body}</div>;
-  return (
-    <button
-      type="button"
-      aria-haspopup="dialog"
-      onClick={onOpen}
-      className="ka-card ka-card--link ka-stat block w-full text-left"
-    >
-      {body}
-    </button>
-  );
-}
+const SEGMENTS = [
+  { key: "normal", label: "ปกติ", tone: "success" },
+  { key: "low", label: "เหลือน้อย", tone: "brand" },
+  { key: "out", label: "หมด", tone: "danger" },
+] as const;
 
 interface StockOverviewProps {
   /** Bumped by the page when a record was changed from a detail view, so the numbers are read again. */
@@ -73,10 +36,10 @@ interface StockOverviewProps {
 }
 
 /**
- * Stock of product variants by the remaining quantity of all lots (TASK-0161): the number of
- * products apart from the number of variants, and how many variants are out, low or normal.
- * The card and the list opened from it ask the server with the same category / search, so
- * their totals are the same. A failed read says so; it is never drawn as 0.
+ * Stock of product variants by the remaining quantity of all lots (TASK-0161): one bar of how many
+ * variants are normal, low or out, with the numbers written beside it. The card and the list opened
+ * from it ask the server with the same category / search, so their totals are the same. A failed
+ * read says so; it is never drawn as 0.
  */
 export default function StockOverview({ reloadToken, onOpen, onState }: StockOverviewProps) {
   const [categoryId, setCategoryId] = useState("");
@@ -91,7 +54,7 @@ export default function StockOverview({ reloadToken, onOpen, onState }: StockOve
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Only the newest request may fill the cards: a slow answer for an old filter must not
+  // Only the newest request may fill the card: a slow answer for an old filter must not
   // overwrite the one asked for after it.
   const latestRequest = useRef(0);
 
@@ -115,7 +78,7 @@ export default function StockOverview({ reloadToken, onOpen, onState }: StockOve
         setError(null);
       } else if (result.unavailable?.length) {
         // The block failed on the server. Numbers of another filter must not stay up as if they
-        // were this one's, and none is drawn as 0: the cards go and the retry stays.
+        // were this one's, and none is drawn as 0: the bar goes and the retry stays.
         setOverview(null);
         setError(unavailableText(result.unavailable));
       } else {
@@ -170,7 +133,7 @@ export default function StockOverview({ reloadToken, onOpen, onState }: StockOve
   if (notAllowed) return null;
 
   const categoryName = categories.find((item) => String(item.category_id) === categoryId)?.category_name;
-  // One title for every card: the list has its own status choice, so a title that named
+  // One title for every list: the list has its own status choice, so a title that named
   // the status would be wrong as soon as it is changed there.
   const open = (status: StockStatusFilter | undefined): OpenList => ({
     key: "stock_variants",
@@ -179,124 +142,99 @@ export default function StockOverview({ reloadToken, onOpen, onState }: StockOve
     stock: { filter, status, categoryName },
   });
   const filtered = Boolean(categoryId || search);
+  const needsCare = overview ? overview.low + overview.out : 0;
 
   return (
-    <section aria-labelledby="dashboard-stock-overview" className="mb-6">
-      <h2 id="dashboard-stock-overview" className="mb-1 text-[19px] font-semibold text-[var(--ink)]">
-        สต็อกสินค้า
-      </h2>
-      <p className="mb-3 text-[13px] text-[var(--ink-muted)]">
-        นับตามแบบสินค้า (สี/ขนาด) จากจำนวนคงเหลือรวมทุกล็อต ไม่ใช่จำนวนที่ลูกค้าซื้อออนไลน์ได้
-        {overview ? ` · เหลือน้อย = เหลือ 1–${count(overview.threshold)} ชิ้น` : ""}
-        {overview && overview.threshold === 0 ? " (ปิดสถานะเหลือน้อย)" : ""}
-      </p>
-
-      <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:max-w-3xl">
-        <div>
-          <label htmlFor="stock-category" className="mb-1 block text-[13px] font-medium text-[var(--ink)]">
-            หมวดหมู่
-          </label>
-          <select
-            id="stock-category"
-            className="ka-input"
-            value={categoryId}
-            onChange={(event) => setCategoryId(event.target.value)}
-          >
-            <option value="">ทุกหมวดหมู่</option>
-            {categories.map((item) => (
-              <option key={item.category_id} value={item.category_id}>
-                {item.category_name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="stock-search" className="mb-1 block text-[13px] font-medium text-[var(--ink)]">
-            ค้นหารหัสหรือชื่อสินค้า
-          </label>
-          <input
-            id="stock-search"
-            type="search"
-            className="ka-input"
-            maxLength={100}
-            value={typed}
-            onChange={(event) => setTyped(event.target.value)}
-            placeholder="เช่น PD-… หรือชื่อสินค้า"
-          />
-        </div>
+    <section aria-labelledby="dashboard-stock-overview" className="ka-card ka-panel" aria-busy={isLoading || undefined}>
+      <div className="ka-panel__head">
+        <h2 id="dashboard-stock-overview" className="ka-card__title">สต็อกสินค้า</h2>
+        {overview && (
+          <button type="button" aria-haspopup="dialog" className="ka-todo__cap ka-kpi__open numeric" onClick={() => onOpen(open(undefined))}>
+            {count(overview.variants)} แบบ
+          </button>
+        )}
       </div>
-      {categoriesError && (
-        <p role="status" className="mb-3 text-[13px] text-[var(--ink-muted)]">
-          {categoriesError} (ยังกรองด้วยการค้นหาได้)
-        </p>
-      )}
 
-      <LoadErrorBanner message={error} onRetry={() => void load()} className="mb-3" />
-
-      {!overview && !error && isLoading && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5" aria-busy="true">
-          {[0, 1, 2, 3, 4].map((index) => (
-            <div key={index} className="ka-card ka-stat">
-              <div className="ka-skel ka-skel--title" />
-              <div className="ka-skel mt-3 h-9 w-2/3" />
-              <p className="sr-only">กำลังโหลด...</p>
-            </div>
-          ))}
-        </div>
-      )}
+      <LoadErrorBanner message={error} onRetry={() => void load()} />
+      {!overview && !error && isLoading && <span className="ka-skel ka-skel--title" />}
 
       {overview && (
-        <div
-          aria-busy={isLoading}
-          className={`ka-motion-state grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5 ${
-            isLoading ? "opacity-60" : ""
-          }`}
-        >
-          <StatCard
-            label="สินค้า (Product)"
-            value={overview.products}
-            unit="สินค้า"
-            hint={`มีแบบที่ต้องดูแล ${count(overview.products_with_issue)} สินค้า`}
-          />
-          <StatCard
-            label="แบบสินค้า (Variant)"
-            value={overview.variants}
-            unit="แบบ"
-            hint="นับแต่ละสี/ขนาด หนึ่งครั้ง ไม่ซ้ำตามล็อต"
-            onOpen={() => onOpen(open(undefined))}
-          />
-          <StatCard
-            label="ปกติ"
-            value={overview.normal}
-            unit="แบบ"
-            tone="success"
-            hint={`คงเหลือมากกว่า ${count(overview.threshold)} ชิ้น`}
-            onOpen={() => onOpen(open("normal"))}
-          />
-          <StatCard
-            label="เหลือน้อย"
-            value={overview.low}
-            unit="แบบ"
-            tone="warning"
-            hint={overview.threshold === 0 ? "ปิดสถานะเหลือน้อย (เกณฑ์ 0)" : `เหลือ 1–${count(overview.threshold)} ชิ้น`}
-            onOpen={() => onOpen(open("low"))}
-          />
-          <StatCard
-            label="หมด"
-            value={overview.out}
-            unit="แบบ"
-            tone="danger"
-            hint="คงเหลือ 0 หรือน้อยกว่า รวมที่ไม่เคยมีสต็อก"
-            onOpen={() => onOpen(open("out"))}
-          />
+        <div className={`ka-motion-state grid gap-2 ${isLoading ? "opacity-60" : ""}`}>
+          <div
+            className="ka-stack"
+            role="img"
+            aria-label={SEGMENTS.map((segment) => `${segment.label} ${count(overview[segment.key])}`).join(" ")}
+          >
+            {overview.variants > 0 &&
+              SEGMENTS.map((segment) =>
+                overview[segment.key] > 0 ? (
+                  <span key={segment.key} data-tone={segment.tone} style={{ flexGrow: overview[segment.key] }} />
+                ) : null,
+              )}
+          </div>
+          <ul className="ka-legend">
+            {SEGMENTS.map((segment) => (
+              <li key={segment.key} data-tone={segment.tone}>
+                <button
+                  type="button"
+                  aria-haspopup="dialog"
+                  aria-label={`${segment.label} ${count(overview[segment.key])} แบบ ดูรายการ`}
+                  onClick={() => onOpen(open(segment.key))}
+                >
+                  <i aria-hidden="true" />
+                  {segment.label} <span className="numeric">{count(overview[segment.key])}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+          <p className="ka-panel__note">
+            {overview.threshold === 0 ? "ปิดสถานะเหลือน้อย (เกณฑ์ 0)" : `เหลือน้อย = คงเหลือ 1–${count(overview.threshold)} ชิ้น`} · นับตามแบบสินค้า
+            (สี/ขนาด) รวมทุกล็อต
+          </p>
+          {overview.variants === 0 && !isLoading && (
+            <p className="ka-panel__note">{filtered ? "ไม่พบแบบสินค้าตามหมวดหมู่หรือคำค้นที่เลือก" : "ยังไม่มีแบบสินค้าในระบบ"}</p>
+          )}
+          {needsCare > 0 && (
+            <button type="button" aria-haspopup="dialog" className="ka-panel__link ka-kpi__open" onClick={() => onOpen(open("problem"))}>
+              ดู {count(needsCare)} แบบที่ต้องดูแล →
+            </button>
+          )}
         </div>
       )}
 
-      {overview && overview.variants === 0 && !isLoading && (
-        <p className="mt-3 text-[14px] text-[var(--ink-muted)]">
-          {filtered ? "ไม่พบแบบสินค้าตามหมวดหมู่หรือคำค้นที่เลือก" : "ยังไม่มีแบบสินค้าในระบบ"}
-        </p>
-      )}
+      <details className="ka-panel__more">
+        <summary className="ka-todo__cap">กรองตามหมวดหมู่หรือชื่อสินค้า{filtered ? " (กำลังกรอง)" : ""}</summary>
+        <div className="mt-2 grid gap-2">
+          <label htmlFor="stock-category" className="ka-field">
+            <span className="ka-label">หมวดหมู่</span>
+            <select id="stock-category" className="ka-input" value={categoryId} onChange={(event) => setCategoryId(event.target.value)}>
+              <option value="">ทุกหมวดหมู่</option>
+              {categories.map((item) => (
+                <option key={item.category_id} value={item.category_id}>
+                  {item.category_name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label htmlFor="stock-search" className="ka-field">
+            <span className="ka-label">ค้นหารหัสหรือชื่อสินค้า</span>
+            <input
+              id="stock-search"
+              type="search"
+              className="ka-input"
+              maxLength={100}
+              value={typed}
+              onChange={(event) => setTyped(event.target.value)}
+              placeholder="เช่น PD-… หรือชื่อสินค้า"
+            />
+          </label>
+          {categoriesError && (
+            <p role="status" className="ka-panel__note">
+              {categoriesError} (ยังกรองด้วยการค้นหาได้)
+            </p>
+          )}
+        </div>
+      </details>
     </section>
   );
 }

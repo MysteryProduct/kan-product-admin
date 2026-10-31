@@ -1,3 +1,4 @@
+import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
 import type { OpenList } from "@/components/dashboard/DashboardListModal";
 import type {
@@ -140,20 +141,22 @@ const SEGMENTS = [
 export default function Operations({
   operations,
   onOpen,
-}: { operations: OperationsData } & OpenProps) {
+  show = "both",
+}: { operations: OperationsData; /** The page places production beside the work list and purchasing in the stock row. */ show?: "production" | "purchasing" | "both" } & OpenProps) {
   const {
     job_orders: jobs,
     purchase_orders_to_receive: toReceive,
     supplier_invoices: invoices,
   } = operations;
-  const hasPurchasing = toReceive !== undefined || Boolean(invoices);
-  if (!jobs && !hasPurchasing) return null;
+  const hasPurchasing = show !== "production" && (toReceive !== undefined || Boolean(invoices));
+  const hasProduction = show !== "purchasing" && Boolean(jobs);
+  if (!hasProduction && !hasPurchasing) return null;
 
   const total = jobs ? SEGMENTS.reduce((sum, segment) => sum + jobs[segment.id], 0) : 0;
 
   return (
     <>
-      {jobs && (
+      {hasProduction && jobs && (
         <section className="ka-card ka-panel" aria-labelledby="dashboard-production">
           <div className="ka-panel__head">
             <h2 id="dashboard-production" className="ka-card__title">งานผลิต</h2>
@@ -198,6 +201,7 @@ export default function Operations({
             <Late label="เลยกำหนด" value={jobs.overdue} target={TARGETS.overdue} tone="danger" onOpen={onOpen} />
           )}
           <p className="ka-panel__note">เลยกำหนด = ยังไม่เสร็จและเลยวันที่เป้าหมาย</p>
+          <Link href="/admin/job-orders" className="ka-panel__link">เปิดบอร์ดงานผลิต →</Link>
         </section>
       )}
       {hasPurchasing && (

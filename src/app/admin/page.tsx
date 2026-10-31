@@ -88,21 +88,24 @@ export default function Home() {
           {summary?.pending_work && <PendingWork work={summary.pending_work} onOpen={setOpenList} />}
           <div className="ka-dash__side">
             {sales && <RevenueCard sales={sales} />}
-            {summary?.operations && <Operations operations={summary.operations} onOpen={setOpenList} />}
+            {summary?.operations && <Operations operations={summary.operations} onOpen={setOpenList} show="production" />}
           </div>
         </div>
 
-        {can('products', 'view') && (
-          <StockOverview reloadToken={stockReload} onOpen={setOpenList} onState={setStockState} />
-        )}
-        {summary?.stock_out && (
-          <StockOut
-            stock={summary.stock_out}
-            onOpen={setOpenList}
-            hideProducts={can('products', 'view') && stockState !== 'failed'}
-            canOrder={can('purchase_orders', 'add')}
-          />
-        )}
+        <div className="ka-g3">
+          {can('products', 'view') && (
+            <StockOverview reloadToken={stockReload} onOpen={setOpenList} onState={setStockState} />
+          )}
+          {summary?.stock_out && (
+            <StockOut
+              stock={summary.stock_out}
+              onOpen={setOpenList}
+              hideProducts={can('products', 'view') && stockState !== 'failed'}
+              canOrder={can('purchase_orders', 'add')}
+            />
+          )}
+          {summary?.operations && <Operations operations={summary.operations} onOpen={setOpenList} show="purchasing" />}
+        </div>
 
         {isLoading && !summary && <p className="text-[14px] text-[var(--ink-muted)]">กำลังโหลด...</p>}
         {summary && !hasContent && (
