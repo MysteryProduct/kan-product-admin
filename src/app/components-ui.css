@@ -12,6 +12,32 @@
 }
 @keyframes ka-slide-in { from { opacity: 0; transform: translateX(32px); } }
 
+/* ---------- Modal header icon and footer note; list modal rows (Dashboard) ---------- */
+.ka-modal__icon { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: var(--radius-control); background: var(--info-soft); color: var(--info); }
+.ka-modal__icon svg { width: 20px; height: 20px; }
+.ka-modal__icon[data-tone="danger"] { background: var(--danger-soft); color: var(--danger); }
+.ka-modal__icon[data-tone="warning"] { background: var(--warning-soft); color: var(--warning); }
+.ka-modal__icon[data-tone="success"] { background: var(--success-soft); color: var(--success); }
+.ka-modal__note { font-size: 13px; line-height: 20px; color: var(--ink-muted); text-align: center; }
+@media (min-width: 640px) { .ka-modal__note { margin-right: auto; align-self: center; text-align: left; } }
+.ka-qlist { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; border: 1px solid var(--border); border-radius: var(--radius-card); overflow: hidden; }
+.ka-qrow { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 4px var(--space-4); padding: 14px var(--space-4); border-bottom: 1px solid var(--border); }
+.ka-qrow:last-child { border-bottom: 0; }
+.ka-qrow:hover { background: var(--bg-subtle); }
+.ka-qrow__main { min-width: 0; }
+.ka-qrow__title { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.ka-qrow__code { padding: 0; border: 0; background: none; font: 600 15px/22px var(--ka-font); color: var(--brand-ink); text-align: left; cursor: pointer; overflow-wrap: anywhere; }
+.ka-qrow__code:hover { text-decoration: underline; text-underline-offset: 2px; }
+.ka-qrow__code--plain { color: var(--ink); cursor: default; }
+.ka-qrow__code--plain:hover { text-decoration: none; }
+.ka-qrow__meta { margin: 2px 0 0; font-size: 14px; line-height: 22px; color: var(--ink-muted); overflow-wrap: anywhere; }
+.ka-qrow__meta--late { margin: 0; font-size: 13px; color: var(--danger); }
+.ka-qrow__amount { font: 600 16px/26px var(--ka-font); text-align: right; white-space: nowrap; }
+@media (max-width: 639px) {
+  .ka-qrow { grid-template-columns: minmax(0, 1fr) auto; }
+  .ka-qrow > .ka-btn { grid-column: 1 / -1; width: 100%; }
+}
+
 /* ---------- Popover, menu, filter chip ---------- */
 .ka-popover {
   position: fixed; z-index: 75; display: flex; flex-direction: column; max-width: calc(100vw - 16px); max-height: min(420px, calc(100dvh - 16px));

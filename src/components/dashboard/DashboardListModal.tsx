@@ -1,140 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Modal from "@/components/Modal";
-import Pagination from "@/components/Pagination";
-import StatusBadge, { type BadgeTone } from "@/components/StatusBadge";
+import StatusBadge from "@/components/StatusBadge";
 import LoadErrorBanner, { loadErrorText } from "@/components/LoadErrorBanner";
-import RecordDetail, {
-  OPENABLE_KINDS,
-} from "@/components/dashboard/RecordDetail";
+import CustomSelect from "@/components/CustomSelect";
+import RecordDetail, { OPENABLE_KINDS } from "@/components/dashboard/RecordDetail";
+import { statusView } from "@/components/dashboard/listStatus";
 import DashboardModel from "@/models/dashboard";
-import { formatThaiDate } from "@/lib/date-format";
-import {
-  CONTACT_REQUEST_STATUS_TONE,
-  INVOICE_SUPPLIER_STATUS_TONE,
-  PURCHASE_ORDER_STATUS_TONE,
-  SALE_ORDER_STATUS_TONE,
-  STORE_CANCELLATION_STATUS_TONE,
-  STORE_PICKUP_STATUS_TONE,
-} from "@/lib/status-tones";
-import { INVOICE_STATUS_LABELS } from "@/types/invoice-supplier";
+import { formatThaiDateTime, toDateValue } from "@/lib/date-format";
 import type {
   DashboardList,
   DashboardListKey,
-  DashboardListKind,
   DashboardListRow,
   StockFilter,
   StockStatusFilter,
 } from "@/types/dashboard";
-import CustomSelect from '@/components/CustomSelect';
 
 const dashboardModel = new DashboardModel();
 
 // A refund is negative: "-฿120.00", not "฿-120.00".
 const baht = (value: number) =>
   `${value < 0 ? "-" : ""}฿${new Intl.NumberFormat("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(value))}`;
+const count = (value: number) => new Intl.NumberFormat("th-TH").format(value);
 
-// The statuses these lists can hold, in words and tone, by what the row is (the
-// same word can mean different things: "pending" of an order or of a job).
-const STATUS_VIEWS: Partial<
-  Record<DashboardListKind, Record<string, { label: string; tone: BadgeTone }>>
-> = {
-  sale_order: {
-    pending: { label: "รออนุมัติ", tone: SALE_ORDER_STATUS_TONE.pending },
-    approved: { label: "อนุมัติแล้ว", tone: SALE_ORDER_STATUS_TONE.approved },
-    partial: { label: "ชำระบางส่วน", tone: SALE_ORDER_STATUS_TONE.partial },
-    paid: { label: "ชำระแล้ว", tone: SALE_ORDER_STATUS_TONE.paid },
-    cancelled: { label: "ยกเลิก", tone: SALE_ORDER_STATUS_TONE.cancelled },
-    partially_returned: {
-      label: "คืนสินค้าบางส่วน",
-      tone: SALE_ORDER_STATUS_TONE.partially_returned,
-    },
-    returned: { label: "คืนสินค้าแล้ว", tone: SALE_ORDER_STATUS_TONE.returned },
-  },
-  payment_receipt: {
-    paid: { label: "ชำระแล้ว", tone: "success" },
-    refunded: { label: "คืนเงินแล้ว", tone: "warning" },
-  },
-  // Stock of a variant by the remaining quantity of all lots (TASK-0161).
-  product_variant: {
-    out: { label: "หมด", tone: "danger" },
-    low: { label: "เหลือน้อย", tone: "warning" },
-    normal: { label: "ปกติ", tone: "success" },
-  },
-  purchase_order: {
-    pending: { label: "รออนุมัติ", tone: PURCHASE_ORDER_STATUS_TONE.pending },
-    active: {
-      label: "อนุมัติแล้ว รอรับสินค้า",
-      tone: PURCHASE_ORDER_STATUS_TONE.active,
-    },
-    partial: {
-      label: "รับสินค้าบางส่วน",
-      tone: PURCHASE_ORDER_STATUS_TONE.partial,
-    },
-  },
-  // The Store work queues send why the order is listed rather than its own
-  // status. Pickup, shipping and an attempt in flight use the order page's
-  // words; the refund reasons say what staff have to do (TASK-0089).
-  store_order: {
-    awaiting_review: { label: "รอตรวจ", tone: "warning" },
-    paid: { label: "ชำระแล้ว", tone: "success" },
-    cancellation_pending: {
-      label: "รอพิจารณา",
-      tone: STORE_CANCELLATION_STATUS_TONE.pending,
-    },
-    refund_failed: { label: "คืนไม่สำเร็จ", tone: "danger" },
-    refund_transfer_due: { label: "ต้องโอนคืน", tone: "warning" },
-    shipping_overpaid: { label: "ค่าส่งจ่ายเกิน", tone: "warning" },
-    refund_reversal_pending: {
-      label: "คืนแล้ว รอปิดคำสั่งซื้อ",
-      tone: "warning",
-    },
-    // Nothing asks the gateway again by itself: staff press "ลองคืนเงินอีกครั้ง".
-    refund_retry_due: { label: "รอผล กดตรวจอีกครั้ง", tone: "warning" },
-    refund_account_required: { label: "รอลูกค้าแจ้งบัญชี", tone: "warning" },
-    refund_processing: { label: "กำลังส่งคำขอคืนเงิน", tone: "info" },
-    pickup_overdue: {
-      label: "เกินกำหนดรับ",
-      tone: STORE_PICKUP_STATUS_TONE.overdue,
-    },
-    pickup_pending_review: {
-      label: "รอพิจารณากรณีไม่รับสินค้า",
-      tone: STORE_PICKUP_STATUS_TONE.pending_review,
-    },
-    shipping_awaiting_payment: { label: "รอลูกค้าชำระ", tone: "warning" },
-    shipping_pending_review: {
-      label: "รอพิจารณา (ครบกำหนดเก็บสินค้า)",
-      tone: "danger",
-    },
-  },
-  contact_request: {
-    new: { label: "ใหม่", tone: CONTACT_REQUEST_STATUS_TONE.new },
-  },
-  job_order: {
-    pending: { label: "รอดำเนินการ", tone: "warning" },
-    in_progress: { label: "กำลังผลิต", tone: "info" },
-    completed: { label: "ผลิตเสร็จแล้ว", tone: "success" },
-    cancelled: { label: "ยกเลิกการผลิต", tone: "danger" },
-  },
-  invoice_supplier: {
-    pending: {
-      label: INVOICE_STATUS_LABELS.pending,
-      tone: INVOICE_SUPPLIER_STATUS_TONE.pending,
-    },
-    partial: {
-      label: INVOICE_STATUS_LABELS.partial,
-      tone: INVOICE_SUPPLIER_STATUS_TONE.partial,
-    },
-  },
-};
-
-const statusView = (kind: DashboardListKind, status: string) =>
-  STATUS_VIEWS[kind]?.[status] ?? {
-    label: status,
-    tone: "neutral" as BadgeTone,
-  };
+// The modal answers "what needs me first"; the full list lives on the page the footer links to.
+const SHOWN = 5;
+// Rows fetched per request, the API's maximum; search looks through these.
+const FETCH = 50;
+const DAY = 24 * 60 * 60 * 1000;
 
 export interface OpenList {
   key: DashboardListKey;
@@ -143,6 +38,14 @@ export interface OpenList {
   href: string;
   /** What the date column means for this list (target date, due date, ...). */
   dateLabel?: string;
+  /** Why the rows are listed, under the title: "ลูกค้าชำระเงินหลังหมดเวลาจอง ต้องตรวจก่อนยืนยัน". */
+  reason?: string;
+  /** `danger` for work at risk now; sets the header icon. */
+  tone?: "danger" | "warning" | "info";
+  /** Work waiting on staff: the rows waiting longest come first, with how long they have waited. */
+  oldestFirst?: boolean;
+  /** The verb on each row's button, such as "ตรวจสอบ" or "อนุมัติ"; it opens the record. */
+  rowAction?: string;
   /** The stock list's conditions, the same as the card that opened it; only `stock_variants` has them. */
   stock?: {
     filter: StockFilter;
@@ -160,6 +63,36 @@ const STOCK_STATUS_OPTIONS: { value: StockStatusFilter | ""; label: string }[] =
   { value: "normal", label: "ปกติ" },
 ];
 
+// The page each list belongs to, for the footer's "ไปหน้า…" button.
+const PAGE_NAMES: Record<string, string> = {
+  "/admin/store-fulfillment": "คำสั่งซื้อหน้าร้าน",
+  "/admin/sale-orders": "ใบขาย",
+  "/admin/purchase-orders": "ใบสั่งซื้อ",
+  "/admin/contact-requests": "คำขอติดต่อกลับ",
+  "/admin/job-orders": "งานผลิต",
+  "/admin/payment-receipts": "รับชำระ",
+  "/admin/invoice-supplier": "ใบแจ้งหนี้ผู้จำหน่าย",
+  "/admin/purchase-receipt": "ใบรับสินค้า",
+  "/admin/products": "รายการสินค้า",
+  "/admin/materials": "วัตถุดิบ",
+};
+
+const ICONS = {
+  danger: "M12 4l9 16H3zM12 10v4M12 17h.01",
+  warning: "M7 3h7l4 4v14H7zM14 3v4h4M10 12h5M10 16h5",
+  info: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v5M12 8h.01",
+};
+
+const waitedText = (date: string | null, now: number) => {
+  const at = toDateValue(date)?.getTime();
+  if (at === undefined || Number.isNaN(at)) return null;
+  const days = Math.floor((now - at) / DAY);
+  return days >= 1 ? `รอ ${count(days)} วัน` : null;
+};
+
+const byOldest = (a: DashboardListRow, b: DashboardListRow) =>
+  (toDateValue(a.date)?.getTime() ?? Infinity) - (toDateValue(b.date)?.getTime() ?? Infinity);
+
 interface DashboardListModalProps {
   list: OpenList;
   onClose: () => void;
@@ -168,54 +101,46 @@ interface DashboardListModalProps {
 }
 
 /**
- * The rows behind one Dashboard number. The same source as the number, so the
- * total here is the number on the card. Rows are fetched when this opens, and a
- * row opens its own detail view on top when one exists.
+ * The rows behind one Dashboard number, as cards: the 5 that need attention first, a search
+ * when there are more, and a link to the page that holds the whole list. No page numbers here.
  */
-export default function DashboardListModal({
-  list,
-  onClose,
-  onChanged,
-}: DashboardListModalProps) {
-  const [page, setPage] = useState(1);
-  const [result, setResult] = useState<DashboardList | null>(null);
+export default function DashboardListModal({ list, onClose, onChanged }: DashboardListModalProps) {
+  const [result, setResult] = useState<{ rows: DashboardListRow[]; total: number; amountTotal?: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [detail, setDetail] = useState<DashboardListRow | null>(null);
+  const [query, setQuery] = useState("");
+  const [now] = useState(() => Date.now());
   // The stock list's status can be changed here; the category and search stay the card's.
-  const [stockStatus, setStockStatus] = useState<StockStatusFilter | "">(
-    list.stock?.status ?? "",
-  );
+  const [stockStatus, setStockStatus] = useState<StockStatusFilter | "">(list.stock?.status ?? "");
   const stockFilter = list.stock?.filter;
+  const isStock = list.key === "stock_variants";
 
-  // Only the newest request may fill the list, so a slow page 1 cannot
-  // overwrite the page 3 that was asked for after it.
+  // Only the newest request may fill the list.
   const latestRequest = useRef(0);
 
   const load = useCallback(async () => {
     const request = ++latestRequest.current;
     setIsLoading(true);
+    const extra = isStock
+      ? {
+          ...(stockFilter?.category_id !== undefined ? { category_id: stockFilter.category_id } : {}),
+          ...(stockFilter?.q ? { q: stockFilter.q } : {}),
+          ...(stockStatus ? { status: stockStatus } : {}),
+        }
+      : {};
     try {
-      const loaded = await dashboardModel.getList(
-        list.key,
-        page,
-        10,
-        list.key === "stock_variants"
-          ? {
-              ...(stockFilter?.category_id !== undefined ? { category_id: stockFilter.category_id } : {}),
-              ...(stockFilter?.q ? { q: stockFilter.q } : {}),
-              ...(stockStatus ? { status: stockStatus } : {}),
-            }
-          : {},
-      );
-      if (request !== latestRequest.current) return;
-      // Rows were changed from a detail view and the page asked for is now past
-      // the end: show the last page rather than "no rows" beside a total.
-      if (loaded.data.length === 0 && loaded.meta.total > 0 && page > loaded.meta.last_page) {
-        setPage(loaded.meta.last_page);
-        return;
+      const first: DashboardList = await dashboardModel.getList(list.key, 1, FETCH, extra);
+      let rows = first.data;
+      // A long queue: its oldest rows sit on the last page whichever way the API sorts it,
+      // so take both ends and sort them here.
+      if (list.oldestFirst && first.meta.last_page > 1) {
+        const last = await dashboardModel.getList(list.key, first.meta.last_page, FETCH, extra);
+        rows = [...rows, ...last.data];
       }
-      setResult(loaded);
+      if (request !== latestRequest.current) return;
+      if (list.oldestFirst) rows = [...rows].sort(byOldest);
+      setResult({ rows, total: first.meta.total, amountTotal: first.amount_total });
       setError(null);
     } catch (loadError) {
       if (request !== latestRequest.current) return;
@@ -223,22 +148,43 @@ export default function DashboardListModal({
     } finally {
       if (request === latestRequest.current) setIsLoading(false);
     }
-  }, [list.key, page, stockFilter?.category_id, stockFilter?.q, stockStatus]);
+  }, [isStock, list.key, list.oldestFirst, stockFilter?.category_id, stockFilter?.q, stockStatus]);
 
   useEffect(() => {
     void load();
   }, [load]);
 
-  const rows = result?.data ?? [];
-  const total = result?.meta.total;
-  // Columns that no row has a value for (a stock list has only names) are left out.
-  const hasParty = rows.some((row) => row.party);
-  const hasDate = rows.some((row) => row.date);
-  const hasAmount = rows.some((row) => row.amount !== null);
-  const hasStatus = rows.some((row) => row.status);
-  // Only the stock list says how many are left, and in which color and size.
-  const hasStock = rows.some((row) => row.remain_qty !== undefined);
-  const isStock = list.key === "stock_variants";
+  const total = result?.total ?? 0;
+  const searchable = total > SHOWN;
+  const matches = useMemo(() => {
+    const rows = result?.rows ?? [];
+    const words = query.trim().toLowerCase();
+    if (!words) return rows;
+    return rows.filter((row) =>
+      [row.code, row.title, row.party, row.product_name].some((value) => value?.toLowerCase().includes(words)),
+    );
+  }, [result, query]);
+  const shown = matches.slice(0, SHOWN);
+  const pageName = PAGE_NAMES[list.href] ?? "รายการ";
+  const tone = list.tone ?? "warning";
+
+  const subtitle =
+    result === null
+      ? list.reason
+      : [
+          `${count(total)} รายการ`,
+          result.amountTotal === undefined ? null : `รวม ${baht(result.amountTotal)}`,
+          list.reason ?? (list.oldestFirst ? "เรียงจากรอนานที่สุด" : null),
+        ]
+          .filter(Boolean)
+          .join(" · ");
+
+  const footerNote =
+    result === null || total === 0
+      ? ""
+      : total <= SHOWN
+        ? `แสดงครบ ${count(total)} รายการ`
+        : `แสดง ${count(shown.length)} จาก ${count(total)} · รายการที่เหลือดูในหน้า${pageName}`;
 
   return (
     <>
@@ -246,191 +192,100 @@ export default function DashboardListModal({
         isOpen
         onClose={onClose}
         title={list.title}
-        description={
-          total === undefined
-            ? undefined
-            : `ทั้งหมด ${new Intl.NumberFormat("th-TH").format(total)} รายการ${
-                result?.amount_total === undefined
-                  ? ""
-                  : ` · รวม ${baht(result.amount_total)}`
-              }`
+        description={subtitle}
+        icon={
+          <svg fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+            <path d={ICONS[tone]} />
+          </svg>
         }
-        size="xl"
+        iconTone={tone}
+        size="list"
         footer={
           <>
-            <Link href={list.href} className="ka-btn">
-              เปิดหน้ารายการ
-            </Link>
-            <button
-              type="button"
-              className="ka-btn ka-btn--primary"
-              onClick={onClose}
-            >
+            {footerNote && <span className="ka-modal__note numeric">{footerNote}</span>}
+            <button type="button" className="ka-btn" onClick={onClose}>
               ปิด
             </button>
+            <Link href={list.href} className="ka-btn ka-btn--primary">
+              {total > SHOWN ? `ดูทั้ง ${count(total)} รายการ` : `ไปหน้า${pageName}`}
+              <svg fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </Link>
           </>
         }
       >
-        <div className="space-y-4">
+        <div className="grid gap-3">
           <LoadErrorBanner message={error} onRetry={() => void load()} />
 
           {isStock && (
-            <div className="space-y-2">
+            <div className="grid gap-2">
               <div className="max-w-xs">
-                <label htmlFor="stock-status" className="mb-1 block text-[13px] font-medium text-[var(--ink)]">
+                <label htmlFor="stock-status" className="ka-label mb-1 block">
                   สถานะสต็อก
                 </label>
                 <CustomSelect
                   id="stock-status"
                   value={stockStatus}
-                  onChange={(value) => {
-                    setStockStatus(value as StockStatusFilter | "");
-                    setPage(1);
-                  }}
-                  options={STOCK_STATUS_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
+                  onChange={(value) => setStockStatus(value as StockStatusFilter | "")}
+                  options={STOCK_STATUS_OPTIONS}
                 />
               </div>
-              <p className="text-[13px] text-[var(--ink-muted)]">
+              <p className="ka-todo__cap">
                 หมวดหมู่: {list.stock?.categoryName ?? (stockFilter?.category_id ? `#${stockFilter.category_id}` : "ทั้งหมด")}
                 {stockFilter?.q ? ` · ค้นหา: ${stockFilter.q}` : ""} · จำนวนคงเหลือรวมทุกล็อต (ชิ้น) ไม่ใช่จำนวนที่ซื้อออนไลน์ได้
               </p>
             </div>
           )}
 
-          {isLoading && !result && (
-            <p className="text-[14px] text-[var(--ink-muted)]">กำลังโหลด...</p>
-          )}
-
-          {result && rows.length === 0 && !error && (
-            <p className="text-[14px] text-[var(--ink-muted)]">ไม่มีรายการ</p>
-          )}
-
-          {rows.length > 0 && (
-            <div className="ka-table-scroll">
-              <table className="ka-table">
-                <thead>
-                  <tr>
-                    <th scope="col">รายการ</th>
-                    {/* On a phone the color and size sit under the name, so the quantity and status stay in view. */}
-                    {hasStock && (
-                      <th scope="col" className="hidden sm:table-cell">
-                        สี
-                      </th>
-                    )}
-                    {hasStock && (
-                      <th scope="col" className="hidden sm:table-cell">
-                        ขนาด
-                      </th>
-                    )}
-                    {hasStock && (
-                      <th scope="col" className="text-right">
-                        คงเหลือ<span className="hidden sm:inline"> (ชิ้น)</span>
-                      </th>
-                    )}
-                    {hasParty && <th scope="col">ผู้เกี่ยวข้อง</th>}
-                    {hasDate && (
-                      <th scope="col">{list.dateLabel ?? "วันที่"}</th>
-                    )}
-                    {hasAmount && (
-                      <th scope="col" className="text-right">
-                        ยอดเงิน
-                      </th>
-                    )}
-                    {hasStatus && <th scope="col">สถานะ</th>}
-                    <th scope="col" className="hidden sm:table-cell">
-                      <span className="sr-only">ดูรายละเอียด</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row) => (
-                    <tr key={row.id}>
-                      <td className={`${hasStock ? "min-w-[8rem]" : "min-w-[10rem]"} break-words`}>
-                        {OPENABLE_KINDS.includes(row.kind) ? (
-                          // The name opens the record too, so it stays reachable on a narrow screen
-                          // where the action column has scrolled out of view.
-                          <button
-                            type="button"
-                            className="text-left font-medium text-[var(--brand-ink)] underline-offset-2 hover:underline"
-                            onClick={() => setDetail(row)}
-                          >
-                            {row.code ?? row.title ?? "-"}
-                          </button>
-                        ) : (
-                          <span className="font-medium text-[var(--ink)]">
-                            {row.code ?? row.title ?? "-"}
-                          </span>
-                        )}
-                        {row.code && row.title && row.title !== row.code && (
-                          <span className="block text-[13px] text-[var(--ink-muted)]">
-                            {row.title}
-                          </span>
-                        )}
-                        {row.remain_qty !== undefined && (
-                          <span className="block text-[13px] text-[var(--ink-muted)] sm:hidden">
-                            {[row.color_name, row.size_name].filter(Boolean).join(" · ") || "-"}
-                          </span>
-                        )}
-                      </td>
-                      {hasStock && <td className="hidden break-words sm:table-cell">{row.color_name ?? "-"}</td>}
-                      {hasStock && <td className="hidden break-words sm:table-cell">{row.size_name ?? "-"}</td>}
-                      {hasStock && (
-                        <td className="whitespace-nowrap text-right font-medium tabular-nums">
-                          {row.remain_qty === undefined
-                            ? "-"
-                            : new Intl.NumberFormat("th-TH").format(row.remain_qty)}
-                        </td>
-                      )}
-                      {hasParty && (
-                        <td className="break-words">{row.party ?? "-"}</td>
-                      )}
-                      {hasDate && (
-                        <td className="whitespace-nowrap">
-                          {row.date ? formatThaiDate(row.date) : "-"}
-                        </td>
-                      )}
-                      {hasAmount && (
-                        <td className="whitespace-nowrap text-right">
-                          {row.amount === null ? "-" : baht(row.amount)}
-                        </td>
-                      )}
-                      {hasStatus && (
-                        <td>
-                          {row.status ? (
-                            <StatusBadge
-                              tone={statusView(row.kind, row.status).tone}
-                            >
-                              {statusView(row.kind, row.status).label}
-                            </StatusBadge>
-                          ) : (
-                            "-"
-                          )}
-                        </td>
-                      )}
-                      <td className="hidden text-right sm:table-cell">
-                        {OPENABLE_KINDS.includes(row.kind) && (
-                          <button
-                            type="button"
-                            className="ka-btn ka-btn--ghost"
-                            aria-label={`ดูรายละเอียด ${row.code ?? row.title ?? ""}`.trim()}
-                            onClick={() => setDetail(row)}
-                          >
-                            ดูรายละเอียด
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {searchable && (
+            <div className="ka-input-wrap">
+              <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="search"
+                role="searchbox"
+                className="ka-input"
+                aria-label={`ค้นหาใน${list.title}`}
+                placeholder="ค้นหาเลขเอกสารหรือชื่อลูกค้า"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+              />
             </div>
           )}
 
-          <Pagination
-            meta={result?.meta ?? null}
-            currentPage={page}
-            onPageChange={setPage}
-          />
+          {isLoading && !result && (
+            <div className="ka-qlist" aria-busy="true">
+              {Array.from({ length: 3 }, (_, index) => (
+                <div key={index} className="ka-qrow" aria-hidden="true">
+                  <span className="ka-skel ka-skel--title" />
+                  <span className="ka-skel" style={{ width: "60%" }} />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {result && shown.length === 0 && !error && (
+            <div className="ka-empty">
+              <p className="text-base font-semibold text-[var(--ink)]">
+                {query ? "ไม่พบรายการที่ตรงกับคำค้นหา" : "ไม่มีรายการ"}
+              </p>
+              {query && (
+                <button type="button" className="ka-btn ka-btn--sm" onClick={() => setQuery("")}>
+                  ล้างคำค้นหา
+                </button>
+              )}
+            </div>
+          )}
+
+          {shown.length > 0 && (
+            <ul className="ka-qlist" aria-label={list.title}>
+              {shown.map((row) => (
+                <ListRow key={row.id} row={row} list={list} now={now} onOpen={() => setDetail(row)} />
+              ))}
+            </ul>
+          )}
         </div>
       </Modal>
 
@@ -448,5 +303,55 @@ export default function DashboardListModal({
         />
       )}
     </>
+  );
+}
+
+function ListRow({ row, list, now, onOpen }: { row: DashboardListRow; list: OpenList; now: number; onOpen: () => void }) {
+  const openable = OPENABLE_KINDS.includes(row.kind);
+  const name = row.code ?? row.title ?? "-";
+  const status = row.status ? statusView(row.kind, row.status) : null;
+  const isStockRow = row.remain_qty !== undefined;
+  const meta = isStockRow
+    ? [row.color_name, row.size_name].filter(Boolean).join(" · ")
+    : [
+        row.code && row.title && row.title !== row.code ? row.title : null,
+        row.party,
+        row.date ? formatThaiDateTime(row.date) : null,
+        row.kind === "store_order" ? "หน้าร้านออนไลน์" : null,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+  const waited = list.oldestFirst ? waitedText(row.date, now) : null;
+
+  return (
+    <li className="ka-qrow">
+      <div className="ka-qrow__main">
+        <div className="ka-qrow__title">
+          {openable ? (
+            <button type="button" className="ka-qrow__code numeric" onClick={onOpen}>
+              {name}
+            </button>
+          ) : (
+            <span className="ka-qrow__code ka-qrow__code--plain numeric">{name}</span>
+          )}
+          {status && <StatusBadge tone={status.tone}>{status.label}</StatusBadge>}
+        </div>
+        {meta && <p className="ka-qrow__meta">{meta}</p>}
+        {waited && <p className="ka-qrow__meta ka-qrow__meta--late">{waited}</p>}
+      </div>
+      <div className="ka-qrow__amount numeric">
+        {isStockRow ? `${count(row.remain_qty as number)} ชิ้น` : row.amount === null ? "" : baht(row.amount)}
+      </div>
+      {openable && (
+        <button
+          type="button"
+          className="ka-btn ka-btn--sm"
+          aria-label={`${list.rowAction ?? "ดูรายละเอียด"} ${name}`}
+          onClick={onOpen}
+        >
+          {list.rowAction ?? "ดูรายละเอียด"}
+        </button>
+      )}
+    </li>
   );
 }

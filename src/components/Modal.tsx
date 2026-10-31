@@ -29,6 +29,9 @@ interface ModalProps {
    */
   guardUnsaved?: boolean;
   dirty?: boolean;
+  /** A status icon before the title, tinted by `iconTone`. */
+  icon?: ReactNode;
+  iconTone?: 'danger' | 'warning' | 'info' | 'success';
 }
 
 const sizeClasses: Record<ModalSize, string> = {
@@ -71,6 +74,8 @@ export default function Modal({
   placement = 'center',
   guardUnsaved = false,
   dirty,
+  icon,
+  iconTone = 'info',
 }: ModalProps) {
   const titleId = useId();
   const descriptionId = useId();
@@ -179,7 +184,8 @@ export default function Modal({
       >
         <div className="ka-modal__grab" aria-hidden="true" />
         <header className="ka-modal__head shrink-0 px-5 sm:px-6">
-          <div className="min-w-0">
+          {icon && <span className="ka-modal__icon" data-tone={iconTone}>{icon}</span>}
+          <div className="min-w-0 flex-1">
             <h2 id={titleId} className="ka-modal__title">{title}</h2>
             {description && <p id={descriptionId} className="ka-modal__desc">{description}</p>}
           </div>

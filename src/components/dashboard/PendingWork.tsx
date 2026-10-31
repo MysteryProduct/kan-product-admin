@@ -18,6 +18,10 @@ interface Item {
   urgent?: string;
   /** False for a count that is part of another row, or waits on the customer rather than on staff. */
   counted?: boolean;
+  /** Why the rows are listed, in the list's header; `hint` when left out. */
+  reason?: string;
+  /** The verb on each row of the list. */
+  rowAction?: string;
 }
 
 // Urgent work first, then the rest in the order the work usually moves. Each row opens the rows behind
@@ -28,6 +32,8 @@ const ITEMS: Item[] = [
     href: "/admin/store-fulfillment",
     title: "คำสั่งซื้อหน้าร้านที่รอตรวจ",
     hint: "ชำระเงินหลังหมดเวลา",
+    reason: "ลูกค้าชำระเงินหลังหมดเวลาจอง ต้องตรวจก่อนยืนยัน",
+    rowAction: "ตรวจสอบ",
     dateLabel: "วันที่สั่งซื้อ",
     urgent: "ต้องตรวจสอบ",
   },
@@ -36,6 +42,7 @@ const ITEMS: Item[] = [
     href: "/admin/store-fulfillment",
     title: "คำขอยกเลิกรอพิจารณา",
     hint: "พักส่งและส่งมอบไว้จนกว่าจะพิจารณา",
+    rowAction: "พิจารณา",
     dateLabel: "วันที่ขอยกเลิก",
     urgent: "รอพิจารณา",
   },
@@ -61,6 +68,7 @@ const ITEMS: Item[] = [
     href: "/admin/sale-orders",
     title: "ใบขายรออนุมัติ",
     hint: "ไม่นับใบที่รอลูกค้าจ่ายเงิน",
+    rowAction: "อนุมัติ",
     dateLabel: "วันที่สร้าง",
   },
   {
@@ -82,6 +90,8 @@ const ITEMS: Item[] = [
     href: "/admin/purchase-orders",
     title: "ใบสั่งซื้อรออนุมัติ",
     hint: "ดูใบสั่งซื้อ",
+    reason: "ใบสั่งซื้อที่ยังไม่ได้อนุมัติ",
+    rowAction: "อนุมัติ",
     dateLabel: "วันที่สั่งซื้อ",
   },
   {
@@ -152,6 +162,10 @@ export default function PendingWork({
                     title: item.title,
                     href: item.href,
                     dateLabel: item.dateLabel,
+                    reason: item.reason ?? item.hint,
+                    tone: item.urgent ? "danger" : "warning",
+                    oldestFirst: true,
+                    rowAction: item.rowAction,
                   })
                 }
                 className="ka-todo__row"
