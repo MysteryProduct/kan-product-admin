@@ -137,6 +137,7 @@ a.ka-pm__tile--count:hover, button.ka-pm__tile--count:hover { background: var(--
 .ka-pm__new { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 6px; border-radius: var(--radius-control); font: 600 14px/1 var(--ka-font); color: var(--brand-ink); text-decoration: none; }
 .ka-pm__new:hover { background: var(--bg-subtle); }
 .ka-pm__new svg { width: 16px; height: 16px; }
+.ka-pm__new-note { font-weight: 400; color: var(--ink-muted); }
 @media (max-width: 767px) { .ka-pm__new { min-height: var(--touch-target); } }
 
 /* ---------- Variant checklist (status) ---------- */

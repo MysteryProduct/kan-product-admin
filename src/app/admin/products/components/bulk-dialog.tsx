@@ -1,7 +1,6 @@
 'use client';
 
-import { KeyboardEvent, useRef, useState } from 'react';
-import Link from 'next/link';
+import { KeyboardEvent, useEffect, useRef, useState } from 'react';
 import Modal from '@/components/Modal';
 import ProductModel, { StorePolicyChange, StorePolicyState, VariantStatusValue } from '@/models/product';
 import type { Product, ProductVariant } from '@/types/product';
@@ -16,8 +15,10 @@ import {
   variantsOf,
 } from '@/lib/product-bulk';
 import { usePermissions } from '@/hooks/usePermissions';
+import CategoryModel from '@/models/category';
 
 const productModel = new ProductModel();
+const categoryModel = new CategoryModel();
 
 export type BulkMode = 'category' | 'policy' | 'status';
 
@@ -159,7 +160,7 @@ const variantName = (product: Product, variant: ProductVariant) =>
  * the review step is confirmed; a failed save keeps the choices and the
  * selection so it can be retried, and a second click while saving is ignored.
  */
-export default function BulkDialog({ mode, products, policies, categories, onClose, onSaved }: BulkDialogProps) {
+export default function BulkDialog({ mode, products, policies, categories: givenCategories, onClose, onSaved }: BulkDialogProps) {
   const { can } = usePermissions();
   const [step, setStep] = useState<'edit' | 'review'>('edit');
   const [categoryId, setCategoryId] = useState('');
@@ -175,6 +176,33 @@ export default function BulkDialog({ mode, products, policies, categories, onClo
   const [error, setError] = useState('');
   const savingRef = useRef(false);
   const categoryRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  // "สร้างหมวดหมู่ใหม่" opens the categories page in a new tab so this dialog keeps its
+  // choices; coming back to this tab reloads the list so a new category can be picked.
+  const [freshCategories, setFreshCategories] = useState<{ label: string; value: string }[] | null>(null);
+  const [awaitingNewCategory, setAwaitingNewCategory] = useState(false);
+  const categories = freshCategories ?? givenCategories;
+
+  useEffect(() => {
+    if (!awaitingNewCategory) return;
+    let active = true;
+    const reload = () => {
+      categoryModel
+        .getAllCategories()
+        .then((response) => {
+          if (active) {
+            setFreshCategories(response.data.map((c) => ({ label: c.category_name, value: String(c.category_id) })));
+          }
+        })
+        .catch(() => {
+          // The list as it was stays usable.
+        });
+    };
+    window.addEventListener('focus', reload);
+    return () => {
+      active = false;
+      window.removeEventListener('focus', reload);
+    };
+  }, [awaitingNewCategory]);
 
   const policyChange: StorePolicyChange = {};
   for (const field of POLICY_FIELDS) {
@@ -395,11 +423,19 @@ export default function BulkDialog({ mode, products, policies, categories, onClo
                       if (!current) setCategoryId(category.value);
                     }}
                     onKeyDown={(event) => {
-                      const index = pickableCategories.findIndex((c) => c.value === category.value);
-                      const next = arrowStep(event, Math.max(index, 0), pickableCategories.length, 'y');
-                      if (next === null || pickableCategories.length === 0) return;
+                      // Walk the list as shown, skipping the current category, so a key pressed
+                      // on the (mouse-focused) current card moves to its real neighbour.
+                      const count = shownCategories.length;
+                      const at = shownCategories.findIndex((c) => c.value === category.value);
+                      const step = arrowStep(event, at, count, 'y');
+                      if (step === null || pickableCategories.length === 0) return;
                       event.preventDefault();
-                      const target = pickableCategories[next];
+                      const back = event.key === 'ArrowUp' || event.key === 'End';
+                      let index = step;
+                      while (shownCategories[index].value === sharedCategoryId) {
+                        index = (index + (back ? -1 : 1) + count) % count;
+                      }
+                      const target = shownCategories[index];
                       setCategoryId(target.value);
                       categoryRefs.current.get(target.value)?.focus();
                     }}
@@ -413,12 +449,19 @@ export default function BulkDialog({ mode, products, policies, categories, onClo
               {shownCategories.length === 0 && <p className="ka-pm__cap">ไม่พบหมวดหมู่ “{categoryQuery.trim()}”</p>}
             </div>
             {can('categories', 'add') && (
-              <Link href="/admin/categories" className="ka-pm__new">
+              <a
+                href="/admin/categories"
+                target="_blank"
+                rel="noopener"
+                className="ka-pm__new"
+                onClick={() => setAwaitingNewCategory(true)}
+              >
                 <svg fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M12 5v14M5 12h14" />
                 </svg>
                 สร้างหมวดหมู่ใหม่
-              </Link>
+                <span className="ka-pm__new-note">(แท็บใหม่)</span>
+              </a>
             )}
             {categoryId && (
               <div className="ka-pm__summary ka-pm__flow">
