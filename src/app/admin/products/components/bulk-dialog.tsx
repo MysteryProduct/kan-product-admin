@@ -4,7 +4,7 @@ import { KeyboardEvent, useRef, useState } from 'react';
 import Link from 'next/link';
 import Modal from '@/components/Modal';
 import ProductModel, { StorePolicyChange, StorePolicyState, VariantStatusValue } from '@/models/product';
-import type { Product } from '@/types/product';
+import type { Product, ProductVariant } from '@/types/product';
 import {
   POLICY_LABELS,
   PreviewLine,
@@ -12,7 +12,6 @@ import {
   categoryPreview,
   policyPreview,
   statusPreview,
-  variantLabel,
   variantStatusOf,
   variantsOf,
 } from '@/lib/product-bulk';
@@ -47,6 +46,7 @@ const POLICY_TEXT: Record<keyof StorePolicyChange, { label: string; hint: string
   contact_enabled: { label: 'ขอติดต่อกลับได้', hint: 'เมื่อสินค้าหมด' },
 };
 const POLICY_LABEL_TEXT = new Map(POLICY_FIELDS.map((field) => [POLICY_LABELS[field], POLICY_TEXT[field].label]));
+const STATUS_VALUES = Object.keys(STATUS_LABELS) as VariantStatusValue[];
 const CATEGORY_SEARCH_FROM = 7;
 
 function errorText(error: unknown): string {
@@ -145,6 +145,15 @@ const POLICY_OPTIONS: SegmentOption<PolicyChoice>[] = [
   { value: 'on', label: 'เปิด', tone: 'on' },
   { value: 'off', label: 'ปิด', tone: 'off' },
 ];
+const STATUS_OPTIONS: SegmentOption<VariantStatusValue>[] = STATUS_VALUES.map((value) => ({
+  value,
+  label: STATUS_LABELS[value],
+  tone: value === 'active' ? 'on' : 'off',
+}));
+
+const variantName = (product: Product, variant: ProductVariant) =>
+  [product.product_name, variant.color?.color_name, variant.size?.size_name].filter(Boolean).join(' · ');
+
 /**
  * Edit, then review, then save, for one group command. Nothing is sent until
  * the review step is confirmed; a failed save keeps the choices and the
@@ -252,7 +261,11 @@ export default function BulkDialog({ mode, products, policies, categories, onClo
       ? changeCount > 0
         ? `เปลี่ยน ${changeCount} ค่า`
         : 'ยังไม่มีอะไรเปลี่ยน'
-      : '';
+      : mode === 'status'
+        ? variantIds.size > 0
+          ? `เลือก ${variantIds.size} แบบ`
+          : 'ยังไม่ได้เลือกแบบ'
+        : '';
 
   const confirmLabel = pending
     ? 'กำลังบันทึก…'
@@ -422,60 +435,52 @@ export default function BulkDialog({ mode, products, policies, categories, onClo
         )}
 
         {step === 'edit' && mode === 'status' && (
-          <div className="space-y-4">
-            <p className="text-sm text-[var(--ink-muted)]">
-              เลือกเฉพาะตัวเลือก (ขนาด/สี) ที่ต้องการเปลี่ยน ตัวเลือกอื่นของสินค้าเดียวกันและสวิตช์หน้าร้านไม่เปลี่ยนตาม
-            </p>
-            <div className="max-h-72 space-y-3 overflow-y-auto overscroll-contain pr-1">
-              {products.map((product) => (
-                <fieldset
-                  key={product.product_id}
-                  className="rounded-[var(--radius-control)] border border-[var(--border)] p-3"
-                >
-                  <legend className="px-1 text-sm font-semibold text-[var(--ink)] break-words">
-                    {product.product_name}
-                  </legend>
-                  {variantsOf(product).length === 0 && (
-                    <p className="text-sm text-[var(--ink-muted)]">สินค้านี้ไม่มีตัวเลือก</p>
-                  )}
-                  {variantsOf(product).map((variant) => {
-                    const id = variant.product_variant_id;
-                    if (!id) return null;
-                    return (
-                      <label key={id} className="flex min-h-11 items-center gap-3 text-sm">
+          <>
+            <ul className="ka-pm__vlist" aria-label="แบบสินค้าที่จะเปลี่ยนสถานะ">
+              {products.map((product) => {
+                const variants = variantsOf(product).filter((variant) => variant.product_variant_id);
+                if (variants.length === 0) {
+                  return (
+                    <li key={product.product_id} className="ka-pm__vnone">
+                      {product.product_name}: ไม่มีแบบสินค้า
+                    </li>
+                  );
+                }
+                return variants.map((variant) => {
+                  const id = variant.product_variant_id as string;
+                  const current = variantStatusOf(variant);
+                  return (
+                    <li key={id}>
+                      <label>
                         <input
                           type="checkbox"
                           className="ka-check"
                           checked={variantIds.has(id)}
                           onChange={(e) => toggleVariant(id, e.target.checked)}
                         />
-                        <span className="min-w-0 flex-1 break-words">{variantLabel(variant)}</span>
-                        <span className="text-[var(--ink-muted)]">{STATUS_LABELS[variantStatusOf(variant)]}</span>
+                        <span
+                          className="ka-pm__sw ka-pm__sw--sm"
+                          style={variant.color?.color_hex ? { background: variant.color.color_hex } : undefined}
+                          aria-hidden="true"
+                        />
+                        <span className="ka-pm__vtext">{variantName(product, variant)}</span>
+                        <span className={`ka-badge ka-badge--${current === 'active' ? 'success' : 'neutral'}`}>
+                          {STATUS_LABELS[current]}
+                        </span>
                       </label>
-                    );
-                  })}
-                </fieldset>
-              ))}
-            </div>
-            <fieldset className="ka-field">
-              <legend className="text-sm font-medium text-[var(--ink)]">
-                สถานะใหม่ของตัวเลือกที่เลือก ({variantIds.size} รายการ)
-              </legend>
-              <div className="flex flex-wrap gap-4">
-                {(['inactive', 'active'] as const).map((value) => (
-                  <label key={value} className="flex min-h-11 items-center gap-2 text-sm">
-                    <input
-                      type="radio"
-                      name="bulk-variant-status"
-                      checked={status === value}
-                      onChange={() => setStatus(value)}
-                    />
-                    {STATUS_LABELS[value]}
-                  </label>
-                ))}
+                    </li>
+                  );
+                });
+              })}
+            </ul>
+            <div className="ka-pm__prow">
+              <div>
+                <div className="ka-pm__pname">สถานะใหม่</div>
+                <div className="ka-pm__cap">ใช้กับแบบที่เลือก {variantIds.size} แบบ แบบอื่นและหน้าร้านไม่เปลี่ยนตาม</div>
               </div>
-            </fieldset>
-          </div>
+              <Segmented label="สถานะใหม่" value={status} options={STATUS_OPTIONS} onChange={setStatus} />
+            </div>
+          </>
         )}
 
         {step === 'review' && (

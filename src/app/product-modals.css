@@ -136,6 +136,14 @@ a.ka-pm__tile--count:hover, button.ka-pm__tile--count:hover { background: var(--
 .ka-pm__new svg { width: 16px; height: 16px; }
 @media (max-width: 767px) { .ka-pm__new { min-height: var(--touch-target); } }
 
+/* ---------- Variant checklist (status) ---------- */
+.ka-pm__vlist { max-height: 320px; overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 0; list-style: none; border: 1px solid var(--border); border-radius: var(--radius-card); }
+.ka-pm__vlist li + li { border-top: 1px solid var(--border); }
+.ka-pm__vlist label { position: relative; display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 8px 14px; cursor: pointer; }
+.ka-pm__vlist label:hover { background: color-mix(in srgb, var(--bg-subtle) 50%, var(--bg-surface)); }
+.ka-pm__vlist .ka-pm__vtext { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.ka-pm__vnone { padding: 12px 14px; font-size: 14px; color: var(--ink-muted); }
+
 /* ---------- Review lines ---------- */
 .ka-pm__lines { max-height: 320px; overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 0; list-style: none; border: 1px solid var(--border); border-radius: var(--radius-card); }
 .ka-pm__lines li { position: relative; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding: 10px 14px; font-size: 15px; line-height: 24px; }
