@@ -1,6 +1,7 @@
 'use client';
 
 import { KeyboardEvent, useRef, useState } from 'react';
+import Link from 'next/link';
 import Modal from '@/components/Modal';
 import ProductModel, { StorePolicyChange, StorePolicyState, VariantStatusValue } from '@/models/product';
 import type { Product } from '@/types/product';
@@ -15,7 +16,7 @@ import {
   variantStatusOf,
   variantsOf,
 } from '@/lib/product-bulk';
-import CustomSelect from '@/components/CustomSelect';
+import { usePermissions } from '@/hooks/usePermissions';
 
 const productModel = new ProductModel();
 
@@ -46,6 +47,7 @@ const POLICY_TEXT: Record<keyof StorePolicyChange, { label: string; hint: string
   contact_enabled: { label: 'ขอติดต่อกลับได้', hint: 'เมื่อสินค้าหมด' },
 };
 const POLICY_LABEL_TEXT = new Map(POLICY_FIELDS.map((field) => [POLICY_LABELS[field], POLICY_TEXT[field].label]));
+const CATEGORY_SEARCH_FROM = 7;
 
 function errorText(error: unknown): string {
   const response = (error as { response?: { data?: { message?: string | string[] } } })?.response;
@@ -149,8 +151,10 @@ const POLICY_OPTIONS: SegmentOption<PolicyChoice>[] = [
  * selection so it can be retried, and a second click while saving is ignored.
  */
 export default function BulkDialog({ mode, products, policies, categories, onClose, onSaved }: BulkDialogProps) {
+  const { can } = usePermissions();
   const [step, setStep] = useState<'edit' | 'review'>('edit');
   const [categoryId, setCategoryId] = useState('');
+  const [categoryQuery, setCategoryQuery] = useState('');
   const [policyChoice, setPolicyChoice] = useState<Record<keyof StorePolicyChange, PolicyChoice>>({
     published: 'keep',
     online_purchase: 'keep',
@@ -161,6 +165,7 @@ export default function BulkDialog({ mode, products, policies, categories, onClo
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const savingRef = useRef(false);
+  const categoryRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
   const policyChange: StorePolicyChange = {};
   for (const field of POLICY_FIELDS) {
@@ -217,6 +222,18 @@ export default function BulkDialog({ mode, products, policies, categories, onClo
       return next;
     });
 
+  // Category: the selected products' current categories, and the one they share if any.
+  const currentCategories = [...new Set(products.map((p) => p.category?.category_name || '-'))];
+  const sharedCategoryIds = new Set(products.map((p) => (p.category ? String(p.category.category_id) : '')));
+  const sharedCategoryId = sharedCategoryIds.size === 1 ? [...sharedCategoryIds][0] : '';
+  const shownCategories =
+    categories.length >= CATEGORY_SEARCH_FROM && categoryQuery.trim()
+      ? categories.filter((c) => c.label.toLowerCase().includes(categoryQuery.trim().toLowerCase()))
+      : categories;
+  const pickableCategories = shownCategories.filter((c) => c.value !== sharedCategoryId);
+  const categoryTabStop = pickableCategories.some((c) => c.value === categoryId)
+    ? categoryId
+    : pickableCategories[0]?.value;
 
   const changeCount = Object.keys(policyChange).length;
   const policySummary = POLICY_FIELDS.filter((field) => policyChoice[field] !== 'keep')
@@ -224,7 +241,11 @@ export default function BulkDialog({ mode, products, policies, categories, onClo
     .join(' · ');
 
   const description =
-    mode === 'policy' ? `ใช้กับสินค้าที่เลือก ${products.length} รายการ` : `${products.length} สินค้าที่เลือกในหน้านี้`;
+    mode === 'category'
+      ? products.length === 1
+        ? `${products[0].product_name} · หมวดปัจจุบัน: ${currentCategories[0]}`
+        : `${products.length} สินค้า · หมวดปัจจุบัน: ${currentCategories.join(', ')}`
+      : `ใช้กับสินค้าที่เลือก ${products.length} รายการ`;
 
   const editHint =
     mode === 'policy'
@@ -237,7 +258,9 @@ export default function BulkDialog({ mode, products, policies, categories, onClo
     ? 'กำลังบันทึก…'
     : error
       ? 'ลองบันทึกอีกครั้ง'
-      : `ยืนยันบันทึก ${lines.length} รายการ`;
+      : mode === 'category'
+        ? `ย้ายไป “${categoryName}”`
+        : `ยืนยันบันทึก ${lines.length} รายการ`;
 
   return (
     <Modal
@@ -323,22 +346,79 @@ export default function BulkDialog({ mode, products, policies, categories, onClo
         )}
 
         {step === 'edit' && mode === 'category' && (
-          <div className="ka-field">
-            <label htmlFor="bulk-category" className="text-sm font-medium text-[var(--ink)]">
-              หมวดหมู่ใหม่ของสินค้าที่เลือก
-            </label>
-            <CustomSelect
-              id="bulk-category"
-              value={categoryId}
-              onChange={(value) => setCategoryId(value)}
-              options={categories.map((category) => ({ value: category.value, label: category.label }))}
-              placeholder="เลือกหมวดหมู่"
-              disabled={pending}
-            />
-            <p className="text-[13px] text-[var(--ink-muted)]">
-              เปลี่ยนเฉพาะหมวดหมู่ ราคา รูป สูตร และรหัสสินค้าไม่เปลี่ยน
-            </p>
-          </div>
+          <>
+            {categories.length >= CATEGORY_SEARCH_FROM && (
+              <label className="ka-pm__search">
+                <svg fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4" />
+                </svg>
+                <span className="sr-only">ค้นหาหมวดหมู่</span>
+                <input
+                  type="search"
+                  value={categoryQuery}
+                  onChange={(event) => setCategoryQuery(event.target.value)}
+                  placeholder="ค้นหาหมวดหมู่"
+                />
+              </label>
+            )}
+            <div className="ka-pm__cats" role="radiogroup" aria-label="หมวดหมู่ใหม่">
+              {shownCategories.map((category) => {
+                const current = category.value === sharedCategoryId;
+                const checked = category.value === categoryId;
+                return (
+                  <button
+                    key={category.value}
+                    ref={(node) => {
+                      if (node) categoryRefs.current.set(category.value, node);
+                      else categoryRefs.current.delete(category.value);
+                    }}
+                    type="button"
+                    role="radio"
+                    className="ka-pm__cat"
+                    aria-checked={checked}
+                    aria-disabled={current || undefined}
+                    tabIndex={category.value === categoryTabStop ? 0 : -1}
+                    onClick={() => {
+                      if (!current) setCategoryId(category.value);
+                    }}
+                    onKeyDown={(event) => {
+                      const index = pickableCategories.findIndex((c) => c.value === category.value);
+                      const next = arrowStep(event, Math.max(index, 0), pickableCategories.length, 'y');
+                      if (next === null || pickableCategories.length === 0) return;
+                      event.preventDefault();
+                      const target = pickableCategories[next];
+                      setCategoryId(target.value);
+                      categoryRefs.current.get(target.value)?.focus();
+                    }}
+                  >
+                    <span className="ka-pm__rd" aria-hidden="true" />
+                    <span className="min-w-0 break-words">{category.label}</span>
+                    {current && <span className="ka-pm__cat-meta">หมวดปัจจุบัน</span>}
+                  </button>
+                );
+              })}
+              {shownCategories.length === 0 && <p className="ka-pm__cap">ไม่พบหมวดหมู่ “{categoryQuery.trim()}”</p>}
+            </div>
+            {can('categories', 'add') && (
+              <Link href="/admin/categories" className="ka-pm__new">
+                <svg fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                สร้างหมวดหมู่ใหม่
+              </Link>
+            )}
+            {categoryId && (
+              <div className="ka-pm__summary ka-pm__flow">
+                <span className="ka-pm__from">{currentCategories.join(', ')}</span>
+                <svg fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+                <span className="sr-only">เปลี่ยนเป็น</span>
+                <span className="ka-pm__to">{categoryName}</span>
+              </div>
+            )}
+            <p className="ka-pm__cap m-0">เปลี่ยนเฉพาะหมวดหมู่ ราคา รูป สูตร และรหัสสินค้าคงเดิม</p>
+          </>
         )}
 
         {step === 'edit' && mode === 'status' && (

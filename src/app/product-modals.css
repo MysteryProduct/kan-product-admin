@@ -118,6 +118,24 @@ a.ka-pm__tile--count:hover, button.ka-pm__tile--count:hover { background: var(--
   .ka-seg button { flex: 1; height: 40px; }
 }
 
+/* ---------- Category picker ---------- */
+.ka-pm__search { position: relative; display: flex; align-items: center; gap: var(--space-2); height: 40px; padding: 0 12px; border: 1px solid var(--border-control); border-radius: var(--radius-control); color: var(--ink-subtle); }
+.ka-pm__search:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.ka-pm__search svg { width: 16px; height: 16px; flex: none; }
+.ka-pm__search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: 400 15px/1 var(--ka-font); color: var(--ink); }
+.ka-pm__cats { display: flex; flex-direction: column; gap: var(--space-2); max-height: 320px; overflow-y: auto; overscroll-behavior: contain; padding: 2px; margin: -2px; }
+.ka-pm__cat { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 0 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg-surface); font: 400 16px/24px var(--ka-font); color: var(--ink); text-align: left; cursor: pointer; }
+.ka-pm__cat:hover { border-color: var(--border-control); background: color-mix(in srgb, var(--bg-subtle) 50%, var(--bg-surface)); }
+.ka-pm__cat[aria-checked="true"] { border-color: var(--action); box-shadow: inset 0 0 0 1px var(--action); background: var(--brand-soft); }
+.ka-pm__cat[aria-disabled="true"] { cursor: default; border-color: var(--border); background: var(--bg-subtle); color: var(--ink-muted); }
+.ka-pm__rd { width: 18px; height: 18px; flex: none; border: 2px solid var(--border-control); border-radius: 50%; }
+.ka-pm__cat[aria-checked="true"] .ka-pm__rd { border: 5px solid var(--action); }
+.ka-pm__cat-meta { margin-left: auto; font-size: 13px; color: var(--ink-muted); }
+.ka-pm__new { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 6px; border-radius: var(--radius-control); font: 600 14px/1 var(--ka-font); color: var(--brand-ink); text-decoration: none; }
+.ka-pm__new:hover { background: var(--bg-subtle); }
+.ka-pm__new svg { width: 16px; height: 16px; }
+@media (max-width: 767px) { .ka-pm__new { min-height: var(--touch-target); } }
+
 /* ---------- Review lines ---------- */
 .ka-pm__lines { max-height: 320px; overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 0; list-style: none; border: 1px solid var(--border); border-radius: var(--radius-card); }
 .ka-pm__lines li { position: relative; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; padding: 10px 14px; font-size: 15px; line-height: 24px; }
