@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useRef, useState, type KeyboardEvent } from 'react';
+import { Fragment, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import Popover from '@/components/Popover';
 
 // Outline icons (24px viewBox, stroke 2) for the commands a row menu repeats across pages.
@@ -13,6 +13,8 @@ const ICONS = {
   status: 'M4 12h16M14 6l6 6-6 6',
   delete: 'M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13',
   cancel: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM6 6l12 12',
+  key: 'M15 7a2 2 0 0 1 2 2m4 0a6 6 0 0 1-7.7 5.7L11 17H9v2H7v2H4a1 1 0 0 1-1-1v-2.6a1 1 0 0 1 .3-.7l6-6A6 6 0 1 1 21 9z',
+  logout: 'M15 16l4-4-4-4M19 12H9M12 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6',
 } as const;
 
 export interface RowMenuItem {
@@ -28,6 +30,9 @@ interface RowMenuProps {
   /** Names the menu for screen readers, e.g. "จัดการ PD00005 กระบอกน้ำสแตนเลส". */
   label: string;
   items: RowMenuItem[];
+  /** Replaces the "⋯" icon, e.g. the employee card at the foot of the sidebar; `triggerClassName` styles it. */
+  trigger?: ReactNode;
+  triggerClassName?: string;
 }
 
 const ITEM = 'button[role="menuitem"]:not(:disabled)';
@@ -36,7 +41,7 @@ const ITEM = 'button[role="menuitem"]:not(:disabled)';
  * The "⋯" menu at the end of a table row. Arrow keys move, Enter picks, Esc closes.
  * On phones it opens as an action sheet (Popover's bottom sheet).
  */
-export default function RowMenu({ label, items }: RowMenuProps) {
+export default function RowMenu({ label, items, trigger, triggerClassName }: RowMenuProps) {
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLButtonElement>(null);
 
@@ -59,17 +64,19 @@ export default function RowMenu({ label, items }: RowMenuProps) {
       <button
         ref={anchorRef}
         type="button"
-        className="ka-btn ka-btn--ghost ka-btn--sm ka-btn--icon"
+        className={triggerClassName ?? 'ka-btn ka-btn--ghost ka-btn--sm ka-btn--icon'}
         aria-label={label}
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
       >
-        <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="5" cy="12" r="1.8" />
-          <circle cx="12" cy="12" r="1.8" />
-          <circle cx="19" cy="12" r="1.8" />
-        </svg>
+        {trigger ?? (
+          <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="5" cy="12" r="1.8" />
+            <circle cx="12" cy="12" r="1.8" />
+            <circle cx="19" cy="12" r="1.8" />
+          </svg>
+        )}
       </button>
       <Popover open={open} onClose={() => setOpen(false)} anchorRef={anchorRef} title={label} align="end" width={220} role="menu">
         <div

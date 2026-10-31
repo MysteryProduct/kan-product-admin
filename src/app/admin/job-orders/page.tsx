@@ -405,6 +405,21 @@ export default function JobOrdersPage() {
 		setIsInsertOpen(true);
 	};
 
+	// "สร้างงานผลิต" on the Dashboard links here with ?create=1: open the drawer once, then drop the
+	// query so a reload or the back button does not open it again (TASK-0321 R6).
+	useEffect(() => {
+		if (!canAdd) return;
+		const url = new URL(window.location.href);
+		if (url.searchParams.get('create') !== '1') return;
+		const frame = requestAnimationFrame(() => {
+			url.searchParams.delete('create');
+			window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+			setCopySeed(null);
+			setIsInsertOpen(true);
+		});
+		return () => cancelAnimationFrame(frame);
+	}, [canAdd]);
+
 	return (
 		<div className="ka-page-body">
 			<div className="ka-ph">

@@ -6,8 +6,8 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { adminMenu } from '@/lib/admin-menu';
 
 const SearchIcon = () => (
-  <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+  <svg fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4" />
   </svg>
 );
 
@@ -103,7 +103,7 @@ export default function HeaderSearch() {
         type="button"
         aria-label="ค้นหาหน้า"
         onClick={focusField}
-        className="ka-btn ka-btn--ghost ka-btn--icon lg:hidden"
+        className="ka-btn ka-btn--ghost ka-btn--icon ka-header__search-icon"
       >
         <SearchIcon />
       </button>
@@ -114,7 +114,7 @@ export default function HeaderSearch() {
           if (!rootRef.current?.contains(event.relatedTarget as Node | null)) close(false);
         }}
       >
-        <div className="ka-input-wrap">
+        <div className="ka-header__field">
           <SearchIcon />
           <input
             ref={inputRef}
@@ -126,8 +126,7 @@ export default function HeaderSearch() {
             aria-activedescendant={results.length ? `${listId}-${active}` : undefined}
             aria-autocomplete="list"
             autoComplete="off"
-            placeholder="ค้นหาหน้า (Ctrl K)"
-            className="ka-input"
+            placeholder="ค้นหาหน้า"
             value={query}
             onChange={(event) => {
               setQuery(event.target.value);
@@ -135,6 +134,7 @@ export default function HeaderSearch() {
             }}
             onKeyDown={onKeyDown}
           />
+          <kbd className="ka-header__kbd" aria-hidden="true">Ctrl K</kbd>
         </div>
         {term && (
           <ul id={listId} role="listbox" aria-label="หน้าที่ตรงกับคำค้น" className="ka-search-results">

@@ -71,14 +71,15 @@ export default function Home() {
 
   return (
     <div className="flex-1">
-      <main className="ka-page-body">
+      <main className="ka-page-body ka-dash-page">
         <GreetingPanel
           name={user?.employee_username || 'ผู้ใช้'}
           waiting={pending?.waiting}
           urgent={pending?.urgent}
           links={[
-            ...(can('job_orders', 'add') ? [{ href: '/admin/job-orders', label: 'ไปหน้างานผลิต' }] : []),
-            ...(can('sale_orders', 'add') ? [{ href: '/admin/sale-orders', label: 'ไปหน้าใบสั่งขาย', primary: true }] : []),
+            ...(can('job_orders', 'add') ? [{ href: '/admin/job-orders?create=1', label: 'สร้างงานผลิต' }] : []),
+            // A sale order is made from a row of the ready-to-sell table (TASK-0321 D3).
+            ...(can('sale_orders', 'add') ? [{ href: '/admin/sale-orders#ready', label: 'สร้างใบขาย', primary: true }] : []),
           ]}
         />
 

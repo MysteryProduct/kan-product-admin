@@ -38,6 +38,9 @@ export default function GreetingPanel({ name, waiting, urgent, links }: Greeting
         <div className="ka-hello__actions">
           {links.map((link) => (
             <Link key={link.href} href={link.href} className={`ka-btn ${link.primary ? 'ka-btn--primary' : ''}`}>
+              <svg fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
               {link.label}
             </Link>
           ))}

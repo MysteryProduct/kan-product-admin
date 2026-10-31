@@ -8,6 +8,7 @@ import { useSidebar } from '@/contexts/SidebarContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { usePendingWork } from '@/hooks/usePendingWork';
 import { adminMenu, isMenuHrefActive, pendingCount, type AdminMenuItem } from '@/lib/admin-menu';
+import SidebarUser from '@/components/layout/SidebarUser';
 
 const isLeafActive = (href: string, pathname: string) => pathname === href || pathname.startsWith(`${href}/`);
 
@@ -57,7 +58,9 @@ export default function Sidebar() {
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     closeButtonRef.current?.focus();
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closeSidebarRef.current();
+      // A sheet or dialog opened from the drawer (the account menu, the password form) takes its own Esc.
+      if (event.key !== 'Escape' || document.querySelector('[role="dialog"][aria-modal="true"]')) return;
+      closeSidebarRef.current();
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => {
@@ -164,6 +167,7 @@ export default function Sidebar() {
             </div>
           ))}
         </nav>
+        <SidebarUser />
       </aside>
     </>
   );

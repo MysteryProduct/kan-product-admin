@@ -130,7 +130,7 @@ const SEGMENTS = [
   { id: "pending", label: "รอ", tone: "warning" },
   { id: "in_progress", label: "กำลังผลิต", tone: "info" },
   { id: "completed", label: "เสร็จ", tone: "success" },
-  { id: "cancelled", label: "ยกเลิก", tone: "neutral" },
+  { id: "cancelled", label: "ยกเลิก", tone: "danger" },
 ] as const;
 
 /**
@@ -200,7 +200,6 @@ export default function Operations({
           {jobs.overdue > 0 && (
             <Late label="เลยกำหนด" value={jobs.overdue} target={TARGETS.overdue} tone="danger" onOpen={onOpen} />
           )}
-          <p className="ka-panel__note">เลยกำหนด = ยังไม่เสร็จและเลยวันที่เป้าหมาย</p>
           <Link href="/admin/job-orders" className="ka-panel__link">เปิดบอร์ดงานผลิต →</Link>
         </section>
       )}
@@ -224,12 +223,15 @@ export default function Operations({
                     <NumberButton target={TARGETS.unpaid} value={invoices.unpaid} onOpen={onOpen} label="ใบแจ้งหนี้ค้างจ่าย" className="numeric" />
                   </dd>
                 </div>
-                <div>
-                  <dt>เลยกำหนดชำระ</dt>
-                  <dd>
-                    <NumberButton target={TARGETS.invoiceOverdue} value={invoices.overdue} onOpen={onOpen} label="ใบแจ้งหนี้เลยกำหนดชำระ" className="numeric" />
-                  </dd>
-                </div>
+                {/* Not on the artboard, whose figures are 0; an overdue invoice is never hidden (TASK-0321 D5). */}
+                {invoices.overdue > 0 && (
+                  <div>
+                    <dt>เลยกำหนดชำระ</dt>
+                    <dd>
+                      <NumberButton target={TARGETS.invoiceOverdue} value={invoices.overdue} onOpen={onOpen} label="ใบแจ้งหนี้เลยกำหนดชำระ" className="numeric" />
+                    </dd>
+                  </div>
+                )}
                 <div>
                   <dt>ใกล้ครบกำหนด (7 วัน)</dt>
                   <dd>

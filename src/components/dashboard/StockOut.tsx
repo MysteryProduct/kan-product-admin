@@ -19,8 +19,11 @@ interface StockOutCardProps {
   action?: { onClick: () => void; label: string };
 }
 
+// The card shows a few names; past this many it links to the whole list (TASK-0321 D4).
+const SHOWN = 3;
+
 function StockOutCard({ id, target, emptyText, total, names, onOpen, action }: StockOutCardProps) {
-  const hidden = total - names.length;
+  const shown = names.slice(0, SHOWN);
   return (
     <section className="ka-card ka-panel" aria-labelledby={id}>
       <div className="ka-panel__head">
@@ -35,27 +38,24 @@ function StockOutCard({ id, target, emptyText, total, names, onOpen, action }: S
         <p className="ka-panel__note">{emptyText}</p>
       ) : (
         <ul className="ka-outlist">
-          {names.map((name, index) => (
+          {shown.map((name, index) => (
             <li key={`${name}-${index}`}>
-              <span className="min-w-0 break-words font-semibold">{name}</span>
+              <span className="ka-outlist__name">{name}</span>
               <span className="ka-todo__cap">คงเหลือ 0</span>
             </li>
           ))}
-          {hidden > 0 && <li className="ka-todo__cap">และอีก {count(hidden)} รายการ</li>}
         </ul>
       )}
-      <div className="flex flex-wrap gap-2">
-        {total > 0 && (
-          <button type="button" aria-haspopup="dialog" className="ka-btn ka-btn--sm" onClick={() => onOpen(target)}>
-            ดูทั้งหมด
-          </button>
-        )}
-        {action && total > 0 && (
-          <button type="button" aria-haspopup="dialog" className="ka-btn ka-btn--primary ka-btn--sm" onClick={action.onClick}>
-            {action.label}
-          </button>
-        )}
-      </div>
+      {total > SHOWN && (
+        <button type="button" aria-haspopup="dialog" className="ka-panel__link ka-kpi__open" onClick={() => onOpen(target)}>
+          ดูทั้งหมด {count(total)} รายการ →
+        </button>
+      )}
+      {action && total > 0 && (
+        <button type="button" aria-haspopup="dialog" className="ka-btn ka-panel__action" onClick={action.onClick}>
+          {action.label}
+        </button>
+      )}
     </section>
   );
 }

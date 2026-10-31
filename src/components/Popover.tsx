@@ -90,6 +90,17 @@ export default function Popover({ open, onClose, anchorRef, title, children, foo
     };
   }, [open, isPhone, role, anchorRef]);
 
+  // On a phone the sheet's Modal records the focused element as its opener, but a menu has already moved
+  // focus to its first item by then, so that record is lost on close. Hand focus back to the anchor here.
+  useEffect(() => {
+    if (!open || !isPhone) return;
+    const anchor = anchorRef.current;
+    return () => {
+      const active = document.activeElement;
+      if ((!active || active === document.body) && anchor?.isConnected) anchor.focus();
+    };
+  }, [open, isPhone, anchorRef]);
+
   if (!open) return null;
 
   if (isPhone) {

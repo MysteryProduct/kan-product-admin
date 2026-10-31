@@ -378,16 +378,26 @@ export default function SaleOrderPage() {
         },
     ];
 
+    // The Dashboard's "สร้างใบขาย" opens this page at #ready: once the first load is done, bring the
+    // ready-to-sell table into view and move focus to its heading (TASK-0321 D3).
+    useEffect(() => {
+        if (loading || window.location.hash !== '#ready') return;
+        const heading = document.getElementById('ready-title');
+        if (!heading) return;
+        heading.scrollIntoView({ block: 'start' });
+        heading.focus({ preventScroll: true });
+    }, [loading]);
+
     return (
         <div className="bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
             <LoadErrorBanner message={readyItemsError} onRetry={() => void loadFetchSaleOrders()} className="mb-4" />
             <LoadErrorBanner message={listError} onRetry={() => void loadSaleOrders()} className="mb-4" />
             {loading && <LoadingSkeletonProps />}
             <div className="space-y-6">
-                {/* Section 1: Fetch Sale Orders */}
-                <section className="ka-card">
+                {/* Section 1: Fetch Sale Orders; "สร้างใบขาย" on the Dashboard links to #ready. */}
+                <section id="ready" className="ka-card scroll-mt-4">
                     <div className="border-b border-[var(--border)] p-4">
-                        <h2 className="text-lg font-semibold text-[var(--ink)]">
+                        <h2 id="ready-title" tabIndex={-1} className="text-lg font-semibold text-[var(--ink)]">
                             รายการสินค้าพร้อมขาย (สำหรับสร้างใบขายสินค้า)
                         </h2>
                         <p className="mt-1 text-sm text-[var(--ink-muted)]">
