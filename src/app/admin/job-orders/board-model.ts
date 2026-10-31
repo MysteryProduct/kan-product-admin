@@ -31,7 +31,7 @@ export const BOARD_COLUMNS: BoardColumn[] = [
 	{ key: 'pending', label: 'รอดำเนินการ', short: 'รอ', tone: 'warning', color: 'var(--warning)', empty: 'ยังไม่มีงานรอ สร้างงานใหม่ หรือลากการ์ดมาวาง' },
 	{ key: 'in_progress', label: 'กำลังผลิต', short: 'กำลังผลิต', tone: 'info', color: 'var(--info)', empty: 'ลากการ์ดมาที่นี่เมื่อเริ่มผลิต' },
 	{ key: 'completed', label: 'ผลิตเสร็จแล้ว', short: 'เสร็จ', tone: 'success', color: 'var(--success)', empty: 'ยังไม่มีงานที่เสร็จในช่วงนี้' },
-	{ key: 'cancelled', label: 'ยกเลิก', short: 'ยกเลิก', tone: 'neutral', color: 'var(--danger)', empty: 'ไม่มีงานที่ยกเลิก' },
+	{ key: 'cancelled', label: 'ยกเลิก', short: 'ยกเลิก', tone: 'neutral', color: 'var(--neutral)', empty: 'ไม่มีงานที่ยกเลิก' },
 ];
 
 export const WEEKDAY_LABELS = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];

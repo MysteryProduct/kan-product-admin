@@ -112,7 +112,7 @@ export default function JobOrdersPage() {
 		setResultDialog({ isOpen: true, status: 'error', message }),
 	);
 
-	const { assigneeOptions, filteredJobOrders, grouped } = useBoardFilters(jobOrders, deferredSearchText, selectedAssignee, selectedType);
+	const { assigneeOptions, filteredJobOrders, grouped } = useBoardFilters(jobOrders, deferredSearchText, selectedAssignee, selectedType, sortDirection);
 
 	const calendarDate = useMemo(() => parseCalendarMonth(calendarMonth), [calendarMonth]);
 
@@ -313,7 +313,6 @@ export default function JobOrdersPage() {
 					draggingJobId={draggingJobId}
 					onDrop={(column) => void handleDrop(column)}
 					onLoadMore={(column) => setVisibleByFilter({ key: filterKey, counts: { ...columnVisible, [column]: columnVisible[column] + PAGE_SIZE } })}
-					onCreate={() => openCreate(null)}
 					canAdd={canAdd}
 					canEdit={canEdit}
 					canDelete={canDelete}
