@@ -243,12 +243,14 @@ export default function ColorsPage() {
             </div>
           </>
         
-        {meta && meta.last_page > 1 && (
+        {meta && meta.total > 0 && (
           <div className="px-6 py-4 bg-[var(--bg-subtle)] border-t border-[var(--border)]">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-[var(--ink-muted)]">
+              {meta.last_page > 1 && (
+                <div className="text-sm text-[var(--ink-muted)]">
                 แสดง {((currentPage - 1) * 10) + 1}–{Math.min(currentPage * 10, meta.total)} จาก {meta.total} รายการ
-              </div>
+                </div>
+              )}
               <Pagination
                 currentPage={currentPage}
                 meta={meta}

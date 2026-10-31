@@ -861,6 +861,11 @@ function DataTableInner<T>(
           )}
         </div>
 
+        {!canShowPagination && !loading && (paginationMeta?.total ?? 0) > 0 && (paginationMeta?.last_page ?? 0) <= 1 && (
+          <p className={`ka-pager__all mt-3 numeric ${footerClassName}`}>
+            แสดงครบ {(paginationMeta?.total ?? 0).toLocaleString('th-TH')} รายการ
+          </p>
+        )}
         {canShowPagination && (
           <div className={`mt-3 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--bg-surface)] px-4 py-3 ${footerClassName}`}>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

@@ -12,7 +12,11 @@ const Pagination: React.FC<PaginationProps> = ({
     currentPage,
     onPageChange
 }) => {
-    if (!meta) return null;
+    if (!meta || meta.total === 0) return null;
+    // One page needs no page buttons; say that everything is shown instead.
+    if (meta.last_page <= 1) {
+        return <p className="ka-pager__all numeric">แสดงครบ {meta.total.toLocaleString('th-TH')} รายการ</p>;
+    }
 
     return (
         <nav aria-label="เปลี่ยนหน้า">
