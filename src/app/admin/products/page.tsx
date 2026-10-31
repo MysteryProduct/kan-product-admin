@@ -1,8 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import ProductForm from './components/insert';
-import UpdateProductForm from './components/update';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import ProductDetailModal from './components/detail';
 
 import ProductModel, { StorePolicyState } from '@/models/product';
@@ -12,7 +11,10 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import { DataTable, DataTableColumn } from '@/components/DataTable';
 import { usePermissions } from '@/hooks/usePermissions';
 import ActionResultDialog from '@/components/ActionResultDialog';
-import LoadingSkeletonProps from '@/components/LoadingSkeleton';
+import BulkBar, { BulkAction } from '@/components/BulkBar';
+import FilterChip from '@/components/FilterChip';
+import RowMenu from '@/components/RowMenu';
+import StatusBadge from '@/components/StatusBadge';
 import { formatThaiDate } from '@/lib/date-format';
 import { toNameOptions } from '@/lib/filter-options';
 import CategoryModel from '@/models/category';
@@ -22,7 +24,6 @@ const categoryModel = new CategoryModel();
 const colorModel = new ColorModel();
 import StorePolicy from './components/store-policy';
 import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
-import BulkBar from './components/bulk-bar';
 import BulkDialog, { BulkMode } from './components/bulk-dialog';
 import QuickEdit from './components/quick-edit';
 import ColumnMenu, { ColumnChoice } from './components/column-menu';
@@ -31,20 +32,29 @@ import { createLatestGate } from '@/lib/latest-request';
 import { selectedProducts } from '@/lib/product-bulk';
 import { browserStorage, loadHiddenColumns, preferenceKey, saveHiddenColumns } from '@/lib/table-preferences';
 
-// Columns the employee may hide. The code, name and row commands always stay.
+// Columns the employee may hide. The product (name and code) and the row commands always stay.
 const HIDEABLE_COLUMNS: { key: string; label: string }[] = [
-  { key: 'store_policy', label: 'หน้าร้านออนไลน์' },
-  { key: 'category', label: 'ประเภทสินค้า' },
-  { key: 'color', label: 'สีสินค้า' },
-  { key: 'adddate', label: 'วันที่เพิ่ม' },
+  { key: 'category', label: 'ประเภท' },
+  { key: 'color', label: 'สี' },
   { key: 'product_variant_price', label: 'ราคา' },
-  { key: 'stock', label: 'สถานะสินค้า' },
+  { key: 'stock', label: 'สถานะ' },
+  { key: 'store_policy', label: 'หน้าร้าน' },
+  { key: 'adddate', label: 'เพิ่มเมื่อ' },
 ];
 const REQUIRED_COLUMNS: { key: string; label: string }[] = [
-  { key: 'product_code', label: 'รหัสสินค้า' },
-  { key: 'product_name', label: 'ชื่อสินค้า' },
-  { key: 'product_id', label: 'การจัดการ' },
+  { key: 'product_name', label: 'สินค้า' },
+  { key: 'product_id', label: 'จัดการ' },
 ];
+
+// The tabs are the stock filter the API already knows; each count is the API's own total for it.
+type StockTab = 'all' | 'in' | 'out';
+const STOCK_TABS: { key: StockTab; label: string; value?: string }[] = [
+  { key: 'all', label: 'ทั้งหมด' },
+  { key: 'in', label: 'มีสินค้า', value: 'in stock' },
+  { key: 'out', label: 'สินค้าหมด', value: 'out stock' },
+];
+const SEARCH_DELAY_MS = 300;
+const count = (value: number) => new Intl.NumberFormat('th-TH').format(value);
 const HIDEABLE_KEYS = HIDEABLE_COLUMNS.map((c) => c.key);
 const REQUIRED_KEYS = REQUIRED_COLUMNS.map((c) => c.key);
 
@@ -85,18 +95,18 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [appliedSearchQuery, setAppliedSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [stockTab, setStockTab] = useState<StockTab>('all');
+  const [chipFilters, setChipFilters] = useState<{ category: string[]; color: string[] }>({ category: [], color: [] });
+  const [counts, setCounts] = useState<Partial<Record<StockTab, number>>>({});
+  const [colorHexes, setColorHexes] = useState<Map<string, string>>(new Map());
   const [products, setProducts] = useState<ProductResponse | null>(null);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [sortField, setSortField] = useState<SortField>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>('ASC');
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedDetailProduct, setSelectedDetailProduct] = useState<Product | null>(null);
-  const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
   const [isDetailFormOpen, setIsDetailFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
-  const [filters, setFilters] = useState<Record<string, string>>({});
   const [categoryOptions, setCategoryOptions] = useState<{ label: string; value: string }[]>([]);
   const [colorOptions, setColorOptions] = useState<{ label: string; value: string }[]>([]);
   // Categories by id, for the commands that write a category (the filter above compares names).
@@ -144,6 +154,7 @@ export default function ProductsPage() {
           })),
         );
         setColorOptions(toNameOptions(colors.data.map((color) => color.color_name)));
+        setColorHexes(new Map(colors.data.map((color) => [color.color_name, color.color_hex])));
       } catch (error) {
         console.error('Failed to fetch category or color options:', error);
         setOptionsError(loadErrorText('ตัวเลือกประเภทและสี', error));
@@ -174,6 +185,51 @@ export default function ProductsPage() {
       setPoliciesFailed(true);
     }
   }, []);
+
+  // The filters the API takes, in the shape the column filters used to send (names as JSON arrays).
+  const filters = useMemo(() => {
+    const next: Record<string, string> = {};
+    if (chipFilters.category.length) next.category = JSON.stringify(chipFilters.category);
+    if (chipFilters.color.length) next.color = JSON.stringify(chipFilters.color);
+    const tab = STOCK_TABS.find((item) => item.key === stockTab);
+    if (tab?.value) next.stock = JSON.stringify([tab.value]);
+    return next;
+  }, [chipFilters, stockTab]);
+
+  // The number behind each tab: the API's total for the same search and chips, one small request per tab.
+  const loadCounts = useCallback(async () => {
+    const base: Record<string, string> = { ...filters };
+    delete base.stock;
+    try {
+      const results = await Promise.all(
+        STOCK_TABS.map((tab) =>
+          productModel.getProducts(1, 1, appliedSearchQuery, null, 'ASC', tab.value ? { ...base, stock: JSON.stringify([tab.value]) } : base),
+        ),
+      );
+      setCounts(Object.fromEntries(STOCK_TABS.map((tab, index) => [tab.key, results[index].meta.total])));
+    } catch {
+      setCounts({});
+    }
+  }, [appliedSearchQuery, filters]);
+
+  useEffect(() => {
+    void loadCounts();
+  }, [loadCounts]);
+
+  // The search asks the server after a pause, so one request is not sent per key.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAppliedSearchQuery((current) => {
+        const next = searchQuery.trim();
+        if (next !== current) {
+          setSelectedIds(new Set());
+          setCurrentPage(1);
+        }
+        return next;
+      });
+    }, SEARCH_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   const loadProducts = useCallback(
     async (page: number) => {
@@ -220,19 +276,6 @@ export default function ProductsPage() {
     setCurrentPage(page);
   };
 
-  const handleSearch = () => {
-    clearSelection();
-    setCurrentPage(1);
-    setAppliedSearchQuery(searchQuery.trim());
-  };
-
-  const handleClearSearch = () => {
-    clearSelection();
-    setSearchQuery('');
-    setAppliedSearchQuery('');
-    setCurrentPage(1);
-  };
-
   const handleSortChange = (sort: { key: string; direction: 'ASC' | 'DESC' } | null) => {
     clearSelection();
     if (!sort) {
@@ -252,23 +295,16 @@ export default function ProductsPage() {
     setSortOrder(sort.direction);
   };
 
-  const handleDataTableFilterChange = (filters: Record<string, string | string[]>) => {
-    const updatedFilters: Record<string, string> = {};
-    for (const columnKey in filters) {
-      const value = filters[columnKey];
-      if (Array.isArray(value)) {
-        if (value.length > 0) {
-          updatedFilters[columnKey] = JSON.stringify(value);
-        }
-      } else {
-        if (value.trim()) {
-          updatedFilters[columnKey] = value;
-        }
-      }
-    }
+  const setChip = (key: 'category' | 'color', values: string[]) => {
     clearSelection();
     setCurrentPage(1);
-    setFilters(updatedFilters);
+    setChipFilters((prev) => ({ ...prev, [key]: values }));
+  };
+  const clearAllFilters = () => {
+    clearSelection();
+    setCurrentPage(1);
+    setSearchQuery('');
+    setChipFilters({ category: [], color: [] });
   };
 
   const setColumnHidden = (hidden: string[]) => {
@@ -292,15 +328,85 @@ export default function ProductsPage() {
     }),
   ];
 
-  // Define DataTable columns
+  // Define DataTable columns. Filters and sorting are driven by the chips and the header, not by
+  // per-column menus, so no column is `filterable` here.
   const columns: DataTableColumn<Product>[] = [
     {
-      // Display-only column, like 'category' and 'stock' below: the key is the
-      // column's identity in the table, so it must not repeat another column's.
-      // It previously reused 'product_id', which the actions column already
-      // uses, and React saw two children with the same key on every row.
+      key: 'product_name' as keyof Product,
+      label: 'สินค้า',
+      alwaysVisible: true,
+      render: (_, row) => {
+        const image = row.files?.find((file) => file.product_file_category === 'image');
+        return (
+          <span className="ka-prod">
+            <span className="ka-prod__thumb" aria-hidden="true">
+              {image ? (
+                // eslint-disable-next-line @next/next/no-img-element -- the API serves uploads outside the image loader
+                <img src={`${process.env.NEXT_PUBLIC_API_URL ?? ''}${image.product_file_name}`} alt="" />
+              ) : (
+                <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+              )}
+            </span>
+            <span className="min-w-0">
+              <span className="block font-medium">{row.product_name}</span>
+              <span className="ka-todo__cap numeric block">{row.product_code || '-'}</span>
+            </span>
+          </span>
+        );
+      },
+    },
+    {
+      key: 'product_code',
+      label: 'รหัสสินค้า',
+      // Shown on the card list as the row's name; in the table the code sits under the product name.
+      defaultHidden: true,
+      alwaysVisible: false,
+      render: (_, row) => <span className="numeric">{row.product_code || '-'}</span>,
+    },
+    {
+      key: 'category' as keyof Product,
+      label: 'ประเภท',
+      render: (value) => (value as Product['category'])?.category_name ?? '-',
+    },
+    {
+      key: 'color' as keyof Product,
+      label: 'สี',
+      render: (value, row) => {
+        const name = (value as Product['color'])?.color_name || getPrimaryVariant(row)?.color?.color_name;
+        if (!name) return '-';
+        const hex = colorHexes.get(name);
+        return (
+          <span className="inline-flex items-center gap-1.5">
+            {hex && <i className="ka-swatch" style={{ background: hex, marginRight: 0 }} aria-hidden="true" />}
+            {name}
+          </span>
+        );
+      },
+    },
+    {
+      key: 'product_variant_price' as keyof Product,
+      label: 'ราคา (บาท)',
+      sortable: true,
+      render: (value, row) => {
+        // The API returns the decimal price as a string ("390.00").
+        const rawPrice = value ?? getPrimaryVariant(row)?.product_variant_price;
+        const displayPrice = rawPrice === '' || rawPrice === null || rawPrice === undefined ? NaN : Number(rawPrice);
+        if (!Number.isFinite(displayPrice)) return <span className="block text-right">-</span>;
+        return <span className="numeric block text-right font-semibold">{new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(displayPrice)}</span>;
+      },
+    },
+    {
+      key: 'stock' as keyof Product,
+      label: 'สถานะ',
+      render: (_value, row) => {
+        const status = getStockStatus(row);
+        return <StatusBadge tone={status === 'in stock' ? 'success' : 'danger'}>{STOCK_STATUS_LABELS[status] ?? '-'}</StatusBadge>;
+      },
+    },
+    {
+      // Display-only column: the key is the column's identity in the table, so it must not repeat another column's.
       key: 'store_policy' as keyof Product,
-      label: 'หน้าร้านออนไลน์',
+      label: 'หน้าร้าน',
       render: (_, row) => (
         <StorePolicy
           id={row.product_id}
@@ -315,154 +421,73 @@ export default function ProductsPage() {
       ),
     },
     {
-      key: 'product_code',
-      label: 'รหัสสินค้า',
-      width: '140px',
-      render: (_, row) => <span className="font-mono break-all">{row.product_code || '-'}</span>,
-    },
-    {
-      key: 'product_name' as keyof Product,
-      label: 'ชื่อสินค้า',
-      width: '250px',
-    },
-    {
-      key: 'category' as keyof Product,
-      label: 'ประเภทสินค้า',
-      filterable: true,
-      filterType: 'multi-select',
-      filterOptions: categoryOptions,
-      filterValue: (row) => row.category?.category_name || '',
-      render: (value) => (value as Product['category'])?.category_name,
-    },
-    {
-      key: 'color' as keyof Product,
-      label: 'สีสินค้า',
-      filterable: true,
-      filterType: 'multi-select',
-      filterOptions: colorOptions,
-      filterValue: (row) => row.color?.color_name || getPrimaryVariant(row)?.color?.color_name || '',
-      render: (value, row) =>
-        (value as Product['color'])?.color_name ||
-        getPrimaryVariant(row)?.color?.color_name ||
-        '-',
-    },
-    {
       key: 'adddate' as keyof Product,
-      label: 'วันที่เพิ่ม',
+      label: 'เพิ่มเมื่อ',
       sortable: true,
-      render: (value) => formatThaiDate(value as string),
-    },
-    {
-      key: 'product_variant_price' as keyof Product,
-      label: 'ราคา',
-      sortable: true,
-      render: (value, row) => {
-        // The API returns the decimal price as a string ("390.00").
-        const rawPrice = value ?? getPrimaryVariant(row)?.product_variant_price;
-        const displayPrice = rawPrice === '' || rawPrice === null ? NaN : Number(rawPrice);
-
-        if (!Number.isFinite(displayPrice)) {
-          return '-';
-        }
-
-        return new Intl.NumberFormat('th-TH').format(displayPrice);
-      },
-    },
-    {
-      key: 'stock' as keyof Product,
-      label: 'สถานะสินค้า',
-      filterable: true,
-      filterType: 'multi-select',
-      // The statuses the API writes; it matches 'in stock' to 'available' as well.
-      filterOptions: [
-        { label: 'มีสินค้า', value: 'in stock' },
-        { label: 'สินค้าหมด', value: 'out stock' },
-      ],
-      filterValue: (row) => getStockStatus(row),
-      render: (_value, row) => STOCK_STATUS_LABELS[getStockStatus(row)] ?? '-',
+      render: (value) => <span className="ka-todo__cap numeric">{formatThaiDate(value as string)}</span>,
     },
     {
       key: 'product_id' as keyof Product,
-      label: 'การจัดการ',
-      render: (value, row: Product) => (
-        <div className="flex gap-2">
+      label: 'จัดการ',
+      alwaysVisible: true,
+      render: (_value, row: Product) => (
+        <span className="ka-row-actions">
           <button
+            type="button"
             onClick={() => {
               setSelectedDetailProduct(row);
               setIsDetailFormOpen(true);
             }}
-            className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
-            aria-label="ดูรายละเอียด"
+            className="ka-btn ka-btn--ghost ka-btn--sm ka-btn--icon"
+            aria-label={`ดูรายละเอียด ${row.product_name}`}
             title="ดูรายละเอียด"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-              />
+            <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
             </svg>
           </button>
           {canEditProduct && (
-            <button
-              onClick={() => setQuickEditProduct(row)}
-              className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
-              title="แก้ไขด่วน (ชื่อ/หมวดหมู่)"
-              aria-label={`แก้ไขด่วน ${row.product_name}`}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </button>
-          )}
-          {canEditProduct && (
-            <button
-              onClick={() => {
-                setSelectedProduct(row);
-                setIsUpdateFormOpen(true);
-              }}
-              className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
+            <Link
+              href={`/admin/products/${row.product_id}/edit`}
+              className="ka-btn ka-btn--ghost ka-btn--sm ka-btn--icon"
+              aria-label={`แก้ไข ${row.product_name}`}
               title="แก้ไข"
-              aria-label="แก้ไข"
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 12v3h3l8.293-8.293-3-3L5 12z" />
+              <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
-            </button>
+            </Link>
           )}
-          {canDeleteProduct && (
-            <button
-              className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--danger)]"
-              title="ลบ"
-              aria-label="ลบ"
-              onClick={() => {
-                setProductToDelete(row);
-                setIsDeleteDialogOpen(true);
-              }}
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
+          {(canEditProduct || canDeleteProduct) && (
+            <RowMenu
+              label={`ตัวเลือกเพิ่มเติม ${row.product_code ?? ''} ${row.product_name}`}
+              items={[
+                ...(canEditProduct
+                  ? [
+                      { label: 'แก้ไขด่วน (ชื่อ/หมวดหมู่)', onSelect: () => setQuickEditProduct(row) },
+                      { label: 'เปลี่ยนสถานะตัวเลือก', onSelect: () => openBulk('status', [row]) },
+                    ]
+                  : []),
+                ...(canDeleteProduct
+                  ? [
+                      {
+                        label: 'ลบสินค้า',
+                        tone: 'danger' as const,
+                        onSelect: () => {
+                          setProductToDelete(row);
+                          setIsDeleteDialogOpen(true);
+                        },
+                      },
+                    ]
+                  : []),
+              ]}
+            />
           )}
-        </div>
+        </span>
       ),
     },
   ];
-
-
-  const totalProducts = products ? products.data.length : 0;
 
   // Reloads the current query (search, sort and filters included) after a change.
   const handleRefreshProduct = async (checkPageAfterDelete = false) => {
@@ -474,6 +499,7 @@ export default function ProductsPage() {
       setCurrentPage(targetPage);
     }
     await loadProducts(targetPage);
+    void loadCounts();
   };
 
   const pageProducts = products?.data ?? [];
@@ -492,85 +518,85 @@ export default function ProductsPage() {
     setResultDialog({ isOpen: true, status: 'success', action: 'update', message });
     void handleRefreshProduct();
   };
+
+  const activeFilterCount = chipFilters.category.length + chipFilters.color.length + (searchQuery.trim() ? 1 : 0);
+  const chipOptions = (options: { label: string; value: string }[]) => options.map((option) => ({ value: option.value, label: option.label }));
+
   return (
-    <div className="bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
-      <LoadErrorBanner message={optionsError} className="mb-4" />
-      <LoadErrorBanner message={listError} onRetry={() => void handleRefreshProduct()} className="mb-4" />
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
-        <div className="ka-card p-3 sm:p-6">
-          <div className="text-2xl sm:text-4xl font-bold text-[var(--brand-ink)] mb-1 sm:mb-2">{totalProducts}</div>
-          <div className="text-[13px] sm:text-sm text-[var(--brand-ink)] font-medium">Total Products</div>
+    <div className="ka-page-body">
+      <div className="ka-ph">
+        <div>
+          <h1 className="ka-ph__title">รายการสินค้า</h1>
+          <p className="ka-ph__lead">
+            {counts.all === undefined ? 'กำลังนับ…' : `${count(counts.all)} สินค้า`}
+            {counts.in !== undefined && counts.out !== undefined ? ` · มีสินค้า ${count(counts.in)} · สินค้าหมด ${count(counts.out)}` : ''}
+          </p>
         </div>
-
-        {/* <div className="ka-card p-3 sm:p-6">
-          <div className="text-2xl sm:text-4xl font-bold text-[var(--warning)] mb-1 sm:mb-2">{pendingProducts}</div>
-          <div className="text-[13px] sm:text-sm text-[var(--warning)] font-medium">Pending Products</div>
-        </div> */}
-
-        {/* <div className="ka-card p-3 sm:p-6">
-          <div className="text-2xl sm:text-4xl font-bold text-[var(--success)] mb-1 sm:mb-2">{inStock}</div>
-          <div className="text-[13px] sm:text-sm text-[var(--success)] font-medium">In Stock</div>
-        </div>
-
-        <div className="ka-card p-3 sm:p-6">
-          <div className="text-2xl sm:text-4xl font-bold text-[var(--danger)] mb-1 sm:mb-2">{outStock}</div>
-          <div className="text-[13px] sm:text-sm text-[var(--danger)] font-medium">Out of Stock</div>
-        </div> */}
+        {canAddProduct && (
+          <Link href="/admin/products/new" className="ka-btn ka-btn--primary">
+            <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            เพิ่มสินค้า
+          </Link>
+        )}
       </div>
 
-      {/* Main Content Card */}
-      <div className="bg-[var(--bg-surface)] rounded-xl sm:rounded-2xl shadow-sm overflow-hidden">
-        {/* Search Bar */}
-        <div className="p-3 sm:p-4 md:p-6 border-b border-[var(--border)]">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
-            <div className="flex flex-col sm:flex-row items-stretch gap-1 w-full sm:w-auto sm:flex-1 sm:max-w-md">
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  placeholder="Search"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSearch();
-                    }
-                  }}
-                  className="ka-input w-full"
-                />
-                <svg
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[var(--ink-subtle)]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
-              <button
-                type="button"
-                onClick={handleSearch}
-                className="ka-btn ka-btn--primary whitespace-nowrap"
-              >
-                ค้นหา
-              </button>
-              {(searchQuery || appliedSearchQuery) && (
-                <button
-                  type="button"
-                  onClick={handleClearSearch}
-                  className="ka-btn whitespace-nowrap"
-                >
-                  ล้าง
-                </button>
-              )}
-            </div>
+      <LoadErrorBanner message={optionsError} className="mb-4" />
+      <LoadErrorBanner message={listError} onRetry={() => void handleRefreshProduct()} className="mb-4" />
 
-            <div className="flex flex-wrap items-center gap-2">
+      <section className="ka-card ka-table-card" aria-label="ตารางสินค้า">
+        <nav className="ka-tabs" aria-label="สถานะสินค้า">
+          {STOCK_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              aria-current={stockTab === tab.key ? 'true' : undefined}
+              onClick={() => {
+                clearSelection();
+                setCurrentPage(1);
+                setStockTab(tab.key);
+              }}
+            >
+              {tab.label}
+              {counts[tab.key] !== undefined && <span className="numeric">{count(counts[tab.key] as number)}</span>}
+            </button>
+          ))}
+        </nav>
+
+        <div className="ka-fbar">
+          <div className="ka-input-wrap ka-fbar__search">
+            <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="search"
+              className="ka-input"
+              aria-label="ค้นหาสินค้า"
+              placeholder="ชื่อหรือรหัสสินค้า"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
+          </div>
+          <FilterChip
+            label="ประเภท"
+            options={chipOptions(categoryOptions)}
+            selected={chipFilters.category}
+            onChange={(values) => setChip('category', values)}
+          />
+          <FilterChip
+            label="สี"
+            options={chipOptions(colorOptions)}
+            selected={chipFilters.color}
+            onChange={(values) => setChip('color', values)}
+          />
+          {activeFilterCount > 0 && (
+            <button type="button" className="ka-btn ka-btn--ghost" onClick={clearAllFilters}>
+              ล้างตัวกรอง
+            </button>
+          )}
+          <span className="ka-table-tools__spacer" />
+          <span className="max-sm:hidden">
             <ColumnMenu
               columns={columnChoices}
               hidden={hiddenSet}
@@ -580,46 +606,27 @@ export default function ProductsPage() {
               }
               onReset={() => setColumnHidden([])}
             />
-            {canAddProduct && (
-              <button
-                onClick={() => setIsFormOpen(true)}
-                className="ka-btn ka-btn--primary flex items-center justify-center gap-2 whitespace-nowrap"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span>เพิ่มข้อมูล</span>
-              </button>
-            )}
-            </div>
-          </div>
+          </span>
         </div>
 
-        {canEditProduct && (
-          <div className="min-h-[60px] px-3 pt-3 sm:px-4 md:px-6">
-            {chosenProducts.length > 0 ? (
-              <BulkBar
-                count={chosenProducts.length}
-                disabled={loading}
-                onCommand={(mode) => openBulk(mode, chosenProducts)}
-                onClear={clearSelection}
-              />
-            ) : (
-              <p className="py-2 text-sm text-[var(--ink-muted)]">
-                เลือกสินค้าในตารางเพื่อเปลี่ยนหมวดหมู่ ตั้งค่าหน้าร้าน หรือเปลี่ยนสถานะตัวเลือกพร้อมกันหลายรายการ
-              </p>
-            )}
+        {canEditProduct && chosenProducts.length > 0 && (
+          <div className="px-4 pt-3">
+            <BulkBar count={chosenProducts.length} onClear={clearSelection}>
+              <BulkAction disabled={loading} onClick={() => openBulk('category', chosenProducts)}>เปลี่ยนหมวดหมู่</BulkAction>
+              <BulkAction disabled={loading} onClick={() => openBulk('policy', chosenProducts)}>ตั้งค่าหน้าร้าน</BulkAction>
+              <BulkAction disabled={loading} onClick={() => openBulk('status', chosenProducts)}>เปลี่ยนสถานะตัวเลือก</BulkAction>
+            </BulkBar>
           </div>
         )}
 
-        {loading && <LoadingSkeletonProps />}
         <DataTable
           data={pageProducts}
           columns={visibleColumns}
           keyField="product_id"
-          cardTitleKey="product_code"
+          cardTitleKey="product_name"
+          loading={loading && !products}
           disabled={loading}
-          className="bg-[var(--bg-surface)] p-1"
+          className="ka-table-flat"
           paginationMeta={meta}
           currentPage={currentPage}
           onPageChange={changePage}
@@ -633,31 +640,11 @@ export default function ProductsPage() {
                 }
               : undefined
           }
-          onFilterChange={handleDataTableFilterChange}
           onSortChange={handleSortChange}
+          emptyHint={activeFilterCount > 0 || stockTab !== 'all' ? 'ไม่พบสินค้าที่ตรงกับตัวกรอง ลองล้างตัวกรองหรือเลือกแท็บอื่น' : 'ยังไม่มีสินค้า กดเพิ่มสินค้าเพื่อเริ่ม'}
         />
+      </section>
 
-
-      </div>
-      {canAddProduct && (
-        <ProductForm
-          isOpen={isFormOpen}
-          onClose={() => setIsFormOpen(false)}
-          onSuccess={handleRefreshProduct}
-        />
-      )}
-      {/* Update Product Form */}
-      {canEditProduct && selectedProduct && (
-        <UpdateProductForm
-          isOpen={isUpdateFormOpen}
-          onClose={() => {
-            setIsUpdateFormOpen(false);
-            setSelectedProduct(null);
-          }}
-          onSuccess={handleRefreshProduct}
-          initialData={selectedProduct}
-        />
-      )}
       <ProductDetailModal
         isOpen={isDetailFormOpen}
         onClose={() => {
@@ -694,8 +681,9 @@ export default function ProductsPage() {
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         isOpen={canDeleteProduct && isDeleteDialogOpen}
-        title="ยืนยันการลบสินค้า"
-        message={`คุณแน่ใจหรือไม่ว่าต้องการลบสินค้า "${productToDelete?.product_name}"? ระบบจะลบข้อมูลที่เชื่อมโยงตาม ER (รวมไฟล์สินค้าแบบ Product และ Product Variant) และไม่สามารถย้อนกลับได้.`}
+        title={`ลบ “${productToDelete?.product_name ?? ''}”?`}
+        message="สินค้านี้และทุกแบบจะหายจากหน้าร้านทันที ระบบจะลบข้อมูลที่เชื่อมโยง (รวมไฟล์สินค้าและแบบสินค้า) และย้อนกลับไม่ได้ ใบขายเดิมยังเก็บไว้ครบ"
+        confirmLabel="ลบสินค้า"
         onCancel={() => {
           setIsDeleteDialogOpen(false);
           setProductToDelete(null);
@@ -751,7 +739,6 @@ export default function ProductsPage() {
         message={resultDialog.message}
         onClose={() => setResultDialog((prev) => ({ ...prev, isOpen: false }))}
       />
-
     </div>
   );
 }
