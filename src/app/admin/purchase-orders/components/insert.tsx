@@ -306,7 +306,7 @@ export default function InsertPurchaseOrderForm({
 
     return (
         <>
-        <Modal
+        <Modal guardUnsaved
             isOpen={isOpen}
             onClose={() => { if (!isSubmitting) handleClose(); }}
             title="สร้างใบสั่งซื้อใหม่"

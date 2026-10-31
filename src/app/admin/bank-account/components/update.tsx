@@ -109,7 +109,7 @@ export default function UpdateBankAccountForm({ isOpen, onClose, onSuccess, init
 
 	return (
 		<>
-			<Modal
+			<Modal guardUnsaved
 				isOpen={isOpen}
 				onClose={onClose}
 				title="แก้ไขบัญชีรับเงิน"

@@ -131,7 +131,7 @@ export default function UpdateSizeForm({ isOpen, onClose, onSuccess, initialData
 
 	return (
 		<>
-			<Modal
+			<Modal guardUnsaved
 				isOpen={isOpen}
 				onClose={onClose}
 				title="แก้ไขขนาดสินค้า"

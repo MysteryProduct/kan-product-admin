@@ -86,7 +86,7 @@ export default function UpdateProductUnitForm({ isOpen, onClose, initialData, on
     };
     return (
         <>
-            <Modal
+            <Modal guardUnsaved
                 isOpen={isOpen}
                 onClose={onClose}
                 title="แก้ไขหน่วยสินค้า"

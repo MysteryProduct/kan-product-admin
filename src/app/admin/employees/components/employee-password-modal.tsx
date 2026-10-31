@@ -55,7 +55,7 @@ export default function EmployeePasswordModal({ isOpen, employee, isOwn, onClose
   };
 
   return (
-    <Modal
+    <Modal guardUnsaved
       isOpen={isOpen}
       onClose={onClose}
       title="ตั้งรหัสผ่านใหม่"

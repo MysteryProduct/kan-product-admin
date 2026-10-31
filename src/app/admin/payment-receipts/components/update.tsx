@@ -179,7 +179,7 @@ export default function UpdatePaymentReceiptForm({
 
 	return (
 		<>
-			<Modal
+			<Modal guardUnsaved
 				isOpen={isOpen}
 				onClose={() => { if (!isSubmitting) onClose(); }}
 				title="แก้ไขใบเสร็จรับเงิน"

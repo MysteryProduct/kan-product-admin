@@ -299,7 +299,7 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
 
     return (
         <>
-            <Modal
+            <Modal guardUnsaved
                 isOpen={isOpen}
                 onClose={() => { if (!isSubmitting) resetAndClose(); }}
                 title="สร้างใบขายสินค้า"

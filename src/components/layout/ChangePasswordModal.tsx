@@ -87,7 +87,7 @@ export default function ChangePasswordModal({ isOpen, onClose, onChanged }: Chan
   );
 
   return (
-    <Modal
+    <Modal guardUnsaved
       isOpen={isOpen}
       onClose={onClose}
       title="เปลี่ยนรหัสผ่าน"

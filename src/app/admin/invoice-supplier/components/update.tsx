@@ -148,7 +148,7 @@ export default function UpdateInvoiceSupplierForm({ isOpen, onClose, onSubmit, i
     };
 
     return (
-        <Modal
+        <Modal guardUnsaved
             isOpen={isOpen}
             onClose={onClose}
             title="แก้ไขใบชำระหนี้ผู้จัดจำหน่าย"

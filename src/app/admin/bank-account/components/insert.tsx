@@ -105,7 +105,7 @@ export default function InsertBankAccountForm({ isOpen, onClose, onSuccess }: In
 
 	return (
 		<>
-			<Modal
+			<Modal guardUnsaved
 				isOpen={isOpen}
 				onClose={resetForm}
 				title="เพิ่มบัญชีรับเงิน"

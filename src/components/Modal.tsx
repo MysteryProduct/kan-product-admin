@@ -1,11 +1,12 @@
 'use client';
 
-import { ReactNode, useEffect, useId, useRef } from 'react';
+import { ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-// `compact`, `standard` and `wide` are the design system's 440 / 520 / 600px. `sm` to `xl` keep the
-// widths pages were built with; a page moves to the new names when it is redesigned.
-type ModalSize = 'compact' | 'standard' | 'wide' | 'sm' | 'md' | 'lg' | 'xl';
+// `compact`, `standard`, `wide` and `list` are the design's 440 / 520 / 600 / 680px (`list` for a
+// modal of records). `sm` to `xl` keep the widths pages were built with; a page moves to the new
+// names when it is redesigned.
+type ModalSize = 'compact' | 'standard' | 'wide' | 'list' | 'sm' | 'md' | 'lg' | 'xl';
 /** `drawer` slides in from the right on wide screens; `sheet` rises from the bottom at every width. */
 type ModalPlacement = 'center' | 'drawer' | 'sheet';
 
@@ -22,12 +23,19 @@ interface ModalProps {
   closeOnEscape?: boolean;
   layer?: 'default' | 'elevated';
   placement?: ModalPlacement;
+  /**
+   * For a form: once something is typed or chosen, Esc, × and a click on the scrim ask
+   * "ยังไม่ได้บันทึกการแก้ไข" before closing. `dirty` overrides the guess when the caller knows.
+   */
+  guardUnsaved?: boolean;
+  dirty?: boolean;
 }
 
 const sizeClasses: Record<ModalSize, string> = {
   compact: 'max-w-[440px]',
   standard: 'max-w-[520px]',
   wide: 'max-w-[600px]',
+  list: 'max-w-[680px]',
   sm: 'max-w-md',
   md: 'max-w-xl',
   lg: 'max-w-3xl',
@@ -61,17 +69,32 @@ export default function Modal({
   closeOnEscape = true,
   layer = 'default',
   placement = 'center',
+  guardUnsaved = false,
+  dirty,
 }: ModalProps) {
   const titleId = useId();
   const descriptionId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   const closeOnEscapeRef = useRef(closeOnEscape);
+  const [edited, setEdited] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [openedAt, setOpenedAt] = useState(isOpen);
+  // A form opened again starts clean.
+  if (openedAt !== isOpen) {
+    setOpenedAt(isOpen);
+    setEdited(false);
+    setConfirming(false);
+  }
+  const unsaved = guardUnsaved && (dirty ?? edited);
+  const requestClose = () => (unsaved ? setConfirming(true) : onClose());
+  const requestCloseRef = useRef(requestClose);
 
   useEffect(() => {
     onCloseRef.current = onClose;
     closeOnEscapeRef.current = closeOnEscape;
-  }, [onClose, closeOnEscape]);
+    requestCloseRef.current = requestClose;
+  });
 
   useEffect(() => {
     if (!isOpen) return;
@@ -93,7 +116,7 @@ export default function Modal({
       if (openModals[openModals.length - 1] !== token) return;
       if (event.key === 'Escape' && closeOnEscapeRef.current) {
         event.preventDefault();
-        onCloseRef.current();
+        requestCloseRef.current();
         return;
       }
 
@@ -138,7 +161,7 @@ export default function Modal({
     <div
       className={`ka-scrim ${placement === 'center' ? '' : `ka-scrim--${placement}`} ${layer === 'elevated' ? 'z-[80]' : 'z-[70]'}`}
       onMouseDown={(event) => {
-        if (closeOnBackdrop && event.target === event.currentTarget) onClose();
+        if (closeOnBackdrop && event.target === event.currentTarget) requestClose();
       }}
     >
       <div
@@ -148,14 +171,19 @@ export default function Modal({
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
+        onInput={(event) => {
+          // Typing in a select's search box changes nothing yet.
+          if (guardUnsaved && (event.target as HTMLElement).getAttribute('role') !== 'searchbox') setEdited(true);
+        }}
         className={`ka-modal overscroll-contain ${placement === 'center' ? '' : `ka-modal--${placement}`} ${sizeClasses[size]}`}
       >
+        <div className="ka-modal__grab" aria-hidden="true" />
         <header className="ka-modal__head shrink-0 px-5 sm:px-6">
           <div className="min-w-0">
             <h2 id={titleId} className="ka-modal__title">{title}</h2>
             {description && <p id={descriptionId} className="ka-modal__desc">{description}</p>}
           </div>
-          <button type="button" onClick={onClose} aria-label={closeLabel} className="ka-btn ka-btn--icon shrink-0">
+          <button type="button" onClick={requestClose} aria-label={closeLabel} className="ka-btn ka-btn--icon shrink-0">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18 18 6M6 6l12 12" />
             </svg>
@@ -164,6 +192,24 @@ export default function Modal({
         <div className="ka-modal__body px-5 py-5 sm:px-6">{children}</div>
         {footer && <footer className="ka-modal__foot shrink-0 px-5 sm:px-6">{footer}</footer>}
       </div>
+      {guardUnsaved && (
+        <Modal
+          isOpen={confirming}
+          onClose={() => setConfirming(false)}
+          title="ยังไม่ได้บันทึกการแก้ไข"
+          description="ถ้าปิดตอนนี้ สิ่งที่กรอกไว้จะหายไป"
+          size="compact"
+          layer="elevated"
+          footer={
+            <>
+              <button type="button" className="ka-btn min-h-11" onClick={() => setConfirming(false)}>แก้ไขต่อ</button>
+              <button type="button" className="ka-btn ka-btn--danger min-h-11" onClick={() => { setConfirming(false); onClose(); }}>ทิ้งการแก้ไข</button>
+            </>
+          }
+        >
+          <p className="text-[var(--ink-muted)]">ข้อมูลที่ยังไม่บันทึกจะไม่ถูกเก็บไว้</p>
+        </Modal>
+      )}
     </div>,
     document.body,
   );

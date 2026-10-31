@@ -126,7 +126,7 @@ export default function UpdateMaterialForm({ isOpen, onClose, onSuccess, initial
 
 	return (
 		<>
-			<Modal
+			<Modal guardUnsaved
 				isOpen={isOpen}
 				onClose={onClose}
 				title="แก้ไขวัตถุดิบ"

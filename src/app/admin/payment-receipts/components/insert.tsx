@@ -174,7 +174,7 @@ export default function InsertPaymentReceiptForm({
 
 	return (
 		<>
-			<Modal
+			<Modal guardUnsaved
 				isOpen={isOpen}
 				onClose={() => { if (!isSubmitting) resetAndClose(); }}
 				title="เพิ่มใบเสร็จรับเงิน"

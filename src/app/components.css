@@ -216,6 +216,7 @@ a.ka-card:hover, .ka-card--link:hover { transform: translateY(-2px); box-shadow:
   animation: ka-rise var(--ka-motion-enter) var(--ka-ease);
 }
 .ka-modal--sm { max-width: 440px; } .ka-modal--md { max-width: 640px; } .ka-modal--lg { max-width: 880px; }
+.ka-modal__grab { flex: none; width: 40px; height: 4px; margin: 8px auto 0; border-radius: var(--radius-pill); background: var(--border-control); }
 .ka-modal__head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) var(--space-6); border-bottom: 1px solid var(--border); }
 .ka-modal__title { margin: 0; font: 600 19px/28px var(--ka-font); }
 .ka-modal__desc { margin: 2px 0 0; font-size: 14px; line-height: 22px; color: var(--ink-muted); }
@@ -225,6 +226,8 @@ a.ka-card:hover, .ka-card--link:hover { transform: translateY(-2px); box-shadow:
   .ka-scrim { align-items: center; padding: var(--space-4); }
   .ka-modal { border-radius: var(--radius-panel); max-height: calc(100dvh - 32px); }
   .ka-modal__foot { flex-direction: row; justify-content: flex-end; }
+  .ka-modal__grab { display: none; }
+  .ka-modal__foot > .ka-btn--danger:first-child:not(:last-child) { margin-right: auto; }
 }
 .ka-dialog { display: grid; justify-items: center; gap: var(--space-3); padding: var(--space-8) var(--space-6) var(--space-6); text-align: center; }
 .ka-dialog__icon { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--danger-soft); color: var(--danger); animation: ka-bump 480ms var(--ka-ease) both 80ms; }

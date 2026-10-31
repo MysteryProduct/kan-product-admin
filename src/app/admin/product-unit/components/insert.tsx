@@ -75,7 +75,7 @@ export default function ProductUnitForm({ isOpen, onClose, onSuccess }: ProductU
 
     return (
         <>
-            <Modal
+            <Modal guardUnsaved
                 isOpen={isOpen}
                 onClose={onClose}
                 title="เพิ่มหน่วยสินค้า"

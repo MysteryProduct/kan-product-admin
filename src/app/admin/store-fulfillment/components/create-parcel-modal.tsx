@@ -82,7 +82,7 @@ export default function CreateParcelModal({
   }
 
   return (
-    <Modal
+    <Modal guardUnsaved
       isOpen={isOpen}
       onClose={onClose}
       title="บันทึกพัสดุใหม่"

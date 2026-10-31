@@ -116,7 +116,7 @@ export default function UpdateCategoryForm({ isOpen, onClose, onSuccess, initial
     };
     return (
         <>
-            <Modal
+            <Modal guardUnsaved
                 isOpen={isOpen}
                 onClose={onClose}
                 title="อัปเดตประเภทสินค้า"

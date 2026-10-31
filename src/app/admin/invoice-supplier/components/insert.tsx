@@ -171,7 +171,7 @@ export default function InsertInvoiceSupplierForm({
     };
 
     return (
-        <Modal
+        <Modal guardUnsaved
             isOpen={isOpen}
             onClose={onClose}
             title="เพิ่มใบชำระหนี้ผู้จัดจำหน่าย"

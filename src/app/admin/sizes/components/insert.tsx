@@ -115,7 +115,7 @@ export default function InsertSizeForm({ isOpen, onClose, onSuccess }: InsertSiz
 
 	return (
 		<>
-			<Modal
+			<Modal guardUnsaved
 				isOpen={isOpen}
 				onClose={onClose}
 				title="เพิ่มขนาดสินค้า"

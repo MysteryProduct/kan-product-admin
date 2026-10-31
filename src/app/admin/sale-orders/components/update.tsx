@@ -302,7 +302,7 @@ export default function UpdateSaleOrderForm({ isOpen, onClose, onSuccess, initia
 
     return (
         <>
-            <Modal
+            <Modal guardUnsaved
                 isOpen={isOpen}
                 onClose={() => { if (!isSubmitting) onClose(); }}
                 title="แก้ไขใบขายสินค้า"

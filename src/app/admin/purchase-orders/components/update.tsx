@@ -336,7 +336,7 @@ export default function UpdatePurchaseOrderForm({
     
     return (
         <>
-        <Modal
+        <Modal guardUnsaved
             isOpen={isOpen}
             onClose={() => { if (!isSubmitting) handleClose(); }}
             title="แก้ไขใบสั่งซื้อ"

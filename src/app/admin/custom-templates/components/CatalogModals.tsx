@@ -57,7 +57,7 @@ export function TypeModal({ isOpen, onClose, onSaved }: TypeModalProps) {
   };
 
   return (
-    <Modal
+    <Modal guardUnsaved
       isOpen={isOpen}
       onClose={close}
       title="เพิ่มประเภทงาน"
@@ -147,7 +147,7 @@ export function TemplateModal({ isOpen, types, onClose, onCreated }: TemplateMod
   };
 
   return (
-    <Modal
+    <Modal guardUnsaved
       isOpen={isOpen}
       onClose={close}
       title="เพิ่มแบบสินค้า Custom"

@@ -412,7 +412,7 @@ export default function InsertPurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 
 	return (
 		<>
-			<Modal
+			<Modal guardUnsaved
 				isOpen={isOpen}
 				onClose={() => { if (!isSubmitting) resetAndClose(); }}
 				title="สร้างใบรับสินค้า"

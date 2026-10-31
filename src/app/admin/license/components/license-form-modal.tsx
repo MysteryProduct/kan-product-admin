@@ -50,7 +50,7 @@ export default function LicenseFormModal({ isOpen, license, onClose, onSaved }: 
   };
 
   return (
-    <Modal
+    <Modal guardUnsaved
       isOpen={isOpen}
       onClose={onClose}
       title={isRename ? 'แก้ชื่อกลุ่มสิทธิ์' : 'สร้างกลุ่มสิทธิ์'}

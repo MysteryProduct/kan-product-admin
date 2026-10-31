@@ -110,7 +110,7 @@ export default function ColorForm({ isOpen, onClose, onSuccess }: ColorFormProps
 
   return (
     <>
-      <Modal
+      <Modal guardUnsaved
         isOpen={isOpen}
         onClose={onClose}
         title="เพิ่มสีใหม่"

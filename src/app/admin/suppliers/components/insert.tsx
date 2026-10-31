@@ -215,7 +215,7 @@ export default function SupplierInsertForm({ isOpen, onClose, onSuccess }: Suppl
 
     return (
         <>
-            <Modal
+            <Modal guardUnsaved
                 isOpen={isOpen}
                 onClose={onClose}
                 title="เพิ่มผู้จัดจำหน่ายใหม่"

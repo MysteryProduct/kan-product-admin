@@ -112,7 +112,7 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
     };
     return (
         <>
-            <Modal
+            <Modal guardUnsaved
                 isOpen={isOpen}
                 onClose={onClose}
                 title="เพิ่มประเภทสินค้า"

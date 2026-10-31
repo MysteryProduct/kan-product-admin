@@ -387,7 +387,7 @@ export default function UpdateJobOrderForm({
 
 	return (
 		<>
-			<Modal
+			<Modal guardUnsaved
 				isOpen={isOpen}
 				onClose={() => { if (!isSubmitting) onClose(); }}
 				title="แก้ไขงานผลิต"

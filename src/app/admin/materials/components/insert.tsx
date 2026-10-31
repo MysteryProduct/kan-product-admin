@@ -147,7 +147,7 @@ export default function InsertMaterialForm({ isOpen, onClose, onSuccess }: Inser
 
 	return (
 		<>
-			<Modal
+			<Modal guardUnsaved
 				isOpen={isOpen}
 				onClose={handleClose}
 				title="เพิ่มวัตถุดิบ"

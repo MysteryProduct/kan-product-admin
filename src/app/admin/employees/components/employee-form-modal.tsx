@@ -222,7 +222,7 @@ export default function EmployeeFormModal({
   );
 
   return (
-    <Modal
+    <Modal guardUnsaved
       isOpen={isOpen}
       onClose={onClose}
       title={isEdit ? 'แก้ไขพนักงาน' : 'เพิ่มพนักงาน'}

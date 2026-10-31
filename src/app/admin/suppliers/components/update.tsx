@@ -242,7 +242,7 @@ export default function UpdateSupplierModal({ isOpen, onClose, supplierId, onUpd
 
     return (
         <>
-            <Modal
+            <Modal guardUnsaved
                 isOpen={isOpen}
                 onClose={onClose}
                 title="แก้ไขข้อมูลผู้จัดจำหน่าย"

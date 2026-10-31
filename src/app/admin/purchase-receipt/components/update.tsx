@@ -368,7 +368,7 @@ export default function UpdatePurchaseReceiptForm({ isOpen, onClose, onSuccess, 
 
 	return (
 		<>
-			<Modal
+			<Modal guardUnsaved
 				isOpen={isOpen}
 				onClose={() => { if (!isSubmitting) onClose(); }}
 				title="แก้ไขใบรับสินค้า"

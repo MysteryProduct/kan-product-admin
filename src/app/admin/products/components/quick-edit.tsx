@@ -74,7 +74,7 @@ export default function QuickEdit({
   };
 
   return (
-    <Modal
+    <Modal guardUnsaved
       isOpen
       onClose={guardedClose}
       closeOnBackdrop={!pending}

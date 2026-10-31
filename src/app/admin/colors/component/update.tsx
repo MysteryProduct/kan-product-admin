@@ -89,7 +89,7 @@ export default function UpdateColorForm({ isOpen, onClose, onSuccess, initialDat
 
     return (
         <>
-            <Modal
+            <Modal guardUnsaved
                 isOpen={isOpen}
                 onClose={onClose}
                 title="แก้ไขสี"

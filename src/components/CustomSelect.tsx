@@ -134,6 +134,8 @@ export default function CustomSelect({
   const handleSelect = (option: SelectOption | undefined) => {
     if (!option || option.disabled) return;
     onChange(option.value.toString());
+    // A Modal guarding unsaved edits listens for input events; a chosen option is one.
+    rootRef.current?.dispatchEvent(new Event('input', { bubbles: true }));
     close(true);
   };
 
