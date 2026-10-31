@@ -34,8 +34,8 @@ interface PurchaseDraftDialogProps {
 
 /**
  * "สร้างใบสั่งซื้อ" from the out-of-materials card: one material, a quantity, a supplier and a
- * unit, saved through the same endpoint as the purchase page. The order starts waiting for
- * approval, priced at the material's price, so purchasing checks it before approving.
+ * unit, saved through the same endpoint as the purchase page as a draft (TASK-0320), priced at
+ * the material's price, so purchasing checks it and submits it for approval.
  */
 export default function PurchaseDraftDialog({ isOpen, onClose, materials }: PurchaseDraftDialogProps) {
   const toast = useToast();
@@ -101,6 +101,7 @@ export default function PurchaseDraftDialog({ isOpen, onClose, materials }: Purc
         purchase_order_vat_amount: summary.vatAmount,
         purchase_order_total: summary.total,
         create_by: user.employee_id,
+        save_as_draft: true,
         purchaseOrderLists: [
           {
             material_id: materialId,
@@ -111,7 +112,7 @@ export default function PurchaseDraftDialog({ isOpen, onClose, materials }: Purc
           },
         ],
       });
-      toast({ message: `สร้างใบสั่งซื้อ ${created?.purchase_order_code ?? ""} แล้ว รออนุมัติในหน้าจัดซื้อ`.replace("  ", " ") });
+      toast({ message: `สร้างใบสั่งซื้อฉบับร่าง ${created?.purchase_order_code ?? ""} แล้ว ส่งอนุมัติได้ในหน้าจัดซื้อ`.replace("  ", " ") });
       onClose();
     } catch (error) {
       setSaveError(`บันทึกไม่สำเร็จ ${getApiErrorMessage(error)} ข้อมูลที่กรอกยังอยู่`);
@@ -141,7 +142,7 @@ export default function PurchaseDraftDialog({ isOpen, onClose, materials }: Purc
             ยกเลิก
           </button>
           <button type="button" className="ka-btn ka-btn--primary" disabled={saving} onClick={() => void save()}>
-            {saving ? "กำลังบันทึก…" : "สร้างใบสั่งซื้อ"}
+            {saving ? "กำลังบันทึก…" : "สร้างฉบับร่าง"}
           </button>
         </>
       }
@@ -220,7 +221,7 @@ export default function PurchaseDraftDialog({ isOpen, onClose, materials }: Purc
           ราคาต่อหน่วย {baht(price)} จากข้อมูลวัตถุดิบ · ยอดรวม {baht(summary.total)}
         </p>
         <p className="ka-banner ka-banner--info">
-          ใบสั่งซื้อจะอยู่ในสถานะรออนุมัติ ตรวจราคาและอนุมัติได้ใน
+          ใบสั่งซื้อจะเป็นฉบับร่าง ตรวจราคาและส่งอนุมัติได้ใน
           {" "}
           <Link href="/admin/purchase-orders" className="font-semibold underline">หน้าจัดซื้อ</Link>
         </p>

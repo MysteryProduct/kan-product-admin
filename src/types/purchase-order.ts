@@ -39,7 +39,7 @@ export interface PurchaseOrder {
   purchase_order_total: number;
   purchase_date: Date;
   create_at?: Date;
-  purchase_order_status: 'pending' | 'active' | 'inactive' | 'partial' | 'completed';
+  purchase_order_status: 'draft' | 'pending' | 'active' | 'inactive' | 'partial' | 'completed';
 }
 
 export interface PurchaseOrderResponse {
@@ -56,6 +56,8 @@ export interface CreatePurchaseOrderDto {
   purchase_order_vat_amount?: number;
   create_by?: string;
   purchase_order_total: number;
+  /** Saves a draft that purchasing submits for approval later (TASK-0320). */
+  save_as_draft?: boolean;
   purchaseOrderLists: {
     material_id: string;
     purchase_order_list_qty: number;

@@ -21,9 +21,10 @@ const purchaseOrderModel = new PurchaseOrderModel();
 type SortField = 'purchase_date' | 'purchase_order_total' | null;
 type SortOrder = 'ASC' | 'DESC';
 
-// Every status the API writes: pending by default, active on approval,
-// partial/completed from receipts and inactive on rejection.
+// Every status the API writes: draft when saved as one (TASK-0320), pending by default or once a
+// draft is submitted, active on approval, partial/completed from receipts and inactive on rejection.
 const PURCHASE_ORDER_STATUS_LABELS: Record<string, string> = {
+  draft: 'ฉบับร่าง',
   pending: 'รออนุมัติ',
   active: 'ใช้งานอยู่',
   partial: 'รับสินค้าบางส่วน',

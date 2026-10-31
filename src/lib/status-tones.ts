@@ -24,6 +24,7 @@ export const SALE_ORDER_STATUS_TONE: Record<string, BadgeTone> = {
 };
 
 export const PURCHASE_ORDER_STATUS_TONE: Record<string, BadgeTone> = {
+  draft: 'neutral',
   pending: 'warning',
   active: 'info',
   partial: 'warning',

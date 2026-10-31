@@ -128,6 +128,11 @@ class PurchaseOrderModel {
     }
   }
 
+  /** "ส่งอนุมัติ": a draft joins the orders waiting for approval. */
+  async submitPurchaseOrder(id: string): Promise<void> {
+    await axiosInstance.post(`/purchase-order/${id}/submit`);
+  }
+
   async rejectPurchaseOrder(id: string, reason: string): Promise<PurchaseOrder> {
     try {
       const response = await axiosInstance.post<SinglePurchaseOrderResponse>(

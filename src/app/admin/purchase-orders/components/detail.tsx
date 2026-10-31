@@ -11,6 +11,7 @@ import { formatThaiDate } from '@/lib/date-format';
 import { calculateVatSummary, VAT_TYPE_LABELS } from '@/lib/vat';
 import useVatRate from '@/hooks/useVatRate';
 import DocumentHistoryPanel from '@/components/document-history/DocumentHistoryPanel';
+import { getApiErrorMessage } from '@/lib/api-error';
 import DocumentCancellationAction from '@/components/DocumentCancellationAction';
 import { PURCHASE_ORDER_STATUS_TONE } from '@/lib/status-tones';
 import StatusBadge from '@/components/StatusBadge';
@@ -30,6 +31,8 @@ export default function PurchaseOrderDetailModal({
     const vatRate = useVatRate();
 	const { can } = usePermissions();
 	const canApprovePurchaseOrder = can('purchase_orders', 'approve');
+	const canSubmitPurchaseOrder = can('purchase_orders', 'edit');
+	const [submitting, setSubmitting] = React.useState(false);
 	// if (!isOpen) return null;
 	const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
 	const [resultDialog, setResultDialog] = React.useState<{
@@ -66,6 +69,7 @@ export default function PurchaseOrderDetailModal({
 	};
 
 	const statusText ={
+		draft: 'ฉบับร่าง',
 		pending: 'รออนุมัติ ',
 		active: 'ใช้งานอยู่',
 		inactive: 'ยกเลิก',
@@ -96,6 +100,19 @@ export default function PurchaseOrderDetailModal({
 		}
 	}
 
+	// A draft goes to the approval queue; approving it is a separate step.
+	async function handleSubmit() {
+		setSubmitting(true);
+		try {
+			await purchaseOrderModel.submitPurchaseOrder(purchaseOrder.purchase_order_id);
+			setResultDialog({ isOpen: true, status: 'success', action: 'update', message: 'ส่งใบสั่งซื้อเข้ารออนุมัติแล้ว' });
+		} catch (error) {
+			setResultDialog({ isOpen: true, status: 'error', action: 'update', message: `ส่งอนุมัติไม่สำเร็จ ${getApiErrorMessage(error)}` });
+		} finally {
+			setSubmitting(false);
+		}
+	}
+
 	const handleResultDialogClose = () => {
 		const isSuccess = resultDialog.status === 'success';
 		setResultDialog((prev) => ({ ...prev, isOpen: false }));
@@ -123,6 +140,16 @@ export default function PurchaseOrderDetailModal({
 					>
 						ปิด
 					</button>
+					{canSubmitPurchaseOrder && purchaseOrder.purchase_order_status === 'draft' && (
+						<button
+							type="button"
+							onClick={() => void handleSubmit()}
+							disabled={submitting}
+							className="ka-btn ka-btn--primary min-h-11"
+						>
+							{submitting ? 'กำลังส่ง…' : 'ส่งอนุมัติ'}
+						</button>
+					)}
 					{canApprovePurchaseOrder && purchaseOrder.purchase_order_status === 'pending' && (
 						<button
 							type="button"
