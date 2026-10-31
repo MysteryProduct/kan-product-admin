@@ -1,10 +1,13 @@
 import { useMemo } from 'react';
 import type { JobOrder } from '@/types/job-order';
 import { formatThaiDate } from '@/lib/date-format';
-import { bangkokDayKey, BOARD_COLUMNS, getAssigneeName, getVariantLabel, mapStatusToLabel, normalizeStatus, type BoardStatus } from './board-model';
+import { bangkokDayKey, BOARD_COLUMNS, getAssigneeName, getDueInfo, getVariantLabel, mapStatusToLabel, normalizeStatus, type BoardStatus, type StatusTab } from './board-model';
 
-/** The board's people filter options, the jobs that pass the search, person and type filters, and those jobs by column. */
-export function useBoardFilters(jobOrders: JobOrder[], deferredSearchText: string, selectedAssignee: string, selectedType: string, sortDirection: 'ASC' | 'DESC') {
+/**
+ * The people filter options, the jobs that pass the search, person and type filters (sorted by target
+ * day), those jobs by column, the count behind each status tab and the jobs of the chosen tab.
+ */
+export function useBoardFilters(jobOrders: JobOrder[], deferredSearchText: string, selectedAssignee: string, selectedType: string, sortDirection: 'ASC' | 'DESC', statusTab: StatusTab) {
 	const assigneeOptions = useMemo(() => {
 		const map = new Map<string, string>();
 		jobOrders.forEach((job) => {
@@ -67,5 +70,15 @@ export function useBoardFilters(jobOrders: JobOrder[], deferredSearchText: strin
 		}, {} as Record<BoardStatus, JobOrder[]>);
 	}, [filteredJobOrders]);
 
-	return { assigneeOptions, filteredJobOrders, grouped };
+	const { tabCounts, tabJobs } = useMemo(() => {
+		const late = new Set(filteredJobOrders.filter((job) => getDueInfo(job).late).map((job) => job.job_order_id));
+		const inTab = (job: JobOrder, tab: StatusTab) => tab === 'all' || (tab === 'late' ? late.has(job.job_order_id) : normalizeStatus(job.job_order_status) === tab);
+		const counts = { all: filteredJobOrders.length, late: late.size } as Record<StatusTab, number>;
+		BOARD_COLUMNS.forEach((column) => {
+			counts[column.key] = grouped[column.key].length;
+		});
+		return { tabCounts: counts, tabJobs: filteredJobOrders.filter((job) => inTab(job, statusTab)) };
+	}, [filteredJobOrders, grouped, statusTab]);
+
+	return { assigneeOptions, filteredJobOrders, grouped, tabCounts, tabJobs };
 }

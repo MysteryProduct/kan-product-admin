@@ -11,10 +11,13 @@ import CreateJobOrderDrawer from './components/create-drawer';
 import UpdateJobOrderForm from './components/update';
 import JobOrderDetailModal from './components/detail';
 import { CreateJobOrderDto, JobOrder } from '@/types/job-order';
-import { toDateValue, toLocalIsoDate } from '@/lib/date-format';
-import { ALLOWED_TRANSITIONS, BOARD_COLUMNS, count, DEFAULT_VISIBLE, getDelayDays, getUserFromCookie, mapStatusToLabel, normalizeStatus, PAGE_SIZE, buildCalendarCells, parseCalendarMonth, toDateKey, toIsoDate, type BoardStatus, type CalendarCell, type ViewMode } from './board-model';
+import { toLocalIsoDate } from '@/lib/date-format';
+import { ALLOWED_TRANSITIONS, BOARD_COLUMNS, count, DEFAULT_VISIBLE, getUserFromCookie, mapStatusToLabel, normalizeStatus, PAGE_SIZE, buildCalendarCells, parseCalendarMonth, toDateKey, toIsoDate, type BoardStatus, type CalendarCell, type StatusTab } from './board-model';
 import BoardView from './components/board-view';
-import FilterBar from './components/filter-bar';
+import FilterBar, { type JobType } from './components/filter-bar';
+import StatusTabs from './components/status-tabs';
+import OverdueBanner from './components/overdue-banner';
+import { useViewMode } from './use-view-mode';
 import { useBoardFilters } from './use-board-filters';
 import CalendarView from './components/calendar-view';
 import ListView from './components/list-view';
@@ -44,8 +47,10 @@ export default function JobOrdersPage() {
 	const [copySeed, setCopySeed] = useState<Partial<CreateJobOrderDto> | null>(null);
 	const [searchText, setSearchText] = useState('');
 	const [selectedAssignee, setSelectedAssignee] = useState('all');
-	const [selectedType, setSelectedType] = useState<'all' | 'website' | 'purchase' | 'custom'>('all');
-	const [viewMode, setViewMode] = useState<ViewMode>('board');
+	const [selectedType, setSelectedType] = useState<JobType>('all');
+	const [statusTab, setStatusTab] = useState<StatusTab>('all');
+	const [searchOpen, setSearchOpen] = useState(false);
+	const [viewMode, setViewMode] = useViewMode();
 	const [calendarMonth, setCalendarMonth] = useState(() => {
 		const now = new Date();
 		return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -113,7 +118,7 @@ export default function JobOrdersPage() {
 		setResultDialog({ isOpen: true, status: 'error', message }),
 	);
 
-	const { assigneeOptions, filteredJobOrders, grouped } = useBoardFilters(jobOrders, deferredSearchText, selectedAssignee, selectedType, sortDirection);
+	const { assigneeOptions, filteredJobOrders, grouped, tabCounts, tabJobs } = useBoardFilters(jobOrders, deferredSearchText, selectedAssignee, selectedType, sortDirection, statusTab);
 
 	const calendarDate = useMemo(() => parseCalendarMonth(calendarMonth), [calendarMonth]);
 
@@ -125,8 +130,8 @@ export default function JobOrdersPage() {
 	}, [calendarDate]);
 
 	const calendarCells = useMemo<CalendarCell[]>(
-		() => (viewMode === 'calendar' ? buildCalendarCells(calendarDate, filteredJobOrders) : []),
-		[viewMode, calendarDate, filteredJobOrders],
+		() => (viewMode === 'calendar' ? buildCalendarCells(calendarDate, tabJobs) : []),
+		[viewMode, calendarDate, tabJobs],
 	);
 
 	const {
@@ -228,11 +233,7 @@ export default function JobOrdersPage() {
 		setSelectedDay(next === todayDateKey.slice(0, 7) ? todayDateKey : `${next}-01`);
 	};
 
-	const overdueCards = filteredJobOrders.filter((job) => {
-		const status = normalizeStatus(job.job_order_status);
-		const target = toDateValue(job.target_date);
-		return (status === 'pending' || status === 'in_progress') && target !== null && getDelayDays(target, new Date()) > 0;
-	}).length;
+	const overdueCards = tabCounts.late;
 	const lead = `${count(totalCards)} งานในช่วงนี้ · ${overdueCards > 0 ? `เลยกำหนด ${count(overdueCards)} งาน` : 'ไม่มีงานเลยกำหนด'}`;
 	const selectedDayJobs = calendarCells.find((cell) => cell.dateKey === selectedDay)?.jobs ?? [];
 	const selectedDayDate = selectedDay ? new Date(`${selectedDay}T00:00:00`) : null;
@@ -265,9 +266,17 @@ export default function JobOrdersPage() {
 					<p className="ka-ph__lead">{hasLoaded ? lead : 'กำลังโหลด…'}</p>
 				</div>
 				<div className="ka-jo__acts">
+					<button type="button" className="ka-btn ka-btn--ghost ka-btn--icon ka-jo-search-toggle" aria-label="ค้นหางานผลิต" aria-expanded={searchOpen} aria-controls="jo-search"
+						onClick={() => {
+							setSearchOpen((open) => !open);
+							requestAnimationFrame(() => document.getElementById('jo-search')?.focus());
+						}}
+					>
+						<svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+					</button>
 					<ViewSwitch viewMode={viewMode} onChange={setViewMode} />
 					{canAdd && (
-						<button type="button" onClick={() => openCreate(null)} className="ka-btn ka-btn--primary">
+						<button type="button" onClick={() => openCreate(null)} className="ka-btn ka-btn--primary ka-jo-create">
 							<svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
 							สร้างงานผลิต
 						</button>
@@ -275,10 +284,21 @@ export default function JobOrdersPage() {
 				</div>
 			</div>
 
+			<OverdueBanner
+				overdue={overdueCards}
+				onShow={() => {
+					setStatusTab('late');
+					if (viewMode === 'board') setViewMode('list');
+				}}
+			/>
+
+			<StatusTabs value={statusTab} counts={tabCounts} onChange={setStatusTab} />
+
 			<FilterBar
 				isLoading={isLoading}
 				hasLoaded={hasLoaded}
 				viewMode={viewMode}
+				searchOpen={searchOpen}
 				searchText={searchText}
 				setSearchText={setSearchText}
 				dateStart={dateStart}
@@ -320,7 +340,7 @@ export default function JobOrdersPage() {
 					actions={cardActions}
 				/>
 			) : viewMode === 'list' ? (
-				<ListView isLoading={isLoading} jobs={filteredJobOrders} statusTab="all" canEdit={canEdit} actions={cardActions} />
+				<ListView isLoading={isLoading} jobs={tabJobs} statusTab={statusTab} canEdit={canEdit} actions={cardActions} />
 			) : (
 				<CalendarView
 					isLoading={isLoading}
