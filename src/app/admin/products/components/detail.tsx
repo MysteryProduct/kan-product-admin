@@ -12,7 +12,10 @@ interface ProductDetailProps {
   isOpen: boolean;
   onClose: () => void;
   product: Product | null;
-  /** The product's store switches as the table read them; undefined while unread. */
+  /**
+   * The product's store switches as the table read them. When the table has none for this
+   * product (still loading, or the product left the page), the dialog reads them itself.
+   */
   policy?: StorePolicyState;
   /** Colour hexes by colour name, for variants whose colour arrives without one. */
   colorHexes?: ReadonlyMap<string, string>;
@@ -86,6 +89,17 @@ const remainOf = (variant: ProductVariant): number | null =>
     ? variant.stockProducts.reduce((sum, row) => sum + Number(row.stock_product_remain_qty || 0), 0)
     : null;
 
+// What a customer meets in the store, as kan-product-store shows it: the catalog lists only
+// published products (store-catalog.service.ts), and a sold-out listed product offers
+// "สอบถามได้" with the contact form only while contact is on (product-card.tsx).
+function storeNote(policy: StorePolicyState, soldOut: boolean): string {
+  if (!policy.published) return 'ไม่แสดงบนหน้าร้าน ลูกค้าไม่เห็นสินค้านี้';
+  if (!soldOut) return '';
+  return policy.contact_enabled
+    ? 'สินค้าหมด ลูกค้าเห็น “สอบถามได้” และส่งคำขอให้ร้านติดต่อกลับได้'
+    : 'สินค้าหมด ลูกค้าซื้อหรือสอบถามออนไลน์ไม่ได้';
+}
+
 function FileView({ file, label }: { file: ProductFile; label: string }) {
   return file.product_file_category === 'image' ? (
     // eslint-disable-next-line @next/next/no-img-element -- uploads are served by the API host as they are
@@ -116,6 +130,9 @@ export default function ProductDetailModal({
   const [detailData, setDetailData] = useState<Product | null>(null);
   const [loading, setLoading] = useState(false);
   const [picked, setPicked] = useState(0);
+  const [ownPolicy, setOwnPolicy] = useState<{ id: string; policy?: StorePolicyState; failed?: boolean } | null>(null);
+  const needOwnPolicy = isOpen && !!product && !policy;
+  const productId = product?.product_id;
 
   useEffect(() => {
     if (!isOpen || !product?.product_id) {
@@ -139,12 +156,31 @@ export default function ProductDetailModal({
     void fetchProductDetail();
   }, [isOpen, product]);
 
+  useEffect(() => {
+    if (!needOwnPolicy || !productId) return;
+    let active = true;
+    productModel
+      .getStorePolicies([productId])
+      .then((rows) => {
+        if (active) setOwnPolicy({ id: productId, policy: rows.find((row) => row.product_id === productId), failed: false });
+      })
+      .catch(() => {
+        if (active) setOwnPolicy({ id: productId, failed: true });
+      });
+    return () => {
+      active = false;
+    };
+  }, [needOwnPolicy, productId]);
+
   if (!isOpen || !product) {
     return null;
   }
 
   // The detail read may still hold the previous product; use it only once it is this one.
   const currentProduct = detailData?.product_id === product.product_id ? detailData : product;
+  const own = ownPolicy?.id === product.product_id ? ownPolicy : null;
+  const storePolicy = policy ?? own?.policy;
+  const policyFailed = !policy && (own?.failed || (own && !own.policy));
   const variants = resolveVariants(currentProduct);
   const descriptions = parseDescription(currentProduct.product_description || '').filter((item) => item.text?.trim());
   const { productFiles, variantFiles } = splitFilesByScope(currentProduct.files);
@@ -154,6 +190,7 @@ export default function ProductDetailModal({
   const addedOn = currentProduct.adddate ? formatThaiDate(currentProduct.adddate, { fallback: '' }) : '';
   const prices = variants.map((variant) => Number(variant.product_variant_price || 0));
   const remains = variants.map(remainOf).filter((value): value is number => value !== null);
+  const units = [...new Set(variants.map((variant) => variant.productUnit?.product_unit_name).filter(Boolean))];
   const subline = [
     currentProduct.category?.category_name,
     `${variants.length} แบบ`,
@@ -242,10 +279,6 @@ export default function ProductDetailModal({
 
           <dl className="ka-pm__kv">
             <div>
-              <dt>หมวดหมู่</dt>
-              <dd>{currentProduct.category?.category_name || '-'}</dd>
-            </div>
-            <div>
               <dt>ราคา</dt>
               <dd className="ka-pm__num">
                 {prices.length === 0
@@ -258,6 +291,10 @@ export default function ProductDetailModal({
             <div>
               <dt>คงเหลือรวม</dt>
               <dd className="ka-pm__num">{remains.length ? `${qtyFormat.format(remains.reduce((a, b) => a + b, 0))} ชิ้น` : '-'}</dd>
+            </div>
+            <div>
+              <dt>หน่วย</dt>
+              <dd>{units.length ? units.join(', ') : '-'}</dd>
             </div>
           </dl>
 
@@ -281,10 +318,10 @@ export default function ProductDetailModal({
                 </button>
               )}
             </div>
-            {policy ? (
+            {storePolicy ? (
               <ul className="ka-pm__store">
                 {STORE_SWITCHES.map((item) =>
-                  policy[item.key] ? (
+                  storePolicy[item.key] ? (
                     <li key={item.key} className="is-on">
                       <svg fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M5 12.5l4.5 4.5L19 7" />
@@ -298,19 +335,17 @@ export default function ProductDetailModal({
                   ),
                 )}
               </ul>
-            ) : (
+            ) : policyFailed ? (
               <p className="ka-pm__cap">ยังโหลดการตั้งค่าหน้าร้านไม่ได้</p>
+            ) : (
+              <span className="ka-skel" style={{ width: 320, maxWidth: '100%', height: 32 }} role="status" aria-label="กำลังโหลดการตั้งค่าหน้าร้าน" />
             )}
-            {stock === 'out stock' && policy && (
+            {storePolicy && storeNote(storePolicy, stock === 'out stock') && (
               <div className="ka-pm__note">
                 <svg fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M12 4l9 16H3zM12 10v4M12 17h.01" />
                 </svg>
-                <span>
-                  {policy.contact_enabled
-                    ? 'สินค้าหมด ลูกค้าเห็น “สอบถามได้” และส่งคำขอให้ร้านติดต่อกลับได้'
-                    : 'สินค้าหมด ลูกค้าซื้อหรือสอบถามออนไลน์ไม่ได้'}
-                </span>
+                <span>{storeNote(storePolicy, stock === 'out stock')}</span>
               </div>
             )}
           </section>
