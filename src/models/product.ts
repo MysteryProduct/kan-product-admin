@@ -68,8 +68,10 @@ class ProductModel {
    */
   async getProductById(id: string): Promise<Product> {
     try {
-      const response = await axiosInstance.get<SingleProductResponse>(`/product/${id}`);
-      return response.data.data;
+      // The API answers with the product itself; an older shape wrapped it in `data`.
+      const response = await axiosInstance.get<SingleProductResponse | Product>(`/product/${id}`);
+      const body = response.data as SingleProductResponse | Product;
+      return 'data' in body && body.data ? body.data : (body as Product);
     } catch (error) {
       console.error(`Error fetching product ${id}:`, error);
       throw error;

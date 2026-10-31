@@ -270,4 +270,57 @@ ul.ka-kv { margin: 0; padding: 0; list-style: none; }
 .ka-table-flat > .ka-card { border: 0; border-radius: 0; box-shadow: none; }
 .ka-table-flat .ka-table-tools { border-top: 1px solid var(--border); }
 
+/* ---------- Product editor (TASK-0316 4.4) ---------- */
+.ka-editor { padding-bottom: 0; }
+.ka-editor__layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); align-items: start; margin-bottom: var(--space-6); }
+@media (min-width: 1024px) { .ka-editor__layout { grid-template-columns: minmax(0, 1fr) 340px; } }
+.ka-editor__aside { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
+@media (min-width: 640px) and (max-width: 1023px) { .ka-editor__aside { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ka-editor__aside > :last-child { grid-column: 1 / -1; } }
+.ka-editor__g2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
+@media (min-width: 640px) { .ka-editor__g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.ka-editor__vg { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
+@media (min-width: 640px) { .ka-editor__vg { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1200px) { .ka-editor__vg { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.ka-editor .ka-card__body { padding: var(--space-4) var(--space-6) var(--space-6); }
+@media (max-width: 639px) { .ka-editor .ka-card__body { padding: var(--space-4); } .ka-editor .ka-card__head { padding: var(--space-3) var(--space-4); } }
+
+.ka-variant { overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-card); }
+.ka-variant__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--border); background: var(--bg-subtle); font: 400 15px/24px var(--ka-font); }
+.ka-variant__body { display: grid; gap: var(--space-4); padding: var(--space-4); }
+.ka-variant__materials, .ka-variant__files { display: grid; gap: var(--space-2); padding-top: var(--space-3); border-top: 1px solid var(--border); }
+.ka-mrow { display: grid; grid-template-columns: minmax(0, 1fr) 96px auto; gap: var(--space-2); align-items: center; }
+@media (max-width: 639px) { .ka-mrow { grid-template-columns: minmax(0, 1fr) 80px auto; } }
+
+.ka-files { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.ka-files__item { position: relative; width: 88px; height: 88px; margin: 0; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--bg-subtle); }
+.ka-files__item > img, .ka-files__item > video { width: 100%; height: 100%; object-fit: cover; }
+.ka-files__main { position: absolute; left: 0; right: 0; bottom: 0; padding: 2px 6px; background: var(--scrim); color: #fff; font: 500 11px/16px var(--ka-font); text-align: center; }
+.ka-files__remove { position: absolute; top: 4px; right: 4px; display: grid; place-items: center; width: 24px; height: 24px; border: 0; border-radius: var(--radius-sm); background: var(--bg-surface); color: var(--ink); cursor: pointer; box-shadow: var(--shadow-card); }
+.ka-files__remove > svg { width: 14px; height: 14px; }
+.ka-files__add { display: grid; place-items: center; align-content: center; gap: 2px; width: 88px; height: 88px; border: 1.5px dashed var(--border-control); border-radius: var(--radius-control); color: var(--ink-muted); font: 500 13px/18px var(--ka-font); cursor: pointer; }
+.ka-files__add > svg { width: 18px; height: 18px; }
+.ka-files__add:hover, .ka-drop:hover { border-color: var(--focus); color: var(--ink); }
+.ka-files__add:focus-within, .ka-drop:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.ka-drop { display: grid; justify-items: center; gap: 6px; padding: var(--space-5); border: 1.5px dashed var(--border-control); border-radius: var(--radius-card); background: var(--bg-subtle); color: var(--ink-muted); text-align: center; font: 400 14px/22px var(--ka-font); cursor: pointer; }
+.ka-drop > svg { width: 28px; height: 28px; }
+
+.ka-switch-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-3) 0; border-top: 1px solid var(--border); font: 400 15px/24px var(--ka-font); }
+.ka-switch-row:first-child { border-top: 0; }
+.ka-switch { position: relative; flex: none; width: 44px; height: 26px; padding: 0; border: 0; border-radius: var(--radius-pill); background: var(--border-control); cursor: pointer; transition: background-color var(--ka-base) var(--ka-ease); }
+.ka-switch[aria-checked="true"] { background: var(--action); }
+.ka-switch__knob { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: var(--shadow-card); transition: transform var(--ka-base) var(--ka-ease); }
+.ka-switch[aria-checked="true"] .ka-switch__knob { transform: translateX(18px); }
+@media (max-width: 767px) { .ka-switch-row { min-height: var(--touch-target); } }
+
+.ka-ready { display: grid; gap: 2px; margin: 0; padding-top: var(--space-2); list-style: none; }
+.ka-ready > li { display: flex; align-items: center; gap: var(--space-2); min-height: 32px; font: 400 15px/24px var(--ka-font); }
+.ka-ready > li::before { content: "✓"; display: grid; place-items: center; width: 22px; height: 22px; flex: none; border-radius: 50%; background: var(--neutral-soft); color: var(--neutral); font: 700 12px/1 var(--ka-font); }
+.ka-ready > li[data-state="ok"]::before { background: var(--success-soft); color: var(--success); }
+.ka-ready > li[data-state="todo"]::before { content: "!"; background: var(--danger-soft); color: var(--danger); }
+.ka-ready > li > a { color: var(--brand-ink); text-decoration: none; }
+.ka-ready > li > a:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+.ka-savebar { position: sticky; bottom: 0; z-index: 4; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin: 0 calc(-1 * var(--space-6)); padding: var(--space-3) var(--space-6); border-top: 1px solid var(--border); background: var(--bg-surface); box-shadow: 0 -8px 24px rgba(32, 40, 51, 0.06); }
+@media (max-width: 639px) { .ka-savebar { margin: 0 calc(-1 * var(--space-4)); padding: var(--space-3) var(--space-4); } .ka-savebar__hint { display: none; } .ka-savebar .ka-btn { flex: 1; } .ka-savebar .ka-btn--ghost { display: none; } }
+
 }
