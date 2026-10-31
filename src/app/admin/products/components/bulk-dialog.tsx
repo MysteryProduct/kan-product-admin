@@ -313,7 +313,7 @@ export default function BulkDialog({ mode, products, policies, categories, onClo
               disabled={pending}
               onClick={() => void save()}
             >
-              {confirmLabel}
+              <span className="ka-pm__btn-text">{confirmLabel}</span>
             </button>
           </>
         )
