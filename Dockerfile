@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:22.9.0-alpine AS base
+FROM node:24.22.1-alpine AS base
 WORKDIR /app
 
 FROM base AS deps
@@ -16,7 +16,7 @@ ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN npm run build
 
-FROM node:22.9.0-alpine AS runner
+FROM node:24.22.1-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=5001
