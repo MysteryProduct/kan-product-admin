@@ -38,6 +38,20 @@
   .ka-qrow > .ka-btn { grid-column: 1 / -1; width: 100%; }
 }
 
+/* ---------- Header notification panel ---------- */
+.ka-bell { position: relative; }
+.ka-bell__dot { position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border: 2px solid var(--bg-surface); border-radius: 50%; background: var(--brand); }
+.ka-notes { display: grid; gap: 2px; }
+.ka-notes__title { margin: 0; padding: 6px 8px 8px; font: 600 16px/26px var(--ka-font); }
+.ka-notes__empty { margin: 0; padding: var(--space-4) 8px; color: var(--ink-muted); font-size: 14px; }
+.ka-note { display: flex; gap: var(--space-3); align-items: flex-start; padding: 10px 8px; border-radius: var(--radius-control); color: var(--ink); font-size: 14px; line-height: 22px; text-decoration: none; }
+.ka-note:hover { background: var(--bg-subtle); }
+.ka-note b { display: block; font-weight: 600; }
+.ka-note__sub { display: block; color: var(--ink-muted); }
+.ka-note__icon { display: grid; flex: none; place-items: center; width: 36px; height: 36px; border-radius: var(--radius-control); background: var(--warning-soft); color: var(--warning); }
+.ka-note[data-tone="danger"] .ka-note__icon { background: var(--danger-soft); color: var(--danger); }
+.ka-note__icon svg { width: 16px; height: 16px; }
+
 /* ---------- Popover, menu, filter chip ---------- */
 .ka-popover {
   position: fixed; z-index: 75; display: flex; flex-direction: column; max-width: calc(100vw - 16px); max-height: min(420px, calc(100dvh - 16px));

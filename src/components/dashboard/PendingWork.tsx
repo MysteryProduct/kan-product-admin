@@ -111,6 +111,19 @@ const ITEMS: Item[] = [
   },
 ];
 
+/** The waiting work above 0, urgent first, for the header's notification panel. */
+export function pendingNotices(work: PendingWorkData | undefined) {
+  if (!work) return [];
+  return ITEMS.filter((item) => (work[item.key] ?? 0) > 0).map((item) => ({
+    key: item.key,
+    title: item.title,
+    hint: item.hint,
+    href: item.href,
+    count: work[item.key] ?? 0,
+    urgent: Boolean(item.urgent),
+  }));
+}
+
 /** The totals the greeting shows: rows that count, and how many of those are urgent. */
 export function summarizePending(work: PendingWorkData | undefined) {
   if (!work) return undefined;

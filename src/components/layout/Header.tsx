@@ -9,8 +9,12 @@ import ActionResultDialog from '@/components/ActionResultDialog';
 import ChangePasswordModal from '@/components/layout/ChangePasswordModal';
 import HeaderSearch from '@/components/layout/HeaderSearch';
 import { getMenuTrail } from '@/lib/admin-menu';
+import NotificationPanel from '@/components/layout/NotificationPanel';
+import { summarizePending } from '@/components/dashboard/PendingWork';
+import { usePendingWork } from '@/hooks/usePendingWork';
 
 export default function Header() {
+  const pendingWork = usePendingWork(true);
   const { toggleSidebar } = useSidebar();
   const { user, logout } = useAuth();
   const router = useRouter();
@@ -46,11 +50,7 @@ export default function Header() {
 
       <ThemeToggle />
 
-      <button type="button" aria-label="การแจ้งเตือน" className="ka-btn ka-btn--ghost ka-btn--icon max-sm:hidden">
-        <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-        </svg>
-      </button>
+      <NotificationPanel urgent={summarizePending(pendingWork)?.urgent ?? 0} />
 
       <div className="flex items-center gap-2">
         <span className="ka-avatar" aria-hidden="true">
