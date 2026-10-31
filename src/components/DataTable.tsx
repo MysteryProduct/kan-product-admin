@@ -24,6 +24,8 @@ export interface DataTableColumn<T> {
   defaultHidden?: boolean;
   render?: (value: T[keyof T], row: T) => React.ReactNode;
   width?: string;
+  /** `hide` leaves the column off the phone card (the card title or `renderCard` already says it). */
+  card?: 'hide';
 }
 
 /**
@@ -72,6 +74,14 @@ export interface DataTableProps<T> {
   bulkActions?: (selectedKeys: ReadonlySet<string>) => React.ReactNode;
   /** Replaces the hint under "ไม่พบข้อมูล" when no filter is the cause. */
   emptyHint?: string;
+  /** Draws the body of a row's phone card instead of the title + field list. */
+  renderCard?: (row: T) => React.ReactNode;
+  /**
+   * Filters the page applies outside the table (chips, tabs, search), named for the empty state:
+   * "กำลังกรอง ประเภท: แก้ว · สี: ดำ". `onClearFilters` clears them with the table's own.
+   */
+  activeFilters?: string[];
+  onClearFilters?: () => void;
 }
 
 // The filter menu is `w-56` (14rem = 224px); the margin keeps it off the screen edge.
@@ -115,6 +125,9 @@ function DataTableInner<T>(
     rowActions,
     bulkActions,
     emptyHint,
+    renderCard,
+    activeFilters = [],
+    onClearFilters,
   }: DataTableProps<T>,
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
@@ -268,7 +281,15 @@ function DataTableInner<T>(
       setFilterSearches({});
       setShowFilterKey(null);
       onFilterChange?.({});
+      onClearFilters?.();
     };
+    // filterConfigs keeps only columns whose filter has a value.
+    const filterNames = [
+      ...activeFilters,
+      ...filterConfigs
+        .map((filter) => columns.find((col) => String(col.key) === filter.key)?.label)
+        .filter((label): label is string => Boolean(label)),
+    ];
 
     const columnSpan = visibleColumns.length + (selection ? 1 : 0) + (rowActions ? 1 : 0);
     const sortableColumns = columns.filter((col) => col.sortable);
@@ -286,16 +307,12 @@ function DataTableInner<T>(
             />
           </svg>
         </div>
-        <p className="text-base font-semibold text-[var(--ink)]">ไม่พบข้อมูล</p>
-        {/* filterConfigs keeps only columns whose filter has a value. */}
-        {filterConfigs.length > 0 ? (
+        <p className="text-base font-semibold text-[var(--ink)]">
+          {filterNames.length > 0 ? 'ไม่พบรายการที่ตรงกับตัวกรอง' : 'ไม่พบข้อมูล'}
+        </p>
+        {filterNames.length > 0 ? (
           <>
-            <p className="text-sm text-[var(--ink-muted)]">
-              กำลังกรอง {filterConfigs
-                .map((filter) => columns.find((col) => String(col.key) === filter.key)?.label)
-                .filter(Boolean)
-                .join(' · ')}
-            </p>
+            <p className="text-sm text-[var(--ink-muted)]">กำลังกรอง {filterNames.join(' · ')}</p>
             <Button variant="secondary" size="sm" className="ka-empty__action" onClick={clearFilters}>
               ล้างตัวกรองทั้งหมด
             </Button>
@@ -332,7 +349,7 @@ function DataTableInner<T>(
           data.map((row, idx) => {
             const selected = Boolean(selection?.selectedKeys.has(rowKey(row)));
             const first = visibleColumns.find((col) => col.key === cardTitleKey) ?? visibleColumns[0];
-            const rest = visibleColumns.filter((col) => col !== first);
+            const rest = visibleColumns.filter((col) => col !== first && col.card !== 'hide');
             const cell = (col: DataTableColumn<T>) =>
               col.render ? col.render(row[col.key], row) : String(row[col.key] || '');
             return (
@@ -343,7 +360,7 @@ function DataTableInner<T>(
                 onClick={() => onRowClick?.(row)}
               >
                 <div className="ka-rowcard__head">
-                  <div className="min-w-0">{first && cell(first)}</div>
+                  <div className="min-w-0 flex-1">{renderCard ? renderCard(row) : first && cell(first)}</div>
                   {selection && (
                     <label className="ka-check-hit" onClick={(e) => e.stopPropagation()}>
                       <input
@@ -357,14 +374,14 @@ function DataTableInner<T>(
                     </label>
                   )}
                 </div>
-                <dl className="ka-rowcard__fields">
+                {!renderCard && <dl className="ka-rowcard__fields">
                   {rest.map((col) => (
                     <div key={String(col.key)} className="ka-rowcard__field">
                       <dt>{col.label}</dt>
                       <dd>{cell(col)}</dd>
                     </div>
                   ))}
-                </dl>
+                </dl>}
                 {rowActions && (
                   <div className="ka-rowcard__foot" onClick={(e) => e.stopPropagation()}>
                     <RowMenu label={`จัดการ ${rowActions.getLabel(row)}`} items={rowActions.items(row)} />
