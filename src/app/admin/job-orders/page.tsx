@@ -549,6 +549,7 @@ export default function JobOrdersPage() {
 			{pendingCancelJob && (
 				<CancellationDialog
 					title={`ยกเลิกงาน ${pendingCancelJob.job_order_code}?`}
+					presets={['ลูกค้ายกเลิกคำสั่งซื้อ', 'วัตถุดิบไม่พอ', 'สร้างงานซ้ำ']}
 					onClose={() => setPendingCancelJob(null)}
 					onConfirm={async (reason) => {
 						await jobOrderModel.updateJobOrderStatus(pendingCancelJob.job_order_id, 'cancelled', user?.employee_id, undefined, undefined, reason);
