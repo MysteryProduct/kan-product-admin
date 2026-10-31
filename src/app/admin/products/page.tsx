@@ -52,11 +52,13 @@ const REQUIRED_COLUMNS: { key: string; label: string }[] = [
 ];
 
 // The tabs are the stock filter the API already knows; each count is the API's own total for it.
-type StockTab = 'all' | 'in' | 'out';
-const STOCK_TABS: { key: StockTab; label: string; value?: string }[] = [
+type StockTab = 'all' | 'in' | 'out' | 'hidden';
+// `value` filters by stock, `store` by whether the store shows the product (TASK-0319).
+const STOCK_TABS: { key: StockTab; label: string; value?: string; store?: string }[] = [
   { key: 'all', label: 'ทั้งหมด' },
   { key: 'in', label: 'มีสินค้า', value: 'in stock' },
   { key: 'out', label: 'สินค้าหมด', value: 'out stock' },
+  { key: 'hidden', label: 'ซ่อนจากหน้าร้าน', store: 'hidden' },
 ];
 const SEARCH_DELAY_MS = 300;
 const count = (value: number) => new Intl.NumberFormat('th-TH').format(value);
@@ -179,6 +181,7 @@ export default function ProductsPage() {
     if (chipFilters.color.length) next.color = JSON.stringify(chipFilters.color);
     const tab = STOCK_TABS.find((item) => item.key === stockTab);
     if (tab?.value) next.stock = JSON.stringify([tab.value]);
+    if (tab?.store) next.store = JSON.stringify([tab.store]);
     return next;
   }, [chipFilters, stockTab]);
 
@@ -186,10 +189,15 @@ export default function ProductsPage() {
   const loadCounts = useCallback(async () => {
     const base: Record<string, string> = { ...filters };
     delete base.stock;
+    delete base.store;
     try {
       const results = await Promise.all(
         STOCK_TABS.map((tab) =>
-          productModel.getProducts(1, 1, appliedSearchQuery, null, 'ASC', tab.value ? { ...base, stock: JSON.stringify([tab.value]) } : base),
+          productModel.getProducts(1, 1, appliedSearchQuery, null, 'ASC', {
+            ...base,
+            ...(tab.value ? { stock: JSON.stringify([tab.value]) } : {}),
+            ...(tab.store ? { store: JSON.stringify([tab.store]) } : {}),
+          }),
         ),
       );
       setCounts(Object.fromEntries(STOCK_TABS.map((tab, index) => [tab.key, results[index].meta.total])));
@@ -307,6 +315,8 @@ export default function ProductsPage() {
         const current = prev.get(row.product_id) ?? { product_id: row.product_id, published: true, online_purchase: true, contact_enabled: true };
         return new Map(prev).set(row.product_id, { ...current, published });
       });
+      void loadCounts();
+      if (stockTab === 'hidden') void loadProducts(currentPage);
       toast({ message: published ? `แสดง ${row.product_name} บนหน้าร้านแล้ว` : `ซ่อน ${row.product_name} จากหน้าร้านแล้ว` });
     } catch (error) {
       setResultDialog({ isOpen: true, status: 'error', action: 'update', message: `ตั้งค่าหน้าร้านไม่สำเร็จ ${getApiErrorMessage(error)}` });
