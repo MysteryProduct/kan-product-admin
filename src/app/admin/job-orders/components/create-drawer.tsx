@@ -263,6 +263,8 @@ export default function CreateJobOrderDrawer({ isOpen, onClose, onSuccess, initi
     if (used.length === 0) next.materials = 'เพิ่มวัตถุดิบอย่างน้อย 1 รายการ';
     else if (used.some((row) => !Number.isInteger(row.material_qty) || row.material_qty < 1)) next.materials = 'จำนวนวัตถุดิบต่อชิ้นต้องเป็นจำนวนเต็มอย่างน้อย 1';
     else if (new Set(used.map((row) => row.material_id)).size !== used.length) next.materials = 'มีวัตถุดิบซ้ำ';
+    // The API reserves every material when the job is created and refuses a shortfall.
+    else if (shortCount > 0) next.materials = 'วัตถุดิบไม่พอสำหรับจอง บันทึกได้เมื่อรับของเข้าแล้ว หรือลดจำนวนที่ผลิต';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -550,7 +552,7 @@ export default function CreateJobOrderDrawer({ isOpen, onClose, onSuccess, initi
               <div role="alert" className="ka-banner ka-banner--danger mt-2">
                 <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4l9 16H3zM12 10v4M12 17h.01" /></svg>
                 <span>
-                  วัตถุดิบไม่พอ {count(shortCount)} รายการ บันทึกได้ แต่เริ่มผลิตไม่ได้จนกว่าจะรับของ{' '}
+                  วัตถุดิบไม่พอ {count(shortCount)} รายการ ระบบจองวัตถุดิบตอนสร้างงาน จึงยังบันทึกงานนี้ไม่ได้ รับของเข้าก่อน หรือลดจำนวนที่ผลิต{' '}
                   <a href="/admin/purchase-orders" className="font-semibold whitespace-nowrap">สร้างใบสั่งซื้อ →</a>
                 </span>
               </div>
