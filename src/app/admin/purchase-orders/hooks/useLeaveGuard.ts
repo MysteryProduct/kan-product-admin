@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { previousPath } from '../lib/previous-path';
 
 /**
  * Asks before leaving a page with unsaved edits: through the page's own cancel, any in-app link
@@ -93,18 +94,25 @@ export function useLeaveGuard(active: boolean) {
     stay: () => setTarget(null),
     confirm: () => target && go(target),
     /**
-     * After a save: go to `href` without asking, in place of this page. The extra back-button entry is
-     * dropped first, so back from `href` reaches the page before the form, not the form again.
+     * After a save: go to `href` without asking. The extra back-button entry is stepped over first (it
+     * belongs to this page, so that step never leaves the app). When the form was opened from `href`
+     * itself (edit from the order's detail), that entry is reused instead of stacking a second copy;
+     * otherwise `href` takes the form's place, so back reaches the page before the form.
      */
     replaceWith: (href: string) => {
       releasedRef.current = true;
       activeRef.current = false;
+      const cameFromHref = previousPath() === href;
+      const finish = () => {
+        if (cameFromHref) window.history.back();
+        else router.replace(href);
+      };
       if (!trappedRef.current) {
-        router.replace(href);
+        finish();
         return;
       }
       trappedRef.current = false;
-      window.addEventListener('popstate', () => router.replace(href), { once: true });
+      window.addEventListener('popstate', finish, { once: true });
       window.history.back();
     },
   };

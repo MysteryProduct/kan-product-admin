@@ -314,7 +314,13 @@ check('approve: step "รับสินค้า" is current', (await page.loca
 await shot('flow-approved-1440');
 
 // ---------- Flow 3: edit the pending include order (quantity 3 → 5 on line 1) ----------
-await page.goto(`${base}/admin/purchase-orders/${created.include.id}/edit`);
+// Opened from the order's detail page, as a user would (review F6).
+await page.goto(`${base}/admin/purchase-orders`);
+await settle(800);
+await page.goto(`${base}/admin/purchase-orders/${created.include.id}`);
+await settle(1000);
+await page.getByRole('link', { name: 'แก้ไข', exact: true }).click();
+await page.waitForURL(/\/edit$/, { timeout: 60000 });
 await settle(1500);
 const firstQty = page.locator('.ka-po-ln').first().locator('input[inputmode=numeric]');
 await firstQty.fill('5');
@@ -329,6 +335,11 @@ notes.edit = { expected: editExpected, sent: editBody && { subtotal: editBody.pu
 check('edit: PATCH body totals = old calculation', editBody && editBody.purchase_order_total === editExpected.total && editBody.purchase_order_vat_amount === editExpected.vat, JSON.stringify(notes.edit));
 check('edit: PATCH body keys as before', editBody && JSON.stringify(Object.keys(editBody)) === JSON.stringify(['purchase_order_id', 'purchase_order_name', 'purchase_order_detail', 'supplier_id', 'vat_type', 'purchase_order_subtotal', 'purchase_order_vat_amount', 'update_by', 'purchase_order_total', 'purchaseOrderLists']), JSON.stringify(Object.keys(editBody ?? {})));
 check('edit: saved quantity 5', orderQty(edited) === 5, String(orderQty(edited)));
+check('edit: detail shows the new quantity', (await page.locator('.ka-po-it__qtyonly').allInnerTexts()).includes('5'), (await page.locator('.ka-po-it__qtyonly').allInnerTexts()).join(','));
+// Review F6: one back from the saved order leaves it (no second copy of the detail page in history).
+await page.goBack();
+await settle(800);
+check('edit: back after save leaves the detail page', new URL(page.url()).pathname === '/admin/purchase-orders', page.url());
 function orderQty(order) {
   return Number((order.purchaseOrderLists ?? []).find((line) => Number(line.purchase_order_list_price) === 123.45)?.purchase_order_list_qty);
 }
