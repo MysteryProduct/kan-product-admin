@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { usePermissions } from '@/hooks/usePermissions';
 import ReceiptFormPage, { OrderPicker } from '../components/receipt-form';
-import { NoPermissionNote, PageLoadError, PageLoading } from '../components/page-states';
+import { NoPermissionNote, OrderNotReceivable, PageLoadError, PageLoading } from '../components/page-states';
 import { useOrderToReceive } from '../hooks/usePurchaseReceipt';
 
 /** "รับสินค้า" for the order in `?po={id}`; without one the employee picks the order first. */
@@ -15,6 +15,10 @@ function NewReceipt() {
   if (!orderId) return <OrderPicker />;
   if (error) return <PageLoadError message={error} onRetry={reload} />;
   if (!order) return <PageLoading what="ใบสั่งซื้อ" />;
+  // The API creates receipts for active and partly received orders only.
+  if (order.purchase_order_status !== 'active' && order.purchase_order_status !== 'partial') {
+    return <OrderNotReceivable order={order} backHref="/admin/purchase-receipt" backLabel="กลับไปรายการใบรับสินค้า" />;
+  }
   return <ReceiptFormPage key={order.purchase_order_id} mode="create" order={order} />;
 }
 

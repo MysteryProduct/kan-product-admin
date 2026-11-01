@@ -1,18 +1,17 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import Cookies from 'js-cookie';
 import axiosInstance from '@/lib/axios';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { todayLocalIso, toDateInputValue } from '@/lib/date-format';
-import useVatRate from '@/hooks/useVatRate';
 import { calculateVatSummary, VatType } from '@/lib/vat';
 import PurchaseReceiptModel from '@/models/purchase-receipt';
 import type { PurchaseOrder } from '@/types/purchase-order';
 import type { CreatePurchaseReceiptDto, PurchaseReceipt } from '@/types/purchase-receipt';
 import { cleanNumberInput, parsePrice, parseQty } from '../../purchase-orders/hooks/usePurchaseOrderForm';
 import { orderLines } from '../../purchase-orders/lib/po-display';
-import { quantityText, Receipt, receiptLines, receiptVatRate } from '../lib/pr-display';
+import { quantityText, Receipt, receiptLines } from '../lib/pr-display';
 
 const purchaseReceiptModel = new PurchaseReceiptModel();
 
@@ -87,9 +86,18 @@ function buildLines(order: PurchaseOrder, receipt: Receipt | null | undefined, m
     .filter((line) => line.remaining > 0);
 }
 
+/** The rate the API applies to a receipt of this order. */
+export function orderVatRate(order: PurchaseOrder): number {
+  const source = order as OrderWithVat;
+  if (source.supplier?.is_vat_register === false) return 0;
+  const stored = source.vat_rate;
+  if (stored === null || stored === undefined || stored === '') return 7;
+  const rate = Number(stored);
+  return Number.isFinite(rate) ? rate : 7;
+}
+
 /** State, totals, validation and saving shared by the receive and edit pages. */
 export function useReceiptForm({ mode, order, receipt }: Options) {
-  const settingsRate = useVatRate();
   const source = order as OrderWithVat;
   const unregistered = source.supplier?.is_vat_register === false;
 
@@ -105,12 +113,10 @@ export function useReceiptForm({ mode, order, receipt }: Options) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  // The API saves the order's rate (or the one already on the receipt), so the totals use it too.
-  const vatRate = useMemo(() => {
-    if (mode === 'edit' && receipt) return receiptVatRate(receipt, settingsRate);
-    const rate = Number(source.vat_rate);
-    return source.vat_rate !== null && source.vat_rate !== undefined && Number.isFinite(rate) && rate > 0 ? rate : settingsRate;
-  }, [mode, receipt, source.vat_rate, settingsRate]);
+  // The form sends no vat_rate, so on create and on update the API saves the order's stored rate
+  // (`dto.vat_rate ?? order.vat_rate ?? 7`, 0 for an unregistered supplier). The totals use that same rate;
+  // an order saved without VAT keeps 0 even when VAT is picked here (TASK-0325 review F1).
+  const vatRate = orderVatRate(source);
 
   const touch = () => {
     setDirty(true);

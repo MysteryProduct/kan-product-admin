@@ -230,7 +230,9 @@ function PurchaseReceiptList() {
   const page = Math.max(1, Number(params?.get('page')) || 1);
   const sortParam = params?.get('sort') as SortKey | null;
   const sort: SortKey = sortParam && SORT_KEYS.includes(sortParam) ? sortParam : 'newest';
-  const local = Boolean(query) || supplierIds.length > 0;
+  // The API sorts amounts by the line sum (before VAT for "แยก VAT"), not the total on screen, so a sort by
+  // amount is also done here (TASK-0325 review F3).
+  const local = Boolean(query) || supplierIds.length > 0 || SORTS[sort].field === 'purchase_receipt_total';
 
   const [searchText, setSearchText] = useState(query);
   const [rows, setRows] = useState<Receipt[]>([]);
@@ -277,32 +279,43 @@ function PurchaseReceiptList() {
     lastQuery.current = query;
   }, [query, searchText]);
 
+  // Every supplier, a hundred per request, so the chip can filter any of them (TASK-0325 review F4).
   useEffect(() => {
     let active = true;
-    supplierModel
-      .getSuppliers(1, 100, '')
-      .then((response) => {
-        if (active) setSuppliers(response.data.map((supplier) => ({ value: supplier.supplier_id, label: supplier.supplier_name })));
-      })
-      .catch(() => undefined);
+    (async () => {
+      const first = await supplierModel.getSuppliers(1, 100, '');
+      const all = [...first.data];
+      for (let next = 2; next <= (first.meta?.last_page ?? 1); next += 1) {
+        all.push(...(await supplierModel.getSuppliers(next, 100, '')).data);
+      }
+      if (active) setSuppliers(all.map((supplier) => ({ value: supplier.supplier_id, label: supplier.supplier_name })));
+    })().catch(() => undefined);
     return () => {
       active = false;
     };
   }, []);
 
+  // The fetch below must not rerun because setParams changed identity with the URL (TASK-0325 review F5).
+  const setParamsRef = useRef(setParams);
+  useEffect(() => {
+    setParamsRef.current = setParams;
+  }, [setParams]);
+
   const statusKey = statuses.join(',');
   const supplierKey = supplierIds.join(',');
   // While searching or filtering by supplier the page is applied here, so it is not part of the fetch.
+  const requestPage = local ? 1 : page;
   const fetchKey = `${local ? 'local' : page}|${query}|${statusKey}|${supplierKey}|${sort}|${refreshKey}`;
   const loading = loadedKey !== fetchKey;
 
   useEffect(() => {
     let active = true;
     const filters = statusKey ? { purchase_receipt_status: JSON.stringify(statusKey.split(',')) } : undefined;
-    const { field, order } = SORTS[sort];
+    // Here the latest receipts are loaded and sorted or filtered on the page; otherwise the API pages them.
+    const { field, order } = local ? SORTS.newest : SORTS[sort];
     const request = local
       ? purchaseReceiptModel.getPurchaseReceipts(1, LOCAL_FILTER_LIMIT, undefined, field, order, filters)
-      : purchaseReceiptModel.getPurchaseReceipts(page, PAGE_SIZE, undefined, field, order, filters);
+      : purchaseReceiptModel.getPurchaseReceipts(requestPage, PAGE_SIZE, undefined, field, order, filters);
     request
       .then((response) => {
         if (!active) return;
@@ -311,8 +324,8 @@ function PurchaseReceiptList() {
         setCapped(local && (response.meta?.total ?? 0) > LOCAL_FILTER_LIMIT);
         setListError(null);
         // A page beyond the end (after a delete or an old link) falls back to the last one.
-        if (!local && response.meta && response.meta.last_page > 0 && page > response.meta.last_page) {
-          setParams({ page: response.meta.last_page }, 'replace');
+        if (!local && response.meta && response.meta.last_page > 0 && requestPage > response.meta.last_page) {
+          setParamsRef.current({ page: response.meta.last_page }, 'replace');
         }
       })
       .catch((error: unknown) => {
@@ -324,7 +337,7 @@ function PurchaseReceiptList() {
     return () => {
       active = false;
     };
-  }, [fetchKey, local, page, sort, statusKey, setParams]);
+  }, [fetchKey, local, requestPage, sort, statusKey]);
 
   // Searching by order code or supplier, or picking suppliers, filters the loaded receipts here.
   const filteredRows = useMemo(() => {
@@ -346,7 +359,7 @@ function PurchaseReceiptList() {
   const pagerMeta: PaginationMeta | null = local ? { total, page: shownPage, last_page: lastPage, limit: PAGE_SIZE } : meta;
   const from = total === 0 ? 0 : (shownPage - 1) * PAGE_SIZE + 1;
   const to = Math.min(shownPage * PAGE_SIZE, total);
-  const filtered = local || statuses.length > 0;
+  const filtered = Boolean(query) || supplierIds.length > 0 || statuses.length > 0;
   const nothingYet = !loading && !listError && total === 0 && !filtered;
   const noMatch = !loading && !listError && total === 0 && filtered;
 
@@ -451,7 +464,7 @@ function PurchaseReceiptList() {
 
         {capped && (
           <p className="ka-po-cap ka-pr-capped" role="note">
-            ค้นหาและกรองผู้จำหน่ายจาก {LOCAL_FILTER_LIMIT.toLocaleString('th-TH')} ใบรับล่าสุด
+            ค้นหา กรองผู้จำหน่าย และเรียงตามยอด จาก {LOCAL_FILTER_LIMIT.toLocaleString('th-TH')} ใบรับล่าสุด
           </p>
         )}
 

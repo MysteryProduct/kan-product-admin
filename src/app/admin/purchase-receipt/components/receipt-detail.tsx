@@ -103,14 +103,24 @@ export default function ReceiptDetail({ receipt, order, onChanged }: Props) {
     };
   }, []);
 
-  // "พิมพ์" in the list's row menu opens this page with ?print=1.
+  // "พิมพ์" in the list's row menu opens this page with ?print=1. The print waits for the page to settle,
+  // and removing the parameter re-runs this effect, so the timer is not tied to it; it
+  // prints only if the page is still open (TASK-0325 review F2).
   const printed = useRef(false);
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   useEffect(() => {
     if (params?.get('print') !== '1' || printed.current) return;
     printed.current = true;
+    window.setTimeout(() => {
+      if (mounted.current) window.print();
+    }, 300);
     router.replace(`${BASE}/${id}`, { scroll: false });
-    const timer = window.setTimeout(() => window.print(), 300);
-    return () => window.clearTimeout(timer);
   }, [params, router, id]);
 
   const changed = () => {

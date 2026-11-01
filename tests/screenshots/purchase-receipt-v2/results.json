@@ -3,7 +3,7 @@
     {
       "name": "flow start: order active, balance 200",
       "ok": true,
-      "note": "{\"step\":\"เริ่ม: PO 200 อนุมัติแล้ว\",\"po\":\"PO202611010090\",\"status\":\"active\",\"balance\":200,\"ordered\":200,\"stock\":0}"
+      "note": "{\"step\":\"เริ่ม: PO 200 อนุมัติแล้ว\",\"po\":\"PO202611010092\",\"status\":\"active\",\"balance\":200,\"ordered\":200,\"stock\":0}"
     },
     {
       "name": "form 390: stepper and save 44px",
@@ -48,7 +48,7 @@
     {
       "name": "form: crumb \"← ใบรับสินค้า / รับสินค้า {PO}\"",
       "ok": true,
-      "note": "← ใบรับสินค้า / รับสินค้า PO202611010090 Ctrl K"
+      "note": "← ใบรับสินค้า / รับสินค้า PO202611010092 Ctrl K"
     },
     {
       "name": "form 1440: stepper 40px",
@@ -103,12 +103,12 @@
     {
       "name": "120 saved: pending, balance 80, order partial, stock unchanged",
       "ok": true,
-      "note": "{\"step\":\"บันทึกรับ 120 (pending)\",\"po\":\"PO202611010090\",\"status\":\"partial\",\"balance\":80,\"ordered\":200,\"stock\":0,\"receipt\":\"pending\"}"
+      "note": "{\"step\":\"บันทึกรับ 120 (pending)\",\"po\":\"PO202611010092\",\"status\":\"partial\",\"balance\":80,\"ordered\":200,\"stock\":0,\"receipt\":\"pending\"}"
     },
     {
       "name": "120 saved: toast names the receipt",
       "ok": true,
-      "note": "บันทึกใบรับสินค้า PR202611010079 แล้ว"
+      "note": "บันทึกใบรับสินค้า PR202611010085 แล้ว"
     },
     {
       "name": "120 saved: detail total = form total",
@@ -138,7 +138,7 @@
     {
       "name": "approve: stock +120, receipt approved",
       "ok": true,
-      "note": "{\"step\":\"อนุมัติใบ 120\",\"po\":\"PO202611010090\",\"status\":\"partial\",\"balance\":80,\"ordered\":200,\"stock\":120,\"receipt\":\"approved\"}"
+      "note": "{\"step\":\"อนุมัติใบ 120\",\"po\":\"PO202611010092\",\"status\":\"partial\",\"balance\":80,\"ordered\":200,\"stock\":120,\"receipt\":\"approved\"}"
     },
     {
       "name": "approve: toast and page reloaded in place",
@@ -173,7 +173,7 @@
     {
       "name": "80 saved: balance 0, order completed, stock unchanged",
       "ok": true,
-      "note": "{\"step\":\"บันทึกรับ 80 (pending)\",\"po\":\"PO202611010090\",\"status\":\"completed\",\"balance\":0,\"ordered\":200,\"stock\":120,\"receipt\":\"pending\"}"
+      "note": "{\"step\":\"บันทึกรับ 80 (pending)\",\"po\":\"PO202611010092\",\"status\":\"completed\",\"balance\":0,\"ordered\":200,\"stock\":120,\"receipt\":\"pending\"}"
     },
     {
       "name": "queue: a completed order leaves the queue",
@@ -198,17 +198,17 @@
     {
       "name": "edit saved: balance 10, order partial",
       "ok": true,
-      "note": "{\"step\":\"แก้ไขใบ pending เป็น 70\",\"po\":\"PO202611010090\",\"status\":\"partial\",\"balance\":10,\"ordered\":200,\"stock\":120,\"receipt\":\"pending\"}"
+      "note": "{\"step\":\"แก้ไขใบ pending เป็น 70\",\"po\":\"PO202611010092\",\"status\":\"partial\",\"balance\":10,\"ordered\":200,\"stock\":120,\"receipt\":\"pending\"}"
     },
     {
       "name": "cancel pending: balance 80, stock unchanged, rejected",
       "ok": true,
-      "note": "{\"step\":\"ยกเลิกใบ pending\",\"po\":\"PO202611010090\",\"status\":\"partial\",\"balance\":80,\"ordered\":200,\"stock\":120,\"receipt\":\"rejected\"}"
+      "note": "{\"step\":\"ยกเลิกใบ pending\",\"po\":\"PO202611010092\",\"status\":\"partial\",\"balance\":80,\"ordered\":200,\"stock\":120,\"receipt\":\"rejected\"}"
     },
     {
       "name": "cancel pending: the dialog says the balance goes back",
       "ok": true,
-      "note": "ยกเลิก PR202611010080: คืนยอดคงเหลือ 70 TASK0141-02950C56-9FB7-4128-997A-24B18E319A15OTHER-RENAMED ให้ใบสั่งซื้อ PO202611010090"
+      "note": "ยกเลิก PR202611010086: คืนยอดคงเหลือ 70 TASK0141-02950C56-9FB7-4128-997A-24B18E319A15OTHER-RENAMED ให้ใบสั่งซื้อ PO202611010092"
     },
     {
       "name": "cancel pending: banner on the page",
@@ -218,17 +218,17 @@
     {
       "name": "cancel approved: balance 200, stock back, order active",
       "ok": true,
-      "note": "{\"step\":\"ยกเลิกใบ approved\",\"po\":\"PO202611010090\",\"status\":\"active\",\"balance\":200,\"ordered\":200,\"stock\":0,\"receipt\":\"rejected\"}"
+      "note": "{\"step\":\"ยกเลิกใบ approved\",\"po\":\"PO202611010092\",\"status\":\"active\",\"balance\":200,\"ordered\":200,\"stock\":0,\"receipt\":\"rejected\"}"
     },
     {
       "name": "cancel approved: the dialog says the stock comes out",
       "ok": true,
-      "note": "ยกเลิก PR202611010079: คืนยอดคงเหลือ 120 TASK0141-02950C56-9FB7-4128-997A-24B18E319A15OTHER-RENAMED ให้ใบสั่งซื้อ PO202611010090 และดึงสต็อกที่เพิ่มไว้คืน"
+      "note": "ยกเลิก PR202611010085: คืนยอดคงเหลือ 120 TASK0141-02950C56-9FB7-4128-997A-24B18E319A15OTHER-RENAMED ให้ใบสั่งซื้อ PO202611010092 และดึงสต็อกที่เพิ่มไว้คืน"
     },
     {
       "name": "delete pending: balance 200, receipt gone",
       "ok": true,
-      "note": "{\"step\":\"ลบใบ pending\",\"po\":\"PO202611010090\",\"status\":\"active\",\"balance\":200,\"ordered\":200,\"stock\":0}"
+      "note": "{\"step\":\"ลบใบ pending\",\"po\":\"PO202611010092\",\"status\":\"active\",\"balance\":200,\"ordered\":200,\"stock\":0}"
     },
     {
       "name": "VAT none: body totals = old calculation",
@@ -291,6 +291,26 @@
       "note": "{\"total\":123.45,\"subtotal\":132.09,\"vat\":8.64,\"vat_type\":\"exclude\",\"vat_rate\":\"7.00\"}"
     },
     {
+      "name": "F1 create: order saved without VAT, \"แยก VAT\" picked: form = detail = saved (rate 0)",
+      "ok": true,
+      "note": "{\"formTotal\":123.45,\"detailTotal\":123.45,\"stored\":{\"total\":123.45,\"vat\":0,\"vat_type\":\"exclude\",\"vat_rate\":\"0.00\"},\"hint\":\"ใบสั่งซื้อใช้ “ไม่คิด VAT” · ใบสั่งซื้อนี้บันทึกอัตรา VAT 0% ระบบจึงคิด VAT 0%\"}"
+    },
+    {
+      "name": "F1 create: the form says the order keeps VAT 0%",
+      "ok": true,
+      "note": "ใบสั่งซื้อใช้ “ไม่คิด VAT” · ใบสั่งซื้อนี้บันทึกอัตรา VAT 0% ระบบจึงคิด VAT 0%"
+    },
+    {
+      "name": "F1 edit: receipt saved without VAT switched to แยก VAT: form = detail = 7% of the order",
+      "ok": true,
+      "note": "{\"editTotal\":132.09,\"editDetail\":132.09,\"expected\":{\"subtotal\":123.45,\"vat\":8.64,\"total\":132.09},\"stored\":{\"vat\":8.64,\"vat_rate\":\"7.00\"}}"
+    },
+    {
+      "name": "F6: a pending order shows a note in Thai, no form",
+      "ok": true,
+      "note": "ใบสั่งซื้อ PO202611010095 อยู่สถานะ “รออนุมัติ” รับสินค้าได้เฉพาะใบสั่งซื้อที่อนุมัติแล้วหรือรับบางส่วน กลับไปรายการใบรับสินค้า"
+    },
+    {
       "name": "list 390: no page side-scroll",
       "ok": true,
       "note": ""
@@ -313,7 +333,7 @@
     {
       "name": "list: search went into the URL after the pause",
       "ok": true,
-      "note": "http://localhost:3031/admin/purchase-receipt?q=PO202611010091"
+      "note": "http://localhost:3031/admin/purchase-receipt?q=PO202611010093"
     },
     {
       "name": "queue: partly received order offers \"รับส่วนที่เหลือ\"",
@@ -323,12 +343,27 @@
     {
       "name": "queue: progress \"รับแล้ว 3 / 30\"",
       "ok": true,
-      "note": "PO202611010091 ทดสอบ TASK-0325 สามแบบ VAT รับบางส่วน stock-lock-fixture-eca0f6a7-a7e7-4d6e-8e1d-8a73e06592a1 · สั่ง 1 พ.ย. 2569 · ฿3,962.75 รับแล้ว 3 / 30 TASK0141-02950C56-9FB7-4128-997A-24B18E319A15OTHER-RENAMED รับส่วนที่เหลือ PO202611010091"
+      "note": "PO202611010093 ทดสอบ TASK-0325 สามแบบ VAT รับบางส่วน stock-lock-fixture-eca0f6a7-a7e7-4d6e-8e1d-8a73e06592a1 · สั่ง 1 พ.ย. 2569 · ฿3,962.75 รับแล้ว 3 / 30 TASK0141-02950C56-9FB7-4128-997A-24B18E319A15OTHER-RENAMED รับส่วนที่เหลือ PO202611010093"
     },
     {
       "name": "queue empty: message and link",
       "ok": true,
       "note": ""
+    },
+    {
+      "name": "F3: \"ยอดมากไปน้อย\" is in order of the totals shown",
+      "ok": true,
+      "note": "[1284,1016.5,749,132.09,132.09,123.45,123.45]"
+    },
+    {
+      "name": "F4: supplier chip lists every supplier",
+      "ok": true,
+      "note": "2 of 2"
+    },
+    {
+      "name": "F2: list \"พิมพ์\" opens the detail and prints once",
+      "ok": true,
+      "note": "1 prints, http://localhost:3031/admin/purchase-receipt/01a19698-9c21-761a-a46a-8110b86f55fc"
     },
     {
       "name": "new without ?po: order picker",
@@ -404,7 +439,7 @@
   "flow": [
     {
       "step": "เริ่ม: PO 200 อนุมัติแล้ว",
-      "po": "PO202611010090",
+      "po": "PO202611010092",
       "status": "active",
       "balance": 200,
       "ordered": 200,
@@ -412,7 +447,7 @@
     },
     {
       "step": "บันทึกรับ 120 (pending)",
-      "po": "PO202611010090",
+      "po": "PO202611010092",
       "status": "partial",
       "balance": 80,
       "ordered": 200,
@@ -421,7 +456,7 @@
     },
     {
       "step": "อนุมัติใบ 120",
-      "po": "PO202611010090",
+      "po": "PO202611010092",
       "status": "partial",
       "balance": 80,
       "ordered": 200,
@@ -430,7 +465,7 @@
     },
     {
       "step": "บันทึกรับ 80 (pending)",
-      "po": "PO202611010090",
+      "po": "PO202611010092",
       "status": "completed",
       "balance": 0,
       "ordered": 200,
@@ -439,7 +474,7 @@
     },
     {
       "step": "แก้ไขใบ pending เป็น 70",
-      "po": "PO202611010090",
+      "po": "PO202611010092",
       "status": "partial",
       "balance": 10,
       "ordered": 200,
@@ -448,7 +483,7 @@
     },
     {
       "step": "ยกเลิกใบ pending",
-      "po": "PO202611010090",
+      "po": "PO202611010092",
       "status": "partial",
       "balance": 80,
       "ordered": 200,
@@ -457,7 +492,7 @@
     },
     {
       "step": "ยกเลิกใบ approved",
-      "po": "PO202611010090",
+      "po": "PO202611010092",
       "status": "active",
       "balance": 200,
       "ordered": 200,
@@ -466,7 +501,7 @@
     },
     {
       "step": "บันทึกรับ 10 (pending)",
-      "po": "PO202611010090",
+      "po": "PO202611010092",
       "status": "partial",
       "balance": 190,
       "ordered": 200,
@@ -475,7 +510,7 @@
     },
     {
       "step": "ลบใบ pending",
-      "po": "PO202611010090",
+      "po": "PO202611010092",
       "status": "active",
       "balance": 200,
       "ordered": 200,
@@ -557,6 +592,31 @@
         "vat_rate": "7.00"
       }
     },
+    "f1_create": {
+      "formTotal": 123.45,
+      "detailTotal": 123.45,
+      "stored": {
+        "total": 123.45,
+        "vat": 0,
+        "vat_type": "exclude",
+        "vat_rate": "0.00"
+      },
+      "hint": "ใบสั่งซื้อใช้ “ไม่คิด VAT” · ใบสั่งซื้อนี้บันทึกอัตรา VAT 0% ระบบจึงคิด VAT 0%"
+    },
+    "f1_edit": {
+      "editTotal": 132.09,
+      "editDetail": 132.09,
+      "expected": {
+        "subtotal": 123.45,
+        "vat": 8.64,
+        "total": 132.09
+      },
+      "stored": {
+        "vat": 8.64,
+        "vat_rate": "7.00"
+      }
+    },
+    "f5": "not-run: fewer than 11 receipts match \"PR\"",
     "keyboard_order": [
       "pr-date",
       "pr-date",
@@ -571,13 +631,16 @@
       "ใส่คงเหลือ 27 TASK0141-02950C56-9FB7-4128-997A-24B18E319A15OTHER-RENAMED ให้ ฝาปิดใส 20 ออนซ์",
       "บันทึกใบรับสินค้า"
     ],
-    "cleanup_receipt_PR202611010080": 200,
-    "cleanup_receipt_PR202611010079": 200,
-    "cleanup_order_01a19671-a0e8-715e-b2e5-e38dd5ad5a18": 200,
-    "cleanup_receipt_PR202611010084": 200,
-    "cleanup_receipt_PR202611010083": 200,
-    "cleanup_receipt_PR202611010082": 200,
-    "cleanup_order_01a19671-a11c-7809-8d64-3df606618d45": 200,
+    "cleanup_receipt_PR202611010086": 200,
+    "cleanup_receipt_PR202611010085": 200,
+    "cleanup_order_01a19697-8f88-796a-9a4e-d317382c9d3c": 200,
+    "cleanup_receipt_PR202611010090": 200,
+    "cleanup_receipt_PR202611010089": 200,
+    "cleanup_receipt_PR202611010088": 200,
+    "cleanup_order_01a19697-8fc7-7e7f-9439-8143af6f391a": 200,
+    "cleanup_receipt_PR202611010091": 200,
+    "cleanup_order_01a19697-8ffc-7f3d-ba03-fe3da78ee6e9": 200,
+    "cleanup_order_01a19697-9031-75fc-82f2-06a68c2d9d7c": 200,
     "stuck_shell_reloads": [],
     "leave_prompts_accepted": 4
   }

@@ -342,6 +342,7 @@ export default function ReceiptFormPage({ mode, order, receipt }: Props) {
                       : form.vatType === form.orderVat
                         ? 'ตามใบสั่งซื้อ'
                         : `ใบสั่งซื้อใช้ “${VAT_TYPE_LABELS[form.orderVat]}”`}
+                    {!form.unregistered && form.vatType !== 'none' && form.vatRate === 0 && ' · ใบสั่งซื้อนี้บันทึกอัตรา VAT 0% ระบบจึงคิด VAT 0%'}
                   </span>
                 </div>
               </div>

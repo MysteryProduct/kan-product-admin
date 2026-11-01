@@ -167,7 +167,7 @@ const unit = ((await apiGet('/product-unit?search=')).data ?? [])[0];
 if (!supplier?.is_vat_register || !material || !unit || !employeeId) throw new Error('fixtures missing: VAT-registered supplier, material, unit, employee');
 notes.fixtures = { supplier: supplier.supplier_name, material: material.material_name, unit: unit.product_unit_name };
 
-async function createApprovedOrder(name, qty, price, vatType) {
+async function createApprovedOrder(name, qty, price, vatType, approve = true) {
   const amount = qty * price;
   const sums = oldVatSummary(amount, vatType);
   const created = await apiPost('/purchase-order', {
@@ -186,6 +186,7 @@ async function createApprovedOrder(name, qty, price, vatType) {
   const body = await created.json();
   const order = body.data ?? body;
   if (!order?.purchase_order_id) throw new Error(`order not created: ${created.status()} ${JSON.stringify(body).slice(0, 200)}`);
+  if (!approve) return order.purchase_order_id;
   const approved = await apiPost(`/purchase-order/${order.purchase_order_id}/approve`, { status: 'active', update_by: employeeId });
   if (approved.status() >= 400) throw new Error(`order not approved: ${approved.status()}`);
   return order.purchase_order_id;
@@ -195,6 +196,12 @@ const flowOrder = await createApprovedOrder(`${TAG} รับ 200 ชิ้น`,
 orderIds.push(flowOrder);
 const vatOrder = await createApprovedOrder(`${TAG} สามแบบ VAT`, 30, 123.45, 'exclude');
 orderIds.push(vatOrder);
+// Review F1: an order saved without VAT keeps vat_rate 0, which the API applies to its receipts.
+const noVatOrder = await createApprovedOrder(`${TAG} ใบสั่งซื้อไม่คิด VAT`, 5, 123.45, 'none');
+orderIds.push(noVatOrder);
+// Review F6: an order still waiting for approval.
+const pendingOrder = await createApprovedOrder(`${TAG} รออนุมัติ`, 5, 10, 'exclude', false);
+orderIds.push(pendingOrder);
 
 const orderState = async (orderId) => {
   const order = (await apiGet(`/purchase-order/${orderId}`)).data;
@@ -491,6 +498,44 @@ for (const vat of ['none', 'include', 'exclude']) {
   check(`VAT ${vat}: API saved this VAT and the old VAT amount`, saved.vat_type === vat && Number(saved.purchase_receipt_vat_amount) === expected.vat, JSON.stringify(notes[`vat_${vat}`].stored));
 }
 
+// ---------- Review F1: the rate the API saves, on create and on edit ----------
+{
+  await openForm(noVatOrder);
+  await page.locator('#pr-vat-exclude').click();
+  await qtyInput().fill('1');
+  await page.waitForTimeout(200);
+  const formTotal = money(await page.locator('.ka-po-sum .ka-po-big').innerText());
+  const hint = await page.locator('#pr-vat-hint').innerText();
+  const id = await saveAndOpen();
+  vatReceipts.noVatOrder = id;
+  const saved = await receiptState(id);
+  const detailTotal = money(await page.locator('.ka-po-aside .ka-po-big').innerText());
+  notes.f1_create = { formTotal, detailTotal, stored: { total: Number(saved.purchase_receipt_total), vat: Number(saved.purchase_receipt_vat_amount), vat_type: saved.vat_type, vat_rate: saved.vat_rate }, hint };
+  check('F1 create: order saved without VAT, "แยก VAT" picked: form = detail = saved (rate 0)', formTotal === 123.45 && detailTotal === 123.45 && Number(saved.purchase_receipt_vat_amount) === 0 && saved.vat_type === 'exclude', JSON.stringify(notes.f1_create));
+  check('F1 create: the form says the order keeps VAT 0%', hint.includes('VAT 0%'), hint);
+
+  // A receipt saved "ไม่คิด VAT" under a 7% order, switched to "แยก VAT" on edit: the API uses the order's 7%.
+  await page.goto(`${base}${LIST}/${vatReceipts.none}/edit`);
+  await waitForPage('.ka-pr-step input');
+  await settle(500);
+  await page.locator('#pr-vat-exclude').click();
+  await page.waitForTimeout(200);
+  const editTotal = money(await page.locator('.ka-po-sum .ka-po-big').innerText());
+  await saveAndOpen();
+  const edited = await receiptState(vatReceipts.none);
+  const editDetail = money(await page.locator('.ka-po-aside .ka-po-big').innerText());
+  const expected = oldVatSummary(LINE_PRICE, 'exclude');
+  notes.f1_edit = { editTotal, editDetail, expected, stored: { vat: Number(edited.purchase_receipt_vat_amount), vat_rate: edited.vat_rate } };
+  check('F1 edit: receipt saved without VAT switched to แยก VAT: form = detail = 7% of the order', editTotal === expected.total && editDetail === expected.total && Number(edited.purchase_receipt_vat_amount) === expected.vat, JSON.stringify(notes.f1_edit));
+}
+
+// ---------- Review F6: an order the API will not receive against ----------
+await page.goto(`${base}${LIST}/new?po=${pendingOrder}`);
+await waitForPage('.ka-banner');
+await settle(400);
+const notReceivable = await page.locator('main').innerText();
+check('F6: a pending order shows a note in Thai, no form', notReceivable.includes('รออนุมัติ') && notReceivable.includes('รับสินค้าได้เฉพาะ') && (await page.locator('.ka-pr-step').count()) === 0 && !/active|partial|pending/.test(notReceivable), notReceivable.replace(/\s+/g, ' ').slice(0, 160));
+
 // ---------- List: screenshots, search by order code, the queue's empty state ----------
 for (const width of WIDTHS) {
   await page.setViewportSize({ width, height: width < 640 ? 844 : width < 1024 ? 1112 : 1000 });
@@ -522,6 +567,60 @@ for (const width of WIDTHS) {
 check('queue empty: message and link', (await page.locator('.ka-po-empty').first().innerText()).includes('ไม่มีใบสั่งซื้อที่รอรับสินค้า') && (await page.getByRole('link', { name: 'ไปหน้าใบสั่งซื้อ →' }).count()) === 1);
 await page.unrouteAll({ behavior: 'ignoreErrors' });
 await page.setViewportSize({ width: 1440, height: 1000 });
+
+// Review F3: a sort by amount follows the totals on screen.
+await page.goto(`${base}${LIST}?sort=high`);
+await waitForPage('#pr-list-title');
+await page.waitForSelector('.ka-pr-lt tbody tr .ka-po-amt', { timeout: 60000 });
+await settle(600);
+const amounts = (await page.locator('.ka-pr-lt tbody tr .ka-po-amt').allInnerTexts()).map(money);
+check('F3: "ยอดมากไปน้อย" is in order of the totals shown', amounts.length > 1 && amounts.every((value, index) => index === 0 || amounts[index - 1] >= value), JSON.stringify(amounts));
+
+// Review F4: the supplier chip lists every supplier.
+const supplierTotal = (await apiGet('/supplier/?page=1&limit=1')).meta?.total ?? 0;
+await page.locator('.ka-pr-fbar .ka-chip', { hasText: 'ผู้จำหน่าย' }).click();
+await page.waitForTimeout(500);
+const supplierOptions = await page.locator('.ka-chip-options .ka-option').count();
+check('F4: supplier chip lists every supplier', supplierOptions === supplierTotal, `${supplierOptions} of ${supplierTotal}`);
+await page.keyboard.press('Escape');
+
+// Review F5: with a search, paging is done here without loading the receipts again.
+await page.goto(`${base}${LIST}?q=PR`);
+await waitForPage('#pr-list-title');
+await page.waitForSelector('.ka-pr-lt tbody tr', { timeout: 60000 });
+await settle(800);
+const nextPage = page.locator('.ka-po-pager button', { hasText: /^2$/ }).first();
+if (await nextPage.count()) {
+  let listCalls = 0;
+  const count = (request) => {
+    if (request.method() === 'GET' && /\/purchase-receipt\?/.test(request.url())) listCalls += 1;
+  };
+  page.on('request', count);
+  await nextPage.click();
+  await page.waitForTimeout(1500);
+  page.off('request', count);
+  check('F5: paging a search does not reload the receipts', listCalls === 0 && page.url().includes('page=2'), `${listCalls} list calls, ${page.url()}`);
+} else {
+  notes.f5 = 'not-run: fewer than 11 receipts match "PR"';
+}
+
+// Review F2: "พิมพ์" in the row menu opens the print dialog once.
+await page.goto(`${base}${LIST}`);
+await waitForPage('#pr-list-title');
+await page.waitForSelector('.ka-pr-lt tbody tr', { timeout: 60000 });
+await settle(600);
+await page.evaluate(() => {
+  window.__prints = 0;
+  window.print = () => {
+    window.__prints += 1;
+  };
+});
+await page.locator('.ka-pr-lt tbody tr').first().getByRole('button', { name: /ตัวเลือกของ/ }).click();
+await page.getByRole('menuitem', { name: 'พิมพ์' }).click();
+await page.waitForURL(/\/admin\/purchase-receipt\/[0-9a-f-]{36}$/, { timeout: 60000 });
+await page.waitForTimeout(2000);
+const prints = await page.evaluate(() => window.__prints);
+check('F2: list "พิมพ์" opens the detail and prints once', prints === 1 && !page.url().includes('print='), `${prints} prints, ${page.url()}`);
 
 // /new without ?po= shows the order picker.
 await page.goto(`${base}${LIST}/new`);
