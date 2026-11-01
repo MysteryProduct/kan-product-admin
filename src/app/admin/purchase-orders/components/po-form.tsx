@@ -1,7 +1,6 @@
 'use client';
 
 import { KeyboardEvent, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import CustomSelect, { SelectOption } from '@/components/CustomSelect';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import LoadErrorBanner from '@/components/LoadErrorBanner';
@@ -57,7 +56,6 @@ interface Props {
 
 /** The create and edit pages: one form, different starting values and save call. */
 export default function PurchaseOrderFormPage({ mode, source }: Props) {
-  const router = useRouter();
   const toast = useToast();
   const form = usePurchaseOrderForm({ mode, source });
   // The error summary appears after a rejected save and lists what is still wrong.
@@ -89,9 +87,8 @@ export default function PurchaseOrderFormPage({ mode, source }: Props) {
     if (!saved) return;
     const savedCode = saved.purchase_order_code ?? code ?? '';
     toast({ message: editing ? `บันทึกการแก้ไข ${savedCode} แล้ว` : `สร้างใบสั่งซื้อ ${savedCode} แล้ว`, tone: 'success' });
-    guard.release();
-    // Replaces the form in history, so back from the new order does not reopen a filled form.
-    router.replace(`${LIST_HREF}/${saved.purchase_order_id ?? source?.purchase_order_id}`);
+    // The order's page takes the form's place in history, so back goes to where the form was opened from.
+    guard.replaceWith(`${LIST_HREF}/${saved.purchase_order_id ?? source?.purchase_order_id}`);
   };
 
   const cancel = () => guard.leave(editing ? `${LIST_HREF}/${source.purchase_order_id}` : LIST_HREF);

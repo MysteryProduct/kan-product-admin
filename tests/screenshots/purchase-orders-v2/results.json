@@ -33,7 +33,7 @@
     {
       "name": "create none: toast names the PO",
       "ok": true,
-      "note": "สร้างใบสั่งซื้อ PO202611010013 แล้ว"
+      "note": "สร้างใบสั่งซื้อ PO202611010018 แล้ว"
     },
     {
       "name": "create include: body totals = old calculation",
@@ -68,7 +68,7 @@
     {
       "name": "create include: toast names the PO",
       "ok": true,
-      "note": "สร้างใบสั่งซื้อ PO202611010014 แล้ว"
+      "note": "สร้างใบสั่งซื้อ PO202611010019 แล้ว"
     },
     {
       "name": "create exclude: body totals = old calculation",
@@ -103,7 +103,12 @@
     {
       "name": "create exclude: toast names the PO",
       "ok": true,
-      "note": "สร้างใบสั่งซื้อ PO202611010015 แล้ว"
+      "note": "สร้างใบสั่งซื้อ PO202611010020 แล้ว"
+    },
+    {
+      "name": "back after save reaches the list",
+      "ok": true,
+      "note": "http://localhost:3021/admin/purchase-orders"
     },
     {
       "name": "list 390: no page side-scroll",
@@ -113,7 +118,7 @@
     {
       "name": "list 390: status tabs with counts",
       "ok": true,
-      "note": "ทั้งหมด\n4 | รออนุมัติ\n3 | รอรับสินค้า\n0 | รับบางส่วน\n0 | รับครบแล้ว\n1 | ยกเลิก\n0"
+      "note": "ทั้งหมด\n6 | รออนุมัติ\n4 | รอรับสินค้า\n1 | รับบางส่วน\n0 | รับครบแล้ว\n1 | ยกเลิก\n0"
     },
     {
       "name": "list-empty 390: create button in the empty state",
@@ -158,7 +163,7 @@
     {
       "name": "list 834: status tabs with counts",
       "ok": true,
-      "note": "ทั้งหมด\n4 | รออนุมัติ\n3 | รอรับสินค้า\n0 | รับบางส่วน\n0 | รับครบแล้ว\n1 | ยกเลิก\n0"
+      "note": "ทั้งหมด\n6 | รออนุมัติ\n4 | รอรับสินค้า\n1 | รับบางส่วน\n0 | รับครบแล้ว\n1 | ยกเลิก\n0"
     },
     {
       "name": "list-empty 834: create button in the empty state",
@@ -196,9 +201,19 @@
       "note": ""
     },
     {
+      "name": "list: re-selecting the current tab is not stuck loading",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list: no delete on a received order",
+      "ok": true,
+      "note": ""
+    },
+    {
       "name": "list 1440: status tabs with counts",
       "ok": true,
-      "note": "ทั้งหมด\n4 | รออนุมัติ\n3 | รอรับสินค้า\n0 | รับบางส่วน\n0 | รับครบแล้ว\n1 | ยกเลิก\n0"
+      "note": "ทั้งหมด\n6 | รออนุมัติ\n4 | รอรับสินค้า\n1 | รับบางส่วน\n0 | รับครบแล้ว\n1 | ยกเลิก\n0"
     },
     {
       "name": "list-empty 1440: create button in the empty state",
@@ -232,6 +247,16 @@
     },
     {
       "name": "print: sidebar, header and buttons hidden",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "print from dark: light theme while printing",
+      "ok": true,
+      "note": "{\"dark\":false,\"color\":\"rgb(32, 40, 51)\"}"
+    },
+    {
+      "name": "print from dark: theme restored after",
       "ok": true,
       "note": ""
     },
@@ -581,9 +606,10 @@
         "shadow": false
       }
     ],
-    "cleanup_01a19534-4202-75dc-8d4c-4a67da47d8b4": 200,
-    "cleanup_01a19534-57a9-7be9-8554-87b1cbff6b9a": 400,
-    "cleanup_01a19534-6b9e-7a81-9213-8e2e7db7b224": 200,
-    "cleanup_01a19535-6806-73e5-8916-252164023cd7": 200
+    "cleanup_01a19547-58dd-77f8-81d1-c59e8e9af804": 200,
+    "cleanup_01a19547-6d8a-79f1-8d2e-79e6ad25153a": 400,
+    "cleanup_01a19547-81ca-727a-8ca6-03771ee2bce7": 200,
+    "cleanup_01a19547-95e7-747f-ab43-085ab53baf5d": 200,
+    "cleanup_01a19548-95ff-777d-8954-8720a094fae8": 200
   }
 }

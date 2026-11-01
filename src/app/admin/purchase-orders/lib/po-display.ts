@@ -20,6 +20,14 @@ export function statusLabel(status: string | undefined): string {
   return (status && PURCHASE_ORDER_STATUS_LABELS[status as PurchaseOrderStatus]) || status || '-';
 }
 
+/**
+ * Whether the delete command is offered: an order with receipts cannot be deleted (the API refuses), and a
+ * partly or fully received order always has them. The list and the detail page use the same rule.
+ */
+export function deletable(status: string | undefined): boolean {
+  return status !== 'partial' && status !== 'completed';
+}
+
 export function statusTone(status: string | undefined): BadgeTone {
   return (status && PURCHASE_ORDER_STATUS_TONE[status]) || 'neutral';
 }

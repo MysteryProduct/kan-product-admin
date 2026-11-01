@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
@@ -18,7 +18,7 @@ import RowMenu, { RowMenuItem } from '@/components/RowMenu';
 import StatusBadge from '@/components/StatusBadge';
 import { useToast } from '@/components/Toast';
 import DocumentHistoryPanel, { DocumentHistoryEntry } from '@/components/document-history/DocumentHistoryPanel';
-import { formatBaht, formatMoney, lineTotal, orderLines, orderVatSummary, statusLabel, statusTone } from '../lib/po-display';
+import { deletable, formatBaht, formatMoney, lineTotal, orderLines, orderVatSummary, statusLabel, statusTone } from '../lib/po-display';
 
 const purchaseOrderModel = new PurchaseOrderModel();
 const BASE = '/admin/purchase-orders';
@@ -101,6 +101,26 @@ export default function PurchaseOrderDetail({ purchaseOrder: order, onChanged }:
     steps[1].state = 'todo';
   }
 
+  // Print on paper colours: the dark theme is lifted while the browser prints (button or Ctrl+P).
+  useEffect(() => {
+    const html = document.documentElement;
+    let wasDark = false;
+    const before = () => {
+      wasDark = html.classList.contains('dark');
+      if (wasDark) html.classList.remove('dark');
+    };
+    const after = () => {
+      if (wasDark) html.classList.add('dark');
+      wasDark = false;
+    };
+    window.addEventListener('beforeprint', before);
+    window.addEventListener('afterprint', after);
+    return () => {
+      window.removeEventListener('beforeprint', before);
+      window.removeEventListener('afterprint', after);
+    };
+  }, []);
+
   const changed = () => {
     setHistoryKey((key) => key + 1);
     onChanged();
@@ -152,7 +172,7 @@ export default function PurchaseOrderDetail({ purchaseOrder: order, onChanged }:
   const editable = status === 'draft' || status === 'pending';
   const more: RowMenuItem[] = [];
   if (canReject && (status === 'pending' || status === 'active')) more.push({ label: 'ยกเลิกใบสั่งซื้อ', icon: 'cancel', tone: 'danger', onSelect: () => setRejecting(true) });
-  if (canDelete && editable) more.push({ label: 'ลบ', icon: 'delete', tone: 'danger', onSelect: () => setConfirmDelete(true) });
+  if (canDelete && deletable(status)) more.push({ label: 'ลบ', icon: 'delete', tone: 'danger', onSelect: () => setConfirmDelete(true) });
 
   const finished = status === 'completed' || status === 'inactive';
 

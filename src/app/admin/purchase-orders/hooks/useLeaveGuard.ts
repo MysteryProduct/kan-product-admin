@@ -92,10 +92,20 @@ export function useLeaveGuard(active: boolean) {
     leave,
     stay: () => setTarget(null),
     confirm: () => target && go(target),
-    /** After a save: navigate without asking. */
-    release: () => {
+    /**
+     * After a save: go to `href` without asking, in place of this page. The extra back-button entry is
+     * dropped first, so back from `href` reaches the page before the form, not the form again.
+     */
+    replaceWith: (href: string) => {
       releasedRef.current = true;
       activeRef.current = false;
+      if (!trappedRef.current) {
+        router.replace(href);
+        return;
+      }
+      trappedRef.current = false;
+      window.addEventListener('popstate', () => router.replace(href), { once: true });
+      window.history.back();
     },
   };
 }

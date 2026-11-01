@@ -199,6 +199,17 @@ for (const vat of ['none', 'include', 'exclude']) {
   const toast = await page.locator('.ka-toasts').innerText().catch(() => '');
   check(`create ${vat}: toast names the PO`, toast.includes(`สร้างใบสั่งซื้อ ${saved.purchase_order_code} แล้ว`), toast.trim());
 }
+// Review F5: back from a saved order goes to the page the form was opened from, not the form again.
+await page.goto(`${base}/admin/purchase-orders`);
+await settle(800);
+await page.getByRole('link', { name: 'สร้างใบสั่งซื้อ' }).first().click();
+await page.waitForURL(/\/new$/, { timeout: 60000 });
+await settle(1000);
+await fillForm({ name: `${TAG} back`, vat: 'none', lines: LINES.slice(0, 1) });
+await saveAndOpen();
+await page.goBack();
+await settle(800);
+check('back after save reaches the list', new URL(page.url()).pathname === '/admin/purchase-orders', page.url());
 
 // ---------- Screenshots: list, empty, detail pending/completed, form new/error ----------
 const completedId = (await apiGet('/purchase-order?page=1&limit=1&filters=' + encodeURIComponent(JSON.stringify({ purchase_order_status: JSON.stringify(['completed']) })))).data?.[0]?.purchase_order_id;
@@ -210,6 +221,19 @@ for (const width of WIDTHS) {
   await settle(1200);
   await shot(`list-${width}`);
   check(`list ${width}: no page side-scroll`, await noSideScroll());
+  if (width === 1440) {
+    // Review F2: picking the view already shown does not leave the list loading.
+    await page.getByRole('tab', { selected: true }).click();
+    await page.waitForTimeout(800);
+    check('list: re-selecting the current tab is not stuck loading', (await page.locator('#po-list-panel[aria-busy=true]').count()) === 0);
+    // Review F3: a received order offers no delete.
+    const completedRow = page.locator('tr', { hasText: 'รับครบแล้ว' }).first();
+    if (await completedRow.count()) {
+      await completedRow.getByRole('button', { name: /ตัวเลือกของ/ }).click();
+      check('list: no delete on a received order', (await page.getByRole('menuitem', { name: 'ลบ' }).count()) === 0);
+      await page.keyboard.press('Escape');
+    }
+  }
   const tabs = await page.getByRole('tab').allInnerTexts();
   check(`list ${width}: status tabs with counts`, tabs.length >= 6, tabs.join(' | '));
 
@@ -262,6 +286,16 @@ if (completedId) {
   await shot('print-1440');
   const hidden = await page.evaluate(() => ['.ka-sidebar', '.ka-header', '.ka-po-noprint'].every((selector) => [...document.querySelectorAll(selector)].every((el) => getComputedStyle(el).display === 'none')));
   check('print: sidebar, header and buttons hidden', hidden);
+  // Review F4: printing from the dark theme uses paper colours.
+  await page.emulateMedia({ media: 'screen' });
+  await page.evaluate(() => document.documentElement.classList.add('dark'));
+  await page.evaluate(() => window.dispatchEvent(new Event('beforeprint')));
+  await page.emulateMedia({ media: 'print' });
+  const ink = await page.evaluate(() => ({ dark: document.documentElement.classList.contains('dark'), color: getComputedStyle(document.querySelector('.ka-po-title')).color }));
+  check('print from dark: light theme while printing', !ink.dark, JSON.stringify(ink));
+  await page.evaluate(() => window.dispatchEvent(new Event('afterprint')));
+  check('print from dark: theme restored after', await page.evaluate(() => document.documentElement.classList.contains('dark')));
+  await page.evaluate(() => document.documentElement.classList.remove('dark'));
   await page.emulateMedia({ media: 'screen' });
 }
 

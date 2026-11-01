@@ -250,7 +250,7 @@
   .ka-po-seg > button { padding: 0 4px; font-size: 13px; }
   /* The save buttons move to a bar at the bottom of the screen. */
   .ka-po-sum__acts { display: none; }
-  .ka-po-savebar { position: sticky; bottom: 0; z-index: 4; display: flex; align-items: center; gap: 8px; margin: 0 -16px -16px; padding: 10px 16px 16px; border-top: 1px solid var(--border); background: var(--bg-surface); box-shadow: 0 -8px 24px rgba(32, 40, 51, 0.08); }
+  .ka-po-savebar { position: sticky; bottom: 0; z-index: 4; display: flex; align-items: center; gap: 8px; margin: 0 -16px -16px; padding: 10px 16px 16px; border-top: 1px solid var(--border); background: var(--bg-surface); box-shadow: var(--shadow-overlay); }
   .ka-po-savebar__sum { display: flex; flex: 1; flex-direction: column; min-width: 0; }
   .ka-po-savebar__v { font: 700 18px/26px var(--ka-font); overflow-wrap: anywhere; }
   .ka-po-savebar .ka-btn { flex: none; }
@@ -264,7 +264,8 @@
   body:has(.ka-po-print) .ka-po-noprint,
   body:has(.ka-po-print) .ka-toasts { display: none !important; }
   html:has(.ka-po-print), body:has(.ka-po-print), body:has(.ka-po-print) .h-screen, body:has(.ka-po-print) main, body:has(.ka-po-print) .overflow-hidden { height: auto !important; overflow: visible !important; }
-  body:has(.ka-po-print), body:has(.ka-po-print) main, body:has(.ka-po-print) .h-screen { background: #fff !important; }
+  /* The page switches to the light theme while printing (po-detail.tsx), so these are paper colours. */
+  body:has(.ka-po-print), body:has(.ka-po-print) main, body:has(.ka-po-print) .h-screen { background: var(--bg-surface) !important; }
   body:has(.ka-po-print) main { padding: 0 !important; }
   .ka-po-print { max-width: none; padding: 0; gap: 12px; }
   .ka-po-print .ka-card { break-inside: avoid; box-shadow: none; }

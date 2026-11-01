@@ -22,6 +22,7 @@ import RowMenu, { RowMenuItem } from '@/components/RowMenu';
 import StatusBadge from '@/components/StatusBadge';
 import { useToast } from '@/components/Toast';
 import {
+  deletable,
   formatMoney,
   orderLines,
   orderVatSummary,
@@ -96,7 +97,9 @@ function PurchaseOrdersList() {
   const [searchText, setSearchText] = useState(query);
   const [rows, setRows] = useState<PurchaseOrder[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
-  const [loading, setLoading] = useState(true);
+  // The list is loading until the rows for the current URL and refresh have arrived, so picking the
+  // view that is already shown never leaves it waiting for a fetch that does not happen.
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const [listError, setListError] = useState<string | null>(null);
   const [tabCounts, setTabCounts] = useState<Counts>({});
   const [overall, setOverall] = useState<Counts | null>(null);
@@ -138,6 +141,9 @@ function PurchaseOrdersList() {
     lastQuery.current = query;
   }, [query, searchText]);
 
+  const fetchKey = `${page}|${query}|${sort}|${tab}|${refreshKey}`;
+  const loading = loadedKey !== fetchKey;
+
   useEffect(() => {
     let active = true;
     const filters = tab === 'all' ? undefined : { purchase_order_status: JSON.stringify([tab]) };
@@ -157,7 +163,7 @@ function PurchaseOrdersList() {
         if (active) setListError(loadErrorText('รายการใบสั่งซื้อ', error));
       })
       .finally(() => {
-        if (active) setLoading(false);
+        if (active) setLoadedKey(`${page}|${query}|${sort}|${tab}|${refreshKey}`);
       });
     return () => {
       active = false;
@@ -193,19 +199,16 @@ function PurchaseOrdersList() {
   }, [query, overall]);
 
   const refresh = () => {
-    setLoading(true);
     setOverall(null);
     setRefreshKey((key) => key + 1);
   };
 
   const pickTab = (key: TabKey) => {
-    setLoading(true);
     setParams({ tab: key, page: 1 });
   };
 
   const clearFilters = () => {
     setSearchText('');
-    setLoading(true);
     setParams({ q: '', tab: 'all', page: 1 });
   };
 
@@ -234,7 +237,7 @@ function PurchaseOrdersList() {
     if (canReject && (status === 'pending' || status === 'active')) {
       items.push({ label: 'ยกเลิกใบสั่งซื้อ', icon: 'cancel', tone: 'danger', onSelect: () => setToReject(order) });
     }
-    if (canDelete) items.push({ label: 'ลบ', icon: 'delete', tone: 'danger', onSelect: () => setToDelete(order) });
+    if (canDelete && deletable(status)) items.push({ label: 'ลบ', icon: 'delete', tone: 'danger', onSelect: () => setToDelete(order) });
     return items;
   };
 
@@ -364,7 +367,6 @@ function PurchaseOrdersList() {
             items={(Object.keys(SORTS) as SortKey[]).map((key) => ({
               label: key === sort ? `${SORTS[key].label} (ใช้อยู่)` : SORTS[key].label,
               onSelect: () => {
-                setLoading(true);
                 setParams({ sort: key, page: 1 });
               },
             }))}
@@ -488,7 +490,6 @@ function PurchaseOrdersList() {
                 meta={meta}
                 currentPage={page}
                 onPageChange={(next) => {
-                  setLoading(true);
                   setParams({ page: next });
                 }}
               />
