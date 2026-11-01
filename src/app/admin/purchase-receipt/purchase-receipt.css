@@ -1,4 +1,43 @@
 /* Purchase receipts: list, receive and detail pages (TASK-0325), drawn from the "ใบรับสินค้า" artboards.
    Layout parts shared with the purchase-order pages come from purchase-orders.css (ka-po-*). */
 @layer components {
+/* List: the queue of orders waiting for goods */
+.ka-pr-h2count { font-size: 14px; font-weight: 400; }
+.ka-pr-queue { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; margin: 0; padding: 16px; list-style: none; }
+.ka-pr-qc {
+  display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 14px 16px;
+  border: 1px solid var(--border); border-radius: 12px; background: var(--bg-surface);
+  transition: border-color var(--ka-fast) var(--ka-ease), box-shadow var(--ka-base) var(--ka-ease);
+}
+.ka-pr-qc:hover { border-color: var(--border-control); box-shadow: var(--shadow-raise); }
+.ka-pr-qc__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.ka-pr-qc__id { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ka-pr-qc__name { font: 600 15px/24px var(--ka-font); color: var(--ink); overflow-wrap: anywhere; }
+.ka-pr-qc__meta { font-size: 14px; line-height: 22px; overflow-wrap: anywhere; }
+.ka-pr-qc__prog { font-size: 13px; }
+.ka-pr-qc__cta { width: 100%; }
+.ka-pr-meter--partial > i { background: var(--brand); }
+.ka-pr-more { display: flex; justify-content: center; padding: 0 16px 16px; }
+.ka-pr-link { color: var(--brand-ink); font: 600 14px/22px var(--ka-font); text-decoration: none; border-radius: 4px; }
+.ka-pr-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.ka-pr-link:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* List: receipts table */
+.ka-pr-lt { min-width: 960px; }
+/* The order chip sits above the row link so it opens the order, not the receipt. */
+.ka-po-lt td.ka-pr-above { position: relative; z-index: 1; }
+.ka-pr-pochip {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 0 10px;
+  border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--bg-subtle);
+  color: var(--ink); font: 400 13px/20px var(--font-mono); text-decoration: none; white-space: nowrap;
+}
+.ka-pr-pochip:hover { border-color: var(--border-control); }
+.ka-pr-pochip:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.ka-pr-capped { padding: 0 16px 12px; }
+
+@media (max-width: 639px) {
+  .ka-pr-queue { grid-template-columns: minmax(0, 1fr); padding: 12px; }
+  .ka-pr-more { padding: 0 12px 12px; }
+  .ka-pr-more .ka-btn { width: 100%; }
+}
 }
