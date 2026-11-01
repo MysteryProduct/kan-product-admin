@@ -3,7 +3,7 @@
 @layer components {
 /* List: the queue of orders waiting for goods */
 .ka-pr-h2count { font-size: 14px; font-weight: 400; }
-.ka-pr-queue { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; margin: 0; padding: 16px; list-style: none; }
+.ka-pr-queue { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: 12px; margin: 0; padding: 16px; list-style: none; }
 .ka-pr-qc {
   display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 14px 16px;
   border: 1px solid var(--border); border-radius: 12px; background: var(--bg-surface);
