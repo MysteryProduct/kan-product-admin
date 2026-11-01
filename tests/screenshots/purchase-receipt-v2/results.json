@@ -1,0 +1,657 @@
+{
+  "results": [
+    {
+      "name": "flow start: order active, balance 200",
+      "ok": true,
+      "note": "{\"step\":\"เริ่ม: PO 200 อนุมัติแล้ว\",\"po\":\"PO202611010100\",\"status\":\"active\",\"balance\":200,\"ordered\":200,\"stock\":0}"
+    },
+    {
+      "name": "form 390: stepper and save 44px",
+      "ok": true,
+      "note": "44 / 44"
+    },
+    {
+      "name": "form 390: save bar shows, summary buttons hidden",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "form 390: no page side-scroll",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "form 390: the line row fits its card",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "form 834: no page side-scroll",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "form 834: the line row fits its card",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "form: a new receipt starts at 0",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "form: empty outcome",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "form: crumb \"← ใบรับสินค้า / รับสินค้า {PO}\"",
+      "ok": true,
+      "note": "← ใบรับสินค้า / รับสินค้า PO202611010100 Ctrl K"
+    },
+    {
+      "name": "form 1440: stepper 40px",
+      "ok": true,
+      "note": "40"
+    },
+    {
+      "name": "form 1440: no page side-scroll",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "form 1440: the line row fits its card",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "form over: error under the field",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "form over: save disabled",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "form over: outcome danger",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "form: leaving with edits asks first",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "120: outcome says the order becomes partly received",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "create: body keys as before",
+      "ok": true,
+      "note": "[\"create_by\",\"entry_date\",\"purchaseReceiptLists\",\"purchase_order_id\",\"purchase_receipt_detail\",\"purchase_receipt_subtotal\",\"purchase_receipt_total\",\"purchase_receipt_vat_amount\",\"supplier_id\",\"vat_type\"]"
+    },
+    {
+      "name": "create: line keys as before, one line",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "120 saved: pending, balance 80, order partial, stock unchanged",
+      "ok": true,
+      "note": "{\"step\":\"บันทึกรับ 120 (pending)\",\"po\":\"PO202611010100\",\"status\":\"partial\",\"balance\":80,\"ordered\":200,\"stock\":0,\"receipt\":\"pending\"}"
+    },
+    {
+      "name": "120 saved: toast names the receipt",
+      "ok": true,
+      "note": "บันทึกใบรับสินค้า PR202611010099 แล้ว"
+    },
+    {
+      "name": "120 saved: detail total = form total",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "detail pending 390: no page side-scroll",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "detail pending 834: no page side-scroll",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "detail pending 1440: no page side-scroll",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "detail pending: stock card says it adds on approval",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "approve: stock +120, receipt approved",
+      "ok": true,
+      "note": "{\"step\":\"อนุมัติใบ 120\",\"po\":\"PO202611010100\",\"status\":\"partial\",\"balance\":80,\"ordered\":200,\"stock\":120,\"receipt\":\"approved\"}"
+    },
+    {
+      "name": "approve: toast and page reloaded in place",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "print: sidebar, header and actions hidden",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "81: save disabled and over error",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "81: nothing sent to the API (Enter in the field too)",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "ใส่คงเหลือ fills 80",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "80: outcome says the order becomes fully received",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "80 saved: balance 0, order completed, stock unchanged",
+      "ok": true,
+      "note": "{\"step\":\"บันทึกรับ 80 (pending)\",\"po\":\"PO202611010100\",\"status\":\"completed\",\"balance\":0,\"ordered\":200,\"stock\":120,\"receipt\":\"pending\"}"
+    },
+    {
+      "name": "queue: a completed order leaves the queue",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "edit: คงเหลือ = balance 0 + 80 this receipt took",
+      "ok": true,
+      "note": "80"
+    },
+    {
+      "name": "edit: 81 is over the ceiling",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "update: body keys as before",
+      "ok": true,
+      "note": "[\"create_by\",\"entry_date\",\"purchaseReceiptLists\",\"purchase_order_id\",\"purchase_receipt_detail\",\"purchase_receipt_id\",\"purchase_receipt_subtotal\",\"purchase_receipt_total\",\"purchase_receipt_vat_amount\",\"supplier_id\",\"update_by\",\"vat_type\"]"
+    },
+    {
+      "name": "edit saved: balance 10, order partial",
+      "ok": true,
+      "note": "{\"step\":\"แก้ไขใบ pending เป็น 70\",\"po\":\"PO202611010100\",\"status\":\"partial\",\"balance\":10,\"ordered\":200,\"stock\":120,\"receipt\":\"pending\"}"
+    },
+    {
+      "name": "cancel pending: balance 80, stock unchanged, rejected",
+      "ok": true,
+      "note": "{\"step\":\"ยกเลิกใบ pending\",\"po\":\"PO202611010100\",\"status\":\"partial\",\"balance\":80,\"ordered\":200,\"stock\":120,\"receipt\":\"rejected\"}"
+    },
+    {
+      "name": "cancel pending: the dialog says the balance goes back",
+      "ok": true,
+      "note": "ยกเลิก PR202611010100: คืนยอดคงเหลือ 70 TASK0141-02950C56-9FB7-4128-997A-24B18E319A15OTHER-RENAMED ให้ใบสั่งซื้อ PO202611010100"
+    },
+    {
+      "name": "cancel pending: banner on the page",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "cancel approved: balance 200, stock back, order active",
+      "ok": true,
+      "note": "{\"step\":\"ยกเลิกใบ approved\",\"po\":\"PO202611010100\",\"status\":\"active\",\"balance\":200,\"ordered\":200,\"stock\":0,\"receipt\":\"rejected\"}"
+    },
+    {
+      "name": "cancel approved: the dialog says the stock comes out",
+      "ok": true,
+      "note": "ยกเลิก PR202611010099: คืนยอดคงเหลือ 120 TASK0141-02950C56-9FB7-4128-997A-24B18E319A15OTHER-RENAMED ให้ใบสั่งซื้อ PO202611010100 และดึงสต็อกที่เพิ่มไว้คืน"
+    },
+    {
+      "name": "delete pending: balance 200, receipt gone",
+      "ok": true,
+      "note": "{\"step\":\"ลบใบ pending\",\"po\":\"PO202611010100\",\"status\":\"active\",\"balance\":200,\"ordered\":200,\"stock\":0}"
+    },
+    {
+      "name": "VAT none: body totals = old calculation",
+      "ok": true,
+      "note": "{\"subtotal\":123.45,\"vat\":0,\"total\":123.45}"
+    },
+    {
+      "name": "VAT none: form = detail = list = old total",
+      "ok": true,
+      "note": "{\"formTotal\":123.45,\"detailTotal\":123.45,\"listTotal\":123.45,\"expected\":123.45}"
+    },
+    {
+      "name": "VAT none: detail subtotal = old subtotal",
+      "ok": true,
+      "note": "123.45 vs 123.45"
+    },
+    {
+      "name": "VAT none: API saved this VAT and the old VAT amount",
+      "ok": true,
+      "note": "{\"total\":123.45,\"subtotal\":123.45,\"vat\":0,\"vat_type\":\"none\",\"vat_rate\":\"0.00\"}"
+    },
+    {
+      "name": "VAT include: body totals = old calculation",
+      "ok": true,
+      "note": "{\"subtotal\":115.37,\"vat\":8.08,\"total\":123.45}"
+    },
+    {
+      "name": "VAT include: form = detail = list = old total",
+      "ok": true,
+      "note": "{\"formTotal\":123.45,\"detailTotal\":123.45,\"listTotal\":123.45,\"expected\":123.45}"
+    },
+    {
+      "name": "VAT include: detail subtotal = old subtotal",
+      "ok": true,
+      "note": "115.37 vs 115.37"
+    },
+    {
+      "name": "VAT include: API saved this VAT and the old VAT amount",
+      "ok": true,
+      "note": "{\"total\":123.45,\"subtotal\":123.45,\"vat\":8.08,\"vat_type\":\"include\",\"vat_rate\":\"7.00\"}"
+    },
+    {
+      "name": "VAT exclude: body totals = old calculation",
+      "ok": true,
+      "note": "{\"subtotal\":123.45,\"vat\":8.64,\"total\":132.09}"
+    },
+    {
+      "name": "VAT exclude: form = detail = list = old total",
+      "ok": true,
+      "note": "{\"formTotal\":132.09,\"detailTotal\":132.09,\"listTotal\":132.09,\"expected\":132.09}"
+    },
+    {
+      "name": "VAT exclude: detail subtotal = old subtotal",
+      "ok": true,
+      "note": "123.45 vs 123.45"
+    },
+    {
+      "name": "VAT exclude: API saved this VAT and the old VAT amount",
+      "ok": true,
+      "note": "{\"total\":123.45,\"subtotal\":132.09,\"vat\":8.64,\"vat_type\":\"exclude\",\"vat_rate\":\"7.00\"}"
+    },
+    {
+      "name": "F1 create: order saved without VAT, \"แยก VAT\" picked: form = detail = saved (rate 0)",
+      "ok": true,
+      "note": "{\"formTotal\":123.45,\"detailTotal\":123.45,\"stored\":{\"total\":123.45,\"vat\":0,\"vat_type\":\"exclude\",\"vat_rate\":\"0.00\"},\"hint\":\"ใบสั่งซื้อใช้ “ไม่คิด VAT” · ใบสั่งซื้อนี้บันทึกอัตรา VAT 0% ระบบจึงคิด VAT 0%\"}"
+    },
+    {
+      "name": "F1 create: the form says the order keeps VAT 0%",
+      "ok": true,
+      "note": "ใบสั่งซื้อใช้ “ไม่คิด VAT” · ใบสั่งซื้อนี้บันทึกอัตรา VAT 0% ระบบจึงคิด VAT 0%"
+    },
+    {
+      "name": "F1 edit: receipt saved without VAT switched to แยก VAT: form = detail = 7% of the order",
+      "ok": true,
+      "note": "{\"editTotal\":132.09,\"editDetail\":132.09,\"expected\":{\"subtotal\":123.45,\"vat\":8.64,\"total\":132.09},\"stored\":{\"vat\":8.64,\"vat_rate\":\"7.00\"}}"
+    },
+    {
+      "name": "F6: a pending order shows a note in Thai, no form",
+      "ok": true,
+      "note": "ใบสั่งซื้อ PO202611010103 อยู่สถานะ “รออนุมัติ” รับสินค้าได้เฉพาะใบสั่งซื้อที่อนุมัติแล้วหรือรับบางส่วน กลับไปรายการใบรับสินค้า"
+    },
+    {
+      "name": "list 390: no page side-scroll",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list 834: no page side-scroll",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list 1440: no page side-scroll",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list: searching an order code finds its receipts",
+      "ok": true,
+      "note": "3"
+    },
+    {
+      "name": "list: search went into the URL after the pause",
+      "ok": true,
+      "note": "http://localhost:3031/admin/purchase-receipt?q=PO202611010101"
+    },
+    {
+      "name": "queue: partly received order offers \"รับส่วนที่เหลือ\"",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "queue: progress \"รับแล้ว 3 / 30\"",
+      "ok": true,
+      "note": "PO202611010101 ทดสอบ TASK-0325 สามแบบ VAT รับบางส่วน stock-lock-fixture-eca0f6a7-a7e7-4d6e-8e1d-8a73e06592a1 · สั่ง 1 พ.ย. 2569 · ฿3,962.75 รับแล้ว 3 / 30 TASK0141-02950C56-9FB7-4128-997A-24B18E319A15OTHER-RENAMED รับส่วนที่เหลือ PO202611010101"
+    },
+    {
+      "name": "queue empty: message and link",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "F3: \"ยอดมากไปน้อย\" is in order of the totals shown",
+      "ok": true,
+      "note": "[1284,1016.5,749,132.09,132.09,123.45,123.45]"
+    },
+    {
+      "name": "F7: search + เก่าสุดก่อน starts with the oldest receipt",
+      "ok": true,
+      "note": "PR202609100001 vs PR202609100001"
+    },
+    {
+      "name": "F8: switching sort while searching does not reload the receipts",
+      "ok": true,
+      "note": "0 list calls, http://localhost:3031/admin/purchase-receipt?q=PR&sort=high"
+    },
+    {
+      "name": "F4: supplier chip lists every supplier",
+      "ok": true,
+      "note": "2 of 2"
+    },
+    {
+      "name": "F2: list \"พิมพ์\" opens the detail and prints once",
+      "ok": true,
+      "note": "1 prints, http://localhost:3031/admin/purchase-receipt/01a196a5-b3c8-7837-97b9-81d26c5e367f"
+    },
+    {
+      "name": "new without ?po: order picker",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "keyboard: Tab reaches VAT, note, fill-all, price, quantity, +, ใส่คงเหลือ and save",
+      "ok": true,
+      "note": "pr-date → pr-date → pr-date → pr-date → แยก VAT 7% → pr-detail → รับครบทุกรายการ → ราคาต่อTASK0141-02950C56-9FB7-4128-997A-24B18E319A15OTHER-RENAMED ฝาปิดใส 20 ออนซ์ → รับครั้งนี้ ฝาปิดใส 20 ออนซ์ (คงเหลือ 27 TASK0141-02950C56-9FB7-4128-997A-24B18E319A15OTHER-RENAMED) → เพิ่มจำนวนรับ ฝาปิดใส 20 ออนซ์ → ใส่คงเหลือ 27 TASK0141-02950C56-9FB7-4128-997A-24B18E319A15OTHER-RENAMED ให้ ฝาปิดใส 20 ออนซ์ → บันทึกใบรับสินค้า"
+    },
+    {
+      "name": "keyboard: every stop shows a focus ring",
+      "ok": true,
+      "note": "0 without a ring: []"
+    },
+    {
+      "name": "keyboard: arrow keys step the quantity",
+      "ok": true,
+      "note": "2"
+    },
+    {
+      "name": "keyboard: \"−\" is reachable once the quantity is above 0",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "keyboard: Space on รับครบทุกรายการ fills the balance",
+      "ok": true,
+      "note": "27"
+    },
+    {
+      "name": "keyboard: arrows move the VAT choice",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "every button and link in the form has a name",
+      "ok": true,
+      "note": "0"
+    },
+    {
+      "name": "320px list: nothing past the screen",
+      "ok": true,
+      "note": "{\"docScroll\":320,\"mainScroll\":320,\"mainWidth\":320,\"wide\":[]}"
+    },
+    {
+      "name": "320px form: nothing past the screen",
+      "ok": true,
+      "note": "{\"docScroll\":320,\"mainScroll\":320,\"mainWidth\":320,\"wide\":[]}"
+    },
+    {
+      "name": "320px detail: nothing past the screen",
+      "ok": true,
+      "note": "{\"docScroll\":320,\"mainScroll\":320,\"mainWidth\":320,\"wide\":[]}"
+    },
+    {
+      "name": "cleanup: no test orders left",
+      "ok": true,
+      "note": "0 left"
+    },
+    {
+      "name": "cleanup: stock back to where it started",
+      "ok": true,
+      "note": "0 vs 0"
+    },
+    {
+      "name": "no page errors",
+      "ok": true,
+      "note": ""
+    }
+  ],
+  "flow": [
+    {
+      "step": "เริ่ม: PO 200 อนุมัติแล้ว",
+      "po": "PO202611010100",
+      "status": "active",
+      "balance": 200,
+      "ordered": 200,
+      "stock": 0
+    },
+    {
+      "step": "บันทึกรับ 120 (pending)",
+      "po": "PO202611010100",
+      "status": "partial",
+      "balance": 80,
+      "ordered": 200,
+      "stock": 0,
+      "receipt": "pending"
+    },
+    {
+      "step": "อนุมัติใบ 120",
+      "po": "PO202611010100",
+      "status": "partial",
+      "balance": 80,
+      "ordered": 200,
+      "stock": 120,
+      "receipt": "approved"
+    },
+    {
+      "step": "บันทึกรับ 80 (pending)",
+      "po": "PO202611010100",
+      "status": "completed",
+      "balance": 0,
+      "ordered": 200,
+      "stock": 120,
+      "receipt": "pending"
+    },
+    {
+      "step": "แก้ไขใบ pending เป็น 70",
+      "po": "PO202611010100",
+      "status": "partial",
+      "balance": 10,
+      "ordered": 200,
+      "stock": 120,
+      "receipt": "pending"
+    },
+    {
+      "step": "ยกเลิกใบ pending",
+      "po": "PO202611010100",
+      "status": "partial",
+      "balance": 80,
+      "ordered": 200,
+      "stock": 120,
+      "receipt": "rejected"
+    },
+    {
+      "step": "ยกเลิกใบ approved",
+      "po": "PO202611010100",
+      "status": "active",
+      "balance": 200,
+      "ordered": 200,
+      "stock": 0,
+      "receipt": "rejected"
+    },
+    {
+      "step": "บันทึกรับ 10 (pending)",
+      "po": "PO202611010100",
+      "status": "partial",
+      "balance": 190,
+      "ordered": 200,
+      "stock": 0,
+      "receipt": "pending"
+    },
+    {
+      "step": "ลบใบ pending",
+      "po": "PO202611010100",
+      "status": "active",
+      "balance": 200,
+      "ordered": 200,
+      "stock": 0
+    }
+  ],
+  "notes": {
+    "fixtures": {
+      "supplier": "stock-lock-fixture-eca0f6a7-a7e7-4d6e-8e1d-8a73e06592a1",
+      "material": "ฝาปิดใส 20 ออนซ์",
+      "unit": "TASK0141-02950C56-9FB7-4128-997A-24B18E319A15OTHER-RENAMED"
+    },
+    "vat_none": {
+      "expected": {
+        "subtotal": 123.45,
+        "vat": 0,
+        "total": 123.45
+      },
+      "formTotal": 123.45,
+      "detailTotal": 123.45,
+      "detailSub": 123.45,
+      "listTotal": 123.45,
+      "sent": {
+        "subtotal": 123.45,
+        "vat": 0,
+        "total": 123.45
+      },
+      "stored": {
+        "total": 123.45,
+        "subtotal": 123.45,
+        "vat": 0,
+        "vat_type": "none",
+        "vat_rate": "0.00"
+      }
+    },
+    "vat_include": {
+      "expected": {
+        "subtotal": 115.37,
+        "vat": 8.08,
+        "total": 123.45
+      },
+      "formTotal": 123.45,
+      "detailTotal": 123.45,
+      "detailSub": 115.37,
+      "listTotal": 123.45,
+      "sent": {
+        "subtotal": 115.37,
+        "vat": 8.08,
+        "total": 123.45
+      },
+      "stored": {
+        "total": 123.45,
+        "subtotal": 123.45,
+        "vat": 8.08,
+        "vat_type": "include",
+        "vat_rate": "7.00"
+      }
+    },
+    "vat_exclude": {
+      "expected": {
+        "subtotal": 123.45,
+        "vat": 8.64,
+        "total": 132.09
+      },
+      "formTotal": 132.09,
+      "detailTotal": 132.09,
+      "detailSub": 123.45,
+      "listTotal": 132.09,
+      "sent": {
+        "subtotal": 123.45,
+        "vat": 8.64,
+        "total": 132.09
+      },
+      "stored": {
+        "total": 123.45,
+        "subtotal": 132.09,
+        "vat": 8.64,
+        "vat_type": "exclude",
+        "vat_rate": "7.00"
+      }
+    },
+    "f1_create": {
+      "formTotal": 123.45,
+      "detailTotal": 123.45,
+      "stored": {
+        "total": 123.45,
+        "vat": 0,
+        "vat_type": "exclude",
+        "vat_rate": "0.00"
+      },
+      "hint": "ใบสั่งซื้อใช้ “ไม่คิด VAT” · ใบสั่งซื้อนี้บันทึกอัตรา VAT 0% ระบบจึงคิด VAT 0%"
+    },
+    "f1_edit": {
+      "editTotal": 132.09,
+      "editDetail": 132.09,
+      "expected": {
+        "subtotal": 123.45,
+        "vat": 8.64,
+        "total": 132.09
+      },
+      "stored": {
+        "vat": 8.64,
+        "vat_rate": "7.00"
+      }
+    },
+    "f5": "not-run: fewer than 11 receipts match \"PR\"",
+    "keyboard_order": [
+      "pr-date",
+      "pr-date",
+      "pr-date",
+      "pr-date",
+      "แยก VAT 7%",
+      "pr-detail",
+      "รับครบทุกรายการ",
+      "ราคาต่อTASK0141-02950C56-9FB7-4128-997A-24B18E319A15OTHER-RENAMED ฝาปิดใส 20 ออนซ์",
+      "รับครั้งนี้ ฝาปิดใส 20 ออนซ์ (คงเหลือ 27 TASK0141-02950C56-9FB7-4128-997A-24B18E319A15OTHER-RENAMED)",
+      "เพิ่มจำนวนรับ ฝาปิดใส 20 ออนซ์",
+      "ใส่คงเหลือ 27 TASK0141-02950C56-9FB7-4128-997A-24B18E319A15OTHER-RENAMED ให้ ฝาปิดใส 20 ออนซ์",
+      "บันทึกใบรับสินค้า"
+    ],
+    "cleanup_receipt_PR202611010100": 200,
+    "cleanup_receipt_PR202611010099": 200,
+    "cleanup_order_01a196a4-a7d5-7532-a6ec-5309d00c35e7": 200,
+    "cleanup_receipt_PR202611010104": 200,
+    "cleanup_receipt_PR202611010103": 200,
+    "cleanup_receipt_PR202611010102": 200,
+    "cleanup_order_01a196a4-a81d-7dd1-a0ce-0f4873e0fb5d": 200,
+    "cleanup_receipt_PR202611010105": 200,
+    "cleanup_order_01a196a4-a859-7545-ba14-42db75dca26b": 200,
+    "cleanup_order_01a196a4-a893-74be-babb-633b194e0552": 200,
+    "stuck_shell_reloads": [],
+    "leave_prompts_accepted": 4
+  }
+}

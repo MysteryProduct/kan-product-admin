@@ -1,0 +1,140 @@
+/* Purchase receipts: list, receive and detail pages (TASK-0325), drawn from the "ใบรับสินค้า" artboards.
+   Layout parts shared with the purchase-order pages come from purchase-orders.css (ka-po-*). */
+@layer components {
+/* List: the queue of orders waiting for goods */
+.ka-pr-h2count { font-size: 14px; font-weight: 400; }
+.ka-pr-queue { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; margin: 0; padding: 16px; list-style: none; }
+.ka-pr-qc {
+  display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 14px 16px;
+  border: 1px solid var(--border); border-radius: 12px; background: var(--bg-surface);
+  transition: border-color var(--ka-fast) var(--ka-ease), box-shadow var(--ka-base) var(--ka-ease);
+}
+.ka-pr-qc:hover { border-color: var(--border-control); box-shadow: var(--shadow-raise); }
+.ka-pr-qc__top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.ka-pr-qc__id { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ka-pr-qc__name { font: 600 15px/24px var(--ka-font); color: var(--ink); overflow-wrap: anywhere; }
+.ka-pr-qc__meta { font-size: 14px; line-height: 22px; overflow-wrap: anywhere; }
+.ka-pr-qc__prog { font-size: 13px; }
+.ka-pr-qc__cta { width: 100%; }
+.ka-pr-meter--partial > i { background: var(--brand); }
+.ka-pr-more { display: flex; justify-content: center; padding: 0 16px 16px; }
+.ka-pr-link { color: var(--brand-ink); font: 600 14px/22px var(--ka-font); text-decoration: none; border-radius: 4px; }
+.ka-pr-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.ka-pr-link:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* List: receipts table */
+.ka-pr-lt { min-width: 960px; }
+/* The order chip sits above the row link so it opens the order, not the receipt. */
+.ka-po-lt td.ka-pr-above { position: relative; z-index: 1; }
+.ka-pr-pochip {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 0 10px;
+  border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--bg-subtle);
+  color: var(--ink); font: 400 13px/20px var(--font-mono); text-decoration: none; white-space: nowrap;
+}
+.ka-pr-pochip:hover { border-color: var(--border-control); }
+.ka-pr-pochip:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.ka-pr-capped { padding: 0 16px 12px; }
+
+/* Receive form: the order it receives against (read only) */
+.ka-pr-pick { max-width: 640px; }
+.ka-pr-posum {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 4px 16px;
+  padding: 16px 20px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-subtle);
+}
+.ka-pr-posum__ic { display: grid; place-items: center; grid-row: 1 / 3; width: 44px; height: 44px; border-radius: 12px; background: var(--info-soft); color: var(--info); }
+.ka-pr-posum__ic svg { width: 22px; height: 22px; }
+.ka-pr-posum__main { min-width: 0; }
+.ka-pr-posum__name { margin: 2px 0 0; font: 600 15px/24px var(--ka-font); color: var(--ink); overflow-wrap: anywhere; }
+.ka-pr-posum__link { align-self: start; padding: 6px 8px; white-space: nowrap; }
+.ka-pr-posum__meta { grid-column: 2 / -1; font-size: 14px; line-height: 22px; overflow-wrap: anywhere; }
+
+/* The native date input's calendar button takes focus too; the input then matches neither :focus nor
+   :focus-visible, only its wrapper's :focus-within, so the ring follows the wrapper. */
+.ka-pr-date:focus-within input[type="date"] { border-color: var(--focus); box-shadow: 0 0 0 3px var(--brand-soft); }
+
+/* Receive form: the lines received this time */
+.ka-pr-rcv { display: flex; flex-direction: column; }
+.ka-pr-rh, .ka-pr-rl { display: grid; grid-template-columns: minmax(140px, 1fr) 56px 64px 72px 184px 96px; gap: 12px; align-items: start; }
+.ka-pr-rh { padding: 10px 24px; border-bottom: 1px solid var(--border); background: var(--bg-subtle); color: var(--ink-muted); font: 500 13px/20px var(--ka-font); }
+.ka-pr-c { text-align: center; }
+.ka-pr-rl { padding: 14px 24px; border-bottom: 1px solid var(--border); font: 400 15px/24px var(--ka-font); color: var(--ink); }
+.ka-pr-rl:last-child { border-bottom: 0; }
+.ka-pr-rl > .ka-po-r { padding-top: 8px; }
+.ka-pr-c--m { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ka-pr-rl__name { font-weight: 600; overflow-wrap: anywhere; }
+.ka-pr-rl__sum { font-weight: 600; }
+.ka-pr-price { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; min-width: 0; }
+.ka-pr-price > .ka-po-cap:last-child { min-width: 0; overflow-wrap: anywhere; }
+input.ka-pr-price__in { width: 84px; min-height: 32px; height: 32px; padding: 0 8px; font-size: 14px; text-align: right; }
+/* On Large the column header names each value, so the in-cell labels are for screen readers only. */
+.ka-pr-lab { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.ka-pr-c--q { position: relative; min-width: 0; }
+.ka-pr-step { display: flex; align-items: stretch; height: var(--control-height); overflow: hidden; border: 1px solid var(--border-control); border-radius: var(--radius-control); background: var(--bg-surface); }
+.ka-pr-step:focus-within { border-color: var(--focus); box-shadow: 0 0 0 3px var(--brand-soft); }
+.ka-pr-step--err, .ka-pr-step--err:focus-within { border-color: var(--danger); }
+.ka-pr-step > button { display: grid; place-items: center; flex: none; width: 40px; border: 0; background: var(--bg-subtle); color: var(--ink); cursor: pointer; }
+.ka-pr-step > button:hover:not(:disabled) { background: var(--neutral-soft); }
+.ka-pr-step > button:disabled { color: var(--ink-subtle); cursor: not-allowed; }
+.ka-pr-step > button:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.ka-pr-step > button svg { width: 16px; height: 16px; }
+.ka-pr-step > input { flex: 1; min-width: 0; padding: 0 4px; border: 0; border-inline: 1px solid var(--border); background: transparent; color: var(--ink); font: 600 16px/1 var(--ka-font); text-align: center; outline: 0; }
+.ka-pr-step__foot { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; margin-top: 4px; }
+.ka-pr-step__foot .ka-error { font-size: 13px; line-height: 18px; }
+.ka-pr-fill { flex: none; padding: 2px 4px; border: 0; border-radius: 4px; background: none; color: var(--brand-ink); font: 600 13px/18px var(--ka-font); cursor: pointer; }
+.ka-pr-fill:hover { background: var(--brand-soft); }
+.ka-pr-fill:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.ka-pr-lines-err { padding-bottom: 0; }
+
+/* Receive form: what saving will do */
+.ka-pr-outcome { margin-top: 14px; padding: 10px 12px; font-size: 14px; line-height: 22px; }
+.ka-pr-outcome > svg { width: 16px; height: 16px; margin-top: 3px; }
+.ka-pr-outcome--neutral { --bn-ink: var(--neutral); --bn-bg: var(--neutral-soft); }
+
+/* Unit names come from master data and can be long; quantities wrap instead of pushing out. */
+.ka-pr .ka-po-progress__row > b, .ka-pr .ka-po-sum__l > span:last-child { min-width: 0; overflow-wrap: anywhere; text-align: right; }
+
+/* Detail */
+.ka-pr-dl__wide { grid-column: span 2; }
+.ka-pr-split { padding-top: 14px; border-top: 1px solid var(--border); }
+.ka-pr-postatus { margin-top: 6px; }
+.ka-pr-postatus b { color: var(--ink); font-weight: 600; }
+.ka-pr-stock { display: flex; flex-direction: column; gap: 6px; margin: 0 0 8px; padding: 0; list-style: none; }
+.ka-pr-stock > li { display: flex; justify-content: space-between; gap: 12px; font: 400 15px/24px var(--ka-font); color: var(--ink); }
+.ka-pr-stock > li > span { min-width: 0; overflow-wrap: anywhere; }
+.ka-pr-stock > li > b { flex: 0 1 auto; min-width: 0; max-width: 60%; font-weight: 600; text-align: right; overflow-wrap: anywhere; }
+.ka-pr-stock--in { color: var(--success); }
+.ka-pr-stock--wait { color: var(--ink-muted); }
+
+@media (max-width: 1023px) {
+  .ka-pr-rh { display: none; }
+  .ka-pr-rl { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-areas: "m m m" "o g l" "q q t"; row-gap: 10px; }
+  .ka-pr-rl > .ka-po-r { padding-top: 0; text-align: left; }
+  .ka-pr-c--m { grid-area: m; }
+  .ka-pr-c--o { grid-area: o; }
+  .ka-pr-c--g { grid-area: g; }
+  .ka-pr-c--l { grid-area: l; }
+  .ka-pr-c--q { grid-area: q; }
+  .ka-pr-c--t { grid-area: t; align-self: start; text-align: right !important; }
+  .ka-pr-lab { position: static; display: block; width: auto; height: auto; margin: 0 0 2px; overflow: visible; clip: auto; white-space: normal; color: var(--ink-muted); font: 500 13px/20px var(--ka-font); }
+}
+@media (max-width: 767px) {
+  .ka-pr-step { height: var(--touch-target); }
+  .ka-pr-step > button { width: var(--touch-target); }
+  input.ka-pr-price__in { min-height: var(--touch-target); height: var(--touch-target); }
+  .ka-pr-fill { padding: 10px 6px; margin: -8px -6px 0 0; }
+}
+@media (max-width: 639px) {
+  .ka-pr-dl__wide { grid-column: auto; }
+  .ka-pr-queue { grid-template-columns: minmax(0, 1fr); padding: 12px; }
+  .ka-pr-more { padding: 0 12px 12px; }
+  .ka-pr-more .ka-btn { width: 100%; }
+  .ka-pr-posum { grid-template-columns: auto minmax(0, 1fr); padding: 14px; }
+  .ka-pr-posum__meta { grid-row: 2; }
+  .ka-pr-posum__link { grid-column: 1 / -1; grid-row: 3; justify-self: start; padding-left: 0; }
+  .ka-pr-rl { padding: 14px 16px; grid-template-areas: "m m m" "o g l" "q q q" "t t t"; }
+  .ka-pr-c--t { text-align: left !important; display: flex; justify-content: space-between; align-items: baseline; }
+  .ka-pr-c--t .ka-pr-lab { margin: 0; }
+  /* The summary keeps its totals; saving moves to the bar at the bottom of the screen. */
+  .ka-pr-form .ka-po-savebar .ka-btn { flex: none; }
+}
+}
