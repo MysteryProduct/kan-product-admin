@@ -48,9 +48,13 @@
 .ka-pr-posum__link { align-self: start; padding: 6px 8px; white-space: nowrap; }
 .ka-pr-posum__meta { grid-column: 2 / -1; font-size: 14px; line-height: 22px; overflow-wrap: anywhere; }
 
+/* The native date input's calendar button takes focus too; the input then matches neither :focus nor
+   :focus-visible, only its wrapper's :focus-within, so the ring follows the wrapper. */
+.ka-pr-date:focus-within input[type="date"] { border-color: var(--focus); box-shadow: 0 0 0 3px var(--brand-soft); }
+
 /* Receive form: the lines received this time */
 .ka-pr-rcv { display: flex; flex-direction: column; }
-.ka-pr-rh, .ka-pr-rl { display: grid; grid-template-columns: minmax(180px, 2fr) 64px 72px 76px 196px 104px; gap: 12px; align-items: start; }
+.ka-pr-rh, .ka-pr-rl { display: grid; grid-template-columns: minmax(140px, 1fr) 56px 64px 72px 184px 96px; gap: 12px; align-items: start; }
 .ka-pr-rh { padding: 10px 24px; border-bottom: 1px solid var(--border); background: var(--bg-subtle); color: var(--ink-muted); font: 500 13px/20px var(--ka-font); }
 .ka-pr-c { text-align: center; }
 .ka-pr-rl { padding: 14px 24px; border-bottom: 1px solid var(--border); font: 400 15px/24px var(--ka-font); color: var(--ink); }
@@ -59,7 +63,8 @@
 .ka-pr-c--m { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .ka-pr-rl__name { font-weight: 600; overflow-wrap: anywhere; }
 .ka-pr-rl__sum { font-weight: 600; }
-.ka-pr-price { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.ka-pr-price { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; min-width: 0; }
+.ka-pr-price > .ka-po-cap:last-child { min-width: 0; overflow-wrap: anywhere; }
 input.ka-pr-price__in { width: 84px; min-height: 32px; height: 32px; padding: 0 8px; font-size: 14px; text-align: right; }
 /* On Large the column header names each value, so the in-cell labels are for screen readers only. */
 .ka-pr-lab { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -85,6 +90,9 @@ input.ka-pr-price__in { width: 84px; min-height: 32px; height: 32px; padding: 0 
 .ka-pr-outcome > svg { width: 16px; height: 16px; margin-top: 3px; }
 .ka-pr-outcome--neutral { --bn-ink: var(--neutral); --bn-bg: var(--neutral-soft); }
 
+/* Unit names come from master data and can be long; quantities wrap instead of pushing out. */
+.ka-pr .ka-po-progress__row > b, .ka-pr .ka-po-sum__l > span:last-child { min-width: 0; overflow-wrap: anywhere; text-align: right; }
+
 /* Detail */
 .ka-pr-dl__wide { grid-column: span 2; }
 .ka-pr-split { padding-top: 14px; border-top: 1px solid var(--border); }
@@ -93,7 +101,7 @@ input.ka-pr-price__in { width: 84px; min-height: 32px; height: 32px; padding: 0 
 .ka-pr-stock { display: flex; flex-direction: column; gap: 6px; margin: 0 0 8px; padding: 0; list-style: none; }
 .ka-pr-stock > li { display: flex; justify-content: space-between; gap: 12px; font: 400 15px/24px var(--ka-font); color: var(--ink); }
 .ka-pr-stock > li > span { min-width: 0; overflow-wrap: anywhere; }
-.ka-pr-stock > li > b { flex: none; font-weight: 600; }
+.ka-pr-stock > li > b { flex: 0 1 auto; min-width: 0; max-width: 60%; font-weight: 600; text-align: right; overflow-wrap: anywhere; }
 .ka-pr-stock--in { color: var(--success); }
 .ka-pr-stock--wait { color: var(--ink-muted); }
 

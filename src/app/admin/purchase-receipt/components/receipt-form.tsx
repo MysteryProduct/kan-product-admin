@@ -294,7 +294,7 @@ export default function ReceiptFormPage({ mode, order, receipt }: Props) {
             </div>
             <div className="ka-po-cp ka-po-fields">
               <div className="ka-po-g2">
-                <div className="ka-field">
+                <div className="ka-field ka-pr-date">
                   <label htmlFor={fieldId.date} className="ka-label">
                     วันที่รับสินค้า <span className="ka-req">*</span>
                   </label>
