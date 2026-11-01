@@ -408,7 +408,7 @@ export default function PurchaseOrderFormPage({ mode, source }: Props) {
                     </div>
                     <div className="ka-po-c ka-po-c--t">
                       <span className="ka-po-lab">รวม (บาท)</span>
-                      <output className="ka-po-lt numeric" aria-label={`รวม รายการที่ ${n}`}>
+                      <output className="ka-po-ltot numeric" aria-label={`รวม รายการที่ ${n}`}>
                         {formatMoney(lineAmount(line))}
                       </output>
                     </div>
