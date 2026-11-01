@@ -17,7 +17,6 @@ import {
   usePurchaseOrderForm,
 } from '../hooks/usePurchaseOrderForm';
 import { useLeaveGuard } from '../hooks/useLeaveGuard';
-import { claimEditOrigin } from '../lib/edit-origin';
 import { formatBaht, formatMoney, statusLabel } from '../lib/po-display';
 
 const LIST_HREF = '/admin/purchase-orders';
@@ -68,12 +67,6 @@ export default function PurchaseOrderFormPage({ mode, source }: Props) {
   const editing = mode === 'edit' && source;
   const code = source?.purchase_order_code;
   usePageCrumb({ back: { label: 'ใบสั่งซื้อ', href: LIST_HREF }, current: editing ? code ?? 'แก้ไขใบสั่งซื้อ' : 'สร้างใบสั่งซื้อ' });
-
-  // An edit opened from the order's detail page says so in its history entry (see edit-origin.ts).
-  const detailHref = editing ? `${LIST_HREF}/${source.purchase_order_id}` : null;
-  useEffect(() => {
-    if (detailHref) claimEditOrigin(detailHref);
-  }, [detailHref]);
 
   // A new line takes focus on its material once it is on the page.
   useEffect(() => {

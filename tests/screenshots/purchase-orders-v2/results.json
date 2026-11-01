@@ -33,7 +33,7 @@
     {
       "name": "create none: toast names the PO",
       "ok": true,
-      "note": "สร้างใบสั่งซื้อ PO202611010039 แล้ว"
+      "note": "สร้างใบสั่งซื้อ PO202611010049 แล้ว"
     },
     {
       "name": "create include: body totals = old calculation",
@@ -68,7 +68,7 @@
     {
       "name": "create include: toast names the PO",
       "ok": true,
-      "note": "สร้างใบสั่งซื้อ PO202611010040 แล้ว"
+      "note": "สร้างใบสั่งซื้อ PO202611010050 แล้ว"
     },
     {
       "name": "create exclude: body totals = old calculation",
@@ -103,7 +103,7 @@
     {
       "name": "create exclude: toast names the PO",
       "ok": true,
-      "note": "สร้างใบสั่งซื้อ PO202611010041 แล้ว"
+      "note": "สร้างใบสั่งซื้อ PO202611010051 แล้ว"
     },
     {
       "name": "back after save reaches the list",
@@ -301,19 +301,19 @@
       "note": "5,7"
     },
     {
-      "name": "edit: back after save leaves the detail page",
+      "name": "edit (opened from detail): save lands on the order",
       "ok": true,
-      "note": "http://localhost:3021/admin/purchase-orders"
+      "note": "http://localhost:3021/admin/purchase-orders/01a19585-af37-7f1c-803f-230fb2cb5a4d"
     },
     {
       "name": "edit (full load, cancel, back): save lands on the order",
       "ok": true,
-      "note": "http://localhost:3021/admin/purchase-orders/01a1956b-9322-7180-bf80-79249d57c3e7"
+      "note": "http://localhost:3021/admin/purchase-orders/01a19585-af37-7f1c-803f-230fb2cb5a4d"
     },
     {
-      "name": "edit (opened from detail, reloaded): save lands on the order, one back leaves it",
+      "name": "edit (reloaded while edited): save lands on the order",
       "ok": true,
-      "note": "/admin/purchase-orders/01a1956b-9322-7180-bf80-79249d57c3e7 then http://localhost:3021/admin/purchase-orders"
+      "note": "http://localhost:3021/admin/purchase-orders/01a19585-af37-7f1c-803f-230fb2cb5a4d"
     },
     {
       "name": "edit: approved order refused",
@@ -626,10 +626,10 @@
         "shadow": false
       }
     ],
-    "cleanup_01a1956b-7ed8-73e2-8941-fa0112a6036c": 200,
-    "cleanup_01a1956b-9322-7180-bf80-79249d57c3e7": 400,
-    "cleanup_01a1956b-a699-7a67-8b42-aaffad71eaea": 200,
-    "cleanup_01a1956b-ba3f-7d14-a6de-0e7a64046d60": 200,
-    "cleanup_01a1956d-12f4-7469-8193-048653f61c83": 200
+    "cleanup_01a19585-9abc-79c3-9601-958d5c88ab7c": 200,
+    "cleanup_01a19585-af37-7f1c-803f-230fb2cb5a4d": 400,
+    "cleanup_01a19585-c340-7248-90aa-9ba770bd6b5c": 200,
+    "cleanup_01a19585-d722-7a93-9f0b-dbeb51643408": 200,
+    "cleanup_01a19587-23c6-7b47-af6d-1992b1c1fa94": 200
   }
 }

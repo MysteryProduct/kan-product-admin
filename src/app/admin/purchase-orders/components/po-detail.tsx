@@ -18,7 +18,6 @@ import RowMenu, { RowMenuItem } from '@/components/RowMenu';
 import StatusBadge from '@/components/StatusBadge';
 import { useToast } from '@/components/Toast';
 import DocumentHistoryPanel, { DocumentHistoryEntry } from '@/components/document-history/DocumentHistoryPanel';
-import { markEditFromDetail } from '../lib/edit-origin';
 import { deletable, formatBaht, formatMoney, lineTotal, orderLines, orderVatSummary, statusLabel, statusTone } from '../lib/po-display';
 
 const purchaseOrderModel = new PurchaseOrderModel();
@@ -203,7 +202,7 @@ export default function PurchaseOrderDetail({ purchaseOrder: order, onChanged }:
             </button>
           )}
           {editable && canEdit && (
-            <Link href={`${BASE}/${id}/edit`} className="ka-btn" onClick={() => markEditFromDetail(`${BASE}/${id}`)}>
+            <Link href={`${BASE}/${id}/edit`} className="ka-btn">
               แก้ไข
             </Link>
           )}

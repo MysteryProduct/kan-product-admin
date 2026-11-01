@@ -336,10 +336,9 @@ check('edit: PATCH body totals = old calculation', editBody && editBody.purchase
 check('edit: PATCH body keys as before', editBody && JSON.stringify(Object.keys(editBody)) === JSON.stringify(['purchase_order_id', 'purchase_order_name', 'purchase_order_detail', 'supplier_id', 'vat_type', 'purchase_order_subtotal', 'purchase_order_vat_amount', 'update_by', 'purchase_order_total', 'purchaseOrderLists']), JSON.stringify(Object.keys(editBody ?? {})));
 check('edit: saved quantity 5', orderQty(edited) === 5, String(orderQty(edited)));
 check('edit: detail shows the new quantity', (await page.locator('.ka-po-it__qtyonly').allInnerTexts()).includes('5'), (await page.locator('.ka-po-it__qtyonly').allInnerTexts()).join(','));
-// Review F6: one back from the saved order leaves it (no second copy of the detail page in history).
-await page.goBack();
-await settle(800);
-check('edit: back after save leaves the detail page', new URL(page.url()).pathname === '/admin/purchase-orders', page.url());
+// Review F6 was accepted by the owner: the saved order's page replaces the form, so after an edit
+// opened from the detail page one back shows that detail page again; what is checked is where save lands.
+check('edit (opened from detail): save lands on the order', new URL(page.url()).pathname === `/admin/purchase-orders/${created.include.id}`, page.url());
 const includeDetail = `/admin/purchase-orders/${created.include.id}`;
 const bumpFirstQty = async (value) => {
   await page.locator('.ka-po-ln').first().locator('input[inputmode=numeric]').fill(value);
@@ -358,21 +357,18 @@ await page.waitForURL(/\/edit$/, { timeout: 60000 });
 await settle(1200);
 await bumpFirstQty('6');
 check('edit (full load, cancel, back): save lands on the order', new URL(page.url()).pathname === includeDetail, page.url());
-// Review F6 after a reload: the edit page opened from the detail page keeps that fact.
-await page.goto(`${base}/admin/purchase-orders`);
-await settle(800);
+// Review F8: reloading while there are unsaved edits, then saving, still lands on the order.
 await page.goto(`${base}${includeDetail}`);
 await settle(1000);
 await page.getByRole('link', { name: 'แก้ไข', exact: true }).click();
 await page.waitForURL(/\/edit$/, { timeout: 60000 });
 await settle(1000);
+await page.locator('.ka-po-ln').first().locator('input[inputmode=numeric]').fill('4');
+page.once('dialog', (dialog) => void dialog.accept());
 await page.reload();
 await settle(1500);
 await bumpFirstQty('5');
-const afterReloadSave = new URL(page.url()).pathname;
-await page.goBack();
-await settle(800);
-check('edit (opened from detail, reloaded): save lands on the order, one back leaves it', afterReloadSave === includeDetail && new URL(page.url()).pathname === '/admin/purchase-orders', `${afterReloadSave} then ${page.url()}`);
+check('edit (reloaded while edited): save lands on the order', new URL(page.url()).pathname === includeDetail, page.url());
 function orderQty(order) {
   return Number((order.purchaseOrderLists ?? []).find((line) => Number(line.purchase_order_list_price) === 123.45)?.purchase_order_list_qty);
 }
