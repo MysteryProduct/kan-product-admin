@@ -1,306 +1,407 @@
 'use client';
-import React from 'react';
+
+import { useState } from 'react';
 import Link from 'next/link';
-import { PurchaseOrder, PurchaseOrderItem } from '@/types/purchase-order';
-import { usePermissions } from '@/hooks/usePermissions';
-import PurchaseOrderModel from '@/models/purchase-order';
-import ConfirmDialog from '@/components/ConfirmDialog';
+import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import ActionResultDialog, { ActionResultDialogAction } from '@/components/ActionResultDialog';
-import { formatThaiDate } from '@/lib/date-format';
-import { calculateVatSummary, VAT_TYPE_LABELS } from '@/lib/vat';
+import axiosInstance from '@/lib/axios';
+import PurchaseOrderModel from '@/models/purchase-order';
+import type { PurchaseOrder } from '@/types/purchase-order';
+import { usePermissions } from '@/hooks/usePermissions';
 import useVatRate from '@/hooks/useVatRate';
-import DocumentHistoryPanel from '@/components/document-history/DocumentHistoryPanel';
+import { usePageCrumb } from '@/lib/page-crumb';
+import { formatThaiDate } from '@/lib/date-format';
 import { getApiErrorMessage } from '@/lib/api-error';
-import DocumentCancellationAction from '@/components/DocumentCancellationAction';
-import { PURCHASE_ORDER_STATUS_TONE } from '@/lib/status-tones';
+import CancellationDialog from '@/components/CancellationDialog';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import RowMenu, { RowMenuItem } from '@/components/RowMenu';
 import StatusBadge from '@/components/StatusBadge';
-interface PurchaseOrderDetailProps {
-	purchaseOrder: PurchaseOrder;
-	/** Reloads the order after it was approved, submitted or cancelled. */
-	onChanged: () => void;
-}
+import { useToast } from '@/components/Toast';
+import DocumentHistoryPanel, { DocumentHistoryEntry } from '@/components/document-history/DocumentHistoryPanel';
+import { formatBaht, formatMoney, lineTotal, orderLines, orderVatSummary, statusLabel, statusTone } from '../lib/po-display';
+
 const purchaseOrderModel = new PurchaseOrderModel();
-export default function PurchaseOrderDetail({ purchaseOrder, onChanged }: PurchaseOrderDetailProps) {
-    const vatRate = useVatRate();
-	const { can } = usePermissions();
-	const canApprovePurchaseOrder = can('purchase_orders', 'approve');
-	const canSubmitPurchaseOrder = can('purchase_orders', 'edit');
-	const canEditPurchaseOrder = can('purchase_orders', 'edit');
-	const [submitting, setSubmitting] = React.useState(false);
-	// if (!isOpen) return null;
-	const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
-	const [resultDialog, setResultDialog] = React.useState<{
-		isOpen: boolean;
-		status: 'success' | 'error';
-		action: ActionResultDialogAction;
-		message: string;
-	}>({
-		isOpen: false,
-		status: 'success',
-		action: 'approve',
-		message: '',
-	});
-	const items = ((purchaseOrder.purchaseOrderLists ?? (purchaseOrder as { items?: PurchaseOrderItem[] }).items ?? []) as PurchaseOrderItem[]);
+const BASE = '/admin/purchase-orders';
 
-	const calculateItemTotal = (item: PurchaseOrderItem) => {
-		return item.purchase_order_list_total || (Number(item.purchase_order_list_qty) * Number(item.purchase_order_list_price));
-	};
+interface PurchaseOrderDetailProps {
+  purchaseOrder: PurchaseOrder;
+  /** Reloads the order after it was approved, submitted or cancelled. */
+  onChanged: () => void;
+}
 
-	const grandTotal =
-		purchaseOrder.purchase_order_total || items.reduce((sum, item) => sum + calculateItemTotal(item), 0);
-	const vatSummary = calculateVatSummary(
-		purchaseOrder.purchase_order_total || grandTotal,
-		purchaseOrder.vat_type || 'none',
-		vatRate,
-	);
+type StepState = 'done' | 'current' | 'todo';
 
-	const formatCurrency = (amount: number) => {
-		return new Intl.NumberFormat('th-TH', {
-			style: 'decimal',
-			minimumFractionDigits: 2,
-			maximumFractionDigits: 2,
-		}).format(amount);
-	};
+function vatTypeText(vatType: string | undefined, rate: number): string {
+  if (vatType === 'include') return `ราคารวม VAT ${rate}%`;
+  if (vatType === 'exclude') return `ราคาไม่รวม VAT · แยก ${rate}%`;
+  return 'ไม่คิด VAT';
+}
 
-	const statusText ={
-		draft: 'ฉบับร่าง',
-		pending: 'รออนุมัติ ',
-		active: 'ใช้งานอยู่',
-		inactive: 'ยกเลิก',
-		partial: 'รับสินค้าบางส่วน',
-		completed: 'รับสินค้าครบแล้ว',
-	}
-	async function handleApprove() {
-		try {
-			const user = Cookies.get('user') ? JSON.parse(Cookies.get('user') as string) : null;
-			if (!user) {
-				throw new Error('User not authenticated');
-			}
-			await purchaseOrderModel.approvePurchaseOrder(purchaseOrder.purchase_order_id, user.employee_id);
-			setResultDialog({
-				isOpen: true,
-				status: 'success',
-				action: 'approve',
-				message: 'อนุมัติใบสั่งซื้อสำเร็จ',
-			});
-		} catch (error) {
-			console.error('Error approving purchase order:', error);
-			setResultDialog({
-				isOpen: true,
-				status: 'error',
-				action: 'approve',
-				message: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการอนุมัติใบสั่งซื้อ',
-			});
-		}
-	}
+export default function PurchaseOrderDetail({ purchaseOrder: order, onChanged }: PurchaseOrderDetailProps) {
+  const router = useRouter();
+  const toast = useToast();
+  const vatRate = useVatRate();
+  const { can } = usePermissions();
+  const canApprove = can('purchase_orders', 'approve');
+  const canEdit = can('purchase_orders', 'edit');
+  const canDelete = can('purchase_orders', 'delete');
+  const canReject = can('purchase_orders', 'reject');
+  const canAdd = can('purchase_orders', 'add');
 
-	// A draft goes to the approval queue; approving it is a separate step.
-	async function handleSubmit() {
-		setSubmitting(true);
-		try {
-			await purchaseOrderModel.submitPurchaseOrder(purchaseOrder.purchase_order_id);
-			setResultDialog({ isOpen: true, status: 'success', action: 'update', message: 'ส่งใบสั่งซื้อเข้ารออนุมัติแล้ว' });
-		} catch (error) {
-			setResultDialog({ isOpen: true, status: 'error', action: 'update', message: `ส่งอนุมัติไม่สำเร็จ ${getApiErrorMessage(error)}` });
-		} finally {
-			setSubmitting(false);
-		}
-	}
+  const [confirmApprove, setConfirmApprove] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
+  const [busy, setBusy] = useState<'approve' | 'submit' | 'delete' | null>(null);
+  const [history, setHistory] = useState<DocumentHistoryEntry[]>([]);
+  const [historyKey, setHistoryKey] = useState(0);
 
-	const handleResultDialogClose = () => {
-		const isSuccess = resultDialog.status === 'success';
-		setResultDialog((prev) => ({ ...prev, isOpen: false }));
+  const id = order.purchase_order_id;
+  const code = order.purchase_order_code;
+  const status = order.purchase_order_status;
+  usePageCrumb({ back: { label: 'ใบสั่งซื้อ', href: BASE }, current: code });
 
-		if (isSuccess) onChanged();
-	};
-	return (
-		<>
-		<div className="ka-page-body">
-			<div className="ka-ph">
-				<h1 className="ka-ph__title">{purchaseOrder.purchase_order_code}</h1>
-				<div className="flex flex-wrap gap-2">
-					<Link href="/admin/purchase-orders" className="ka-btn">กลับ</Link>
-					{canEditPurchaseOrder && ['draft', 'pending'].includes(purchaseOrder.purchase_order_status) && (
-						<Link href={`/admin/purchase-orders/${purchaseOrder.purchase_order_id}/edit`} className="ka-btn">แก้ไข</Link>
-					)}
-					{canSubmitPurchaseOrder && purchaseOrder.purchase_order_status === 'draft' && (
-						<button
-							type="button"
-							onClick={() => void handleSubmit()}
-							disabled={submitting}
-							className="ka-btn ka-btn--primary min-h-11"
-						>
-							{submitting ? 'กำลังส่ง…' : 'ส่งอนุมัติ'}
-						</button>
-					)}
-					{canApprovePurchaseOrder && purchaseOrder.purchase_order_status === 'pending' && (
-						<button
-							type="button"
-							onClick={() => setShowConfirmDialog(true)}
-							className="ka-btn ka-btn--primary min-h-11"
-						>
-							อนุมัติ
-						</button>
-					)}
-				</div>
-			</div>
-			<div>
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-					<div>
-						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">ชื่อใบสั่งซื้อ</label>
-						<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-							{purchaseOrder.purchase_order_name || '-'}
-						</div>
-					</div>
+  const lines = orderLines(order);
+  const vat = orderVatSummary(order, vatRate);
+  const supplierName = order.supplier?.supplier_name ?? '-';
 
-					{purchaseOrder.legacy_code && (
-						<div>
-							<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">เลขเดิม</label>
-							<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-								{purchaseOrder.legacy_code}
-							</div>
-						</div>
-					)}
+  // Received so far = ordered minus what is still to receive, once the order has been approved.
+  const receiving = status === 'active' || status === 'partial' || status === 'completed';
+  const hasBalance = receiving && lines.length > 0 && lines.every((line) => line.purchase_order_list_balance_qty !== null && line.purchase_order_list_balance_qty !== undefined);
+  const receivedOf = (line: (typeof lines)[number]) =>
+    Math.max(0, Number(line.purchase_order_list_qty) - Number(line.purchase_order_list_balance_qty ?? line.purchase_order_list_qty));
+  const progress = (() => {
+    if (!hasBalance) return null;
+    const units = new Set(lines.map((line) => line.productUnit?.product_unit_name ?? ''));
+    if (units.size === 1) {
+      const ordered = lines.reduce((sum, line) => sum + Number(line.purchase_order_list_qty), 0);
+      const received = lines.reduce((sum, line) => sum + receivedOf(line), 0);
+      return { received, ordered, unit: [...units][0] || 'หน่วย' };
+    }
+    // Different units cannot be added up; count the lines received in full instead.
+    const done = lines.filter((line) => receivedOf(line) >= Number(line.purchase_order_list_qty)).length;
+    return { received: done, ordered: lines.length, unit: 'รายการ' };
+  })();
 
-					<div>
-						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">วันที่สร้าง</label>
-						<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-							{formatThaiDate(purchaseOrder.purchase_date)}
-						</div>
-					</div>
+  const approvedAt = history.find((entry) => entry.action === 'approved')?.created_at;
+  const cancelEntry = history.find((entry) => entry.action === 'cancelled' || entry.action === 'rejected');
 
-					<div>
-						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">ผู้จัดจำหน่าย</label>
-						<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-							{purchaseOrder.supplier?.supplier_name || '-'}
-						</div>
-					</div>
+  const steps: { label: string; state: StepState; date?: string }[] = (() => {
+    const at = { draft: 1, pending: 1, active: 2, partial: 3, completed: 4 }[status as 'draft'] ?? 1;
+    const labels = ['สร้างใบสั่งซื้อ', 'อนุมัติ', 'รับสินค้า', 'รับครบแล้ว'];
+    const dates = [order.purchase_date ? formatThaiDate(order.purchase_date) : undefined, approvedAt ? formatThaiDate(approvedAt) : undefined];
+    return labels.map((label, index) => ({
+      label: index === 0 && status === 'draft' ? 'สร้างใบสั่งซื้อ (ฉบับร่าง)' : label,
+      state: index < at ? 'done' : index === at ? 'current' : 'todo',
+      date: index < at ? dates[index] : undefined,
+    }));
+  })();
+  // A draft has not been sent yet, so its first step is still the current one.
+  if (status === 'draft') {
+    steps[0].state = 'current';
+    steps[1].state = 'todo';
+  }
 
-					<div>
-						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">สถานะ</label>
-						<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-							<StatusBadge tone={PURCHASE_ORDER_STATUS_TONE[purchaseOrder.purchase_order_status]}>{statusText[purchaseOrder.purchase_order_status]}</StatusBadge>
-						</div>
-					</div>
+  const changed = () => {
+    setHistoryKey((key) => key + 1);
+    onChanged();
+  };
 
-					<div>
-						<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">รูปแบบ VAT</label>
-						<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-							{VAT_TYPE_LABELS[purchaseOrder.vat_type || 'none']}
-						</div>
-					</div>
-				</div>
+  const approve = async () => {
+    setConfirmApprove(false);
+    setBusy('approve');
+    try {
+      const user = Cookies.get('user') ? JSON.parse(Cookies.get('user') as string) : null;
+      if (!user) throw new Error('ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่');
+      await purchaseOrderModel.approvePurchaseOrder(id, user.employee_id);
+      toast({ message: `อนุมัติใบสั่งซื้อ ${code} แล้ว`, tone: 'success' });
+      changed();
+    } catch (error) {
+      toast({ message: `อนุมัติ ${code} ไม่สำเร็จ ${getApiErrorMessage(error)}`, tone: 'danger' });
+    } finally {
+      setBusy(null);
+    }
+  };
 
-				<div className="mb-6">
-					<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">รายละเอียด</label>
-					<div className="min-h-[80px] w-full whitespace-pre-line rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-3 text-[var(--color-text-primary)]">
-						{purchaseOrder.purchase_order_detail || '-'}
-					</div>
-				</div>
+  // A draft goes to the approval queue; approving it is a separate step.
+  const submit = async () => {
+    setBusy('submit');
+    try {
+      await purchaseOrderModel.submitPurchaseOrder(id);
+      toast({ message: `ส่ง ${code} เข้ารออนุมัติแล้ว`, tone: 'success' });
+      changed();
+    } catch (error) {
+      toast({ message: `ส่งอนุมัติไม่สำเร็จ ${getApiErrorMessage(error)}`, tone: 'danger' });
+    } finally {
+      setBusy(null);
+    }
+  };
 
-				<div className="mb-6">
-					<div className="flex items-center justify-between mb-5">
-						<h3 className="flex items-center gap-2 text-lg font-semibold text-[var(--color-text-primary)]">
-							<div className="rounded-lg bg-[var(--color-bg-tertiary)] p-2 text-[var(--brand-ink)]">
-								<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-								</svg>
-							</div>
-							รายการวัตถุดิบ
-						</h3>
-					</div>
+  const remove = async () => {
+    setConfirmDelete(false);
+    setBusy('delete');
+    try {
+      await purchaseOrderModel.deletePurchaseOrder(id);
+      toast({ message: `ลบใบสั่งซื้อ ${code} แล้ว`, tone: 'success' });
+      router.push(BASE);
+    } catch (error) {
+      toast({ message: `ลบ ${code} ไม่สำเร็จ ${getApiErrorMessage(error)}`, tone: 'danger' });
+      setBusy(null);
+    }
+  };
 
-					<div className="space-y-5">
-						{items.length > 0 ? (
-							items.map((item, index) => (
-								<div key={item.purchase_order_list_id ?? `${item.material_id}-${index}`} className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-primary)] p-5">
-									<div className="flex items-center gap-2 mb-4">
-										<div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--color-bg-tertiary)] text-sm font-semibold text-[var(--brand-ink)]">
-											{index + 1}
-										</div>
-										<h4 className="font-semibold text-[var(--color-text-primary)]">รายการที่ {index + 1}</h4>
-									</div>
+  const editable = status === 'draft' || status === 'pending';
+  const more: RowMenuItem[] = [];
+  if (canReject && (status === 'pending' || status === 'active')) more.push({ label: 'ยกเลิกใบสั่งซื้อ', icon: 'cancel', tone: 'danger', onSelect: () => setRejecting(true) });
+  if (canDelete && editable) more.push({ label: 'ลบ', icon: 'delete', tone: 'danger', onSelect: () => setConfirmDelete(true) });
 
-									<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-										<div className="md:col-span-2">
-											<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">วัตถุดิบ</label>
-											<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-												{item.material?.material_name || '-'}
-											</div>
-										</div>
-										<div>
-											<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">จำนวน</label>
-											<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-												{item.purchase_order_list_qty}
-											</div>
-										</div>
-										<div>
-											<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">ราคา/หน่วย</label>
-											<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-												฿{formatCurrency(item.purchase_order_list_price)}
-											</div>
-										</div>
-										<div>
-											<label className="mb-2 block text-sm font-medium text-[var(--color-text-secondary)]">หน่วยสินค้า</label>
-											<div className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-secondary)] px-4 py-2 text-[var(--color-text-primary)]">
-												{item.productUnit?.product_unit_name || '-'}
-											</div>
-										</div>
-									</div>
+  const finished = status === 'completed' || status === 'inactive';
 
-								<div className="mt-4 border-t border-[var(--color-border)] pt-4">
-										<div className="flex items-center justify-between rounded-lg bg-[var(--color-bg-secondary)] p-3">
-										<span className="text-sm font-medium text-[var(--color-text-secondary)]">ยอดรวมรายการนี้</span>
-											<span className="numeric text-lg font-semibold text-[var(--color-text-primary)]">฿{formatCurrency(calculateItemTotal(item))}</span>
-										</div>
-									</div>
-								</div>
-							))
-						) : (
-							<div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-bg-secondary)] py-8 text-center text-[var(--color-text-secondary)]">
-								ไม่พบรายการวัตถุดิบ
-							</div>
-						)}
-					</div>
+  return (
+    <div className="ka-page-body ka-po ka-po-print">
+      <div className="ka-po-ph">
+        <div className="ka-po-ph__main">
+          <div className="ka-po-idrow">
+            <span className="ka-po-code ka-po-code--muted">{code}</span>
+            {order.legacy_code && <span className="ka-po-cap">เลขเดิม {order.legacy_code}</span>}
+            <StatusBadge tone={statusTone(status)}>{statusLabel(status)}</StatusBadge>
+          </div>
+          <h1 className="ka-ph__title ka-po-title">{order.purchase_order_name}</h1>
+          <p className="ka-po-cap">
+            {supplierName} · สั่งเมื่อ {formatThaiDate(order.purchase_date)}
+          </p>
+        </div>
+        <div className="ka-po-ph__acts ka-po-noprint">
+          {status === 'draft' && canEdit && (
+            <button type="button" className="ka-btn ka-btn--primary" onClick={() => void submit()} disabled={busy !== null} aria-busy={busy === 'submit' || undefined}>
+              {busy === 'submit' ? 'กำลังส่ง…' : 'ส่งอนุมัติ'}
+            </button>
+          )}
+          {status === 'pending' && canApprove && (
+            <button type="button" className="ka-btn ka-btn--primary" onClick={() => setConfirmApprove(true)} disabled={busy !== null} aria-busy={busy === 'approve' || undefined}>
+              {busy === 'approve' ? 'กำลังอนุมัติ…' : 'อนุมัติ'}
+            </button>
+          )}
+          {editable && canEdit && (
+            <Link href={`${BASE}/${id}/edit`} className="ka-btn">
+              แก้ไข
+            </Link>
+          )}
+          {finished && (
+            <button type="button" className="ka-btn" onClick={() => window.print()}>
+              <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M7 9V3h10v6M7 17H5v-6h14v6h-2M7 14h10v7H7z" />
+              </svg>
+              พิมพ์ / PDF
+            </button>
+          )}
+          {finished && canAdd && (
+            <Link href={`${BASE}/new?copy=${id}`} className="ka-btn">
+              <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 8h11v11H8zM5 16V5h11" />
+              </svg>
+              สั่งซ้ำ
+            </Link>
+          )}
+          {more.length > 0 && (
+            <RowMenu label={`ตัวเลือกเพิ่มเติมของ ${code}`} items={more} triggerClassName="ka-btn ka-btn--icon ka-po-more" />
+          )}
+        </div>
+      </div>
 
-					<div className="mt-6 space-y-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-secondary)] p-5 text-[var(--color-text-primary)]">
-						<div className="flex justify-between items-center text-sm md:text-base">
-							<span>ยอดก่อน VAT</span>
-							<span>฿{formatCurrency(vatSummary.subtotal)}</span>
-						</div>
-						<div className="flex justify-between items-center text-sm md:text-base">
-							<span>VAT {vatRate}% ({VAT_TYPE_LABELS[purchaseOrder.vat_type || 'none']})</span>
-							<span>฿{formatCurrency(vatSummary.vatAmount)}</span>
-						</div>
-						<div className="flex items-center justify-between border-t border-[var(--color-border)] pt-3">
-							<span className="text-lg font-bold">ยอดรวมทั้งสิ้น</span>
-							<span className="numeric text-2xl font-semibold text-[var(--brand-ink)]">฿{formatCurrency(vatSummary.total)}</span>
-						</div>
-					</div>
-				</div>
+      {status === 'inactive' ? (
+        <div className="ka-banner ka-po-cancelled" role="note">
+          <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM6 6l12 12" />
+          </svg>
+          <span>
+            <strong>ใบสั่งซื้อนี้ถูกยกเลิก</strong>
+            {cancelEntry?.reason && <span className="ka-po-cancelled__why">เหตุผล: {cancelEntry.reason}</span>}
+            {cancelEntry && (
+              <span className="ka-po-cancelled__why">
+                {cancelEntry.actor_name ? `${cancelEntry.actor_name} · ` : ''}
+                {formatThaiDate(cancelEntry.created_at)}
+              </span>
+            )}
+          </span>
+        </div>
+      ) : (
+        <section className="ka-card" aria-label="ขั้นตอนใบสั่งซื้อ">
+          <ol className="ka-po-steps">
+            {steps.map((step, index) => (
+              <li key={step.label} className={`ka-po-st ka-po-st--${step.state}`} aria-current={step.state === 'current' ? 'step' : undefined}>
+                <i aria-hidden="true">{step.state === 'done' ? '✓' : index + 1}</i>
+                <span>
+                  {step.label}
+                  <span className="sr-only">{step.state === 'done' ? ' (เสร็จแล้ว)' : step.state === 'current' ? ' (ขั้นปัจจุบัน)' : ''}</span>
+                </span>
+                {step.date && <small className="numeric">{step.date}</small>}
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
 
-				<DocumentHistoryPanel endpoint={`/purchase-order/${purchaseOrder.purchase_order_id}/history`} />
-                   {can('purchase_orders', 'reject') && ['pending', 'active'].includes(purchaseOrder.purchase_order_status) && <DocumentCancellationAction endpoint={`/purchase-order/${purchaseOrder.purchase_order_id}/reject`} onSuccess={onChanged} />}
-			</div>
-		</div>
-					{showConfirmDialog && (
-						<ConfirmDialog
-							isOpen={showConfirmDialog}
-							title="ยืนยันการอนุมัติ"
-							message="คุณแน่ใจหรือไม่ว่าต้องการอนุมัติใบสั่งซื้อนี้?"
-							onConfirm={handleApprove}
-							onCancel={() => setShowConfirmDialog(false)}
-							bottom_className="ka-btn ka-btn--primary min-h-11"
-						/>
-					)}
-		<ActionResultDialog
-			isOpen={resultDialog.isOpen}
-			status={resultDialog.status}
-			action={resultDialog.action}
-			message={resultDialog.message}
-			onClose={handleResultDialogClose}
-		/>
-		</>
-	);
+      <div className="ka-po-grid">
+        <div className="ka-po-stack">
+          <section className="ka-card" aria-labelledby="po-doc">
+            <div className="ka-po-chd">
+              <h2 id="po-doc" className="ka-po-h2">ข้อมูลเอกสาร</h2>
+            </div>
+            <div className="ka-po-cp">
+              <dl className="ka-po-dl">
+                <div>
+                  <dt>ผู้จำหน่าย</dt>
+                  <dd className="ka-po-strong">{supplierName}</dd>
+                </div>
+                <div>
+                  <dt>วันที่สั่ง</dt>
+                  <dd className="numeric">{formatThaiDate(order.purchase_date)}</dd>
+                </div>
+                <div>
+                  <dt>รูปแบบ VAT</dt>
+                  <dd>{vatTypeText(order.vat_type, vatRate)}</dd>
+                </div>
+                <div className="ka-po-dl__full">
+                  <dt>รายละเอียด</dt>
+                  <dd className="ka-po-pre">{order.purchase_order_detail || '-'}</dd>
+                </div>
+              </dl>
+            </div>
+          </section>
+
+          <section className="ka-card ka-po-clip" aria-labelledby="po-items">
+            <div className="ka-po-chd">
+              <h2 id="po-items" className="ka-po-h2">รายการวัตถุดิบ</h2>
+              <span className="ka-po-cap numeric">{lines.length} รายการ</span>
+            </div>
+            {lines.length === 0 ? (
+              <p className="ka-po-cp ka-po-cap">ไม่มีรายการวัตถุดิบ</p>
+            ) : (
+              <div className="ka-po-tw">
+                <table className="ka-po-it">
+                  <caption className="sr-only">รายการวัตถุดิบใน {code}</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">วัตถุดิบ</th>
+                      <th scope="col" className="ka-po-r">จำนวน</th>
+                      <th scope="col" className="ka-po-it__unit">หน่วย</th>
+                      <th scope="col" className="ka-po-r ka-po-it__price">ราคา/หน่วย</th>
+                      {hasBalance && <th scope="col" className="ka-po-r">รับแล้ว</th>}
+                      <th scope="col" className="ka-po-r">รวม (บาท)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lines.map((line, index) => {
+                      const unit = line.productUnit?.product_unit_name ?? '';
+                      return (
+                        <tr key={line.purchase_order_list_id ?? `${line.material_id}-${index}`}>
+                          <th scope="row" className="ka-po-it__name">{line.material?.material_name ?? '-'}</th>
+                          <td className="ka-po-r numeric ka-po-it__qty">
+                            <span className="ka-po-it__qtyonly">{Number(line.purchase_order_list_qty).toLocaleString('th-TH')}</span>
+                            <span className="ka-po-it__qp">
+                              {Number(line.purchase_order_list_qty).toLocaleString('th-TH')} {unit} × {formatBaht(Number(line.purchase_order_list_price))}
+                            </span>
+                          </td>
+                          <td className="ka-po-it__unit">{unit || '-'}</td>
+                          <td className="ka-po-r numeric ka-po-it__price">{formatMoney(Number(line.purchase_order_list_price))}</td>
+                          {hasBalance && (
+                            <td className="ka-po-r numeric ka-po-it__recv">
+                              <span className="ka-po-it__recvlab">รับแล้ว </span>
+                              {receivedOf(line).toLocaleString('th-TH')}/{Number(line.purchase_order_list_qty).toLocaleString('th-TH')}
+                            </td>
+                          )}
+                          <td className="ka-po-r numeric ka-po-it__sum">{formatMoney(lineTotal(line))}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            <dl className="ka-po-tot">
+              <div>
+                <dt>ยอดก่อน VAT</dt>
+                <dd className="numeric">{formatBaht(vat.subtotal)}</dd>
+              </div>
+              <div>
+                <dt>{order.vat_type === 'include' ? `VAT ${vatRate}% (รวมในราคาแล้ว)` : order.vat_type === 'exclude' ? `VAT ${vatRate}%` : 'VAT'}</dt>
+                <dd className="numeric">{order.vat_type === 'include' || order.vat_type === 'exclude' ? formatBaht(vat.vatAmount) : 'ไม่คิด'}</dd>
+              </div>
+              <div className="ka-po-tot__g">
+                <dt>ยอดรวมทั้งสิ้น</dt>
+                <dd className="numeric">{formatBaht(vat.total)}</dd>
+              </div>
+            </dl>
+          </section>
+        </div>
+
+        <aside className="ka-po-aside" aria-label="สรุปและประวัติ">
+          <section className="ka-card ka-po-cp" aria-labelledby="po-total-label">
+            <p id="po-total-label" className="ka-po-cap ka-po-strong">ยอดรวมทั้งสิ้น</p>
+            <p className="ka-po-big numeric">{formatBaht(vat.total)}</p>
+            <p className="ka-po-cap numeric">
+              {order.vat_type === 'none' || !order.vat_type ? 'ไม่คิด VAT' : `รวม VAT ${formatBaht(vat.vatAmount)}`}
+            </p>
+            {progress && (
+              <div className="ka-po-progress">
+                <div className="ka-po-progress__row">
+                  <span className="ka-po-cap">รับสินค้าแล้ว</span>
+                  <b className="numeric">
+                    {progress.received.toLocaleString('th-TH')} / {progress.ordered.toLocaleString('th-TH')} {progress.unit}
+                  </b>
+                </div>
+                <div
+                  className="ka-po-meter"
+                  role="progressbar"
+                  aria-label="รับสินค้าแล้ว"
+                  aria-valuemin={0}
+                  aria-valuemax={progress.ordered}
+                  aria-valuenow={progress.received}
+                >
+                  <i style={{ width: `${progress.ordered ? Math.min(100, (progress.received / progress.ordered) * 100) : 0}%` }} />
+                </div>
+              </div>
+            )}
+          </section>
+
+          <section className="ka-card ka-po-cp ka-po-noprint" aria-labelledby="po-history">
+            <h2 id="po-history" className="ka-po-h2 ka-po-h2--gap">ประวัติ</h2>
+            <DocumentHistoryPanel key={historyKey} endpoint={`/purchase-order/${id}/history`} variant="timeline" onEntries={setHistory} />
+          </section>
+        </aside>
+      </div>
+
+      <ConfirmDialog
+        isOpen={confirmApprove}
+        title="อนุมัติใบสั่งซื้อ"
+        message={`อนุมัติ ${code} “${order.purchase_order_name}” ยอด ${formatBaht(vat.total)} หลังอนุมัติจะแก้ไขใบนี้ไม่ได้ และเปิดใบรับสินค้าได้`}
+        confirmLabel="อนุมัติ"
+        cancelLabel="ยังไม่อนุมัติ"
+        tone="neutral"
+        bottom_className="ka-btn ka-btn--primary min-h-11"
+        onCancel={() => setConfirmApprove(false)}
+        onConfirm={() => void approve()}
+      />
+      <ConfirmDialog
+        isOpen={confirmDelete}
+        title="ลบใบสั่งซื้อ"
+        message={`ลบ ${code} “${order.purchase_order_name}” และรายการวัตถุดิบทั้งหมดในใบนี้ ลบแล้วกู้คืนไม่ได้`}
+        confirmLabel="ลบใบสั่งซื้อ"
+        cancelLabel="ไม่ลบ"
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={() => void remove()}
+      />
+      {rejecting && (
+        <CancellationDialog
+          title={`ยกเลิกใบสั่งซื้อ ${code}`}
+          onClose={() => setRejecting(false)}
+          onConfirm={async (reason) => {
+            await axiosInstance.post(`/purchase-order/${id}/reject`, { reason });
+            toast({ message: `ยกเลิกใบสั่งซื้อ ${code} แล้ว`, tone: 'success' });
+            changed();
+          }}
+        />
+      )}
+    </div>
+  );
 }

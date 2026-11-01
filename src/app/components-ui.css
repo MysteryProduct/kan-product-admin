@@ -553,4 +553,14 @@ ul.ka-kv { margin: 0; padding: 0; list-style: none; }
 .ka-crumb__step { flex: none; }
 .ka-crumb__current { min-width: 0; overflow: hidden; color: var(--ink); font-weight: 600; text-overflow: ellipsis; }
 @media (max-width: 767px) { .ka-crumb__back { min-height: var(--touch-target); } }
+/* DocumentHistoryPanel variant="timeline": the latest entries as dots on a line. */
+.ka-tl { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; font: 400 14px/22px var(--ka-font); }
+.ka-tl > li { display: flex; gap: 10px; min-width: 0; }
+.ka-tl__dot { flex: none; width: 10px; height: 10px; margin-top: 6px; border-radius: 50%; background: var(--border-control); }
+.ka-tl__dot--done { background: var(--success); }
+.ka-tl__body { display: flex; flex-direction: column; min-width: 0; color: var(--ink); overflow-wrap: anywhere; }
+.ka-tl__reason { color: var(--ink-muted); }
+.ka-tl__time { color: var(--ink-muted); font-size: 13px; line-height: 20px; }
+.ka-tl__note { margin: 0; color: var(--ink-muted); font: 400 14px/22px var(--ka-font); }
+.ka-tl__all { margin-top: 12px; padding-inline: 0; color: var(--brand-ink); }
 }

@@ -380,7 +380,7 @@ function PurchaseOrdersList() {
 
           {!listError && (loading || rows.length > 0) && (
             <>
-              <div className="ka-po-tw">
+              <div className="ka-po-tw ka-po-tw--list">
                 <table className={`ka-po-lt${loading ? ' ka-po-lt--loading' : ''}`}>
                   <caption className="sr-only">ใบสั่งซื้อ {statusLabelForTab(tab)} หน้า {page}</caption>
                   <thead>
