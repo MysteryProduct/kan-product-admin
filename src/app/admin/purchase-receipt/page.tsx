@@ -8,9 +8,8 @@ import PurchaseOrderModel from '@/models/purchase-order';
 import { PurchaseOrder, PurchaseOrderResponse } from '@/types/purchase-order';
 import PurchaseReceiptModel from '@/models/purchase-receipt';
 import { PurchaseReceipt, PurchaseReceiptResponse } from '@/types/purchase-receipt';
-import InsertPurchaseReceiptForm from './components/insert';
-import UpdatePurchaseReceiptForm from './components/update';
-import PurchaseReceiptDetailModal from './components/detail';
+import { useRouter } from 'next/navigation';
+import { usePageCrumb } from '@/lib/page-crumb';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import { formatThaiDate } from '@/lib/date-format';
@@ -31,6 +30,8 @@ export default function PurchaseReceiptPage() {
     const canAddPurchaseReceipt = can('purchase_receipt', 'add');
     const canEditPurchaseReceipt = can('purchase_receipt', 'edit');
     const canDeletePurchaseReceipt = can('purchase_receipt', 'delete');
+    const router = useRouter();
+    usePageCrumb({ parents: ['จัดซื้อ'], current: 'ใบรับสินค้า' });
 
     const [purchaseOrderPage, setPurchaseOrderPage] = useState(1);
     const [purchaseReceiptPage, setPurchaseReceiptPage] = useState(1);
@@ -51,13 +52,8 @@ export default function PurchaseReceiptPage() {
     const [purchaseReceiptSortField, setPurchaseReceiptSortField] = useState<PurchaseReceiptSortField>(null);
     const [purchaseReceiptSortOrder, setPurchaseReceiptSortOrder] = useState<SortOrder>('ASC');
 
-    const [isInsertOpen, setIsInsertOpen] = useState(false);
-    const [isUpdateOpen, setIsUpdateOpen] = useState(false);
-    const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-    const [selectedPurchaseOrder, setSelectedPurchaseOrder] = useState<PurchaseOrder | null>(null);
-    const [selectedPurchaseReceipt, setSelectedPurchaseReceipt] = useState<PurchaseReceipt | null>(null);
     const [purchaseReceiptToDelete, setPurchaseReceiptToDelete] = useState<PurchaseReceipt | null>(null);
 
     const [resultDialog, setResultDialog] = useState<{
@@ -186,35 +182,8 @@ export default function PurchaseReceiptPage() {
         }
     };
 
-    const openReceiptDetail = async (receipt: PurchaseReceipt) => {
-        try {
-            const detail = await purchaseReceiptModel.getPurchaseReceiptById(receipt.purchase_receipt_id);
-            setSelectedPurchaseReceipt(detail);
-            setIsDetailOpen(true);
-        } catch (error) {
-            console.error('Failed to load purchase receipt detail:', error);
-            setResultDialog({
-                isOpen: true,
-                status: 'error',
-                message: error instanceof Error ? error.message : 'ไม่สามารถโหลดรายละเอียดใบรับสินค้าได้',
-            });
-        }
-    };
-
-    const openReceiptUpdate = async (receipt: PurchaseReceipt) => {
-        try {
-            const detail = await purchaseReceiptModel.getPurchaseReceiptById(receipt.purchase_receipt_id);
-            setSelectedPurchaseReceipt(detail);
-            setIsUpdateOpen(true);
-        } catch (error) {
-            console.error('Failed to load purchase receipt for update:', error);
-            setResultDialog({
-                isOpen: true,
-                status: 'error',
-                message: error instanceof Error ? error.message : 'ไม่สามารถโหลดข้อมูลเพื่อแก้ไขใบรับสินค้าได้',
-            });
-        }
-    };
+    const openReceiptDetail = (receipt: PurchaseReceipt) => router.push(`/admin/purchase-receipt/${receipt.purchase_receipt_id}`);
+    const openReceiptUpdate = (receipt: PurchaseReceipt) => router.push(`/admin/purchase-receipt/${receipt.purchase_receipt_id}/edit`);
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('th-TH', {
@@ -272,10 +241,7 @@ export default function PurchaseReceiptPage() {
             width: '180px',
             render: (_, row) => (
                 <button
-                    onClick={() => {
-                        setSelectedPurchaseOrder(row);
-                        setIsInsertOpen(true);
-                    }}
+                    onClick={() => router.push(`/admin/purchase-receipt/new?po=${row.purchase_order_id}`)}
                     disabled={!canAddPurchaseReceipt}
                     className="ka-btn ka-btn--primary"
                     type="button"
@@ -327,7 +293,7 @@ export default function PurchaseReceiptPage() {
             render: (_, row) => (
                 <div className="flex items-center gap-2">
                     <button
-                        onClick={() => void openReceiptDetail(row)}
+                        onClick={() => openReceiptDetail(row)}
                         className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--success)]"
                         type="button"
                         title="ดูรายละเอียด"
@@ -340,7 +306,7 @@ export default function PurchaseReceiptPage() {
 
                     {canEditPurchaseReceipt && row.purchase_receipt_status === 'pending' && (
                         <button
-                            onClick={() => void openReceiptUpdate(row)}
+                            onClick={() => openReceiptUpdate(row)}
                             className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
                             type="button"
                             title="แก้ไข"
@@ -426,51 +392,6 @@ export default function PurchaseReceiptPage() {
                     </div>
                 </section>
             </div>
-
-            {canAddPurchaseReceipt && (
-                <InsertPurchaseReceiptForm
-                    isOpen={isInsertOpen}
-                    onClose={() => {
-                        setIsInsertOpen(false);
-                        setSelectedPurchaseOrder(null);
-                    }}
-                    onSuccess={async () => {
-                        await fetchPurchaseReceipts();
-                        await fetchPurchaseOrders();
-                    }}
-                    purchaseOrder={selectedPurchaseOrder}
-                />
-            )}
-
-            {canEditPurchaseReceipt && selectedPurchaseReceipt && (
-                <UpdatePurchaseReceiptForm
-                    isOpen={isUpdateOpen}
-                    onClose={() => {
-                        setIsUpdateOpen(false);
-                        setSelectedPurchaseReceipt(null);
-                    }}
-                    onSuccess={async () => {
-                        await fetchPurchaseReceipts();
-                        await fetchPurchaseOrders();
-                    }}
-                    initialData={selectedPurchaseReceipt}
-                />
-            )}
-
-            {selectedPurchaseReceipt && (
-                <PurchaseReceiptDetailModal
-                    isOpen={isDetailOpen}
-                    onClose={() => {
-                        setIsDetailOpen(false);
-                        setSelectedPurchaseReceipt(null);
-                    }}
-                    purchaseReceipt={selectedPurchaseReceipt}
-                    onSuccess={async () => {
-                        await fetchPurchaseReceipts();
-                        await fetchPurchaseOrders();
-                    }}
-                />
-            )}
 
             <ConfirmDialog
                 isOpen={canDeletePurchaseReceipt && isDeleteDialogOpen}
