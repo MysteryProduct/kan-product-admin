@@ -1,7 +1,7 @@
 'use client';
 
 import type { JobOrder } from '@/types/job-order';
-import { BOARD_COLUMNS, count, type BoardStatus } from '../board-model';
+import { ALLOWED_TRANSITIONS, BOARD_COLUMNS, count, normalizeStatus, type BoardStatus } from '../board-model';
 import JobCard, { type JobCardActions } from './job-card';
 
 interface BoardViewProps {
@@ -13,15 +13,20 @@ interface BoardViewProps {
 	draggingJobId: string | null;
 	onDrop: (column: BoardStatus) => void;
 	onLoadMore: (column: BoardStatus) => void;
-	onCreate: () => void;
 	canAdd: boolean;
 	canEdit: boolean;
 	canDelete: boolean;
 	actions: JobCardActions;
 }
 
-/** Four status columns; cards drag between them, and on phones the columns swipe one at a time. */
-export default function BoardView({ isLoading, grouped, columnVisible, dragOverColumn, setDragOverColumn, draggingJobId, onDrop, onLoadMore, onCreate, canAdd, canEdit, canDelete, actions }: BoardViewProps) {
+/**
+ * Four status columns, always all four whatever status tab is chosen. While a card is dragged the
+ * columns it may move to get a dashed outline and the others fade; on phones the columns swipe one at a time.
+ */
+export default function BoardView({ isLoading, grouped, columnVisible, dragOverColumn, setDragOverColumn, draggingJobId, onDrop, onLoadMore, canAdd, canEdit, canDelete, actions }: BoardViewProps) {
+	const draggingJob = draggingJobId ? BOARD_COLUMNS.flatMap((column) => grouped[column.key] || []).find((job) => job.job_order_id === draggingJobId) : undefined;
+	const dropTargets = draggingJob ? ALLOWED_TRANSITIONS[normalizeStatus(draggingJob.job_order_status)] : null;
+
 	return (
 		<>
 			<div className={`ka-board ka-motion-state ${isLoading ? 'opacity-60' : ''}`} aria-label="บอร์ดงานผลิต">
@@ -30,11 +35,12 @@ export default function BoardView({ isLoading, grouped, columnVisible, dragOverC
 					const visibleCount = columnVisible[column.key];
 					const visibleCards = cards.slice(0, visibleCount);
 					const remaining = cards.length - visibleCount;
-					const isDragOver = dragOverColumn === column.key;
+					const dropState = !dropTargets ? undefined : dropTargets.includes(column.key) ? 'allowed' : 'blocked';
 					return (
 						<section
 							key={column.key}
 							aria-label={`${column.label} ${count(cards.length)} งาน`}
+							data-drop={dropState}
 							onDragOver={(event) => {
 								event.preventDefault();
 								setDragOverColumn(column.key);
@@ -48,7 +54,7 @@ export default function BoardView({ isLoading, grouped, columnVisible, dragOverC
 								event.preventDefault();
 								onDrop(column.key);
 							}}
-							className={`ka-col ${isDragOver ? 'ka-col--over' : ''}`}
+							className={`ka-col ${dragOverColumn === column.key && dropState === 'allowed' ? 'ka-col--over' : ''}`}
 							style={{ ['--c' as string]: column.color }}
 						>
 							<div className="ka-col__head">
@@ -64,17 +70,11 @@ export default function BoardView({ isLoading, grouped, columnVisible, dragOverC
 									โหลดเพิ่ม ({count(remaining)} งาน)
 								</button>
 							)}
-							{column.key === 'pending' && canAdd && (
-								<button type="button" className="ka-col__add" onClick={onCreate}>
-									<svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" d="M12 5v14M5 12h14" /></svg>
-									เพิ่มงาน
-								</button>
-							)}
 						</section>
 					);
 				})}
 			</div>
-			<p className="ka-panel__note">ลากการ์ดเพื่อเปลี่ยนสถานะ · บนมือถือ ปัดซ้ายขวาเพื่อดูคอลัมน์ หรือแตะ ⋯ บนการ์ดแล้วเลือก “เปลี่ยนสถานะ”</p>
+			<p className="ka-panel__note">ลากการ์ดเพื่อเปลี่ยนสถานะ หรือกดปุ่มบนการ์ดเพื่อไปขั้นถัดไป</p>
 		</>
 	);
 }

@@ -1,14 +1,14 @@
 import Cookies from 'js-cookie';
 import type { BadgeTone } from '@/components/StatusBadge';
 import type { JobOrder } from '@/types/job-order';
-import { toDateValue, toLocalIsoDate } from '@/lib/date-format';
+import { toLocalIsoDate } from '@/lib/date-format';
 
 // Board columns, transitions and date helpers shared by the job order page and its views.
 
 export const count = (value: number) => new Intl.NumberFormat('th-TH').format(value);
 
 export type BoardStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
-export type ViewMode = 'board' | 'calendar';
+export type ViewMode = 'board' | 'list' | 'calendar';
 
 export interface CalendarCell {
 	date: Date;
@@ -31,7 +31,7 @@ export const BOARD_COLUMNS: BoardColumn[] = [
 	{ key: 'pending', label: 'รอดำเนินการ', short: 'รอ', tone: 'warning', color: 'var(--warning)', empty: 'ยังไม่มีงานรอ สร้างงานใหม่ หรือลากการ์ดมาวาง' },
 	{ key: 'in_progress', label: 'กำลังผลิต', short: 'กำลังผลิต', tone: 'info', color: 'var(--info)', empty: 'ลากการ์ดมาที่นี่เมื่อเริ่มผลิต' },
 	{ key: 'completed', label: 'ผลิตเสร็จแล้ว', short: 'เสร็จ', tone: 'success', color: 'var(--success)', empty: 'ยังไม่มีงานที่เสร็จในช่วงนี้' },
-	{ key: 'cancelled', label: 'ยกเลิก', short: 'ยกเลิก', tone: 'neutral', color: 'var(--danger)', empty: 'ไม่มีงานที่ยกเลิก' },
+	{ key: 'cancelled', label: 'ยกเลิก', short: 'ยกเลิก', tone: 'neutral', color: 'var(--neutral)', empty: 'ไม่มีงานที่ยกเลิก' },
 ];
 
 export const WEEKDAY_LABELS = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
@@ -127,76 +127,96 @@ export const getUserFromCookie = () => {
 
 export const DAY_IN_MS = 24 * 60 * 60 * 1000;
 
-export const startOfDay = (value: Date) => new Date(value.getFullYear(), value.getMonth(), value.getDate());
-
 export const toDateKey = toLocalIsoDate;
 
-export const getDelayDays = (targetDate: Date, compareDate: Date) => {
-	const target = startOfDay(targetDate);
-	const compare = startOfDay(compareDate);
-	return Math.floor((compare.getTime() - target.getTime()) / DAY_IN_MS);
+export type StatusTab = 'all' | 'late' | BoardStatus;
+
+/** Colours and labels of the status tabs, list groups and calendar bars; every colour is a design token. */
+export const STATUS_META: Record<StatusTab, { label: string; color: string; soft: string }> = {
+	all: { label: 'ทั้งหมด', color: 'var(--ink)', soft: 'var(--bg-subtle)' },
+	late: { label: 'เลยกำหนด', color: 'var(--danger)', soft: 'var(--danger-soft)' },
+	pending: { label: 'รอดำเนินการ', color: 'var(--warning)', soft: 'var(--warning-soft)' },
+	in_progress: { label: 'กำลังผลิต', color: 'var(--info)', soft: 'var(--info-soft)' },
+	completed: { label: 'เสร็จแล้ว', color: 'var(--success)', soft: 'var(--success-soft)' },
+	cancelled: { label: 'ยกเลิก', color: 'var(--neutral)', soft: 'var(--neutral-soft)' },
 };
 
-export const getFinishDate = (job: JobOrder): Date | null => {
-	return (
-		toDateValue(job.finish_date) ||
-		toDateValue(job.completed_date) ||
-		toDateValue(job.completed_at) ||
-		toDateValue(job.finish_at)
-	);
+const BANGKOK_DAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit' });
+const THAI_DAY_MONTH = new Intl.DateTimeFormat('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short' });
+const THAI_DAY_MONTH_YEAR = new Intl.DateTimeFormat('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short', year: '2-digit' });
+
+/**
+ * `YYYY-MM-DD` of a stored date as read in Thailand. A bare date string is already a calendar day;
+ * a timestamp is converted, so 23:30 and 00:30 Bangkok time fall on their own days on any device.
+ */
+export const bangkokDayKey = (value: string | Date | null | undefined): string | null => {
+	if (value === null || value === undefined || value === '') return null;
+	if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value.trim())) return value.trim();
+	const date = value instanceof Date ? value : new Date(value);
+	return Number.isNaN(date.getTime()) ? null : BANGKOK_DAY.format(date);
 };
 
-export const getDelayBadge = (job: JobOrder) => {
+const dayNumber = (key: string) => {
+	const [year, month, day] = key.split('-').map(Number);
+	return Date.UTC(year, month - 1, day) / DAY_IN_MS;
+};
+
+export type DueTone = 'success' | 'warning' | 'danger' | 'neutral';
+export interface DueInfo {
+	text: string;
+	tone: DueTone;
+	/** Pending or in progress with its target day already past. */
+	late: boolean;
+	/** Days from today to the target day, negative once it has passed; null without a target date. */
+	days: number | null;
+}
+
+/** The target-date label of a job: overdue, due today, due soon or just the day, counted in Bangkok days. */
+export const getDueInfo = (job: Pick<JobOrder, 'job_order_status' | 'target_date'>, now: Date = new Date()): DueInfo => {
 	const status = normalizeStatus(job.job_order_status);
-	if (status === 'cancelled') {
-		return null;
-	}
+	const targetKey = bangkokDayKey(job.target_date ?? null);
+	if (!targetKey) return { text: 'ไม่ระบุวัน', tone: 'neutral', late: false, days: null };
 
-	const targetDate = toDateValue(job.target_date);
-	if (!targetDate) {
-		return {
-			label: 'ไม่มีวันเป้าหมาย',
-			tone: 'neutral' as BadgeTone,
-		};
-	}
+	const todayKey = BANGKOK_DAY.format(now);
+	const days = dayNumber(targetKey) - dayNumber(todayKey);
+	const noon = new Date(`${targetKey}T12:00:00+07:00`);
+	const label = (targetKey.slice(0, 4) === todayKey.slice(0, 4) ? THAI_DAY_MONTH : THAI_DAY_MONTH_YEAR).format(noon);
 
-	if (status === 'completed') {
-		const finishDate = getFinishDate(job);
-		if (!finishDate) {
-			return {
-				label: 'ไม่มีวันเสร็จ',
-				tone: 'neutral' as BadgeTone,
-			};
-		}
-
-		const delayedDays = getDelayDays(targetDate, finishDate);
-		if (delayedDays > 0) {
-			return {
-				label: `ล่าช้า ${delayedDays} วัน`,
-				tone: 'danger' as BadgeTone,
-			};
-		}
-
-		return {
-			label: 'ตรงเวลา',
-			tone: 'success' as BadgeTone,
-		};
-	}
-
-	const delayedDays = getDelayDays(targetDate, new Date());
-	if (delayedDays > 0) {
-		return {
-			label: `ล่าช้า ${delayedDays} วัน`,
-			tone: 'danger' as BadgeTone,
-		};
-	}
-
-	return {
-		label: 'ตรงเวลา',
-		tone: 'success' as BadgeTone,
-	};
+	if (status === 'completed') return { text: `เสร็จ · ${label}`, tone: 'success', late: false, days };
+	if (status === 'cancelled') return { text: label, tone: 'neutral', late: false, days };
+	if (days < 0) return { text: `เลย ${count(-days)} วัน · ${label}`, tone: 'danger', late: true, days };
+	if (days === 0) return { text: 'ครบวันนี้', tone: 'warning', late: false, days };
+	return { text: `อีก ${count(days)} วัน · ${label}`, tone: days <= 3 ? 'warning' : 'neutral', late: false, days };
 };
 
+const VARIANT_PART = /(?:^|\s)(size|color)\s*:\s*(.*?)(?=\s+(?:size|color)\s*:|$)/gi;
+
+/**
+ * Splits "ชื่อสินค้า Size:20 ออนซ์ Color:กรมท่า", the name the create drawer writes for a product
+ * variant, into the product name and its size and colour.
+ */
+export const splitVariantLabel = (name: string): { name: string; size?: string; color?: string } => {
+	const text = String(name ?? '').replace(/\s+/g, ' ').trim();
+	const result: { name: string; size?: string; color?: string } = { name: text };
+	let firstIndex = -1;
+	for (const match of text.matchAll(VARIANT_PART)) {
+		if (firstIndex < 0) firstIndex = match.index ?? 0;
+		const value = match[2].trim();
+		if (!value) continue;
+		if (match[1].toLowerCase() === 'size') result.size ??= value;
+		else result.color ??= value;
+	}
+	if (firstIndex >= 0) result.name = text.slice(0, firstIndex).trim() || text;
+	return result;
+};
+
+/** The card title and its size and colour pills: the job's own size and colour first, then those written in its name. */
+export const getVariantLabel = (job: Pick<JobOrder, 'job_order_name' | 'size' | 'color' | 'productVariant'>) => {
+	const parsed = splitVariantLabel(job.job_order_name);
+	const size = job.size?.size_name || job.productVariant?.size?.size_name || parsed.size;
+	const color = job.color?.color_name || job.productVariant?.color?.color_name || parsed.color;
+	return { title: parsed.name, pills: [size, color].filter((value): value is string => Boolean(value)) };
+};
 
 export const initial = (name: string) => (name.trim()[0] || '?').toUpperCase();
 export const TYPE_LABEL: Record<string, string> = { website: 'Website', purchase: 'สั่งซื้อ', custom: 'Custom' };
@@ -212,13 +232,14 @@ export function buildCalendarCells(calendarDate: Date, filteredJobOrders: JobOrd
 	const totalSlots = Math.ceil((leadingDays + daysInMonth) / 7) * 7;
 
 	const jobsByDate = new Map<string, JobOrder[]>();
+	const monthKey = toDateKey(monthStart).slice(0, 7);
 	filteredJobOrders.forEach((job) => {
-		const targetDate = toDateValue(job.target_date);
-		if (!targetDate || targetDate.getFullYear() !== currentYear || targetDate.getMonth() !== currentMonth) {
+		// Grouped by the Bangkok day, the same day the card's due label counts from.
+		const key = bangkokDayKey(job.target_date ?? null);
+		if (!key || key.slice(0, 7) !== monthKey) {
 			return;
 		}
 
-		const key = toDateKey(targetDate);
 		const previous = jobsByDate.get(key) || [];
 		jobsByDate.set(key, [...previous, job]);
 	});
