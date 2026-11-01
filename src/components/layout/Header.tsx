@@ -5,7 +5,9 @@ import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/contexts/SidebarContext';
 import ThemeToggle from '@/components/ThemeToggle';
 import HeaderSearch from '@/components/layout/HeaderSearch';
+import Link from 'next/link';
 import { getMenuTrail } from '@/lib/admin-menu';
+import { useCurrentCrumb } from '@/lib/page-crumb';
 import NotificationPanel from '@/components/layout/NotificationPanel';
 import { summarizePending } from '@/components/dashboard/PendingWork';
 import { usePendingWork } from '@/hooks/usePendingWork';
@@ -17,6 +19,7 @@ export default function Header() {
   const pathname = usePathname();
   const trail = getMenuTrail(pathname);
   const pageTitle = trail[trail.length - 1];
+  const crumb = useCurrentCrumb();
 
   return (
     <header className="ka-header">
@@ -26,7 +29,23 @@ export default function Header() {
         </svg>
       </button>
 
-      {pageTitle && <p className="ka-header__title">{pageTitle}</p>}
+      {crumb ? (
+        <nav className="ka-crumb" aria-label="ตำแหน่ง">
+          {crumb.back && (
+            <Link href={crumb.back.href} className="ka-crumb__back" aria-label={`กลับไป${crumb.back.label}`}>
+              <span aria-hidden="true">←</span>
+              <span className="ka-crumb__backtext" aria-hidden="true">{crumb.back.label}</span>
+            </Link>
+          )}
+          {crumb.parents?.map((parent) => (
+            <span key={parent} className="ka-crumb__step">{parent}</span>
+          ))}
+          <span className="ka-crumb__sep" aria-hidden="true">/</span>
+          <span className="ka-crumb__current" aria-current="page">{crumb.current}</span>
+        </nav>
+      ) : (
+        pageTitle && <p className="ka-header__title">{pageTitle}</p>
+      )}
 
       <HeaderSearch />
 

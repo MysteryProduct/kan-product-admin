@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Modal from '@/components/Modal';
 import axiosInstance from '@/lib/axios';
 import { formatThaiDateTime } from '@/lib/date-format';
+
+export type DocumentHistoryEntry = Entry;
 
 type Entry = {
   document_history_id: string;
@@ -73,7 +75,23 @@ function itemText(item: HistoryItem, entry: Entry) {
   return `${material} · ${item.quantity ?? '-'} ${unit}${status ? ` · ${status}` : ''}`;
 }
 
-export default function DocumentHistoryPanel({ endpoint }: { endpoint: string }) {
+/** Actions that moved the document forward, drawn with a green dot on the timeline. */
+const PROGRESS_ACTIONS = new Set(['approved', 'submitted', 'status_changed']);
+
+interface DocumentHistoryPanelProps {
+  endpoint: string;
+  /**
+   * `button` (default): a button that opens the full history. `timeline`: the latest entries as a
+   * timeline on the page, with a button to the full history.
+   */
+  variant?: 'button' | 'timeline';
+  /** Timeline only: how many of the latest entries to show. */
+  limit?: number;
+  /** Timeline only: the first page of entries once loaded, newest first. */
+  onEntries?: (entries: DocumentHistoryEntry[]) => void;
+}
+
+export default function DocumentHistoryPanel({ endpoint, variant = 'button', limit = 5, onEntries }: DocumentHistoryPanelProps) {
   const [open, setOpen] = useState(false);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -105,6 +123,69 @@ export default function DocumentHistoryPanel({ endpoint }: { endpoint: string })
     void loadHistory(1);
   };
 
+  const [recent, setRecent] = useState<Entry[] | null>(null);
+  const [recentError, setRecentError] = useState(false);
+  const onEntriesRef = useRef(onEntries);
+  useEffect(() => {
+    onEntriesRef.current = onEntries;
+  });
+  useEffect(() => {
+    if (variant !== 'timeline') return;
+    let active = true;
+    axiosInstance
+      .get<HistoryResponse>(endpoint, { params: { page: 1, limit: 20 } })
+      .then((response) => {
+        if (!active) return;
+        const loaded = response.data.data ?? [];
+        setRecent(loaded);
+        setRecentError(false);
+        onEntriesRef.current?.(loaded);
+      })
+      .catch(() => {
+        if (active) setRecentError(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [endpoint, variant]);
+
+  const fullHistory = (
+    <Modal isOpen={open} onClose={() => setOpen(false)} title="ประวัติการเปลี่ยนแปลง" description="รายการล่าสุดแสดงก่อน และไม่แสดงราคา/ต้นทุน" size="lg" layer="elevated">
+      {historyBody()}
+    </Modal>
+  );
+
+  if (variant === 'timeline') {
+    return (
+      <>
+        {recent === null && !recentError && <p role="status" className="ka-tl__note">กำลังโหลดประวัติ…</p>}
+        {recentError && <p role="alert" className="ka-tl__note">ไม่สามารถโหลดประวัติได้</p>}
+        {recent && recent.length === 0 && <p className="ka-tl__note">ยังไม่มีประวัติ</p>}
+        {recent && recent.length > 0 && (
+          <ol className="ka-tl">
+            {recent.slice(0, limit).map((entry) => (
+              <li key={entry.document_history_id}>
+                <span className={`ka-tl__dot${PROGRESS_ACTIONS.has(entry.action) ? ' ka-tl__dot--done' : ''}`} aria-hidden="true" />
+                <span className="ka-tl__body">
+                  <span>
+                    <strong>{actions[entry.action] ?? entry.action}</strong>
+                    {entry.actor_name ? ` · ${entry.actor_name}` : ''}
+                  </span>
+                  {entry.reason && <span className="ka-tl__reason">เหตุผล: {entry.reason}</span>}
+                  <time className="ka-tl__time numeric" dateTime={entry.created_at}>{formatThaiDateTime(entry.created_at)}</time>
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
+        <button type="button" onClick={openHistory} className="ka-btn ka-btn--ghost ka-btn--sm ka-tl__all">
+          ดูประวัติทั้งหมด
+        </button>
+        {fullHistory}
+      </>
+    );
+  }
+
   return (
     <>
       <div className="mt-6 border-t border-[var(--color-border)] pt-6">
@@ -117,7 +198,13 @@ export default function DocumentHistoryPanel({ endpoint }: { endpoint: string })
         </button>
       </div>
 
-      <Modal isOpen={open} onClose={() => setOpen(false)} title="ประวัติการเปลี่ยนแปลง" description="รายการล่าสุดแสดงก่อน และไม่แสดงราคา/ต้นทุน" size="lg" layer="elevated">
+      {fullHistory}
+    </>
+  );
+
+  function historyBody() {
+    return (
+      <>
         {loading && <p role="status" className="py-10 text-center text-sm text-[var(--color-text-secondary)]">กำลังโหลดประวัติ…</p>}
         {error && <p role="alert" className="rounded-lg border border-[var(--color-error)] bg-[var(--color-bg-secondary)] p-4 text-[var(--color-error)]">{error}</p>}
         {!loading && !error && entries.length === 0 && <p className="py-10 text-center text-sm text-[var(--color-text-secondary)]">ยังไม่มีประวัติการเปลี่ยนแปลง</p>}
@@ -185,7 +272,7 @@ export default function DocumentHistoryPanel({ endpoint }: { endpoint: string })
             {loading ? 'กำลังโหลด…' : 'โหลดประวัติเพิ่มเติม'}
           </button>
         )}
-      </Modal>
-    </>
-  );
+      </>
+    );
+  }
 }
