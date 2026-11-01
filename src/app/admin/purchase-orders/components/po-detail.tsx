@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import Modal from '@/components/Modal';
+import Link from 'next/link';
 import { PurchaseOrder, PurchaseOrderItem } from '@/types/purchase-order';
 import { usePermissions } from '@/hooks/usePermissions';
 import PurchaseOrderModel from '@/models/purchase-order';
@@ -15,23 +15,18 @@ import { getApiErrorMessage } from '@/lib/api-error';
 import DocumentCancellationAction from '@/components/DocumentCancellationAction';
 import { PURCHASE_ORDER_STATUS_TONE } from '@/lib/status-tones';
 import StatusBadge from '@/components/StatusBadge';
-interface PurchaseOrderDetailModalProps {
-	isOpen: boolean;
-	onClose: () => void;
-	onSuccess?: () => void;
+interface PurchaseOrderDetailProps {
 	purchaseOrder: PurchaseOrder;
+	/** Reloads the order after it was approved, submitted or cancelled. */
+	onChanged: () => void;
 }
 const purchaseOrderModel = new PurchaseOrderModel();
-export default function PurchaseOrderDetailModal({
-	isOpen,
-	onClose,
-	purchaseOrder,
-	onSuccess,
-}: PurchaseOrderDetailModalProps) {
+export default function PurchaseOrderDetail({ purchaseOrder, onChanged }: PurchaseOrderDetailProps) {
     const vatRate = useVatRate();
 	const { can } = usePermissions();
 	const canApprovePurchaseOrder = can('purchase_orders', 'approve');
 	const canSubmitPurchaseOrder = can('purchase_orders', 'edit');
+	const canEditPurchaseOrder = can('purchase_orders', 'edit');
 	const [submitting, setSubmitting] = React.useState(false);
 	// if (!isOpen) return null;
 	const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
@@ -46,7 +41,7 @@ export default function PurchaseOrderDetailModal({
 		action: 'approve',
 		message: '',
 	});
-	const items = ((purchaseOrder.purchaseOrderLists ?? (purchaseOrder as any).items ?? []) as PurchaseOrderItem[]);
+	const items = ((purchaseOrder.purchaseOrderLists ?? (purchaseOrder as { items?: PurchaseOrderItem[] }).items ?? []) as PurchaseOrderItem[]);
 
 	const calculateItemTotal = (item: PurchaseOrderItem) => {
 		return item.purchase_order_list_total || (Number(item.purchase_order_list_qty) * Number(item.purchase_order_list_price));
@@ -117,29 +112,18 @@ export default function PurchaseOrderDetailModal({
 		const isSuccess = resultDialog.status === 'success';
 		setResultDialog((prev) => ({ ...prev, isOpen: false }));
 
-		if (isSuccess) {
-			onSuccess?.();
-			onClose();
-		}
+		if (isSuccess) onChanged();
 	};
 	return (
 		<>
-		<Modal
-			isOpen={isOpen}
-			onClose={onClose}
-			title="รายละเอียดใบสั่งซื้อ"
-			size="xl"
-			closeOnBackdrop={!showConfirmDialog && !resultDialog.isOpen}
-			closeOnEscape={!showConfirmDialog && !resultDialog.isOpen}
-			footer={
-				<>
-					<button
-						type="button"
-						onClick={onClose}
-						className="ka-btn"
-					>
-						ปิด
-					</button>
+		<div className="ka-page-body">
+			<div className="ka-ph">
+				<h1 className="ka-ph__title">{purchaseOrder.purchase_order_code}</h1>
+				<div className="flex flex-wrap gap-2">
+					<Link href="/admin/purchase-orders" className="ka-btn">กลับ</Link>
+					{canEditPurchaseOrder && ['draft', 'pending'].includes(purchaseOrder.purchase_order_status) && (
+						<Link href={`/admin/purchase-orders/${purchaseOrder.purchase_order_id}/edit`} className="ka-btn">แก้ไข</Link>
+					)}
 					{canSubmitPurchaseOrder && purchaseOrder.purchase_order_status === 'draft' && (
 						<button
 							type="button"
@@ -159,9 +143,8 @@ export default function PurchaseOrderDetailModal({
 							อนุมัติ
 						</button>
 					)}
-				</>
-			}
-		>
+				</div>
+			</div>
 			<div>
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
 					<div>
@@ -298,9 +281,9 @@ export default function PurchaseOrderDetailModal({
 				</div>
 
 				<DocumentHistoryPanel endpoint={`/purchase-order/${purchaseOrder.purchase_order_id}/history`} />
-                   {can('purchase_orders', 'reject') && ['pending', 'active'].includes(purchaseOrder.purchase_order_status) && <DocumentCancellationAction endpoint={`/purchase-order/${purchaseOrder.purchase_order_id}/reject`} onSuccess={() => { onSuccess?.(); onClose(); }} />}
+                   {can('purchase_orders', 'reject') && ['pending', 'active'].includes(purchaseOrder.purchase_order_status) && <DocumentCancellationAction endpoint={`/purchase-order/${purchaseOrder.purchase_order_id}/reject`} onSuccess={onChanged} />}
 			</div>
-		</Modal>
+		</div>
 					{showConfirmDialog && (
 						<ConfirmDialog
 							isOpen={showConfirmDialog}

@@ -545,4 +545,12 @@ ul.ka-kv { margin: 0; padding: 0; list-style: none; }
 .ka-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3) var(--space-4); margin: 0; }
 @media (min-width: 640px) { .ka-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
+/* Header breadcrumb a page opts into (usePageCrumb), e.g. "จัดซื้อ / ใบสั่งซื้อ" or "← ใบสั่งซื้อ / PO…". */
+.ka-crumb { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; color: var(--ink-muted); font: 400 14px/22px var(--ka-font); white-space: nowrap; }
+.ka-crumb__back { display: inline-flex; align-items: center; gap: 4px; min-height: 34px; padding: 0 6px; border-radius: var(--radius-control); color: var(--ink-muted); font-weight: 600; text-decoration: none; flex: none; }
+.ka-crumb__back:hover { background: var(--bg-subtle); color: var(--ink); }
+.ka-crumb__back:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.ka-crumb__step { flex: none; }
+.ka-crumb__current { min-width: 0; overflow: hidden; color: var(--ink); font-weight: 600; text-overflow: ellipsis; }
+@media (max-width: 767px) { .ka-crumb__back { min-height: var(--touch-target); } }
 }

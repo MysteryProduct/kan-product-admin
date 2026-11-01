@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import ContactRequestModel from "@/models/contact-request";
 import InvoiceSupplierModel from "@/models/invoice-supplier";
 import PaymentReceiptModel from "@/models/payment-receipt";
-import PurchaseOrderModel from "@/models/purchase-order";
 import SaleOrderModel from "@/models/sale-order";
 import SupplierModel from "@/models/supplier";
 import ContactRequestDetailModal from "@/app/admin/contact-requests/components/detail";
@@ -13,7 +13,6 @@ import JobOrderDetailModal from "@/app/admin/job-orders/components/detail";
 import MaterialDetailModal from "@/app/admin/materials/components/detail";
 import ProductDetailModal from "@/app/admin/products/components/detail";
 import PaymentReceiptDetailModal from "@/app/admin/payment-receipts/components/detail";
-import PurchaseOrderDetailModal from "@/app/admin/purchase-orders/components/detail";
 import SaleOrderDetailModal from "@/app/admin/sale-orders/components/detail";
 import StoreOrderModal from "@/app/admin/store-fulfillment/components/store-order-modal";
 import { getApiErrorMessage } from "@/lib/api-error";
@@ -24,13 +23,11 @@ import type { JobOrder } from "@/types/job-order";
 import type { Material } from "@/types/material";
 import type { Product } from "@/types/product";
 import type { PaymentReceipt } from "@/types/payment-receipt";
-import type { PurchaseOrder } from "@/types/purchase-order";
 import type { SaleOrder } from "@/types/sale-order";
 import type { DashboardListKind } from "@/types/dashboard";
 
 const saleOrderModel = new SaleOrderModel();
 const paymentReceiptModel = new PaymentReceiptModel();
-const purchaseOrderModel = new PurchaseOrderModel();
 const contactRequestModel = new ContactRequestModel();
 const invoiceSupplierModel = new InvoiceSupplierModel();
 const supplierModel = new SupplierModel();
@@ -65,7 +62,6 @@ export const OPENABLE_KINDS: DashboardListKind[] = [
 type Loaded =
   | { kind: "sale_order"; record: SaleOrder }
   | { kind: "payment_receipt"; record: PaymentReceipt }
-  | { kind: "purchase_order"; record: PurchaseOrder }
   | { kind: "contact_request"; record: ContactRequest }
   | { kind: "product_variant"; record: Product }
   | { kind: "material"; record: Material }
@@ -95,10 +91,17 @@ export default function RecordDetail({
   onError,
 }: RecordDetailProps) {
   const [loaded, setLoaded] = useState<Loaded | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     // A store order opens in its own modal, which fetches the order itself.
     if (kind === "store_order") return;
+    // A purchase order has its own page (TASK-0324).
+    if (kind === "purchase_order") {
+      router.push(`/admin/purchase-orders/${id}`);
+      onClose();
+      return;
+    }
     let cancelled = false;
     const load = async (): Promise<Loaded> => {
       if (kind === "sale_order")
@@ -107,11 +110,6 @@ export default function RecordDetail({
         return {
           kind,
           record: await paymentReceiptModel.getPaymentReceiptById(id),
-        };
-      if (kind === "purchase_order")
-        return {
-          kind,
-          record: await purchaseOrderModel.getPurchaseOrderById(id),
         };
       if (kind === "contact_request")
         return {
@@ -202,16 +200,6 @@ export default function RecordDetail({
         isOpen
         onClose={onClose}
         paymentReceipt={loaded.record}
-      />
-    );
-  }
-  if (loaded.kind === "purchase_order") {
-    return (
-      <PurchaseOrderDetailModal
-        isOpen
-        onClose={onClose}
-        onSuccess={changed}
-        purchaseOrder={loaded.record}
       />
     );
   }

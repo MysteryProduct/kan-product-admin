@@ -5,9 +5,7 @@ import PurchaseOrderModel from '@/models/purchase-order';
 import { PurchaseOrder, PurchaseOrderResponse } from '@/types/purchase-order';
 import { PaginationMeta } from '@/types/pagination';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import InsertPurchaseOrderForm from './components/insert';
-import UpdatePurchaseOrderForm from './components/update';
-import PurchaseOrderDetailModal from './components/detail';
+import Link from 'next/link';
 import { DataTable, DataTableColumn } from '@/components/DataTable';
 import { usePermissions } from '@/hooks/usePermissions';
 import ActionResultDialog from '@/components/ActionResultDialog';
@@ -44,11 +42,6 @@ export default function PurchaseOrdersPage() {
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrderResponse | null>(null);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isInsertFormOpen, setIsInsertFormOpen] = useState(false);
-  const [isUpdateFormOpen, setIsUpdateFormOpen] = useState(false);
-  const [isDetailFormOpen, setIsDetailFormOpen] = useState(false);
-  const [purchaseOrderToUpdate, setPurchaseOrderToUpdate] = useState<PurchaseOrder | null>(null);
-  const [purchaseOrderToView, setPurchaseOrderToView] = useState<PurchaseOrder | null>(null);
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
@@ -65,10 +58,6 @@ export default function PurchaseOrdersPage() {
     status: 'success',
     message: '',
   });
-
-  const isValidPurchaseOrder = (value: any): value is PurchaseOrder => {
-    return Boolean(value && typeof value === 'object' && value.purchase_order_id);
-  };
 
   useEffect(() => {
     fetchPurchaseOrders();
@@ -242,44 +231,28 @@ export default function PurchaseOrdersPage() {
       label: 'การจัดการ',
       render: (value, row: PurchaseOrder) => (
         <div className="flex gap-2">
-          <button
-            onClick={async () => {
-              const purchaseOrderDetail = await purchaseOrderModel.getPurchaseOrderById(row.purchase_order_id);
-
-              if (isValidPurchaseOrder(purchaseOrderDetail)) {
-                setPurchaseOrderToView(purchaseOrderDetail);
-                setIsDetailFormOpen(true);
-              }
-            }}
+          <Link
+            href={`/admin/purchase-orders/${row.purchase_order_id}`}
             className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--success)]"
             title="ดูรายละเอียด"
             aria-label="ดูรายละเอียด"
-            type="button"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
             </svg>
-          </button>
-          {canEditPurchaseOrder && (
-            <button
-              onClick={async () => {
-                const purchaseOrderDetail = await purchaseOrderModel.getPurchaseOrderById(row.purchase_order_id);
-                if (isValidPurchaseOrder(purchaseOrderDetail)) {
-                  setPurchaseOrderToUpdate(purchaseOrderDetail);
-                  setIsUpdateFormOpen(true);
-                }
-
-              }}
+          </Link>
+          {canEditPurchaseOrder && ['draft', 'pending'].includes(row.purchase_order_status) && (
+            <Link
+              href={`/admin/purchase-orders/${row.purchase_order_id}/edit`}
               className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
               title="แก้ไข"
               aria-label="แก้ไข"
-              type="button"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 12v3h3l8.293-8.293-3-3L5 12z" />
               </svg>
-            </button>
+            </Link>
           )}
           {canDeletePurchaseOrder && (
             <button
@@ -418,15 +391,15 @@ export default function PurchaseOrdersPage() {
             </div>
 
             {canAddPurchaseOrder && (
-              <button
-                onClick={() => setIsInsertFormOpen(true)}
+              <Link
+                href="/admin/purchase-orders/new"
                 className="ka-btn ka-btn--primary flex items-center justify-center gap-2 whitespace-nowrap"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 <span>สร้างใบสั่งซื้อ</span>
-              </button>
+              </Link>
             )}
           </div>
         </div>
@@ -458,41 +431,6 @@ export default function PurchaseOrdersPage() {
         }}
         onConfirm={handleDelete}
       />
-
-      {/* Insert Form */}
-      {canAddPurchaseOrder && (
-        <InsertPurchaseOrderForm
-          isOpen={isInsertFormOpen}
-          onClose={() => setIsInsertFormOpen(false)}
-          onSuccess={fetchPurchaseOrders}
-        />
-      )}
-
-      {/* Update Form */}
-      {canEditPurchaseOrder && purchaseOrderToUpdate && (
-        <UpdatePurchaseOrderForm
-          isOpen={isUpdateFormOpen}
-          onClose={() => {
-            setIsUpdateFormOpen(false);
-            setPurchaseOrderToUpdate(null);
-          }}
-          onSuccess={fetchPurchaseOrders}
-          initialData={purchaseOrderToUpdate}
-        />
-      )}
-
-      {/* Detail Modal */}
-      {purchaseOrderToView && (
-        <PurchaseOrderDetailModal
-          isOpen={isDetailFormOpen}
-          onClose={() => {
-            setIsDetailFormOpen(false);
-            setPurchaseOrderToView(null);
-          }}
-          onSuccess={fetchPurchaseOrders}
-          purchaseOrder={purchaseOrderToView}
-        />
-      )}
 
       <ActionResultDialog
         isOpen={resultDialog.isOpen}
