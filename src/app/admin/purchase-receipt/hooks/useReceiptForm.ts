@@ -81,7 +81,7 @@ function buildLines(order: PurchaseOrder, receipt: Receipt | null | undefined, m
         // A new receipt starts every line at 0: count what arrived (TASK-0325 Q1).
         qty: mode === 'edit' ? String(mine?.qty ?? 0) : '0',
         // The numeric columns come back as text ('95.00').
-        price: String(Number(mine?.price ?? line.purchase_order_list_price) || 0),
+        price: (Number(mine?.price ?? line.purchase_order_list_price) || 0).toFixed(2),
       };
     })
     .filter((line) => line.remaining > 0);
