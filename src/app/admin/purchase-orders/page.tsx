@@ -1,445 +1,535 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import PurchaseOrderModel from '@/models/purchase-order';
-import { PurchaseOrder, PurchaseOrderResponse } from '@/types/purchase-order';
-import { PaginationMeta } from '@/types/pagination';
-import ConfirmDialog from '@/components/ConfirmDialog';
+import { KeyboardEvent, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { DataTable, DataTableColumn } from '@/components/DataTable';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import PurchaseOrderModel from '@/models/purchase-order';
+import type { PurchaseOrder } from '@/types/purchase-order';
+import type { PaginationMeta } from '@/types/pagination';
+import axiosInstance from '@/lib/axios';
 import { usePermissions } from '@/hooks/usePermissions';
-import ActionResultDialog from '@/components/ActionResultDialog';
-import LoadingSkeletonProps from '@/components/LoadingSkeleton';
+import useVatRate from '@/hooks/useVatRate';
+import { usePageCrumb } from '@/lib/page-crumb';
 import { formatThaiDate } from '@/lib/date-format';
+import { getApiErrorMessage } from '@/lib/api-error';
 import { VAT_TYPE_LABELS } from '@/lib/vat';
-import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import CancellationDialog from '@/components/CancellationDialog';
 import DocumentCode from '@/components/DocumentCode';
+import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
+import Pagination from '@/components/Pagination';
+import RowMenu, { RowMenuItem } from '@/components/RowMenu';
+import StatusBadge from '@/components/StatusBadge';
+import { useToast } from '@/components/Toast';
+import {
+  formatMoney,
+  orderLines,
+  orderVatSummary,
+  PurchaseOrderStatus,
+  statusLabel,
+  statusTone,
+  supplierInitials,
+} from './lib/po-display';
+
 const purchaseOrderModel = new PurchaseOrderModel();
+const PAGE_SIZE = 10;
+const BASE = '/admin/purchase-orders';
 
-type SortField = 'purchase_date' | 'purchase_order_total' | null;
-type SortOrder = 'ASC' | 'DESC';
+type TabKey = 'all' | PurchaseOrderStatus;
+type SortKey = 'newest' | 'oldest';
 
-// Every status the API writes: draft when saved as one (TASK-0320), pending by default or once a
-// draft is submitted, active on approval, partial/completed from receipts and inactive on rejection.
-const PURCHASE_ORDER_STATUS_LABELS: Record<string, string> = {
-  draft: 'ฉบับร่าง',
-  pending: 'รออนุมัติ',
-  active: 'ใช้งานอยู่',
-  partial: 'รับสินค้าบางส่วน',
-  completed: 'รับสินค้าครบแล้ว',
-  inactive: 'ยกเลิก',
+// "ฉบับร่าง" (TASK-0320) sits before the approval queue and shows once there is a draft.
+const TABS: { key: TabKey; label: string }[] = [
+  { key: 'all', label: 'ทั้งหมด' },
+  { key: 'draft', label: 'ฉบับร่าง' },
+  { key: 'pending', label: 'รออนุมัติ' },
+  { key: 'active', label: 'รอรับสินค้า' },
+  { key: 'partial', label: 'รับบางส่วน' },
+  { key: 'completed', label: 'รับครบแล้ว' },
+  { key: 'inactive', label: 'ยกเลิก' },
+];
+const TAB_KEYS = TABS.map((tab) => tab.key);
+
+const SORTS: Record<SortKey, { label: string; order: 'ASC' | 'DESC' }> = {
+  newest: { label: 'ล่าสุดก่อน', order: 'DESC' },
+  oldest: { label: 'เก่าสุดก่อน', order: 'ASC' },
 };
 
-export default function PurchaseOrdersPage() {
-  const { can } = usePermissions();
-  const canAddPurchaseOrder = can('purchase_orders', 'add');
-  const canEditPurchaseOrder = can('purchase_orders', 'edit');
-  const canDeletePurchaseOrder = can('purchase_orders', 'delete');
+type Counts = Partial<Record<TabKey, number>>;
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [appliedSearchQuery, setAppliedSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrderResponse | null>(null);
+/** How many orders each tab holds: the API's `meta.total` for one row of each status. */
+async function countByStatus(search: string): Promise<Counts> {
+  const entries = await Promise.all(
+    TABS.map(async ({ key }) => {
+      const filters = key === 'all' ? undefined : { purchase_order_status: JSON.stringify([key]) };
+      const response = await purchaseOrderModel.getPurchaseOrders(1, 1, search || undefined, null, undefined, filters);
+      return [key, response.meta?.total ?? 0] as const;
+    }),
+  );
+  return Object.fromEntries(entries);
+}
+
+function readTab(value: string | null): TabKey {
+  return value && (TAB_KEYS as string[]).includes(value) ? (value as TabKey) : 'all';
+}
+
+function PurchaseOrdersList() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const toast = useToast();
+  const vatRate = useVatRate();
+  const { can } = usePermissions();
+  const canAdd = can('purchase_orders', 'add');
+  const canEdit = can('purchase_orders', 'edit');
+  const canDelete = can('purchase_orders', 'delete');
+  const canReject = can('purchase_orders', 'reject');
+
+  usePageCrumb({ parents: ['จัดซื้อ'], current: 'ใบสั่งซื้อ' });
+
+  // The URL holds the search, tab, page and sort, so back/forward and a shared link keep them.
+  const query = params?.get('q') ?? '';
+  const tab = readTab(params?.get('tab') ?? null);
+  const page = Math.max(1, Number(params?.get('page')) || 1);
+  const sort: SortKey = params?.get('sort') === 'oldest' ? 'oldest' : 'newest';
+
+  const [searchText, setSearchText] = useState(query);
+  const [rows, setRows] = useState<PurchaseOrder[]>([]);
   const [meta, setMeta] = useState<PaginationMeta | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [filters, setFilters] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState<string | null>(null);
+  const [tabCounts, setTabCounts] = useState<Counts>({});
+  const [overall, setOverall] = useState<Counts | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [toDelete, setToDelete] = useState<PurchaseOrder | null>(null);
+  const [toReject, setToReject] = useState<PurchaseOrder | null>(null);
 
-  const [sortField, setSortField] = useState<SortField>(null);
-  const [sortOrder, setSortOrder] = useState<SortOrder>('ASC');
-  const [purchaseOrderToDelete, setPurchaseOrderToDelete] = useState<PurchaseOrder | null>(null);
-  const [resultDialog, setResultDialog] = useState<{
-    isOpen: boolean;
-    status: 'success' | 'error';
-    message: string;
-  }>({
-    isOpen: false,
-    status: 'success',
-    message: '',
-  });
+  const setParams = useCallback(
+    (next: { q?: string; tab?: TabKey; page?: number; sort?: SortKey }, mode: 'push' | 'replace' = 'push') => {
+      const merged = new URLSearchParams(params?.toString() ?? '');
+      const put = (key: string, value: string | undefined, fallback: string) => {
+        if (value === undefined) return;
+        if (value === fallback || value === '') merged.delete(key);
+        else merged.set(key, value);
+      };
+      put('q', next.q, '');
+      put('tab', next.tab, 'all');
+      put('sort', next.sort, 'newest');
+      put('page', next.page === undefined ? undefined : String(next.page), '1');
+      const href = merged.toString() ? `${pathname}?${merged}` : pathname ?? BASE;
+      if (mode === 'replace') router.replace(href, { scroll: false });
+      else router.push(href, { scroll: false });
+    },
+    [params, pathname, router],
+  );
+
+  // Search while typing, 300 ms after the last key; a new search starts from page 1.
+  useEffect(() => {
+    const trimmed = searchText.trim();
+    if (trimmed === query) return;
+    const timer = window.setTimeout(() => setParams({ q: trimmed, page: 1 }, 'replace'), 300);
+    return () => window.clearTimeout(timer);
+  }, [searchText, query, setParams]);
+
+  // Back/forward can change the URL's search under the box.
+  const lastQuery = useRef(query);
+  useEffect(() => {
+    if (lastQuery.current !== query && query !== searchText.trim()) setSearchText(query);
+    lastQuery.current = query;
+  }, [query, searchText]);
 
   useEffect(() => {
-    fetchPurchaseOrders();
-  }, [currentPage, appliedSearchQuery, sortField, sortOrder]);
-
-  const handleSearch = () => {
-    setCurrentPage(1);
-    setAppliedSearchQuery(searchQuery.trim());
-  };
-
-  const handleClearSearch = () => {
-    setSearchQuery('');
-    setAppliedSearchQuery('');
-    setCurrentPage(1);
-  };
-
-  const fetchPurchaseOrders = async () => {
-    try {
-      setLoading(true);
-      setListError(null);
-      let purchase = await purchaseOrderModel.getPurchaseOrders(currentPage, 10, appliedSearchQuery, sortField, sortOrder, filters);
-      setPurchaseOrders(purchase);
-      setMeta(purchase.meta);
-    } catch (error) {
-      console.error('Failed to fetch purchase orders:', error);
-      setListError(loadErrorText('รายการใบสั่งซื้อ', error));
-    } finally {
-      setLoading(false);
-    }
-  };
-  const handleSortChange = (sort: { key: string; direction: 'ASC' | 'DESC' } | null) => {
-    if (!sort) {
-      setSortField(null);
-      setSortOrder('ASC');
-      return;
-    }
-
-    const nextField = sort.key as SortField;
-    if (nextField !== 'purchase_date' && nextField !== 'purchase_order_total') {
-      setSortField(null);
-      setSortOrder('ASC');
-      return;
-    }
-
-    setSortField(nextField);
-    setSortOrder(sort.direction);
-  };
-  const handleDataTableFilterChange = (filters: Record<string, string | string[]>) => {
-    let updatedFilters: Record<string, string> = {};
-    for (const columnKey in filters) {
-      const value = filters[columnKey];
-      if (Array.isArray(value)) {
-        if (value.length > 0) {
-          updatedFilters[columnKey] = JSON.stringify(value);
+    let active = true;
+    const filters = tab === 'all' ? undefined : { purchase_order_status: JSON.stringify([tab]) };
+    purchaseOrderModel
+      .getPurchaseOrders(page, PAGE_SIZE, query || undefined, 'purchase_date', SORTS[sort].order, filters)
+      .then((response) => {
+        if (!active) return;
+        setRows(response.data ?? []);
+        setMeta(response.meta ?? null);
+        setListError(null);
+        // A page beyond the end (after a delete or an old link) falls back to the last one.
+        if (response.meta && response.meta.last_page > 0 && page > response.meta.last_page) {
+          setParams({ page: response.meta.last_page }, 'replace');
         }
-      } else {
-        if (value.trim()) {
-          updatedFilters[columnKey] = value;
-        }
-      }
-    }
-    setFilters(updatedFilters);
-    setTimeout(() => handleRefreshProduct(updatedFilters), 0);
+      })
+      .catch((error: unknown) => {
+        if (active) setListError(loadErrorText('รายการใบสั่งซื้อ', error));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [page, query, sort, tab, refreshKey, setParams]);
+
+  useEffect(() => {
+    let active = true;
+    countByStatus(query)
+      .then((counts) => {
+        if (!active) return;
+        setTabCounts(counts);
+        if (!query) setOverall(counts);
+      })
+      .catch(() => {
+        // Counts are a hint; the list itself reports a failed load.
+      });
+    return () => {
+      active = false;
+    };
+  }, [query, refreshKey]);
+
+  // The summary cards count every order, whatever is typed in the search box.
+  useEffect(() => {
+    if (!query || overall) return;
+    let active = true;
+    countByStatus('')
+      .then((counts) => active && setOverall(counts))
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [query, overall]);
+
+  const refresh = () => {
+    setLoading(true);
+    setOverall(null);
+    setRefreshKey((key) => key + 1);
   };
+
+  const pickTab = (key: TabKey) => {
+    setLoading(true);
+    setParams({ tab: key, page: 1 });
+  };
+
+  const clearFilters = () => {
+    setSearchText('');
+    setLoading(true);
+    setParams({ q: '', tab: 'all', page: 1 });
+  };
+
   const handleDelete = async () => {
-    if (purchaseOrderToDelete) {
-      try {
-        await purchaseOrderModel.deletePurchaseOrder(purchaseOrderToDelete.purchase_order_id);
-        handleRefreshProduct(filters, true);
-        setIsDeleteDialogOpen(false);
-        setPurchaseOrderToDelete(null);
-        setResultDialog({
-          isOpen: true,
-          status: 'success',
-          message: 'ลบใบสั่งซื้อสำเร็จ',
-        });
-      } catch (error) {
-        console.error('Failed to delete purchase order:', error);
-        setResultDialog({
-          isOpen: true,
-          status: 'error',
-          message: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการลบใบสั่งซื้อ',
-        });
-      }
-    }
-  };
-
-  const handleRefreshProduct = async (filters: Record<string, string> = {}, checkPageAfterDelete = false) => {
-    // รีเฟรชข้อมูลสินค้าเมื่อมีการเพิ่มสินค้าใหม่
+    if (!toDelete) return;
+    const target = toDelete;
+    setToDelete(null);
     try {
-      setListError(null);
-      // คำนวณหน้าที่จะใช้ก่อนเรียก API
-      setLoading(true);
-      let targetPage = currentPage;
-
-      // ถ้าเป็นการลบข้อมูลและไม่ใช่หน้าแรก และหน้าปัจจุบันมีเพียง 1 รายการ
-      // ให้ลดหน้าลงมา 1 หน้า
-      if (checkPageAfterDelete && currentPage > 1 && purchaseOrders?.data.length === 1) {
-        targetPage = currentPage - 1;
-        setCurrentPage(targetPage);
-      }
-
-      let purchase = await purchaseOrderModel.getPurchaseOrders(targetPage, 10, appliedSearchQuery, sortField, sortOrder, filters);
-      setPurchaseOrders(purchase);
-      setMeta(purchase.meta);
+      await purchaseOrderModel.deletePurchaseOrder(target.purchase_order_id);
+      toast({ message: `ลบใบสั่งซื้อ ${target.purchase_order_code} แล้ว`, tone: 'success' });
+      refresh();
     } catch (error) {
-      console.error('Failed to fetch purchase orders:', error);
-      setListError(loadErrorText('รายการใบสั่งซื้อ', error));
-    } finally {
-      setLoading(false);
+      toast({ message: `ลบ ${target.purchase_order_code} ไม่สำเร็จ ${getApiErrorMessage(error)}`, tone: 'danger' });
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('th-TH', {
-      style: 'decimal',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount);
+  const menuFor = (order: PurchaseOrder): RowMenuItem[] => {
+    const status = order.purchase_order_status;
+    const items: RowMenuItem[] = [
+      { label: 'ดูรายละเอียด', icon: 'view', onSelect: () => router.push(`${BASE}/${order.purchase_order_id}`) },
+    ];
+    if (canEdit && (status === 'pending' || status === 'draft')) {
+      items.push({ label: 'แก้ไข', icon: 'edit', onSelect: () => router.push(`${BASE}/${order.purchase_order_id}/edit`) });
+    }
+    if (canAdd) items.push({ label: 'สั่งซ้ำ', icon: 'copy', onSelect: () => router.push(`${BASE}/new?copy=${order.purchase_order_id}`) });
+    if (canReject && (status === 'pending' || status === 'active')) {
+      items.push({ label: 'ยกเลิกใบสั่งซื้อ', icon: 'cancel', tone: 'danger', onSelect: () => setToReject(order) });
+    }
+    if (canDelete) items.push({ label: 'ลบ', icon: 'delete', tone: 'danger', onSelect: () => setToDelete(order) });
+    return items;
   };
 
-  // Define DataTable columns
-  const columns: DataTableColumn<PurchaseOrder>[] = [
-    {
-      key: 'purchase_order_code' as keyof PurchaseOrder,
-      label: 'รหัสใบสั่งซื้อ',
-      width: '250px',
-      render: (_, row) => (
-        <DocumentCode code={row.purchase_order_code} legacyCode={row.legacy_code} search={appliedSearchQuery} />
-      ),
-    },
-    {
-      key: 'purchase_order_name' as any as keyof PurchaseOrder,
-      label: 'ชื่อใบสั่งซื้อ',
-    },
-    {
-      key: 'supplier_name' as any as keyof PurchaseOrder['supplier'],
-      label: 'ชื่อผู้จัดจำหน่าย',
-      render: (value, row: PurchaseOrder) => row.supplier?.supplier_name || '',
-    },
-    {
-      key: 'purchase_order_status' as any as keyof PurchaseOrder,
-      label: 'สถานะใบสั่งซื้อ',
-      filterable: true,
-      filterType: 'multi-select',
-      filterOptions: Object.entries(PURCHASE_ORDER_STATUS_LABELS).map(([value, label]) => ({ label, value })),
-      filterValue: (row) => row.purchase_order_status || '',
-      render: (value) => {
-        const status = value as string | undefined;
-        return (status && PURCHASE_ORDER_STATUS_LABELS[status]) || status;
+  const visibleTabs = TABS.filter((item) => item.key !== 'draft' || (tabCounts.draft ?? 0) > 0 || tab === 'draft');
+
+  const onTabsKey = (event: KeyboardEvent<HTMLDivElement>) => {
+    const index = visibleTabs.findIndex((item) => item.key === tab);
+    let next = index;
+    if (event.key === 'ArrowRight') next = (index + 1) % visibleTabs.length;
+    else if (event.key === 'ArrowLeft') next = (index - 1 + visibleTabs.length) % visibleTabs.length;
+    else if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = visibleTabs.length - 1;
+    else return;
+    event.preventDefault();
+    pickTab(visibleTabs[next].key);
+    requestAnimationFrame(() => document.getElementById(`po-tab-${visibleTabs[next].key}`)?.focus());
+  };
+
+  const kpis = useMemo(
+    () => [
+      { key: 'pending' as TabKey, label: 'รออนุมัติ', tone: 'warning', value: overall?.pending, note: 'รอผู้มีสิทธิ์อนุมัติ' },
+      {
+        key: 'active' as TabKey,
+        label: 'รอรับสินค้า',
+        tone: 'info',
+        value: overall ? (overall.active ?? 0) + (overall.partial ?? 0) : undefined,
+        note: 'รวมรับบางส่วน',
       },
-    },
-    {
-      key: 'purchase_date' as keyof PurchaseOrder,
-      label: 'วันที่เพิ่ม',
-      sortable: true,
-      render: (value) => formatThaiDate(value as string),
-    },
-    {
-      key: 'purchase_order_total' as keyof PurchaseOrder,
-      label: 'ราคา',
-      sortable: true,
-    },
-    {
-      key: 'vat_type' as keyof PurchaseOrder,
-      label: 'VAT',
-      render: (value) => VAT_TYPE_LABELS[(value as PurchaseOrder['vat_type']) || 'none'],
-    },
-    {
-      key: 'purchase_order_id' as keyof PurchaseOrder,
-      label: 'การจัดการ',
-      render: (value, row: PurchaseOrder) => (
-        <div className="flex gap-2">
-          <Link
-            href={`/admin/purchase-orders/${row.purchase_order_id}`}
-            className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--success)]"
-            title="ดูรายละเอียด"
-            aria-label="ดูรายละเอียด"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-          </Link>
-          {canEditPurchaseOrder && ['draft', 'pending'].includes(row.purchase_order_status) && (
-            <Link
-              href={`/admin/purchase-orders/${row.purchase_order_id}/edit`}
-              className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
-              title="แก้ไข"
-              aria-label="แก้ไข"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 12v3h3l8.293-8.293-3-3L5 12z" />
-              </svg>
-            </Link>
-          )}
-          {canDeletePurchaseOrder && (
-            <button
-              className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--danger)]"
-              title="ลบ"
-              aria-label="ลบ"
-              onClick={() => {
-                setPurchaseOrderToDelete(row);
-                setIsDeleteDialogOpen(true);
-              }}
-              type="button"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
-          )}
-        </div>
-      ),
-    },
-  ];
+      { key: 'completed' as TabKey, label: 'รับครบแล้ว', tone: 'success', value: overall?.completed, note: 'ทั้งหมดในระบบ' },
+    ],
+    [overall],
+  );
+
+  const total = meta?.total ?? 0;
+  const from = total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const to = Math.min(page * PAGE_SIZE, total);
+  const filtered = Boolean(query) || tab !== 'all';
+  const nothingYet = !loading && !listError && total === 0 && !filtered;
+  const noMatch = !loading && !listError && total === 0 && filtered;
+
+  const createButton = canAdd && (
+    <Link href={`${BASE}/new`} className="ka-btn ka-btn--primary">
+      <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
+      </svg>
+      สร้างใบสั่งซื้อ
+    </Link>
+  );
 
   return (
-    <div className="min-h-full bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
-      <LoadErrorBanner message={listError} onRetry={() => void fetchPurchaseOrders()} className="mb-4" />
-      {/* Statistics Cards */}
-      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <div className="ka-card p-4 sm:p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-2xl sm:text-4xl font-bold text-[var(--brand-ink)] mb-1">
-                {totalOrders}
-              </div>
-              <div className="text-[13px] sm:text-sm text-[var(--brand-ink)] font-medium">
-                ใบสั่งซื้อทั้งหมด
-              </div>
-            </div>
-            <div className="bg-[var(--brand-soft)] p-3 rounded-lg">
-              <svg className="w-8 h-8 text-[var(--brand-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-          </div>
+    <div className="ka-page-body ka-po">
+      <div className="ka-po-ph">
+        <div className="ka-po-ph__main">
+          <h1 className="ka-ph__title">ใบสั่งซื้อ</h1>
+          <p className="ka-po-cap">สั่งวัตถุดิบจากผู้จำหน่าย ติดตามการอนุมัติและการรับสินค้า</p>
         </div>
+        {createButton && <div className="ka-po-ph__acts">{createButton}</div>}
+      </div>
 
-        <div className="ka-card p-4 sm:p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-2xl sm:text-4xl font-bold text-[var(--success)] mb-1">
-                ฿{formatCurrency(totalAmount)}
-              </div>
-              <div className="text-[13px] sm:text-sm text-[var(--success)] font-medium">
-                มูลค่ารวม
-              </div>
-            </div>
-            <div className="bg-[var(--success-soft)] p-3 rounded-lg">
-              <svg className="w-8 h-8 text-[var(--success)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          </div>
-        </div>
+      <div className="ka-po-kpis">
+        {kpis.map((kpi) => (
+          <button
+            key={kpi.key}
+            type="button"
+            className="ka-po-kpi"
+            aria-pressed={tab === kpi.key}
+            onClick={() => pickTab(kpi.key)}
+          >
+            <span className="ka-po-kpi__k">
+              <i className={`ka-po-dot ka-po-dot--${kpi.tone}`} aria-hidden="true" />
+              {kpi.label}
+            </span>
+            <span className="ka-po-kpi__v numeric">{kpi.value === undefined ? '–' : kpi.value.toLocaleString('th-TH')}</span>
+            <span className="ka-po-cap">{kpi.note}</span>
+          </button>
+        ))}
+      </div>
 
-        <div className="ka-card p-4 sm:p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-2xl sm:text-4xl font-bold text-[var(--info)] mb-1">
-                {meta?.total || 0}
-              </div>
-              <div className="text-[13px] sm:text-sm text-[var(--info)] font-medium">
-                รายการทั้งหมดในระบบ
-              </div>
-            </div>
-            <div className="bg-[var(--info-soft)] p-3 rounded-lg">
-              <svg className="w-8 h-8 text-[var(--info)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div> */}
-
-      {/* Main Content Card */}
-      <div className="overflow-hidden rounded-xl bg-[var(--bg-surface)] shadow-sm ring-1 ring-black/5 sm:rounded-2xl">
-        {/* Search Bar */}
-        <div className="p-3 sm:p-4 md:p-6 border-b border-[var(--border)]">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
-            <div className="flex flex-col sm:flex-row items-stretch gap-1 w-full sm:w-auto sm:flex-1 sm:max-w-md">
-              <div className="relative flex-1">
-                <input
-                  type="text"
-                  placeholder="ค้นหาใบสั่งซื้อ..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSearch();
-                    }
-                  }}
-                  className="ka-input min-h-11 w-full"
-                />
-                <svg
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[var(--ink-subtle)]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
+      <section className="ka-card ka-po-clip" aria-label="รายการใบสั่งซื้อ">
+        <div className="ka-po-tabs" role="tablist" aria-label="สถานะใบสั่งซื้อ" onKeyDown={onTabsKey}>
+          {visibleTabs.map((item) => {
+            const selected = tab === item.key;
+            return (
               <button
+                key={item.key}
+                id={`po-tab-${item.key}`}
                 type="button"
-                onClick={handleSearch}
-                className="ka-btn ka-btn--primary whitespace-nowrap"
+                role="tab"
+                aria-selected={selected}
+                aria-controls="po-list-panel"
+                tabIndex={selected ? 0 : -1}
+                onClick={() => pickTab(item.key)}
               >
-                ค้นหา
+                {item.label}
+                <span className="numeric">{tabCounts[item.key] === undefined ? '–' : tabCounts[item.key]?.toLocaleString('th-TH')}</span>
               </button>
-              {(searchQuery || appliedSearchQuery) && (
-                <button
-                  type="button"
-                  onClick={handleClearSearch}
-                  className="ka-btn whitespace-nowrap"
-                >
-                  ล้าง
-                </button>
-              )}
-            </div>
+            );
+          })}
+        </div>
 
-            {canAddPurchaseOrder && (
-              <Link
-                href="/admin/purchase-orders/new"
-                className="ka-btn ka-btn--primary flex items-center justify-center gap-2 whitespace-nowrap"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        <div className="ka-po-fbar">
+          <div className="ka-po-search">
+            <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4" />
+            </svg>
+            <input
+              type="search"
+              className="ka-input"
+              value={searchText}
+              onChange={(event) => setSearchText(event.target.value)}
+              placeholder="ค้นหาเลข PO หรือชื่อเอกสาร"
+              aria-label="ค้นหาใบสั่งซื้อด้วยเลข PO หรือชื่อเอกสาร"
+            />
+          </div>
+          <span className="ka-po-fbar__sp" />
+          <RowMenu
+            label={`เรียงลำดับ: ${SORTS[sort].label}`}
+            triggerClassName="ka-chip ka-po-sortchip"
+            trigger={
+              <>
+                <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 7h16M7 12h10M10 17h4" />
                 </svg>
-                <span>สร้างใบสั่งซื้อ</span>
-              </Link>
+                {SORTS[sort].label}
+              </>
+            }
+            items={(Object.keys(SORTS) as SortKey[]).map((key) => ({
+              label: key === sort ? `${SORTS[key].label} (ใช้อยู่)` : SORTS[key].label,
+              onSelect: () => {
+                setLoading(true);
+                setParams({ sort: key, page: 1 });
+              },
+            }))}
+          />
+        </div>
+
+        <div id="po-list-panel" role="tabpanel" aria-labelledby={`po-tab-${tab}`} aria-busy={loading || undefined}>
+          {listError && (
+            <div className="ka-po-cp">
+              <LoadErrorBanner message={listError} onRetry={refresh} />
+            </div>
+          )}
+
+          {!listError && (loading || rows.length > 0) && (
+            <>
+              <div className="ka-po-tw">
+                <table className={`ka-po-lt${loading ? ' ka-po-lt--loading' : ''}`}>
+                  <caption className="sr-only">ใบสั่งซื้อ {statusLabelForTab(tab)} หน้า {page}</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">ใบสั่งซื้อ</th>
+                      <th scope="col">ผู้จำหน่าย</th>
+                      <th scope="col">วันที่สั่ง</th>
+                      <th scope="col">สถานะ</th>
+                      <th scope="col" className="ka-po-r">ยอดรวม (บาท)</th>
+                      <th scope="col" className="ka-po-lt__menu"><span className="sr-only">เมนู</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {loading && rows.length === 0
+                      ? Array.from({ length: 5 }, (_, index) => (
+                          <tr key={index} aria-hidden="true">
+                            <td colSpan={6}><span className="ka-skel" /></td>
+                          </tr>
+                        ))
+                      : rows.map((order) => {
+                          const vat = orderVatSummary(order, vatRate);
+                          const href = `${BASE}/${order.purchase_order_id}`;
+                          return (
+                            <tr key={order.purchase_order_id}>
+                              <td>
+                                <Link href={href} className="ka-po-rowlink">
+                                  <span className="ka-po-code"><DocumentCode code={order.purchase_order_code} legacyCode={order.legacy_code} search={query} /></span>
+                                </Link>
+                                <span className="ka-po-cap ka-po-lt__name">{order.purchase_order_name}</span>
+                              </td>
+                              <td>
+                                <span className="ka-po-sup">
+                                  <span className="ka-po-sav" aria-hidden="true">{supplierInitials(order.supplier?.supplier_name)}</span>
+                                  <span className="ka-po-sup__n">{order.supplier?.supplier_name ?? '-'}</span>
+                                </span>
+                              </td>
+                              <td className="numeric ka-po-nowrap">{formatThaiDate(order.purchase_date)}</td>
+                              <td>
+                                <StatusBadge tone={statusTone(order.purchase_order_status)}>{statusLabel(order.purchase_order_status)}</StatusBadge>
+                              </td>
+                              <td className="ka-po-r">
+                                <span className="numeric ka-po-amt">{formatMoney(vat.total)}</span>
+                                <span className="ka-po-cap ka-po-nowrap">
+                                  {VAT_TYPE_LABELS[order.vat_type || 'none']} · {orderLines(order).length} รายการ
+                                </span>
+                              </td>
+                              <td className="ka-po-lt__menu">
+                                <RowMenu label={`ตัวเลือกของ ${order.purchase_order_code}`} items={menuFor(order)} />
+                              </td>
+                            </tr>
+                          );
+                        })}
+                  </tbody>
+                </table>
+              </div>
+
+              <ul className="ka-po-mlist" aria-label="ใบสั่งซื้อ">
+                {rows.map((order) => (
+                  <li key={order.purchase_order_id}>
+                    <Link href={`${BASE}/${order.purchase_order_id}`} className="ka-po-mc">
+                      <span className="ka-po-mc__row">
+                        <span className="ka-po-code"><DocumentCode code={order.purchase_order_code} legacyCode={order.legacy_code} search={query} /></span>
+                        <StatusBadge tone={statusTone(order.purchase_order_status)}>{statusLabel(order.purchase_order_status)}</StatusBadge>
+                      </span>
+                      <span className="ka-po-mc__name">{order.purchase_order_name}</span>
+                      <span className="ka-po-mc__row">
+                        <span className="ka-po-cap ka-po-mc__meta">
+                          {order.supplier?.supplier_name ?? '-'} · {formatThaiDate(order.purchase_date)}
+                        </span>
+                        <span className="numeric ka-po-mc__amt">฿{formatMoney(orderVatSummary(order, vatRate).total)}</span>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+
+          {nothingYet && (
+            <div className="ka-po-empty">
+              <p className="ka-po-empty__t">ยังไม่มีใบสั่งซื้อ</p>
+              <p className="ka-po-cap">สร้างใบสั่งซื้อเพื่อสั่งวัตถุดิบจากผู้จำหน่าย แล้วติดตามการอนุมัติและการรับสินค้าได้ที่นี่</p>
+              {createButton}
+            </div>
+          )}
+
+          {noMatch && (
+            <div className="ka-po-empty">
+              <p className="ka-po-empty__t">
+                {query ? `ไม่พบใบสั่งซื้อที่ตรงกับ “${query}”` : `ไม่พบใบสั่งซื้อในสถานะ “${statusLabelForTab(tab)}”`}
+              </p>
+              <p className="ka-po-cap">ลองค้นด้วยเลข PO หรือชื่อเอกสารอื่น หรือดูทุกสถานะ</p>
+              <button type="button" className="ka-btn" onClick={clearFilters}>ล้างตัวกรอง</button>
+            </div>
+          )}
+        </div>
+
+        {!listError && total > 0 && (
+          <div className="ka-po-pager">
+            <span className="ka-po-cap numeric" role="status">
+              แสดง {from.toLocaleString('th-TH')}–{to.toLocaleString('th-TH')} จาก {total.toLocaleString('th-TH')} รายการ
+            </span>
+            {meta && meta.last_page > 1 && (
+              <Pagination
+                meta={meta}
+                currentPage={page}
+                onPageChange={(next) => {
+                  setLoading(true);
+                  setParams({ page: next });
+                }}
+              />
             )}
           </div>
-        </div>
-      </div>
+        )}
+      </section>
 
-      {loading && <LoadingSkeletonProps />}
-      <div className="relative">
-        <DataTable
-          data={purchaseOrders?.data || []}
-          columns={columns}
-          keyField="purchase_order_id"
-          disabled={loading}
-          paginationMeta={meta}
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-          onFilterChange={handleDataTableFilterChange}
-          onSortChange={handleSortChange}
-        />
-      </div>
-
-      {/* Delete Confirmation Dialog */}
       <ConfirmDialog
-        isOpen={canDeletePurchaseOrder && isDeleteDialogOpen}
-        title="ยืนยันการลบใบสั่งซื้อ"
-        message={`คุณแน่ใจหรือไม่ว่าต้องการลบใบสั่งซื้อ "${purchaseOrderToDelete?.purchase_order_name}"? การกระทำนี้ไม่สามารถย้อนกลับได้และจะลบรายการสินค้าทั้งหมดในใบสั่งซื้อนี้ด้วย`}
-        onCancel={() => {
-          setIsDeleteDialogOpen(false);
-          setPurchaseOrderToDelete(null);
-        }}
-        onConfirm={handleDelete}
+        isOpen={Boolean(toDelete)}
+        title="ลบใบสั่งซื้อ"
+        message={`ลบ ${toDelete?.purchase_order_code ?? ''} “${toDelete?.purchase_order_name ?? ''}” และรายการวัตถุดิบทั้งหมดในใบนี้ ลบแล้วกู้คืนไม่ได้`}
+        confirmLabel="ลบใบสั่งซื้อ"
+        cancelLabel="ไม่ลบ"
+        onCancel={() => setToDelete(null)}
+        onConfirm={() => void handleDelete()}
       />
 
-      <ActionResultDialog
-        isOpen={resultDialog.isOpen}
-        status={resultDialog.status}
-        action="delete"
-        message={resultDialog.message}
-        onClose={() => setResultDialog((prev) => ({ ...prev, isOpen: false }))}
-      />
-
+      {toReject && (
+        <CancellationDialog
+          title={`ยกเลิกใบสั่งซื้อ ${toReject.purchase_order_code}`}
+          onClose={() => setToReject(null)}
+          onConfirm={async (reason) => {
+            await axiosInstance.post(`/purchase-order/${toReject.purchase_order_id}/reject`, { reason });
+            toast({ message: `ยกเลิกใบสั่งซื้อ ${toReject.purchase_order_code} แล้ว`, tone: 'success' });
+            refresh();
+          }}
+        />
+      )}
     </div>
+  );
+}
+
+function statusLabelForTab(tab: TabKey): string {
+  return TABS.find((item) => item.key === tab)?.label ?? 'ทั้งหมด';
+}
+
+export default function PurchaseOrdersPage() {
+  return (
+    <Suspense fallback={null}>
+      <PurchaseOrdersList />
+    </Suspense>
   );
 }
