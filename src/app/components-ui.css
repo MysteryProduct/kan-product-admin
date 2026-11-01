@@ -552,6 +552,8 @@ ul.ka-kv { margin: 0; padding: 0; list-style: none; }
 .ka-crumb__back:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .ka-crumb__step { flex: none; }
 .ka-crumb__current { min-width: 0; overflow: hidden; color: var(--ink); font-weight: 600; text-overflow: ellipsis; }
+/* On very narrow screens the back link keeps only its arrow, so the current page name still shows. */
+@media (max-width: 479px) { .ka-crumb__backtext { display: none; } }
 @media (max-width: 767px) { .ka-crumb__back { min-height: var(--touch-target); } }
 /* DocumentHistoryPanel variant="timeline": the latest entries as dots on a line. */
 .ka-tl { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; font: 400 14px/22px var(--ka-font); }

@@ -32,8 +32,9 @@ export default function Header() {
       {crumb ? (
         <nav className="ka-crumb" aria-label="ตำแหน่ง">
           {crumb.back && (
-            <Link href={crumb.back.href} className="ka-crumb__back">
-              <span aria-hidden="true">←</span> {crumb.back.label}
+            <Link href={crumb.back.href} className="ka-crumb__back" aria-label={`กลับไป${crumb.back.label}`}>
+              <span aria-hidden="true">←</span>
+              <span className="ka-crumb__backtext" aria-hidden="true">{crumb.back.label}</span>
             </Link>
           )}
           {crumb.parents?.map((parent) => (

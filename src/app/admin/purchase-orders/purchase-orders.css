@@ -100,9 +100,6 @@
 .ka-po-pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
 .ka-po-pager .ka-pager__pages { margin: 0; }
 
-@media (max-width: 1023px) {
-  .ka-po-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
 @media (max-width: 767px) {
   .ka-po { gap: 16px; }
   .ka-po-tabs > button { min-height: var(--touch-target); }
@@ -113,7 +110,8 @@
   .ka-po-ph__acts { width: 100%; }
   .ka-po-ph__acts .ka-btn { flex: 1; }
   .ka-po-kpis { gap: 8px; }
-  .ka-po-kpi { padding: 12px; }
+  .ka-po-kpi { padding: 10px 12px; }
+  .ka-po-kpi__k { gap: 6px; font-size: 13px; line-height: 20px; }
   .ka-po-kpi__v { font-size: 20px; line-height: 28px; }
   .ka-po-fbar__sp { display: none; }
   .ka-po-tw--list { display: none; }
@@ -266,7 +264,8 @@
   body:has(.ka-po-print) .ka-po-noprint,
   body:has(.ka-po-print) .ka-toasts { display: none !important; }
   html:has(.ka-po-print), body:has(.ka-po-print), body:has(.ka-po-print) .h-screen, body:has(.ka-po-print) main, body:has(.ka-po-print) .overflow-hidden { height: auto !important; overflow: visible !important; }
-  body:has(.ka-po-print) main { padding: 0 !important; background: #fff !important; }
+  body:has(.ka-po-print), body:has(.ka-po-print) main, body:has(.ka-po-print) .h-screen { background: #fff !important; }
+  body:has(.ka-po-print) main { padding: 0 !important; }
   .ka-po-print { max-width: none; padding: 0; gap: 12px; }
   .ka-po-print .ka-card { break-inside: avoid; box-shadow: none; }
   .ka-po-print .ka-po-grid { grid-template-columns: minmax(0, 1fr); }
