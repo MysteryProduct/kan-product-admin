@@ -85,6 +85,18 @@ input.ka-pr-price__in { width: 84px; min-height: 32px; height: 32px; padding: 0 
 .ka-pr-outcome > svg { width: 16px; height: 16px; margin-top: 3px; }
 .ka-pr-outcome--neutral { --bn-ink: var(--neutral); --bn-bg: var(--neutral-soft); }
 
+/* Detail */
+.ka-pr-dl__wide { grid-column: span 2; }
+.ka-pr-split { padding-top: 14px; border-top: 1px solid var(--border); }
+.ka-pr-postatus { margin-top: 6px; }
+.ka-pr-postatus b { color: var(--ink); font-weight: 600; }
+.ka-pr-stock { display: flex; flex-direction: column; gap: 6px; margin: 0 0 8px; padding: 0; list-style: none; }
+.ka-pr-stock > li { display: flex; justify-content: space-between; gap: 12px; font: 400 15px/24px var(--ka-font); color: var(--ink); }
+.ka-pr-stock > li > span { min-width: 0; overflow-wrap: anywhere; }
+.ka-pr-stock > li > b { flex: none; font-weight: 600; }
+.ka-pr-stock--in { color: var(--success); }
+.ka-pr-stock--wait { color: var(--ink-muted); }
+
 @media (max-width: 1023px) {
   .ka-pr-rh { display: none; }
   .ka-pr-rl { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-areas: "m m m" "o g l" "q q t"; row-gap: 10px; }
@@ -104,6 +116,7 @@ input.ka-pr-price__in { width: 84px; min-height: 32px; height: 32px; padding: 0 
   .ka-pr-fill { padding: 10px 6px; margin: -8px -6px 0 0; }
 }
 @media (max-width: 639px) {
+  .ka-pr-dl__wide { grid-column: auto; }
   .ka-pr-queue { grid-template-columns: minmax(0, 1fr); padding: 12px; }
   .ka-pr-more { padding: 0 12px 12px; }
   .ka-pr-more .ka-btn { width: 100%; }

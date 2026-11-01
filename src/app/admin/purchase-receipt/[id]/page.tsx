@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import ReceiptDetail from '../components/receipt-detail';
 import { PageLoadError, PageLoading } from '../components/page-states';
@@ -11,5 +12,10 @@ export default function PurchaseReceiptDetailPage() {
 
   if (error && !receipt) return <PageLoadError message={error} onRetry={reload} />;
   if (!receipt) return <PageLoading what="ใบรับสินค้า" />;
-  return <ReceiptDetail receipt={receipt} order={order} onChanged={reload} />;
+  // The detail reads `?print=1` from the list's "พิมพ์".
+  return (
+    <Suspense fallback={null}>
+      <ReceiptDetail receipt={receipt} order={order} onChanged={reload} />
+    </Suspense>
+  );
 }
