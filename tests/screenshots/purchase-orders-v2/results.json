@@ -33,7 +33,7 @@
     {
       "name": "create none: toast names the PO",
       "ok": true,
-      "note": "สร้างใบสั่งซื้อ PO202611010034 แล้ว"
+      "note": "สร้างใบสั่งซื้อ PO202611010039 แล้ว"
     },
     {
       "name": "create include: body totals = old calculation",
@@ -68,7 +68,7 @@
     {
       "name": "create include: toast names the PO",
       "ok": true,
-      "note": "สร้างใบสั่งซื้อ PO202611010035 แล้ว"
+      "note": "สร้างใบสั่งซื้อ PO202611010040 แล้ว"
     },
     {
       "name": "create exclude: body totals = old calculation",
@@ -103,7 +103,7 @@
     {
       "name": "create exclude: toast names the PO",
       "ok": true,
-      "note": "สร้างใบสั่งซื้อ PO202611010036 แล้ว"
+      "note": "สร้างใบสั่งซื้อ PO202611010041 แล้ว"
     },
     {
       "name": "back after save reaches the list",
@@ -304,6 +304,16 @@
       "name": "edit: back after save leaves the detail page",
       "ok": true,
       "note": "http://localhost:3021/admin/purchase-orders"
+    },
+    {
+      "name": "edit (full load, cancel, back): save lands on the order",
+      "ok": true,
+      "note": "http://localhost:3021/admin/purchase-orders/01a1956b-9322-7180-bf80-79249d57c3e7"
+    },
+    {
+      "name": "edit (opened from detail, reloaded): save lands on the order, one back leaves it",
+      "ok": true,
+      "note": "/admin/purchase-orders/01a1956b-9322-7180-bf80-79249d57c3e7 then http://localhost:3021/admin/purchase-orders"
     },
     {
       "name": "edit: approved order refused",
@@ -616,10 +626,10 @@
         "shadow": false
       }
     ],
-    "cleanup_01a19566-05de-783e-8154-dd37f355a423": 200,
-    "cleanup_01a19566-19d4-7723-97ca-4ff2f228d965": 400,
-    "cleanup_01a19566-2da0-7c94-b528-36ce131976d1": 200,
-    "cleanup_01a19566-4156-7a7a-b575-fff331953462": 200,
-    "cleanup_01a19567-5274-769e-9344-b278b34ccc82": 200
+    "cleanup_01a1956b-7ed8-73e2-8941-fa0112a6036c": 200,
+    "cleanup_01a1956b-9322-7180-bf80-79249d57c3e7": 400,
+    "cleanup_01a1956b-a699-7a67-8b42-aaffad71eaea": 200,
+    "cleanup_01a1956b-ba3f-7d14-a6de-0e7a64046d60": 200,
+    "cleanup_01a1956d-12f4-7469-8193-048653f61c83": 200
   }
 }

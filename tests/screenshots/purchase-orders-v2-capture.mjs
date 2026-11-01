@@ -340,6 +340,39 @@ check('edit: detail shows the new quantity', (await page.locator('.ka-po-it__qty
 await page.goBack();
 await settle(800);
 check('edit: back after save leaves the detail page', new URL(page.url()).pathname === '/admin/purchase-orders', page.url());
+const includeDetail = `/admin/purchase-orders/${created.include.id}`;
+const bumpFirstQty = async (value) => {
+  await page.locator('.ka-po-ln').first().locator('input[inputmode=numeric]').fill(value);
+  await page.locator('.ka-po-sum__acts button[type=submit]').click();
+  await page.waitForTimeout(2500);
+  await settle(500);
+};
+// Review F7: an edit page opened by a full load, left with ยกเลิก and returned to with back, still saves to its order.
+await page.goto(`${base}${includeDetail}/edit`);
+await settle(1500);
+await page.locator('.ka-po-sum__acts').getByRole('button', { name: 'ยกเลิก' }).click();
+await page.waitForURL(new RegExp(`${created.include.id}$`), { timeout: 60000 });
+await settle(800);
+await page.goBack();
+await page.waitForURL(/\/edit$/, { timeout: 60000 });
+await settle(1200);
+await bumpFirstQty('6');
+check('edit (full load, cancel, back): save lands on the order', new URL(page.url()).pathname === includeDetail, page.url());
+// Review F6 after a reload: the edit page opened from the detail page keeps that fact.
+await page.goto(`${base}/admin/purchase-orders`);
+await settle(800);
+await page.goto(`${base}${includeDetail}`);
+await settle(1000);
+await page.getByRole('link', { name: 'แก้ไข', exact: true }).click();
+await page.waitForURL(/\/edit$/, { timeout: 60000 });
+await settle(1000);
+await page.reload();
+await settle(1500);
+await bumpFirstQty('5');
+const afterReloadSave = new URL(page.url()).pathname;
+await page.goBack();
+await settle(800);
+check('edit (opened from detail, reloaded): save lands on the order, one back leaves it', afterReloadSave === includeDetail && new URL(page.url()).pathname === '/admin/purchase-orders', `${afterReloadSave} then ${page.url()}`);
 function orderQty(order) {
   return Number((order.purchaseOrderLists ?? []).find((line) => Number(line.purchase_order_list_price) === 123.45)?.purchase_order_list_qty);
 }

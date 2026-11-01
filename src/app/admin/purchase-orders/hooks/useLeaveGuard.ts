@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { previousPath } from '../lib/previous-path';
+import { openedFromDetail } from '../lib/edit-origin';
 
 /**
  * Asks before leaving a page with unsaved edits: through the page's own cancel, any in-app link
@@ -95,16 +95,17 @@ export function useLeaveGuard(active: boolean) {
     confirm: () => target && go(target),
     /**
      * After a save: go to `href` without asking. The extra back-button entry is stepped over first (it
-     * belongs to this page, so that step never leaves the app). When the form was opened from `href`
-     * itself (edit from the order's detail), that entry is reused instead of stacking a second copy;
-     * otherwise `href` takes the form's place, so back reaches the page before the form.
+     * belongs to this page, so that step never leaves the app). When the detail page `href` opened this
+     * form (edit-origin.ts), that detail entry is reused instead of stacking a second copy; otherwise
+     * `href` takes the form's place, so back reaches the page before the form.
      */
     replaceWith: (href: string) => {
       releasedRef.current = true;
       activeRef.current = false;
-      const cameFromHref = previousPath() === href;
+      // Read on the form's own entry (after the extra one is stepped over): only an edit page that
+      // the order's detail page opened goes back onto that detail entry.
       const finish = () => {
-        if (cameFromHref) window.history.back();
+        if (openedFromDetail(href)) window.history.back();
         else router.replace(href);
       };
       if (!trappedRef.current) {
