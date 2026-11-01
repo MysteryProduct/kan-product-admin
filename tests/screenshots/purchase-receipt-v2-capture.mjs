@@ -576,6 +576,29 @@ await settle(600);
 const amounts = (await page.locator('.ka-pr-lt tbody tr .ka-po-amt').allInnerTexts()).map(money);
 check('F3: "ยอดมากไปน้อย" is in order of the totals shown', amounts.length > 1 && amounts.every((value, index) => index === 0 || amounts[index - 1] >= value), JSON.stringify(amounts));
 
+// Review F7: a search with "เก่าสุดก่อน" lists the oldest receipt first; F8: switching sorts while
+// searching does not load the receipts again.
+await page.goto(`${base}${LIST}?q=PR&sort=oldest`);
+await waitForPage('#pr-list-title');
+await page.waitForSelector('.ka-pr-lt tbody tr', { timeout: 60000 });
+await settle(600);
+const firstShown = (await page.locator('.ka-pr-lt tbody tr').first().locator('.ka-po-code').innerText()).trim().split(/\s/)[0];
+// The API's own order for receive date ascending (ties by newest id, as the page keeps them).
+const oldestMatching = ((await apiGet('/purchase-receipt?page=1&limit=500&sortField=entry_date&sortOrder=ASC')).data ?? []).find((row) => (row.purchase_receipt_code ?? '').toLowerCase().includes('pr'));
+check('F7: search + เก่าสุดก่อน starts with the oldest receipt', Boolean(oldestMatching) && firstShown === oldestMatching.purchase_receipt_code, `${firstShown} vs ${oldestMatching?.purchase_receipt_code}`);
+{
+  let listCalls = 0;
+  const count = (request) => {
+    if (request.method() === 'GET' && /\/purchase-receipt\?/.test(request.url())) listCalls += 1;
+  };
+  page.on('request', count);
+  await page.locator('.ka-pr-fbar .ka-po-sortchip').click();
+  await page.getByRole('menuitem', { name: /^ยอดมากไปน้อย/ }).click();
+  await page.waitForTimeout(1500);
+  page.off('request', count);
+  check('F8: switching sort while searching does not reload the receipts', listCalls === 0 && page.url().includes('sort=high'), `${listCalls} list calls, ${page.url()}`);
+}
+
 // Review F4: the supplier chip lists every supplier.
 const supplierTotal = (await apiGet('/supplier/?page=1&limit=1')).meta?.total ?? 0;
 await page.locator('.ka-pr-fbar .ka-chip', { hasText: 'ผู้จำหน่าย' }).click();

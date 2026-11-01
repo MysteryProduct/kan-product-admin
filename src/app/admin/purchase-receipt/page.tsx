@@ -304,15 +304,17 @@ function PurchaseReceiptList() {
   const statusKey = statuses.join(',');
   const supplierKey = supplierIds.join(',');
   // While searching or filtering by supplier the page is applied here, so it is not part of the fetch.
+  // Here the latest receipts are loaded newest first and sorted on the page, so neither the page nor the
+  // sort changes the request (TASK-0325 review F5, F8).
   const requestPage = local ? 1 : page;
-  const fetchKey = `${local ? 'local' : page}|${query}|${statusKey}|${supplierKey}|${sort}|${refreshKey}`;
+  const requestSort: SortKey = local ? 'newest' : sort;
+  const fetchKey = `${local ? 'local' : page}|${query}|${statusKey}|${supplierKey}|${requestSort}|${refreshKey}`;
   const loading = loadedKey !== fetchKey;
 
   useEffect(() => {
     let active = true;
     const filters = statusKey ? { purchase_receipt_status: JSON.stringify(statusKey.split(',')) } : undefined;
-    // Here the latest receipts are loaded and sorted or filtered on the page; otherwise the API pages them.
-    const { field, order } = local ? SORTS.newest : SORTS[sort];
+    const { field, order } = SORTS[requestSort];
     const request = local
       ? purchaseReceiptModel.getPurchaseReceipts(1, LOCAL_FILTER_LIMIT, undefined, field, order, filters)
       : purchaseReceiptModel.getPurchaseReceipts(requestPage, PAGE_SIZE, undefined, field, order, filters);
@@ -337,7 +339,7 @@ function PurchaseReceiptList() {
     return () => {
       active = false;
     };
-  }, [fetchKey, local, requestPage, sort, statusKey]);
+  }, [fetchKey, local, requestPage, requestSort, statusKey]);
 
   // Searching by order code or supplier, or picking suppliers, filters the loaded receipts here.
   const filteredRows = useMemo(() => {
@@ -348,6 +350,11 @@ function PurchaseReceiptList() {
     if (SORTS[sort].field === 'purchase_receipt_total') {
       const sign = SORTS[sort].order === 'DESC' ? -1 : 1;
       return [...matched].sort((a, b) => sign * (receiptVatSummary(a, vatRate).total - receiptVatSummary(b, vatRate).total));
+    }
+    // The rows arrive newest first; "เก่าสุดก่อน" turns them by receive date (TASK-0325 review F7).
+    if (SORTS[sort].order === 'ASC') {
+      const time = (row: Receipt) => new Date(row.entry_date).getTime() || 0;
+      return [...matched].sort((a, b) => time(a) - time(b));
     }
     return matched;
   }, [local, rows, query, supplierKey, sort, vatRate]);
