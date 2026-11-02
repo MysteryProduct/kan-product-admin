@@ -283,18 +283,17 @@ export default function InvoiceForm(props: InvoiceFormProps) {
             <dt>ใบรับสินค้า</dt>
             <dd className="ka-po-code">{receiptCode}</dd>
           </div>
-          <div className={mode === 'edit' ? 'ka-is-src__wide' : undefined}>
+          <div>
             <dt>ผู้จัดจำหน่าย</dt>
             <dd>{supplierName}</dd>
           </div>
-          {mode === 'create' && (
-            <div>
-              <dt>VAT</dt>
-              <dd>{VAT_TYPE_LABELS[vatType]}</dd>
-            </div>
-          )}
+          {/* The VAT type stays its own row so the amount label never reads as before/after VAT (TASK-0328 F1, F2). */}
+          <div>
+            <dt>VAT</dt>
+            <dd>{VAT_TYPE_LABELS[vatType]}</dd>
+          </div>
           <div className="ka-is-src__total">
-            <dt>{mode === 'create' ? 'ยอดที่ต้องชำระ (รวม VAT)' : `ยอดใบชำระหนี้ · ${VAT_TYPE_LABELS[vatType]}`}</dt>
+            <dt>{mode === 'edit' ? 'ยอดใบชำระหนี้' : vatType === 'none' ? 'ยอดที่ต้องชำระ' : 'ยอดที่ต้องชำระ (รวม VAT แล้ว)'}</dt>
             <dd className="numeric">{formatBaht(total)}</dd>
           </div>
         </dl>

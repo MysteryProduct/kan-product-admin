@@ -152,7 +152,8 @@ export function amountText(value: number): string {
 /**
  * What the supplier is owed for a receipt, VAT included (TASK-0328 D1). `purchase_receipt_total` is the
  * pre-VAT sum; the API's `purchase_receipt_subtotal` carries VAT for an exclude-VAT receipt and is the cap
- * it checks invoices against. A receipt without it falls back to the receipt VAT helper.
+ * it checks invoices against. The column is NOT NULL, so the fallback only covers the optional type (a receipt
+ * built without it) and may round half a satang differently from the API.
  */
 export function receiptPayable(receipt: PurchaseReceipt): number {
   const subtotal = Number(receipt.purchase_receipt_subtotal);

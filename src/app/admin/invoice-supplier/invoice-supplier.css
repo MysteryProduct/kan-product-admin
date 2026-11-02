@@ -97,7 +97,6 @@
 .ka-is-src dd { margin: 0; color: var(--ink); font: 600 15px/24px var(--ka-font); overflow-wrap: anywhere; }
 .ka-is-src .ka-is-src__total { text-align: right; }
 .ka-is-src .ka-is-src__total dd { font-size: 16px; font-weight: 700; }
-.ka-is-src__wide { grid-column: span 2; }
 .ka-is-sec { display: flex; flex-direction: column; gap: 16px; margin: 0; padding: 0; border: 0; min-width: 0; }
 .ka-is-sec > legend, .ka-is-h3 { margin: 0 0 16px; padding: 0; color: var(--ink); font: 600 16px/26px var(--ka-font); }
 .ka-is-h3 { margin: 0; }
@@ -190,7 +189,6 @@
   .ka-is-src > div { display: flex; justify-content: space-between; gap: 12px; }
   .ka-is-src dt { flex: none; font-size: 14px; line-height: 22px; }
   .ka-is-src dd { text-align: right; font-size: 14px; line-height: 22px; }
-  .ka-is-src__wide { grid-column: auto; }
   .ka-is-src .ka-is-src__total { padding-top: 8px; border-top: 1px solid var(--border); }
   .ka-is-grid { grid-template-columns: minmax(0, 1fr); }
   .ka-is-pr { grid-template-columns: minmax(0, 1fr) 44px; grid-template-areas: "i x" "m m" "a a" "p p"; padding: 16px; }

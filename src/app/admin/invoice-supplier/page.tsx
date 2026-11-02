@@ -197,7 +197,7 @@ function ReceiptQueue({ canAdd, refreshKey, onIssue, opening }: {
                   <th scope="col">ผู้จัดจำหน่าย</th>
                   <th scope="col" className="ka-is-lg">วันที่รับสินค้า</th>
                   <th scope="col" className="ka-is-lg">VAT</th>
-                  <th scope="col" className="ka-po-r">ยอดรวม VAT (บาท)</th>
+                  <th scope="col" className="ka-po-r">ยอดที่ต้องชำระ (บาท)</th>
                   {canAdd && <th scope="col" className="ka-is-actcol"><span className="sr-only">ออกใบชำระหนี้</span></th>}
                 </tr>
               </thead>
@@ -236,7 +236,7 @@ function ReceiptQueue({ canAdd, refreshKey, onIssue, opening }: {
                 </span>
                 <span className="ka-po-mc__row">
                   <span className="ka-po-cap ka-po-mc__meta numeric">รับสินค้า {formatThaiDate(receipt.entry_date)}</span>
-                  <span className="numeric ka-po-mc__amt"><span className="ka-po-cap">รวม VAT </span>{formatBaht(receiptPayable(receipt))}</span>
+                  <span className="numeric ka-po-mc__amt"><span className="ka-po-cap">ต้องชำระ </span>{formatBaht(receiptPayable(receipt))}</span>
                 </span>
                 {issueButton(receipt)}
               </li>
