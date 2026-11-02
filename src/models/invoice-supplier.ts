@@ -102,7 +102,7 @@ export function buildCreateDto(
         invoice_supplier_date: payload.invoice_supplier_date,
         invoice_supplier_due_date: payload.invoice_supplier_due_date,
         invoice_supplier_status: payload.invoice_supplier_status,
-        invoice_supplier_detail: payload.invoice_supplier_detail,
+        // No invoice_supplier_detail: the invoice table has no such column (TASK-0327 I2).
         supplier_id: payload.supplier_id,
         invoice_payments: payload.invoicePayments.map((p) => ({
             payment_method: p.payment_method,
@@ -121,19 +121,23 @@ export function buildUpdateDto(payload: {
     invoice_supplier_status: InvoiceSupplierStatus;
     invoice_supplier_detail?: string;
     invoicePayments: InvoicePaymentItem[];
+    invoice_supplier_total: number;
 }): UpdateInvoiceSupplierDto {
     return {
         invoice_supplier_name: payload.invoice_supplier_name,
         invoice_supplier_date: payload.invoice_supplier_date,
         invoice_supplier_due_date: payload.invoice_supplier_due_date,
         invoice_supplier_status: payload.invoice_supplier_status,
-        invoice_supplier_detail: payload.invoice_supplier_detail,
+        // No invoice_supplier_detail: the entity has no such column, so an update carrying it failed with
+        // EntityPropertyNotFoundError (500) on every save (TASK-0327 I2).
         invoice_payments: payload.invoicePayments.map((p) => ({
             invoice_payment_id: p.invoice_payment_id,
             payment_method: p.payment_method,
             payment_id: p.payment_id,
             invoice_payment_price: p.invoice_payment_price,
         })),
-        invoice_supplier_total: payload.invoicePayments.reduce((total, p) => total + p.invoice_payment_price, 0),
+        // The invoice's own amount. The API stores this as the new total and derives the status from it,
+        // so sending the payments' sum marked a part-paid invoice as paid (TASK-0327 I1).
+        invoice_supplier_total: payload.invoice_supplier_total,
     };
 }
