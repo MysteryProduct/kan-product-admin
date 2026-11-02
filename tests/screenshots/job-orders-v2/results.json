@@ -1,0 +1,1082 @@
+{
+  "results": [
+    {
+      "name": "page loads behind the fixture",
+      "ok": true,
+      "note": "5 cards"
+    },
+    {
+      "name": "board 390: no page side-scroll",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "board 390: header counts (H1)",
+      "ok": true,
+      "note": "5 งานในช่วงนี้ · เลยกำหนด 1 งาน"
+    },
+    {
+      "name": "board 390: 4 columns with a 3px top bar (B1)",
+      "ok": true,
+      "note": "[{\"top\":\"3px\",\"height\":461,\"width\":308,\"snap\":\"start\"},{\"top\":\"3px\",\"height\":258,\"width\":308,\"snap\":\"start\"},{\"top\":\"3px\",\"height\":455,\"width\":308,\"snap\":\"start\"},{\"top\":\"3px\",\"height\":111,\"width\":308,\"snap\":\"start\"}]"
+    },
+    {
+      "name": "board 390: columns size to their cards (B2)",
+      "ok": true,
+      "note": "[461,258,455,111]"
+    },
+    {
+      "name": "board 390: columns 86% with scroll-snap (B5)",
+      "ok": true,
+      "note": "358 → 308,308,308,308"
+    },
+    {
+      "name": "board 390: empty column says so (B3)",
+      "ok": true,
+      "note": "ไม่มีงานที่ยกเลิก"
+    },
+    {
+      "name": "board 390: nearest target first (B4)",
+      "ok": true,
+      "note": "JO202610310001"
+    },
+    {
+      "name": "list 390: no page side-scroll",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list 390: four groups, empty one says so (L1)",
+      "ok": true,
+      "note": "รอดำเนินการ\n2 งาน | กำลังผลิต\n1 งาน | ผลิตเสร็จแล้ว\n2 งาน | ยกเลิก\n0 งาน"
+    },
+    {
+      "name": "list 390: columns shown (L2–L4)",
+      "ok": true,
+      "note": "due,act"
+    },
+    {
+      "name": "list 390: header row hidden",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list-overdue 390: only the overdue job, in its status group (L1)",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "calendar 390: no page side-scroll",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "calendar 390: Thai month title (K1)",
+      "ok": true,
+      "note": "ตุลาคม 2569"
+    },
+    {
+      "name": "calendar 390: today is a filled number, selected day inset (K2)",
+      "ok": true,
+      "note": "{\"cell\":\"rgb(255, 255, 255)\",\"dot\":\"rgb(189, 67, 29)\",\"shadow\":\"rgb(189, 67, 29) 0px 0px 0px 2px inset\",\"height\":52}"
+    },
+    {
+      "name": "calendar 390: cell height (K2/K6)",
+      "ok": true,
+      "note": "52"
+    },
+    {
+      "name": "calendar 390: panel under the month (K4/K6)",
+      "ok": true,
+      "note": "{\"panelBox\":{\"x\":16,\"y\":919,\"width\":358,\"height\":238},\"gridBox\":{\"x\":16,\"y\":538,\"width\":358,\"height\":365}}"
+    },
+    {
+      "name": "calendar 390: day button label (K5)",
+      "ok": true,
+      "note": "16 ตุลาคม 2 งาน"
+    },
+    {
+      "name": "calendar-empty-day 390: \"ไม่มีงานครบกำหนดวันนี้\" and unfinished jobs (K4)",
+      "ok": true,
+      "note": "วันอังคาร 20 ต.ค. 2569 ไม่มีงานครบกำหนดวันนี้ งานที่ยังไม่เสร็จ กระบอกน้ำสแตนเลส ฝาหูหิ้ว เลย 2 วัน · 29 ต.ค. · กำลังผลิต แก้วมีหูจับพร้อมหลอด ครบวันนี้ · รอดำเนินการ แก้วเก็บความเย็น 350 ml. Size:350 ml Color:ดำ อีก 4 วัน · 4 พ.ย. · รอดำเนินการ เพิ่มงานในวันที่นี้"
+    },
+    {
+      "name": "empty 390: text and create button (E2)",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "board 834: no page side-scroll",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "board 834: header counts (H1)",
+      "ok": true,
+      "note": "5 งานในช่วงนี้ · เลยกำหนด 1 งาน"
+    },
+    {
+      "name": "board 834: 4 columns with a 3px top bar (B1)",
+      "ok": true,
+      "note": "[{\"top\":\"3px\",\"height\":501,\"width\":280,\"snap\":\"start\"},{\"top\":\"3px\",\"height\":278,\"width\":280,\"snap\":\"start\"},{\"top\":\"3px\",\"height\":431,\"width\":280,\"snap\":\"start\"},{\"top\":\"3px\",\"height\":111,\"width\":280,\"snap\":\"start\"}]"
+    },
+    {
+      "name": "board 834: columns size to their cards (B2)",
+      "ok": true,
+      "note": "[501,278,431,111]"
+    },
+    {
+      "name": "board 834: columns ≥280px (B5)",
+      "ok": true,
+      "note": "[280,280,280,280]"
+    },
+    {
+      "name": "board 834: empty column says so (B3)",
+      "ok": true,
+      "note": "ไม่มีงานที่ยกเลิก"
+    },
+    {
+      "name": "board 834: nearest target first (B4)",
+      "ok": true,
+      "note": "JO202610310001"
+    },
+    {
+      "name": "list 834: no page side-scroll",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list 834: four groups, empty one says so (L1)",
+      "ok": true,
+      "note": "รอดำเนินการ\n2 งาน | กำลังผลิต\n1 งาน | ผลิตเสร็จแล้ว\n2 งาน | ยกเลิก\n0 งาน"
+    },
+    {
+      "name": "list 834: columns shown (L2–L4)",
+      "ok": true,
+      "note": "type,due,act"
+    },
+    {
+      "name": "list 834: header row shown",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list-overdue 834: only the overdue job, in its status group (L1)",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "calendar 834: no page side-scroll",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "calendar 834: Thai month title (K1)",
+      "ok": true,
+      "note": "ตุลาคม 2569"
+    },
+    {
+      "name": "calendar 834: today is a filled number, selected day inset (K2)",
+      "ok": true,
+      "note": "{\"cell\":\"rgb(255, 255, 255)\",\"dot\":\"rgb(189, 67, 29)\",\"shadow\":\"rgb(189, 67, 29) 0px 0px 0px 2px inset\",\"height\":92}"
+    },
+    {
+      "name": "calendar 834: cell height (K2/K6)",
+      "ok": true,
+      "note": "92"
+    },
+    {
+      "name": "calendar 834: panel under the month (K4/K6)",
+      "ok": true,
+      "note": "{\"panelBox\":{\"x\":24,\"y\":918,\"width\":786,\"height\":214},\"gridBox\":{\"x\":24,\"y\":350,\"width\":786,\"height\":552}}"
+    },
+    {
+      "name": "calendar 834: day button label (K5)",
+      "ok": true,
+      "note": "16 ตุลาคม 2 งาน"
+    },
+    {
+      "name": "calendar-empty-day 834: \"ไม่มีงานครบกำหนดวันนี้\" and unfinished jobs (K4)",
+      "ok": true,
+      "note": "วันอังคาร 20 ต.ค. 2569 ไม่มีงานครบกำหนดวันนี้ งานที่ยังไม่เสร็จ กระบอกน้ำสแตนเลส ฝาหูหิ้ว เลย 2 วัน · 29 ต.ค. · กำลังผลิต แก้วมีหูจับพร้อมหลอด ครบวันนี้ · รอดำเนินการ แก้วเก็บความเย็น 350 ml. Size:350 ml Color:ดำ อีก 4 วัน · 4 พ.ย. · รอดำเนินการ เพิ่มงานในวันที่นี้"
+    },
+    {
+      "name": "empty 834: text and create button (E2)",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "board 1440: no page side-scroll",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "board 1440: header counts (H1)",
+      "ok": true,
+      "note": "5 งานในช่วงนี้ · เลยกำหนด 1 งาน"
+    },
+    {
+      "name": "board 1440: 4 columns with a 3px top bar (B1)",
+      "ok": true,
+      "note": "[{\"top\":\"3px\",\"height\":523,\"width\":270,\"snap\":\"start\"},{\"top\":\"3px\",\"height\":278,\"width\":270,\"snap\":\"start\"},{\"top\":\"3px\",\"height\":431,\"width\":270,\"snap\":\"start\"},{\"top\":\"3px\",\"height\":111,\"width\":270,\"snap\":\"start\"}]"
+    },
+    {
+      "name": "board 1440: columns size to their cards (B2)",
+      "ok": true,
+      "note": "[523,278,431,111]"
+    },
+    {
+      "name": "board 1440: empty column says so (B3)",
+      "ok": true,
+      "note": "ไม่มีงานที่ยกเลิก"
+    },
+    {
+      "name": "board 1440: nearest target first (B4)",
+      "ok": true,
+      "note": "JO202610310001"
+    },
+    {
+      "name": "list 1440: no page side-scroll",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list 1440: four groups, empty one says so (L1)",
+      "ok": true,
+      "note": "รอดำเนินการ\n2 งาน | กำลังผลิต\n1 งาน | ผลิตเสร็จแล้ว\n2 งาน | ยกเลิก\n0 งาน"
+    },
+    {
+      "name": "list 1440: columns shown (L2–L4)",
+      "ok": true,
+      "note": "type,qty,due,own,act"
+    },
+    {
+      "name": "list 1440: header row shown",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list-overdue 1440: only the overdue job, in its status group (L1)",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "calendar 1440: no page side-scroll",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "calendar 1440: Thai month title (K1)",
+      "ok": true,
+      "note": "ตุลาคม 2569"
+    },
+    {
+      "name": "calendar 1440: today is a filled number, selected day inset (K2)",
+      "ok": true,
+      "note": "{\"cell\":\"rgb(255, 255, 255)\",\"dot\":\"rgb(189, 67, 29)\",\"shadow\":\"rgb(189, 67, 29) 0px 0px 0px 2px inset\",\"height\":92}"
+    },
+    {
+      "name": "calendar 1440: cell height (K2/K6)",
+      "ok": true,
+      "note": "92"
+    },
+    {
+      "name": "calendar 1440: panel beside (340px) the month (K4/K6)",
+      "ok": true,
+      "note": "{\"panelBox\":{\"x\":1076,\"y\":350,\"width\":340,\"height\":234},\"gridBox\":{\"x\":288,\"y\":350,\"width\":772,\"height\":552}}"
+    },
+    {
+      "name": "calendar 1440: day button label (K5)",
+      "ok": true,
+      "note": "16 ตุลาคม 2 งาน"
+    },
+    {
+      "name": "calendar-empty-day 1440: \"ไม่มีงานครบกำหนดวันนี้\" and unfinished jobs (K4)",
+      "ok": true,
+      "note": "วันอังคาร 20 ต.ค. 2569 ไม่มีงานครบกำหนดวันนี้ งานที่ยังไม่เสร็จ กระบอกน้ำสแตนเลส ฝาหูหิ้ว เลย 2 วัน · 29 ต.ค. · กำลังผลิต แก้วมีหูจับพร้อมหลอด ครบวันนี้ · รอดำเนินการ แก้วเก็บความเย็น 350 ml. Size:350 ml Color:ดำ อีก 4 วัน · 4 พ.ย. · รอดำเนินการ เพิ่มงานในวันที่นี้"
+    },
+    {
+      "name": "calendar: เพิ่มงานในวันที่นี้ opens the drawer on that day (K4)",
+      "ok": true,
+      "note": "2026-10-20"
+    },
+    {
+      "name": "header: สร้างงานผลิต opens the create drawer (H3)",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "empty 1440: text and create button (E2)",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "dragging: allowed columns dashed, others faded (B3)",
+      "ok": true,
+      "note": "[{\"drop\":\"blocked\",\"outline\":\"none\",\"border\":\"solid\",\"opacity\":\"0.45\"},{\"drop\":\"allowed\",\"outline\":\"dashed\",\"border\":\"solid\",\"opacity\":\"1\"},{\"drop\":\"blocked\",\"outline\":\"none\",\"border\":\"solid\",\"opacity\":\"0.45\"},{\"drop\":\"allowed\",\"outline\":\"dashed\",\"border\":\"solid\",\"opacity\":\"1\"}]"
+    },
+    {
+      "name": "dark: page in the dark theme",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "contrast light: every status label and button ≥4.5:1 (A3)",
+      "ok": true,
+      "note": "53 measured, min 4.78"
+    },
+    {
+      "name": "contrast dark: every status label and button ≥4.5:1 (A3)",
+      "ok": true,
+      "note": "53 measured, min 6.07"
+    },
+    {
+      "name": "flow: เริ่มผลิต moves the job to in progress",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "flow: toast after start (C7)",
+      "ok": true,
+      "note": "ย้าย JO202610310001 ไป กำลังผลิต แล้ว"
+    },
+    {
+      "name": "flow: ผลิตเสร็จ opens the quantity dialog first",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "flow: completed after the dialog",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "flow: toast after finish (C7)",
+      "ok": true,
+      "note": "ย้าย JO202610310001 ไป กำลังผลิต แล้ว\n\nย้าย JO202610310001 ไป ผลิตเสร็จแล้ว แล้ว"
+    },
+    {
+      "name": "flow: ยกเลิกงาน opens the reason dialog first",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "flow: cancelled after the dialog",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "flow: toast after cancel (C7)",
+      "ok": true,
+      "note": "ย้าย JO202610310001 ไป กำลังผลิต แล้ว\n\nย้าย JO202610310001 ไป ผลิตเสร็จแล้ว แล้ว\n\nย้าย JO202611040001 ไป ยกเลิกการผลิต แล้ว"
+    },
+    {
+      "name": "flow: three PATCH …/status calls with the old payload",
+      "ok": true,
+      "note": "[{\"method\":\"PATCH\",\"path\":\"/job-order/f3/status\",\"status\":200,\"body\":{\"job_order_status\":\"in_progress\",\"update_by\":\"224b71d5-9f04-4ad4-bf54-68eb54a579e4\"}},{\"method\":\"PATCH\",\"path\":\"/job-order/f3/status\",\"status\":200,\"body\":{\"job_order_status\":\"completed\",\"job_order_qty\":19,\"job_order_defect_qty\":1,\"update_by\":\"224b71d5-9f04-4ad4-bf54-68eb54a579e4\"}},{\"method\":\"PATCH\",\"path\":\"/job-order/f5/status\",\"status\":200,\"body\":{\"job_order_status\":\"cancelled\",\"update_by\":\"224b71d5-9f04-4ad4-bf54-68eb54a579e4\",\"reason\":\"สร้างงานซ้ำ\"}}]"
+    },
+    {
+      "name": "flow: completed/cancelled cards have no next-step button",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "card body opens the detail (C6)",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list row opens the detail (L5)",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "keyboard: arrow on the view tabs opens the list (H2)",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "keyboard: Tab reaches status tabs, filters, rows and step buttons",
+      "ok": true,
+      "note": "ka-btn → ka-btn → ka-jo-tab → ka-jo-tab → ka-jo-tab → ka-jo-tab → ka-jo-tab → ka-jo-tab → ka-input → ka-chip → ka-chip → ka-chip → ka-chip → ka-jo-row__title → ka-jo-next → ka-jo-row__title → ka-jo-next → ka-jo-row__title → ka-jo-next → ka-jo-row__title → ka-jo-row__title"
+    },
+    {
+      "name": "keyboard: every button stop shows a 2px --focus outline (A1)",
+      "ok": true,
+      "note": "[]"
+    },
+    {
+      "name": "keyboard: the search input shows the shared --focus border",
+      "ok": true,
+      "note": "[{\"tag\":\"INPUT\",\"inPage\":true,\"cls\":\"ka-input\",\"text\":\"ค้นหางานผลิต\",\"outline\":\"none 0px rgb(32, 40, 51)\",\"border\":\"rgb(189, 67, 29)\"}]"
+    },
+    {
+      "name": "keyboard: Enter picks a status tab",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "keyboard: Enter on the step button moves the job (A2)",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "keyboard: calendar arrows move the day, across months, one tab stop (K5)",
+      "ok": true,
+      "note": "{\"startDay\":\"2026-10-31\",\"afterRight\":\"2026-11-01\",\"afterUp\":\"2026-10-25\",\"afterDowns\":{\"day\":\"2026-11-08\",\"title\":\"พฤศจิกายน 2569\"},\"tabStops\":1}"
+    },
+    {
+      "name": "view order: ?view=list opens the list",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "view order: without ?view= the stored view opens",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "view order: ?view= beats the stored view",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "view order: nothing stored, 390px opens the list",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "view order: nothing stored, 1440px opens the board",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "view switch: tablist of 3 tabs, 34px tall at 1440 (H2)",
+      "ok": true,
+      "note": "{\"role\":\"tablist\",\"tabs\":[\"บอร์ด:true:34\",\"รายการ:false:34\",\"ปฏิทิน:false:34\"]}"
+    },
+    {
+      "name": "filters: each status pill count = rows shown (H5)",
+      "ok": true,
+      "note": "{\"ทั้งหมด\":{\"pill\":5,\"rows\":5},\"เลยกำหนด\":{\"pill\":1,\"rows\":1},\"รอดำเนินการ\":{\"pill\":2,\"rows\":2},\"กำลังผลิต\":{\"pill\":1,\"rows\":1},\"เสร็จแล้ว\":{\"pill\":2,\"rows\":2},\"ยกเลิก\":{\"pill\":0,\"rows\":0}}"
+    },
+    {
+      "name": "filters: type chip narrows rows and the pill counts",
+      "ok": true,
+      "note": "{\"all\":2,\"rows\":2,\"completed\":1}"
+    },
+    {
+      "name": "filters: no match shows the filters on and a clear button (E3)",
+      "ok": true,
+      "note": "ไม่พบงานที่ตรงกับตัวกรอง กรองอยู่: ค้นหา “ไม่มีงานนี้แน่นอน” · ประเภท ขายบน Website ล้างตัวกรอง"
+    },
+    {
+      "name": "filters: ล้างตัวกรอง brings every row back",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "filters: search by JO number",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "overdue banner: switches to the list filtered to overdue (H4)",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "overdue banner: hidden when nothing is late, header says so (H1/H4)",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "skeleton board: placeholder of the open view (E1)",
+      "ok": true,
+      "note": "8"
+    },
+    {
+      "name": "skeleton list: placeholder of the open view (E1)",
+      "ok": true,
+      "note": "30"
+    },
+    {
+      "name": "skeleton calendar: placeholder of the open view (E1)",
+      "ok": true,
+      "note": "2"
+    },
+    {
+      "name": "load error: LoadErrorBanner with retry (E4)",
+      "ok": true,
+      "note": "โหลดงานผลิตไม่สำเร็จ: fixture: server error ลองอีกครั้ง"
+    },
+    {
+      "name": "load error: retry loads the jobs",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "reduced motion: hovered card does not move; without it, it lifts 1px (A4, C6)",
+      "ok": true,
+      "note": "{\"reduce\":\"none\",\"normal\":\"matrix(1, 0, 0, 1, 0, -1)\"}"
+    },
+    {
+      "name": "overflow 320: no card, row or page wider than its box (V6)",
+      "ok": true,
+      "note": "{\"cards\":5,\"rows\":5,\"due\":[\"เลย 12 วัน · 29 ต.ค.\"]}"
+    },
+    {
+      "name": "overflow 320: due label on its own line, long name ellipsised (C3, C4)",
+      "ok": true,
+      "note": "{\"dueBelowMeta\":true,\"whoEllipsis\":\"ellipsis\",\"whoClipped\":false}"
+    },
+    {
+      "name": "overflow 390: no card, row or page wider than its box (V6)",
+      "ok": true,
+      "note": "{\"cards\":5,\"rows\":5,\"due\":[\"เลย 12 วัน · 29 ต.ค.\"]}"
+    },
+    {
+      "name": "overflow 390: due label on its own line, long name ellipsised (C3, C4)",
+      "ok": true,
+      "note": "{\"dueBelowMeta\":true,\"whoEllipsis\":\"ellipsis\",\"whoClipped\":true}"
+    },
+    {
+      "name": "overflow 834: no card, row or page wider than its box (V6)",
+      "ok": true,
+      "note": "{\"cards\":5,\"rows\":5,\"due\":[\"เลย 12 วัน · 29 ต.ค.\"]}"
+    },
+    {
+      "name": "overflow 1440: no card, row or page wider than its box (V6)",
+      "ok": true,
+      "note": "{\"cards\":5,\"rows\":5,\"due\":[\"เลย 12 วัน · 29 ต.ค.\"]}"
+    },
+    {
+      "name": "no page errors",
+      "ok": false,
+      "note": "SyntaxError: Invalid or unexpected token · after \"list-overdue 834: only the overdue job, in its status group (L1)\" ·  | SyntaxError: Invalid or unexpected token · after \"empty 1440: text and create button (E2)\" · "
+    }
+  ],
+  "notes": {
+    "columns_390": [
+      {
+        "top": "3px",
+        "height": 461,
+        "width": 308,
+        "snap": "start"
+      },
+      {
+        "top": "3px",
+        "height": 258,
+        "width": 308,
+        "snap": "start"
+      },
+      {
+        "top": "3px",
+        "height": 455,
+        "width": 308,
+        "snap": "start"
+      },
+      {
+        "top": "3px",
+        "height": 111,
+        "width": 308,
+        "snap": "start"
+      }
+    ],
+    "calendar_today_390": {
+      "cell": "rgb(255, 255, 255)",
+      "dot": "rgb(189, 67, 29)",
+      "shadow": "rgb(189, 67, 29) 0px 0px 0px 2px inset",
+      "height": 52
+    },
+    "columns_834": [
+      {
+        "top": "3px",
+        "height": 501,
+        "width": 280,
+        "snap": "start"
+      },
+      {
+        "top": "3px",
+        "height": 278,
+        "width": 280,
+        "snap": "start"
+      },
+      {
+        "top": "3px",
+        "height": 431,
+        "width": 280,
+        "snap": "start"
+      },
+      {
+        "top": "3px",
+        "height": 111,
+        "width": 280,
+        "snap": "start"
+      }
+    ],
+    "reloads": [
+      {
+        "query": "?view=list",
+        "attempt": 1,
+        "pending": []
+      },
+      {
+        "query": "?view=calendar",
+        "attempt": 1,
+        "pending": []
+      },
+      {
+        "query": "?view=board",
+        "attempt": 1,
+        "pending": []
+      },
+      {
+        "query": "?view=board",
+        "attempt": 1,
+        "pending": []
+      }
+    ],
+    "calendar_today_834": {
+      "cell": "rgb(255, 255, 255)",
+      "dot": "rgb(189, 67, 29)",
+      "shadow": "rgb(189, 67, 29) 0px 0px 0px 2px inset",
+      "height": 92
+    },
+    "columns_1440": [
+      {
+        "top": "3px",
+        "height": 523,
+        "width": 270,
+        "snap": "start"
+      },
+      {
+        "top": "3px",
+        "height": 278,
+        "width": 270,
+        "snap": "start"
+      },
+      {
+        "top": "3px",
+        "height": 431,
+        "width": 270,
+        "snap": "start"
+      },
+      {
+        "top": "3px",
+        "height": 111,
+        "width": 270,
+        "snap": "start"
+      }
+    ],
+    "calendar_today_1440": {
+      "cell": "rgb(255, 255, 255)",
+      "dot": "rgb(189, 67, 29)",
+      "shadow": "rgb(189, 67, 29) 0px 0px 0px 2px inset",
+      "height": 92
+    },
+    "dragging": [
+      {
+        "drop": "blocked",
+        "outline": "none",
+        "border": "solid",
+        "opacity": "0.45"
+      },
+      {
+        "drop": "allowed",
+        "outline": "dashed",
+        "border": "solid",
+        "opacity": "1"
+      },
+      {
+        "drop": "blocked",
+        "outline": "none",
+        "border": "solid",
+        "opacity": "0.45"
+      },
+      {
+        "drop": "allowed",
+        "outline": "dashed",
+        "border": "solid",
+        "opacity": "1"
+      }
+    ],
+    "contrast_light": {
+      "measured": 53,
+      "min": 4.78,
+      "low": []
+    },
+    "contrast_dark": {
+      "measured": 53,
+      "min": 6.07,
+      "low": []
+    },
+    "flowRequests": [
+      {
+        "method": "PATCH",
+        "path": "/job-order/f3/status",
+        "status": 200,
+        "body": {
+          "job_order_status": "in_progress",
+          "update_by": "224b71d5-9f04-4ad4-bf54-68eb54a579e4"
+        }
+      },
+      {
+        "method": "PATCH",
+        "path": "/job-order/f3/status",
+        "status": 200,
+        "body": {
+          "job_order_status": "completed",
+          "job_order_qty": 19,
+          "job_order_defect_qty": 1,
+          "update_by": "224b71d5-9f04-4ad4-bf54-68eb54a579e4"
+        }
+      },
+      {
+        "method": "PATCH",
+        "path": "/job-order/f5/status",
+        "status": 200,
+        "body": {
+          "job_order_status": "cancelled",
+          "update_by": "224b71d5-9f04-4ad4-bf54-68eb54a579e4",
+          "reason": "สร้างงานซ้ำ"
+        }
+      }
+    ],
+    "keyboardWalk": [
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-btn ka-btn--primary ka-jo-c",
+        "text": "สร้างงานผลิต",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(189, 67, 29)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-btn ka-btn--sm",
+        "text": "ดูงานที่เลยกำหนด",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(124, 132, 142)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-jo-tab",
+        "text": "ทั้งหมด5",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(32, 40, 51)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-jo-tab",
+        "text": "เลยกำหนด1",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(227, 222, 217)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-jo-tab",
+        "text": "รอดำเนินการ2",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(227, 222, 217)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-jo-tab",
+        "text": "กำลังผลิต1",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(227, 222, 217)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-jo-tab",
+        "text": "เสร็จแล้ว2",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(227, 222, 217)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-jo-tab",
+        "text": "ยกเลิก0",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(227, 222, 217)"
+      },
+      {
+        "tag": "INPUT",
+        "inPage": true,
+        "cls": "ka-input",
+        "text": "ค้นหางานผลิต",
+        "outline": "none 0px rgb(32, 40, 51)",
+        "border": "rgb(189, 67, 29)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-chip",
+        "text": "ช่วงวันเป้าหมาย ต.ค. 2569",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(189, 67, 29)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-chip",
+        "text": "ผู้รับผิดชอบ",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(124, 132, 142)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-chip",
+        "text": "ประเภท",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(124, 132, 142)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-chip ka-jo-sort",
+        "text": "เรียงตามวันเป้าหมาย: ใกล้ถึงกำ",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(124, 132, 142)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-jo-row__title",
+        "text": "แก้วมีหูจับพร้อมหลอด",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(32, 40, 51)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-jo-next",
+        "text": "เริ่มผลิต JO202610310001",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(189, 67, 29)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-jo-row__title",
+        "text": "แก้วเก็บความเย็น 350 ml.",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(32, 40, 51)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-jo-next",
+        "text": "เริ่มผลิต JO202611040001",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(189, 67, 29)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-jo-row__title",
+        "text": "กระบอกน้ำสแตนเลส ฝาหูหิ้ว",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(32, 40, 51)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-jo-next",
+        "text": "ผลิตเสร็จ JO202610290001",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(189, 67, 29)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-jo-row__title",
+        "text": "test",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(32, 40, 51)"
+      },
+      {
+        "tag": "BUTTON",
+        "inPage": true,
+        "cls": "ka-jo-row__title",
+        "text": "แก้วเก็บความเย็น Kan 20 ออนซ์",
+        "outline": "solid 2px rgb(189, 67, 29)",
+        "border": "rgb(32, 40, 51)"
+      }
+    ],
+    "calendarKeys": {
+      "startDay": "2026-10-31",
+      "afterRight": "2026-11-01",
+      "afterUp": "2026-10-25",
+      "afterDowns": {
+        "day": "2026-11-08",
+        "title": "พฤศจิกายน 2569"
+      },
+      "tabStops": 1
+    },
+    "tabCounts": {
+      "ทั้งหมด": {
+        "pill": 5,
+        "rows": 5
+      },
+      "เลยกำหนด": {
+        "pill": 1,
+        "rows": 1
+      },
+      "รอดำเนินการ": {
+        "pill": 2,
+        "rows": 2
+      },
+      "กำลังผลิต": {
+        "pill": 1,
+        "rows": 1
+      },
+      "เสร็จแล้ว": {
+        "pill": 2,
+        "rows": 2
+      },
+      "ยกเลิก": {
+        "pill": 0,
+        "rows": 0
+      }
+    },
+    "activeChip": {
+      "border": "rgb(189, 67, 29)",
+      "bg": "rgb(253, 236, 229)",
+      "style": "solid"
+    },
+    "reducedMotion": {
+      "reduce": "none",
+      "normal": "matrix(1, 0, 0, 1, 0, -1)"
+    },
+    "overflow_320": {
+      "board": {
+        "page": "320<=320",
+        "pageOk": true,
+        "cards": 5,
+        "rows": 0,
+        "over": [],
+        "due": [
+          "เลย 12 วัน · 29 ต.ค."
+        ]
+      },
+      "list": {
+        "page": "320<=320",
+        "pageOk": true,
+        "cards": 0,
+        "rows": 5,
+        "over": [],
+        "due": [
+          "เลย 12 วัน · 29 ต.ค."
+        ]
+      },
+      "calendar": {
+        "page": "320<=320",
+        "pageOk": true,
+        "cards": 0,
+        "rows": 0,
+        "over": [],
+        "due": []
+      }
+    },
+    "overflow_390": {
+      "board": {
+        "page": "390<=390",
+        "pageOk": true,
+        "cards": 5,
+        "rows": 0,
+        "over": [],
+        "due": [
+          "เลย 12 วัน · 29 ต.ค."
+        ]
+      },
+      "list": {
+        "page": "390<=390",
+        "pageOk": true,
+        "cards": 0,
+        "rows": 5,
+        "over": [],
+        "due": [
+          "เลย 12 วัน · 29 ต.ค."
+        ]
+      },
+      "calendar": {
+        "page": "390<=390",
+        "pageOk": true,
+        "cards": 0,
+        "rows": 0,
+        "over": [],
+        "due": []
+      }
+    },
+    "overflow_834": {
+      "board": {
+        "page": "834<=834",
+        "pageOk": true,
+        "cards": 5,
+        "rows": 0,
+        "over": [],
+        "due": [
+          "เลย 12 วัน · 29 ต.ค."
+        ]
+      },
+      "list": {
+        "page": "834<=834",
+        "pageOk": true,
+        "cards": 0,
+        "rows": 5,
+        "over": [],
+        "due": [
+          "เลย 12 วัน · 29 ต.ค."
+        ]
+      },
+      "calendar": {
+        "page": "834<=834",
+        "pageOk": true,
+        "cards": 0,
+        "rows": 0,
+        "over": [],
+        "due": []
+      }
+    },
+    "overflow_1440": {
+      "board": {
+        "page": "1440<=1440",
+        "pageOk": true,
+        "cards": 5,
+        "rows": 0,
+        "over": [],
+        "due": [
+          "เลย 12 วัน · 29 ต.ค."
+        ]
+      },
+      "list": {
+        "page": "1440<=1440",
+        "pageOk": true,
+        "cards": 0,
+        "rows": 5,
+        "over": [],
+        "due": [
+          "เลย 12 วัน · 29 ต.ค."
+        ]
+      },
+      "calendar": {
+        "page": "1440<=1440",
+        "pageOk": true,
+        "cards": 0,
+        "rows": 0,
+        "over": [],
+        "due": []
+      }
+    }
+  }
+}
