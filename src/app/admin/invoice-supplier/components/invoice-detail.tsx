@@ -32,7 +32,13 @@ export default function InvoiceDetail({ isOpen, onClose, view, availablePayments
   const payments = row.invoicePayments || [];
   const note = dueNote(view);
   const pct = paidPercent(total, paid);
+  // GET /invoice-supplier/:id joins each round's account (`invoicePayments.payment`); the list does not, so the
+  // supplier's accounts fill the gaps. The dashboard opens a detail without them (TASK-0327 review F12).
   const accounts = new Map(availablePayments.map((account) => [account.payment_id, account]));
+  payments.forEach((payment) => {
+    const joined = (payment as typeof payment & { payment?: InvoiceSupplierPayment | null }).payment;
+    if (joined?.payment_id && !accounts.has(joined.payment_id)) accounts.set(joined.payment_id, joined);
+  });
 
   return (
     <Modal

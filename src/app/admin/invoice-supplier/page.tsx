@@ -65,9 +65,10 @@ async function supplierAccounts(supplierId: string | undefined): Promise<Invoice
   }));
 }
 
+// The same fields the API's `search` covers (code, legacy code, name, supplier), so the chip counts match the list.
 function matches(view: InvoiceView, term: string): boolean {
   const text = term.toLowerCase();
-  return [view.row.invoice_supplier_code, view.row.legacy_code, view.row.invoice_supplier_name, view.supplierName, view.receiptCode].some(
+  return [view.row.invoice_supplier_code, view.row.legacy_code, view.row.invoice_supplier_name, view.supplierName].some(
     (value) => value?.toLowerCase().includes(text),
   );
 }
@@ -578,7 +579,7 @@ export default function InvoiceSupplierPage() {
               value={searchText}
               onChange={(event) => setSearchText(event.target.value)}
               placeholder="เลขที่ ชื่อเอกสาร ผู้จัดจำหน่าย"
-              aria-label="ค้นหาใบชำระหนี้ด้วยเลขที่ ชื่อเอกสาร ผู้จัดจำหน่าย หรือเลขที่ใบรับสินค้า"
+              aria-label="ค้นหาใบชำระหนี้ด้วยเลขที่ ชื่อเอกสาร หรือผู้จัดจำหน่าย"
             />
           </div>
         </div>
@@ -594,7 +595,7 @@ export default function InvoiceSupplierPage() {
               }}
             >
               {chipLabel(key)}
-              <span className="numeric">{chipsLoading ? '–' : chipCount(key).toLocaleString('th-TH')}</span>
+              <span className="numeric">{chipsLoading || (summaryError && !(key === 'all' && apiMode)) ? '–' : chipCount(key).toLocaleString('th-TH')}</span>
             </button>
           ))}
         </div>
@@ -606,7 +607,7 @@ export default function InvoiceSupplierPage() {
         )}
 
         <div aria-busy={loading || undefined}>
-          {listError && (
+          {listError && apiMode && (
             <div className="ka-po-cp">
               <LoadErrorBanner message={listError} onRetry={retryList} />
             </div>
