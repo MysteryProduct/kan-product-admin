@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Modal from '@/components/Modal';
 import axiosInstance from '@/lib/axios';
-import { formatThaiDateTime } from '@/lib/date-format';
+import { formatThaiDate, formatThaiDateTime } from '@/lib/date-format';
 
 export type DocumentHistoryEntry = Entry;
 
@@ -37,12 +37,25 @@ type HistoryResponse = {
   meta: { page: number; last_page: number };
 };
 
-const actions: Record<string, string> = { created: 'สร้างเอกสาร', updated: 'แก้ไขเอกสาร', approved: 'อนุมัติ', submitted: 'ส่งอนุมัติ', rejected: 'ปฏิเสธ', cancelled: 'ยกเลิก', returned: 'คืนสินค้า', refund_created: 'สร้างรายการคืนเงิน', status_changed: 'เปลี่ยนสถานะ', deleted: 'ลบเอกสาร' };
+const actions: Record<string, string> = { created: 'สร้างเอกสาร', updated: 'แก้ไขเอกสาร', approved: 'อนุมัติ', submitted: 'ส่งอนุมัติ', rejected: 'ปฏิเสธ', cancelled: 'ยกเลิก', returned: 'คืนสินค้า', refund_created: 'สร้างรายการคืนเงิน', status_changed: 'เปลี่ยนสถานะ', deleted: 'ลบเอกสาร', edit_paid: 'แก้ไขใบที่ชำระครบ', delete_paid: 'ลบใบที่ชำระครบ' };
 const statuses: Record<string, string> = { draft: 'ฉบับร่าง', pending: 'รออนุมัติ', active: 'ใช้งานอยู่', approved: 'อนุมัติแล้ว', rejected: 'ปฏิเสธ', inactive: 'ยกเลิก', cancelled: 'ยกเลิก', partial: 'รับสินค้าบางส่วน', paid: 'ชำระแล้ว', refunded: 'คืนเงินแล้ว', partially_returned: 'คืนสินค้าบางส่วน', returned: 'คืนสินค้าแล้ว', in_progress: 'กำลังผลิต', completed: 'ผลิตเสร็จแล้ว' };
-const labels: Record<string, string> = { purchase_order_name: 'ชื่อใบสั่งซื้อ', purchase_order_detail: 'รายละเอียด', purchase_order_status: 'สถานะใบสั่งซื้อ', purchase_receipt_detail: 'รายละเอียด', purchase_receipt_status: 'สถานะใบรับสินค้า', supplier_id: 'ผู้จัดจำหน่าย', purchase_order_id: 'ใบสั่งซื้ออ้างอิง', entry_date: 'วันที่รับสินค้า', tax_invoice_number: 'เลขที่ใบกำกับภาษี', tax_invoice_date: 'วันที่ใบกำกับภาษี', vat_type: 'รูปแบบ VAT', vat_rate: 'อัตรา VAT', sale_order_status: 'สถานะใบขาย', sale_order_type: 'ประเภทใบขาย', payment_receipt_type: 'ประเภทรายการรับชำระ', payment_status: 'สถานะการชำระ', job_order_status: 'สถานะงานผลิต', job_order_qty: 'จำนวนผลิต', job_order_defect_qty: 'จำนวนเสีย', employee_id: 'ผู้รับผิดชอบ' };
+const labels: Record<string, string> = { purchase_order_name: 'ชื่อใบสั่งซื้อ', purchase_order_detail: 'รายละเอียด', purchase_order_status: 'สถานะใบสั่งซื้อ', purchase_receipt_detail: 'รายละเอียด', purchase_receipt_status: 'สถานะใบรับสินค้า', supplier_id: 'ผู้จัดจำหน่าย', purchase_order_id: 'ใบสั่งซื้ออ้างอิง', entry_date: 'วันที่รับสินค้า', tax_invoice_number: 'เลขที่ใบกำกับภาษี', tax_invoice_date: 'วันที่ใบกำกับภาษี', vat_type: 'รูปแบบ VAT', vat_rate: 'อัตรา VAT', sale_order_status: 'สถานะใบขาย', sale_order_type: 'ประเภทใบขาย', payment_receipt_type: 'ประเภทรายการรับชำระ', payment_status: 'สถานะการชำระ', job_order_status: 'สถานะงานผลิต', job_order_qty: 'จำนวนผลิต', job_order_defect_qty: 'จำนวนเสีย', employee_id: 'ผู้รับผิดชอบ', invoice_supplier_name: 'ชื่อเอกสาร', invoice_supplier_date: 'วันที่เอกสาร', invoice_supplier_due_date: 'วันที่ครบกำหนด', invoice_supplier_total: 'ยอดใบชำระหนี้', invoice_supplier_status: 'สถานะการชำระ', invoice_payments: 'งวดชำระ' };
+// Supplier invoices reuse status words that mean something else on receipts (partial) (TASK-0329).
+const invoiceStatuses: Record<string, string> = { pending: 'รอชำระ', partial: 'ชำระบางส่วน', paid: 'ชำระแล้ว' };
+
+function moneyText(value: unknown) {
+  return `฿${Number(value ?? 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
 
 function displayValue(value: unknown, key: string, suppliers: Record<string, string>, codes: Record<string, string>) {
   if (value === null || value === undefined || value === '') return '-';
+  if (key === 'invoice_supplier_status') return invoiceStatuses[String(value)] ?? String(value);
+  if (key === 'invoice_supplier_total') return moneyText(value);
+  if (key === 'invoice_payments' && Array.isArray(value)) {
+    const sum = value.reduce<number>((total, round) => total + Number((round as { invoice_payment_price?: unknown }).invoice_payment_price ?? 0), 0);
+    return `${value.length.toLocaleString('th-TH')} งวด · ${moneyText(sum)}`;
+  }
+  if (key === 'invoice_supplier_date' || key === 'invoice_supplier_due_date') return formatThaiDate(String(value));
   if (key === 'supplier_id') return suppliers[String(value)] ?? String(value);
   if (key === 'purchase_order_id') return codes[String(value)] ?? String(value);
   if (key.includes('_status')) return statuses[String(value)] ?? String(value);

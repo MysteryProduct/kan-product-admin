@@ -66,6 +66,8 @@ export interface InvoiceSupplierFormPayload {
   invoicePayments: InvoicePaymentItem[];
   supplier_id: string;
   invoice_supplier_total: number;
+  /** Required by the API when the invoice is already paid (TASK-0329). */
+  edit_reason?: string;
 }
 
 export const INVOICE_STATUS_OPTIONS: Array<{ label: string; value: InvoiceSupplierStatus }> = [
