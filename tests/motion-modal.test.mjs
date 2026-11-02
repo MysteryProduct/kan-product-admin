@@ -32,6 +32,8 @@ function fixture(initialOverflow = 'auto') {
       useRef: (current) => ({ current }),
       useEffect: (callback) => effects.push(callback),
       useId: () => 'fixture',
+      // Each render starts from the initial state; these tests only open and clean up.
+      useState: (initial) => [typeof initial === 'function' ? initial() : initial, () => {}],
     } : name === 'react-dom' ? { createPortal: (child) => child } : { jsx, jsxs: jsx },
   });
   const file = process.env.MOTION_TEST_SOURCE_ROOT

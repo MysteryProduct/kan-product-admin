@@ -22,7 +22,7 @@ export default function sourceLoader(mocks = {}, globals = {}) {
         const target = name.startsWith('@/')
           ? path.join(root, 'src', name.slice(2))
           : path.resolve(path.dirname(filename), name);
-        return load(`${target}.ts`);
+        return load(fs.existsSync(`${target}.ts`) ? `${target}.ts` : `${target}.tsx`);
       }
       return requireFromSource(name);
     };

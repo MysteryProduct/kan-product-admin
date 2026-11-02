@@ -16,8 +16,15 @@ function dialog(onConfirm) {
   })('src/components/CancellationDialog.tsx').default;
   const render = () => { cursor = 0; return Component({ title: 'ยกเลิก', onClose: () => closed++, onConfirm }); };
   const buttons = tree => tree.props.footer.props.children;
-  const input = tree => tree.props.children[0].props.children[1];
-  return { render, buttons, input, closed: () => closed };
+  // Find by element, not position: the body nests the free-text field in a fragment.
+  const find = (node, match) => {
+    if (!node || typeof node !== 'object') return undefined;
+    if (Array.isArray(node)) { for (const child of node) { const hit = find(child, match); if (hit) return hit; } return undefined; }
+    return match(node) ? node : find(node.props?.children, match);
+  };
+  const input = tree => find(tree.props.children, node => node.type === 'textarea');
+  const alert = tree => find(tree.props.children, node => node.props?.role === 'alert');
+  return { render, buttons, input, alert, closed: () => closed };
 }
 
 test('requires reason, trims it and suppresses duplicate submission', async () => {
@@ -50,5 +57,5 @@ test('failure preserves reason, shows error and permits retry', async () => {
   assert.equal(ui.closed(), 0);
   assert.equal(ui.input(tree).props.value, 'เหตุผลเดิม');
   assert.equal(ui.buttons(tree)[1].props.disabled, false);
-  assert.equal(tree.props.children[2].props.role, 'alert');
+  assert.equal(ui.alert(tree)?.props.children, 'ยกเลิกไม่สำเร็จ กรุณาลองใหม่');
 });
