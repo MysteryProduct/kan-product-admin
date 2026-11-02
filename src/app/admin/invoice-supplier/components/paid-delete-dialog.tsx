@@ -2,6 +2,7 @@
 
 import { useId, useRef, useState } from 'react';
 import Modal from '@/components/Modal';
+import { useToast } from '@/components/Toast';
 import { apiReason } from '../lib/api-reason';
 
 const REASON_LIMIT = 500;
@@ -22,6 +23,7 @@ export default function PaidDeleteDialog({
   onConfirm: (reason: string) => Promise<void>;
 }) {
   const fieldId = useId();
+  const toast = useToast();
   const [reason, setReason] = useState('');
   const [attempted, setAttempted] = useState(false);
   const [error, setError] = useState('');
@@ -47,7 +49,10 @@ export default function PaidDeleteDialog({
       await onConfirm(reason.trim());
       onClose();
     } catch (cause) {
-      setError(`ลบไม่สำเร็จ ${apiReason(cause)}`);
+      // Like the edit form: a danger toast with the API's reason; the dialog stays with the reason typed (review F4).
+      const message = `ลบไม่สำเร็จ ${apiReason(cause)}`;
+      toast({ message, tone: 'danger' });
+      setError(message);
     } finally {
       submitting.current = false;
       setBusy(false);
@@ -99,7 +104,7 @@ export default function PaidDeleteDialog({
         </p>
       )}
       {error && (
-        <p role="alert" className="ka-banner ka-banner--danger mt-3 break-words">
+        <p className="ka-banner ka-banner--danger mt-3 break-words">
           {error}
         </p>
       )}
