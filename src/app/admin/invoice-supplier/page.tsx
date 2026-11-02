@@ -20,6 +20,7 @@ import type { InvoiceSupplierFormPayload, InvoiceSupplierPayment, InvoiceSupplie
 import type { PurchaseReceipt } from '@/types/purchase-receipt';
 import InvoiceDetail from './components/invoice-detail';
 import InvoiceForm from './components/invoice-form';
+import PaidDeleteDialog from './components/paid-delete-dialog';
 import {
   DISPLAY_STATUS_KEYS,
   DISPLAY_STATUS_LABELS,
@@ -264,6 +265,11 @@ export default function InvoiceSupplierPage() {
   const canAdd = can('invoice_supplier', 'add');
   const canEdit = can('invoice_supplier', 'edit');
   const canDelete = can('invoice_supplier', 'delete');
+  // A paid invoice is locked: changing or deleting it also needs the approve right and a reason (TASK-0329).
+  const canApprove = can('invoice_supplier', 'approve');
+  const isPaid = (view: InvoiceView) => view.status === 'paid';
+  const mayEdit = (view: InvoiceView) => canEdit && (!isPaid(view) || canApprove);
+  const mayDelete = (view: InvoiceView) => canDelete && (!isPaid(view) || canApprove);
 
   usePageCrumb({ parents: ['จัดซื้อ'], current: 'ใบชำระหนี้ผู้จัดจำหน่าย' });
 
@@ -478,13 +484,23 @@ export default function InvoiceSupplierPage() {
     setToDelete(null);
     try {
       await invoiceSupplierModel.deleteInvoiceSupplier(target.row.invoice_supplier_id);
-      setModal(null);
-      toast({ message: `ลบใบชำระหนี้ ${target.row.invoice_supplier_code} แล้ว`, tone: 'success' });
-      refresh();
+      deleted(target);
     } catch (error) {
       toast({ message: `ลบ ${target.row.invoice_supplier_code} ไม่สำเร็จ ${getApiErrorMessage(error)}`, tone: 'danger' });
     }
   };
+
+  // A paid invoice: the dialog keeps the reason and shows the API's error itself (TASK-0329 R3).
+  const handlePaidDelete = async (target: InvoiceView, reason: string) => {
+    await invoiceSupplierModel.deleteInvoiceSupplier(target.row.invoice_supplier_id, reason);
+    deleted(target);
+  };
+
+  function deleted(target: InvoiceView) {
+    setModal(null);
+    toast({ message: `ลบใบชำระหนี้ ${target.row.invoice_supplier_code} แล้ว`, tone: 'success' });
+    refresh();
+  }
 
   const statsReady = !summaryLoading && !summaryError;
   // A failed load shows a dash and the banner above the cards, never an endless skeleton.
@@ -696,8 +712,8 @@ export default function InvoiceSupplierPage() {
                                   <button type="button" className="ka-btn ka-btn--ghost ka-btn--icon ka-is-lg" aria-label={`ดูรายละเอียด ${code}`} onClick={() => openInvoice(view, 'view')} disabled={opening !== null}>
                                     <Icon d={ICONS.eye} className="h-[18px] w-[18px]" />
                                   </button>
-                                  {canEdit && (
-                                    <button type="button" className="ka-btn ka-btn--ghost ka-btn--icon ka-is-lg" aria-label={`แก้ไข ${code}`} onClick={() => openInvoice(view, 'edit')} disabled={opening !== null}>
+                                  {mayEdit(view) && (
+                                    <button type="button" className="ka-btn ka-btn--ghost ka-btn--icon ka-is-lg" aria-label={isPaid(view) ? `แก้ไข ${code} (ต้องระบุเหตุผล)` : `แก้ไข ${code}`} onClick={() => openInvoice(view, 'edit')} disabled={opening !== null}>
                                       <Icon d={ICONS.edit} className="h-[18px] w-[18px]" />
                                     </button>
                                   )}
@@ -810,7 +826,8 @@ export default function InvoiceSupplierPage() {
           availablePayments={modal.accounts}
           onClose={() => setModal(null)}
           onSubmit={(payload) => handleUpdate(currentView, payload)}
-          onDelete={canDelete ? () => setToDelete(currentView) : undefined}
+          onDelete={mayDelete(currentView) ? () => setToDelete(currentView) : undefined}
+          reasonRequired={isPaid(currentView)}
         />
       )}
 
@@ -820,13 +837,28 @@ export default function InvoiceSupplierPage() {
           view={currentView}
           availablePayments={modal.accounts}
           onClose={() => setModal(null)}
-          onEdit={canEdit ? () => setModal({ ...modal, kind: 'edit' }) : undefined}
-          onDelete={canDelete ? () => setToDelete(currentView) : undefined}
+          onEdit={mayEdit(currentView) ? () => setModal({ ...modal, kind: 'edit' }) : undefined}
+          onDelete={mayDelete(currentView) ? () => setToDelete(currentView) : undefined}
+          editLabel={isPaid(currentView) ? 'แก้ไข (ต้องระบุเหตุผล)' : undefined}
+          lockNote={
+            isPaid(currentView) && !canApprove && (canEdit || canDelete)
+              ? 'ชำระครบแล้ว — แก้ไขและลบได้เฉพาะผู้มีสิทธิ์อนุมัติ'
+              : undefined
+          }
+        />
+      )}
+
+      {toDelete && isPaid(toDelete) && mayDelete(toDelete) && (
+        <PaidDeleteDialog
+          code={toDelete.row.invoice_supplier_code}
+          receiptCode={toDelete.receiptCode}
+          onClose={() => setToDelete(null)}
+          onConfirm={(reason) => handlePaidDelete(toDelete, reason)}
         />
       )}
 
       <ConfirmDialog
-        isOpen={Boolean(toDelete) && canDelete}
+        isOpen={Boolean(toDelete && !isPaid(toDelete)) && canDelete}
         title="ลบใบชำระหนี้"
         message={`ลบ ${toDelete?.row.invoice_supplier_code ?? ''} พร้อมงวดชำระทั้งหมดของใบนี้ ถ้าใบรับสินค้า ${toDelete?.receiptCode ?? ''} ไม่มีใบชำระหนี้อื่น จะกลับไปรอออกใบชำระหนี้ ลบแล้วกู้คืนไม่ได้`}
         confirmLabel="ลบใบชำระหนี้"

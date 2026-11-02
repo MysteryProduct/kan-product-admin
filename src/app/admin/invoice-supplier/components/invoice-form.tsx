@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, KeyboardEvent, useId, useMemo, useState } from 'react';
+import { FormEvent, KeyboardEvent, useId, useMemo, useRef, useState } from 'react';
 import Modal from '@/components/Modal';
 import CustomSelect from '@/components/CustomSelect';
 import DocumentCode from '@/components/DocumentCode';
@@ -49,8 +49,19 @@ type InvoiceFormProps = {
   availablePayments: InvoiceSupplierPayment[];
 } & (
   | { mode: 'create'; receipt: PurchaseReceipt }
-  | { mode: 'edit'; invoice: InvoiceSupplierRow; receiptCode: string; supplierName: string; vatType: VatType; onDelete?: () => void }
+  | {
+      mode: 'edit';
+      invoice: InvoiceSupplierRow;
+      receiptCode: string;
+      supplierName: string;
+      vatType: VatType;
+      onDelete?: () => void;
+      /** The invoice is paid: saving needs a reason, kept in the document history (TASK-0329 R2). */
+      reasonRequired?: boolean;
+    }
 );
+
+const REASON_LIMIT = 500;
 
 function newPayment(method: InvoicePaymentMethod, paymentId: string | undefined, amount: number): PaymentDraft {
   const id = crypto.randomUUID();
@@ -95,21 +106,25 @@ export default function InvoiceForm(props: InvoiceFormProps) {
       ? [newPayment(defaultMethod, availablePayments[0]?.payment_id, total)]
       : (props.invoice.invoicePayments || []).map(fromSaved),
   );
+  const reasonRequired = props.mode === 'edit' && Boolean(props.reasonRequired);
+  const [reason, setReason] = useState('');
+  const reasonField = useRef<HTMLTextAreaElement>(null);
   const [attempted, setAttempted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   // Most payment edits are clicks (method, account, add, remove, fill), which the Modal's input-based guess
   // misses; compare what is on screen with what the form opened with instead (TASK-0327 review F3).
-  const snapshot = (fields: { name: string; docDate: string; dueDate: string; payments: PaymentDraft[] }) =>
+  const snapshot = (fields: { name: string; docDate: string; dueDate: string; payments: PaymentDraft[]; reason: string }) =>
     JSON.stringify([
+      fields.reason,
       fields.name,
       fields.docDate,
       fields.dueDate,
       fields.payments.map((payment) => [payment.key, payment.method, payment.payment_id ?? '', payment.amount]),
     ]);
-  const [initial] = useState(() => snapshot({ name, docDate, dueDate, payments }));
-  const dirty = snapshot({ name, docDate, dueDate, payments }) !== initial;
+  const [initial] = useState(() => snapshot({ name, docDate, dueDate, payments, reason }));
+  const dirty = snapshot({ name, docDate, dueDate, payments, reason }) !== initial;
 
   const parsed = useMemo(() => payments.map((payment) => parseAmount(payment.amount)), [payments]);
   const paid = useMemo(() => Math.round(parsed.reduce<number>((sum, value) => sum + (value ?? 0), 0) * 100) / 100, [parsed]);
@@ -131,6 +146,7 @@ export default function InvoiceForm(props: InvoiceFormProps) {
     name: !name.trim() ? 'ใส่ชื่อเอกสาร' : null,
     docDate: !docDate ? 'เลือกวันที่เอกสาร' : null,
     dueDate: !dueDate ? 'เลือกวันที่ครบกำหนด' : null,
+    reason: reasonRequired && !reason.trim() ? 'ระบุเหตุผลที่แก้ไขใบที่ชำระครบแล้ว' : null,
   };
   const paymentErrors = payments.map((payment, index) => {
     const value = parsed[index];
@@ -178,6 +194,7 @@ export default function InvoiceForm(props: InvoiceFormProps) {
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     setAttempted(true);
+    if (fieldErrors.reason) reasonField.current?.focus();
     if (hasErrors || over || saving) return;
     const invoicePayments: InvoicePaymentItem[] = payments.map((payment, index) => ({
       invoice_payment_id: payment.invoice_payment_id,
@@ -197,6 +214,7 @@ export default function InvoiceForm(props: InvoiceFormProps) {
         invoicePayments,
         supplier_id: props.mode === 'create' ? props.receipt.supplier_id : props.invoice.supplier_id,
         invoice_supplier_total: total,
+        ...(reasonRequired ? { edit_reason: reason.trim() } : {}),
       });
     } catch (error) {
       setSaveError(`บันทึกไม่สำเร็จ ${getApiErrorMessage(error)} ข้อมูลที่กรอกยังอยู่ ลองอีกครั้ง`);
@@ -297,6 +315,35 @@ export default function InvoiceForm(props: InvoiceFormProps) {
             <dd className="numeric">{formatBaht(total)}</dd>
           </div>
         </dl>
+
+        {reasonRequired && (
+          <div className="ka-is-sec">
+            <p className="ka-banner ka-banner--warning">
+              ใบนี้ชำระครบแล้ว การแก้ไขจะบันทึกในประวัติเอกสารพร้อมผู้แก้ วันเวลา และเหตุผล
+            </p>
+            <div className="ka-is-field">
+              <label className="ka-is-label" htmlFor={`${formId}-reason`}>
+                เหตุผลที่แก้ไข <span className="ka-is-req" aria-hidden="true">*</span>
+              </label>
+              <textarea
+                id={`${formId}-reason`}
+                ref={reasonField}
+                className="ka-textarea"
+                rows={2}
+                maxLength={REASON_LIMIT}
+                value={reason}
+                onChange={(event) => setReason(event.target.value)}
+                required
+                aria-invalid={Boolean(show(fieldErrors.reason)) || undefined}
+                aria-describedby={`${formId}-reason-help${show(fieldErrors.reason) ? ` ${formId}-reason-err` : ''}`}
+              />
+              <p id={`${formId}-reason-help`} className="ka-is-help numeric">
+                {reason.length}/{REASON_LIMIT} ตัวอักษร
+              </p>
+              {show(fieldErrors.reason) && <p id={`${formId}-reason-err`} className="ka-is-err">{fieldErrors.reason}</p>}
+            </div>
+          </div>
+        )}
 
         <fieldset className="ka-is-sec">
           <legend>ข้อมูลเอกสาร</legend>

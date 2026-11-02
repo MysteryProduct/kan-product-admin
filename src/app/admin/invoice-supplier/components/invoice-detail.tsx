@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Modal from '@/components/Modal';
 import DocumentCode from '@/components/DocumentCode';
+import DocumentHistoryPanel from '@/components/document-history/DocumentHistoryPanel';
 import StatusBadge from '@/components/StatusBadge';
 import { formatThaiDate } from '@/lib/date-format';
 import { VAT_TYPE_LABELS } from '@/lib/vat';
@@ -25,9 +26,13 @@ interface InvoiceDetailProps {
   onEdit?: () => void;
   /** Shown for people who may delete, so delete stays reachable without the edit right (TASK-0327 D4). */
   onDelete?: () => void;
+  /** A paid invoice asks an approver for a reason before saving (TASK-0329 R5). */
+  editLabel?: string;
+  /** Why edit and delete are missing: the invoice is paid and the viewer may not approve (TASK-0329 R5). */
+  lockNote?: string;
 }
 
-export default function InvoiceDetail({ isOpen, onClose, view, availablePayments, onEdit, onDelete }: InvoiceDetailProps) {
+export default function InvoiceDetail({ isOpen, onClose, view, availablePayments, onEdit, onDelete, editLabel, lockNote }: InvoiceDetailProps) {
   const { row, total, paid, remaining, status } = view;
   const payments = row.invoicePayments || [];
   const note = dueNote(view);
@@ -64,12 +69,18 @@ export default function InvoiceDetail({ isOpen, onClose, view, availablePayments
               <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true" className="h-[18px] w-[18px]">
                 <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
               </svg>
-              แก้ไขเอกสาร
+              {editLabel ?? 'แก้ไขเอกสาร'}
             </button>
           )}
         </>
       }
     >
+      {lockNote && (
+        <p className="ka-banner" role="note">
+          {lockNote}
+        </p>
+      )}
+
       <div className="ka-is-sum">
         <dl className="ka-is-sum__g">
           <div>
@@ -167,6 +178,11 @@ export default function InvoiceDetail({ isOpen, onClose, view, availablePayments
             })}
           </ol>
         )}
+      </section>
+
+      <section className="ka-is-sec" aria-labelledby="is-detail-history">
+        <h3 id="is-detail-history" className="ka-is-h3">ประวัติเอกสาร</h3>
+        <DocumentHistoryPanel endpoint={`/invoice-supplier/${row.invoice_supplier_id}/history`} variant="timeline" limit={3} />
       </section>
     </Modal>
   );

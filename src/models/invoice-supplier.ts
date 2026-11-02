@@ -33,6 +33,8 @@ export interface UpdateInvoiceSupplierDto {
     invoice_supplier_status: InvoiceSupplierStatus;
     invoice_supplier_detail?: string;
     invoice_supplier_total: number;
+    /** Why a paid invoice is changed; the API refuses a paid edit without it (TASK-0329). */
+    edit_reason?: string;
     invoice_payments: Array<{
         invoice_payment_id?: string;
         payment_method: InvoicePaymentMethod;
@@ -76,8 +78,9 @@ export default class InvoiceSupplierModel {
         return response.data;
     };
 
-    deleteInvoiceSupplier = async (invoice_supplier_id: string): Promise<void> => {
-        await axiosInstance.delete(`/invoice-supplier/${invoice_supplier_id}`);
+    /** `reason` is required by the API for a paid invoice (TASK-0329). */
+    deleteInvoiceSupplier = async (invoice_supplier_id: string, reason?: string): Promise<void> => {
+        await axiosInstance.delete(`/invoice-supplier/${invoice_supplier_id}`, reason ? { data: { delete_reason: reason } } : undefined);
     };
 }
 
@@ -122,6 +125,7 @@ export function buildUpdateDto(payload: {
     invoice_supplier_detail?: string;
     invoicePayments: InvoicePaymentItem[];
     invoice_supplier_total: number;
+    edit_reason?: string;
 }): UpdateInvoiceSupplierDto {
     return {
         invoice_supplier_name: payload.invoice_supplier_name,
@@ -139,5 +143,6 @@ export function buildUpdateDto(payload: {
         // The invoice's own amount. The API stores this as the new total and derives the status from it,
         // so sending the payments' sum marked a part-paid invoice as paid (TASK-0327 I1).
         invoice_supplier_total: payload.invoice_supplier_total,
+        ...(payload.edit_reason ? { edit_reason: payload.edit_reason } : {}),
     };
 }
