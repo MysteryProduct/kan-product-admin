@@ -98,7 +98,7 @@
     {
       "name": "calendar-empty-day 390: \"ไม่มีงานครบกำหนดวันนี้\" and unfinished jobs (K4)",
       "ok": true,
-      "note": "วันอังคาร 20 ต.ค. 2569 ไม่มีงานครบกำหนดวันนี้ งานที่ยังไม่เสร็จ กระบอกน้ำสแตนเลส ฝาหูหิ้ว เลย 2 วัน · 29 ต.ค. · กำลังผลิต แก้วมีหูจับพร้อมหลอด ครบวันนี้ · รอดำเนินการ แก้วเก็บความเย็น 350 ml. Size:350 ml Color:ดำ อีก 4 วัน · 4 พ.ย. · รอดำเนินการ เพิ่มงานในวันที่นี้"
+      "note": "วันอังคาร 20 ต.ค. 2569 ไม่มีงานครบกำหนดวันนี้ งานที่ยังไม่เสร็จ กระบอกน้ำสแตนเลส ฝาหูหิ้ว เลย 2 วัน · 29 ต.ค. · กำลังผลิต แก้วมีหูจับพร้อมหลอด ครบวันนี้ · รอดำเนินการ แก้วเก็บความเย็น 350 ml. อีก 4 วัน · 4 พ.ย. · รอดำเนินการ เพิ่มงานในวันที่นี้"
     },
     {
       "name": "empty 390: text and create button (E2)",
@@ -198,7 +198,7 @@
     {
       "name": "calendar-empty-day 834: \"ไม่มีงานครบกำหนดวันนี้\" and unfinished jobs (K4)",
       "ok": true,
-      "note": "วันอังคาร 20 ต.ค. 2569 ไม่มีงานครบกำหนดวันนี้ งานที่ยังไม่เสร็จ กระบอกน้ำสแตนเลส ฝาหูหิ้ว เลย 2 วัน · 29 ต.ค. · กำลังผลิต แก้วมีหูจับพร้อมหลอด ครบวันนี้ · รอดำเนินการ แก้วเก็บความเย็น 350 ml. Size:350 ml Color:ดำ อีก 4 วัน · 4 พ.ย. · รอดำเนินการ เพิ่มงานในวันที่นี้"
+      "note": "วันอังคาร 20 ต.ค. 2569 ไม่มีงานครบกำหนดวันนี้ งานที่ยังไม่เสร็จ กระบอกน้ำสแตนเลส ฝาหูหิ้ว เลย 2 วัน · 29 ต.ค. · กำลังผลิต แก้วมีหูจับพร้อมหลอด ครบวันนี้ · รอดำเนินการ แก้วเก็บความเย็น 350 ml. อีก 4 วัน · 4 พ.ย. · รอดำเนินการ เพิ่มงานในวันที่นี้"
     },
     {
       "name": "empty 834: text and create button (E2)",
@@ -293,7 +293,7 @@
     {
       "name": "calendar-empty-day 1440: \"ไม่มีงานครบกำหนดวันนี้\" and unfinished jobs (K4)",
       "ok": true,
-      "note": "วันอังคาร 20 ต.ค. 2569 ไม่มีงานครบกำหนดวันนี้ งานที่ยังไม่เสร็จ กระบอกน้ำสแตนเลส ฝาหูหิ้ว เลย 2 วัน · 29 ต.ค. · กำลังผลิต แก้วมีหูจับพร้อมหลอด ครบวันนี้ · รอดำเนินการ แก้วเก็บความเย็น 350 ml. Size:350 ml Color:ดำ อีก 4 วัน · 4 พ.ย. · รอดำเนินการ เพิ่มงานในวันที่นี้"
+      "note": "วันอังคาร 20 ต.ค. 2569 ไม่มีงานครบกำหนดวันนี้ งานที่ยังไม่เสร็จ กระบอกน้ำสแตนเลส ฝาหูหิ้ว เลย 2 วัน · 29 ต.ค. · กำลังผลิต แก้วมีหูจับพร้อมหลอด ครบวันนี้ · รอดำเนินการ แก้วเก็บความเย็น 350 ml. อีก 4 วัน · 4 พ.ย. · รอดำเนินการ เพิ่มงานในวันที่นี้"
     },
     {
       "name": "calendar: เพิ่มงานในวันที่นี้ opens the drawer on that day (K4)",
@@ -552,8 +552,8 @@
     },
     {
       "name": "no page errors",
-      "ok": false,
-      "note": "SyntaxError: Invalid or unexpected token · after \"list-overdue 834: only the overdue job, in its status group (L1)\" ·  | SyntaxError: Invalid or unexpected token · after \"empty 1440: text and create button (E2)\" · "
+      "ok": true,
+      "note": ""
     }
   ],
   "notes": {
@@ -613,28 +613,6 @@
         "height": 111,
         "width": 280,
         "snap": "start"
-      }
-    ],
-    "reloads": [
-      {
-        "query": "?view=list",
-        "attempt": 1,
-        "pending": []
-      },
-      {
-        "query": "?view=calendar",
-        "attempt": 1,
-        "pending": []
-      },
-      {
-        "query": "?view=board",
-        "attempt": 1,
-        "pending": []
-      },
-      {
-        "query": "?view=board",
-        "attempt": 1,
-        "pending": []
       }
     ],
     "calendar_today_834": {
@@ -962,6 +940,8 @@
       "board": {
         "page": "320<=320",
         "pageOk": true,
+        "height": "844<=844",
+        "heightOk": true,
         "cards": 5,
         "rows": 0,
         "over": [],
@@ -972,6 +952,8 @@
       "list": {
         "page": "320<=320",
         "pageOk": true,
+        "height": "844<=844",
+        "heightOk": true,
         "cards": 0,
         "rows": 5,
         "over": [],
@@ -982,6 +964,8 @@
       "calendar": {
         "page": "320<=320",
         "pageOk": true,
+        "height": "844<=844",
+        "heightOk": true,
         "cards": 0,
         "rows": 0,
         "over": [],
@@ -992,6 +976,8 @@
       "board": {
         "page": "390<=390",
         "pageOk": true,
+        "height": "844<=844",
+        "heightOk": true,
         "cards": 5,
         "rows": 0,
         "over": [],
@@ -1002,6 +988,8 @@
       "list": {
         "page": "390<=390",
         "pageOk": true,
+        "height": "844<=844",
+        "heightOk": true,
         "cards": 0,
         "rows": 5,
         "over": [],
@@ -1012,6 +1000,8 @@
       "calendar": {
         "page": "390<=390",
         "pageOk": true,
+        "height": "844<=844",
+        "heightOk": true,
         "cards": 0,
         "rows": 0,
         "over": [],
@@ -1022,6 +1012,8 @@
       "board": {
         "page": "834<=834",
         "pageOk": true,
+        "height": "1112<=1112",
+        "heightOk": true,
         "cards": 5,
         "rows": 0,
         "over": [],
@@ -1032,6 +1024,8 @@
       "list": {
         "page": "834<=834",
         "pageOk": true,
+        "height": "1112<=1112",
+        "heightOk": true,
         "cards": 0,
         "rows": 5,
         "over": [],
@@ -1042,6 +1036,8 @@
       "calendar": {
         "page": "834<=834",
         "pageOk": true,
+        "height": "1112<=1112",
+        "heightOk": true,
         "cards": 0,
         "rows": 0,
         "over": [],
@@ -1052,6 +1048,8 @@
       "board": {
         "page": "1440<=1440",
         "pageOk": true,
+        "height": "1000<=1000",
+        "heightOk": true,
         "cards": 5,
         "rows": 0,
         "over": [],
@@ -1062,6 +1060,8 @@
       "list": {
         "page": "1440<=1440",
         "pageOk": true,
+        "height": "1000<=1000",
+        "heightOk": true,
         "cards": 0,
         "rows": 5,
         "over": [],
@@ -1072,6 +1072,8 @@
       "calendar": {
         "page": "1440<=1440",
         "pageOk": true,
+        "height": "1000<=1000",
+        "heightOk": true,
         "cards": 0,
         "rows": 0,
         "over": [],

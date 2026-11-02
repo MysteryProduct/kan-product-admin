@@ -580,6 +580,9 @@ for (const width of [320, ...WIDTHS]) {
       return {
         page: `${document.scrollingElement.scrollWidth}<=${window.innerWidth}`,
         pageOk: document.scrollingElement.scrollWidth <= window.innerWidth,
+        // Admin layout trap (vault/standards/frontend.md): only <main> scrolls, never the document.
+        height: `${document.documentElement.scrollHeight}<=${window.innerHeight}`,
+        heightOk: document.documentElement.scrollHeight <= window.innerHeight,
         cards: document.querySelectorAll('.ka-kc').length,
         rows: document.querySelectorAll('.ka-jo-row:not(.ka-jo-row--head)').length,
         over: [...over('.ka-kc'), ...over('.ka-jo-row:not(.ka-jo-row--head)'), ...over('.ka-jo-pj'), ...over('.ka-cal__day')],
@@ -589,7 +592,7 @@ for (const width of [320, ...WIDTHS]) {
     await fullShot(wide, join(out, view === 'board' ? `overflow-${width}.png` : `overflow-${view}-${width}.png`));
   }
   notes[`overflow_${width}`] = views;
-  const bad = Object.entries(views).filter(([, value]) => !value.pageOk || value.over.length);
+  const bad = Object.entries(views).filter(([, value]) => !value.pageOk || !value.heightOk || value.over.length);
   check(`overflow ${width}: no card, row or page wider than its box (V6)`, bad.length === 0 && views.board.cards === 5 && views.list.rows === 5 && views.board.due.includes('เลย 12 วัน · 29 ต.ค.'), JSON.stringify(bad.length ? bad : { cards: views.board.cards, rows: views.list.rows, due: views.board.due }));
   if (width === 320 || width === 390) {
     await openOn(wide, '?view=board');
