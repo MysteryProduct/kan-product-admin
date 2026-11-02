@@ -306,6 +306,12 @@ export default function ProductsPage() {
     setCurrentPage(1);
     setStockTab(tab);
   };
+  // Showing or hiding moves a product in or out of the hidden tab, from the row menu or the row's switch.
+  // On that tab the row leaves the page, so a page left empty steps back like after a delete.
+  const refreshAfterStorefrontChange = () => {
+    if (stockTab === 'hidden') void handleRefreshProduct(true);
+    else void loadCounts();
+  };
   // Hides or shows a product on the store from its row menu; the switches in the row follow.
   const toggleStorefront = async (row: Product) => {
     const published = !(policies.get(row.product_id)?.published ?? true);
@@ -315,8 +321,7 @@ export default function ProductsPage() {
         const current = prev.get(row.product_id) ?? { product_id: row.product_id, published: true, online_purchase: true, contact_enabled: true };
         return new Map(prev).set(row.product_id, { ...current, published });
       });
-      void loadCounts();
-      if (stockTab === 'hidden') void loadProducts(currentPage);
+      refreshAfterStorefrontChange();
       toast({ message: published ? `แสดง ${row.product_name} บนหน้าร้านแล้ว` : `ซ่อน ${row.product_name} จากหน้าร้านแล้ว` });
     } catch (error) {
       setResultDialog({ isOpen: true, status: 'error', action: 'update', message: `ตั้งค่าหน้าร้านไม่สำเร็จ ${getApiErrorMessage(error)}` });
@@ -430,9 +435,11 @@ export default function ProductsPage() {
           policy={policies.get(row.product_id)}
           failed={policiesFailed || (policiesLoaded && !policies.has(row.product_id))}
           onRetry={() => void loadPolicies((products?.data ?? []).map((product) => product.product_id))}
-          onChanged={(policy) =>
-            setPolicies((prev) => new Map(prev).set(policy.product_id, policy))
-          }
+          onChanged={(policy) => {
+            const wasPublished = policies.get(policy.product_id)?.published ?? true;
+            setPolicies((prev) => new Map(prev).set(policy.product_id, policy));
+            if (policy.published !== wasPublished) refreshAfterStorefrontChange();
+          }}
         />
       ),
     },
@@ -664,7 +671,7 @@ export default function ProductsPage() {
           <FilterChip
             label="สถานะ"
             single
-            options={STOCK_TABS.filter((tab) => tab.value).map((tab) => ({ value: tab.key, label: tab.label, count: counts[tab.key] }))}
+            options={STOCK_TABS.filter((tab) => tab.key !== 'all').map((tab) => ({ value: tab.key, label: tab.label, count: counts[tab.key] }))}
             selected={stockTab === 'all' ? [] : [stockTab]}
             onChange={(values) => chooseStockTab((values[0] as StockTab | undefined) ?? 'all')}
             resultCount={meta?.total}
