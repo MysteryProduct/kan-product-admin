@@ -5,7 +5,7 @@ import Modal from '@/components/Modal';
 import CustomSelect from '@/components/CustomSelect';
 import DocumentCode from '@/components/DocumentCode';
 import StatusBadge from '@/components/StatusBadge';
-import { getApiErrorMessage } from '@/lib/api-error';
+import { useToast } from '@/components/Toast';
 import { toDateInputValue, todayLocalIso } from '@/lib/date-format';
 import { VAT_TYPE_LABELS, VatType } from '@/lib/vat';
 import type {
@@ -29,6 +29,7 @@ import {
   paymentStatus,
   receiptPayable,
 } from '../lib/is-display';
+import { apiReason } from '../lib/api-reason';
 
 const CREDIT_DAYS = [7, 15, 30];
 
@@ -81,6 +82,7 @@ function fromSaved(item: InvoicePaymentItem): PaymentDraft {
 export default function InvoiceForm(props: InvoiceFormProps) {
   const { isOpen, onClose, onSubmit, availablePayments, mode } = props;
   const formId = useId();
+  const toast = useToast();
   const hasAccounts = availablePayments.length > 0;
   const defaultMethod: InvoicePaymentMethod = hasAccounts ? 'bank' : 'cash';
 
@@ -217,7 +219,11 @@ export default function InvoiceForm(props: InvoiceFormProps) {
         ...(reasonRequired ? { edit_reason: reason.trim() } : {}),
       });
     } catch (error) {
-      setSaveError(`บันทึกไม่สำเร็จ ${getApiErrorMessage(error)} ข้อมูลที่กรอกยังอยู่ ลองอีกครั้ง`);
+      // A toast with the API's reason (a 403 says why a paid invoice is locked); the form stays open with
+      // what was typed, and the banner keeps the reason in view (TASK-0329 review F2).
+      const reason = apiReason(error);
+      toast({ message: `บันทึกไม่สำเร็จ ${reason}`, tone: 'danger' });
+      setSaveError(`บันทึกไม่สำเร็จ ${reason} ข้อมูลที่กรอกยังอยู่ ลองอีกครั้ง`);
     } finally {
       setSaving(false);
     }
@@ -291,7 +297,7 @@ export default function InvoiceForm(props: InvoiceFormProps) {
     >
       <form id={formId} onSubmit={(event) => void submit(event)} noValidate className="contents">
         {saveError && (
-          <div role="alert" className="ka-banner ka-banner--danger">
+          <div className="ka-banner ka-banner--danger">
             <span>{saveError}</span>
           </div>
         )}

@@ -2,7 +2,7 @@
 
 import { useId, useRef, useState } from 'react';
 import Modal from '@/components/Modal';
-import { getApiErrorMessage } from '@/lib/api-error';
+import { apiReason } from '../lib/api-reason';
 
 const REASON_LIMIT = 500;
 
@@ -47,7 +47,7 @@ export default function PaidDeleteDialog({
       await onConfirm(reason.trim());
       onClose();
     } catch (cause) {
-      setError(`ลบไม่สำเร็จ ${getApiErrorMessage(cause)}`);
+      setError(`ลบไม่สำเร็จ ${apiReason(cause)}`);
     } finally {
       submitting.current = false;
       setBusy(false);
