@@ -1,7 +1,9 @@
 import type { BadgeTone } from '@/components/StatusBadge';
 import { toDateValue, toLocalIsoDate } from '@/lib/date-format';
-import type { VatType } from '@/lib/vat';
+import { DEFAULT_VAT_RATE_PERCENT, type VatType } from '@/lib/vat';
 import type { InvoicePaymentItem, InvoiceSupplierPayment, InvoiceSupplierRow } from '@/types/invoice-supplier';
+import type { PurchaseReceipt } from '@/types/purchase-receipt';
+import { receiptVatSummary } from '../../purchase-receipt/lib/pr-display';
 
 export { formatBaht, formatMoney } from '../../purchase-orders/lib/po-display';
 
@@ -145,4 +147,15 @@ export function parseAmount(text: string): number | null {
 /** An amount as editable text: "1250.5" → "1,250.50". */
 export function amountText(value: number): string {
   return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+/**
+ * What the supplier is owed for a receipt, VAT included (TASK-0328 D1). `purchase_receipt_total` is the
+ * pre-VAT sum; the API's `purchase_receipt_subtotal` carries VAT for an exclude-VAT receipt and is the cap
+ * it checks invoices against. A receipt without it falls back to the receipt VAT helper.
+ */
+export function receiptPayable(receipt: PurchaseReceipt): number {
+  const subtotal = Number(receipt.purchase_receipt_subtotal);
+  if (receipt.purchase_receipt_subtotal != null && Number.isFinite(subtotal)) return subtotal;
+  return receiptVatSummary(receipt, DEFAULT_VAT_RATE_PERCENT).total;
 }

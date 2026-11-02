@@ -32,6 +32,7 @@ import {
   InvoiceView,
   monthLabel,
   paidPercent,
+  receiptPayable,
 } from './lib/is-display';
 
 const invoiceSupplierModel = new InvoiceSupplierModel();
@@ -196,7 +197,7 @@ function ReceiptQueue({ canAdd, refreshKey, onIssue, opening }: {
                   <th scope="col">ผู้จัดจำหน่าย</th>
                   <th scope="col" className="ka-is-lg">วันที่รับสินค้า</th>
                   <th scope="col" className="ka-is-lg">VAT</th>
-                  <th scope="col" className="ka-po-r">ยอดรวม (บาท)</th>
+                  <th scope="col" className="ka-po-r">ยอดรวม VAT (บาท)</th>
                   {canAdd && <th scope="col" className="ka-is-actcol"><span className="sr-only">ออกใบชำระหนี้</span></th>}
                 </tr>
               </thead>
@@ -216,7 +217,7 @@ function ReceiptQueue({ canAdd, refreshKey, onIssue, opening }: {
                         <td><span className="ka-po-sup__n">{receipt.supplier?.supplier_name || '-'}</span></td>
                         <td className="ka-is-lg numeric ka-po-nowrap">{formatThaiDate(receipt.entry_date)}</td>
                         <td className="ka-is-lg"><StatusBadge tone="neutral">{VAT_TYPE_LABELS[receipt.vat_type || 'none']}</StatusBadge></td>
-                        <td className="ka-po-r"><span className="numeric ka-po-amt">{formatMoney(Number(receipt.purchase_receipt_total || 0))}</span></td>
+                        <td className="ka-po-r"><span className="numeric ka-po-amt">{formatMoney(receiptPayable(receipt))}</span></td>
                         {canAdd && <td className="ka-po-r">{issueButton(receipt)}</td>}
                       </tr>
                     ))}
@@ -235,7 +236,7 @@ function ReceiptQueue({ canAdd, refreshKey, onIssue, opening }: {
                 </span>
                 <span className="ka-po-mc__row">
                   <span className="ka-po-cap ka-po-mc__meta numeric">รับสินค้า {formatThaiDate(receipt.entry_date)}</span>
-                  <span className="numeric ka-po-mc__amt">{formatBaht(Number(receipt.purchase_receipt_total || 0))}</span>
+                  <span className="numeric ka-po-mc__amt"><span className="ka-po-cap">รวม VAT </span>{formatBaht(receiptPayable(receipt))}</span>
                 </span>
                 {issueButton(receipt)}
               </li>

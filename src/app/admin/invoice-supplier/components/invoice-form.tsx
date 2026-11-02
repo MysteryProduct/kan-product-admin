@@ -27,6 +27,7 @@ import {
   paidPercent,
   parseAmount,
   paymentStatus,
+  receiptPayable,
 } from '../lib/is-display';
 
 const CREDIT_DAYS = [7, 15, 30];
@@ -72,9 +73,8 @@ export default function InvoiceForm(props: InvoiceFormProps) {
   const hasAccounts = availablePayments.length > 0;
   const defaultMethod: InvoicePaymentMethod = hasAccounts ? 'bank' : 'cash';
 
-  // The invoice amount: a new invoice takes the receipt's total as before; an edit keeps the invoice's own.
-  const total =
-    props.mode === 'create' ? Number(props.receipt.purchase_receipt_total || 0) : Number(props.invoice.invoice_supplier_total || 0);
+  // The invoice amount: a new invoice owes the receipt's VAT-inclusive amount (TASK-0328); an edit keeps the invoice's own.
+  const total = props.mode === 'create' ? receiptPayable(props.receipt) : Number(props.invoice.invoice_supplier_total || 0);
 
   const [name, setName] = useState(() =>
     props.mode === 'create'
@@ -294,7 +294,7 @@ export default function InvoiceForm(props: InvoiceFormProps) {
             </div>
           )}
           <div className="ka-is-src__total">
-            <dt>{mode === 'create' ? 'ยอดรวมใบรับสินค้า' : `ยอดใบชำระหนี้ · ${VAT_TYPE_LABELS[vatType]}`}</dt>
+            <dt>{mode === 'create' ? 'ยอดที่ต้องชำระ (รวม VAT)' : `ยอดใบชำระหนี้ · ${VAT_TYPE_LABELS[vatType]}`}</dt>
             <dd className="numeric">{formatBaht(total)}</dd>
           </div>
         </dl>
