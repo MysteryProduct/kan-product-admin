@@ -96,7 +96,7 @@
 .ka-jo-tab:hover { border-color: var(--border-control); }
 .ka-jo-tab__n { padding: 0 7px; border-radius: var(--radius-pill); background: var(--neutral-soft); color: var(--ink-muted); font: 600 12px/20px var(--ka-font); }
 .ka-jo-tab[aria-selected="true"] { border-color: var(--ink); background: var(--ink); color: var(--bg-surface); }
-.ka-jo-tab[aria-selected="true"] .ka-jo-tab__n { background: var(--brand); color: var(--ink); }
+.ka-jo-tab[aria-selected="true"] .ka-jo-tab__n { background: var(--brand); color: var(--on-brand); }
 @media (max-width: 767px) { .ka-jo-tab { height: 40px; } }
 
 .ka-jo-fbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
