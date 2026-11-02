@@ -217,7 +217,11 @@ function ReceiptQueue({ canAdd, refreshKey, onIssue, opening }: {
                         <td><span className="ka-po-sup__n">{receipt.supplier?.supplier_name || '-'}</span></td>
                         <td className="ka-is-lg numeric ka-po-nowrap">{formatThaiDate(receipt.entry_date)}</td>
                         <td className="ka-is-lg"><StatusBadge tone="neutral">{VAT_TYPE_LABELS[receipt.vat_type || 'none']}</StatusBadge></td>
-                        <td className="ka-po-r"><span className="numeric ka-po-amt">{formatMoney(receiptPayable(receipt))}</span></td>
+                        <td className="ka-po-r">
+                          <span className="numeric ka-po-amt">{formatMoney(receiptPayable(receipt))}</span>
+                          {/* Says the owed amount includes VAT; the VAT column shows only the type (TASK-0328 R2, F5). */}
+                          {receipt.vat_type && receipt.vat_type !== 'none' && <span className="ka-is-sub">รวม VAT แล้ว</span>}
+                        </td>
                         {canAdd && <td className="ka-po-r">{issueButton(receipt)}</td>}
                       </tr>
                     ))}
@@ -236,7 +240,7 @@ function ReceiptQueue({ canAdd, refreshKey, onIssue, opening }: {
                 </span>
                 <span className="ka-po-mc__row">
                   <span className="ka-po-cap ka-po-mc__meta numeric">รับสินค้า {formatThaiDate(receipt.entry_date)}</span>
-                  <span className="numeric ka-po-mc__amt"><span className="ka-po-cap">ต้องชำระ </span>{formatBaht(receiptPayable(receipt))}</span>
+                  <span className="numeric ka-po-mc__amt"><span className="ka-po-cap">{receipt.vat_type && receipt.vat_type !== 'none' ? 'ต้องชำระ (รวม VAT) ' : 'ต้องชำระ '}</span>{formatBaht(receiptPayable(receipt))}</span>
                 </span>
                 {issueButton(receipt)}
               </li>
