@@ -261,18 +261,28 @@ export default function InvoiceSupplierPage() {
 
   usePageCrumb({ parents: ['จัดซื้อ'], current: 'ใบชำระหนี้ผู้จัดจำหน่าย' });
 
+  // The latest invoices, for the summary cards, the status chips and a status filter (TASK-0327 D5).
   const [rows, setRows] = useState<InvoiceSupplierRow[]>([]);
   const [capped, setCapped] = useState(false);
-  const [listError, setListError] = useState<string | null>(null);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [loadedKey, setLoadedKey] = useState<number | null>(null);
-  const loading = loadedKey !== refreshKey;
+  const summaryLoading = loadedKey !== refreshKey;
 
   const [searchText, setSearchText] = useState('');
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [sort, setSort] = useState<Sort>({ key: 'invoice_supplier_date', order: 'DESC' });
   const [page, setPage] = useState(1);
+
+  // Without a status filter the table is the API's own page, so every invoice stays reachable (D5).
+  const apiMode = statusFilter === 'all';
+  const [apiRows, setApiRows] = useState<InvoiceSupplierRow[]>([]);
+  const [apiMeta, setApiMeta] = useState<PaginationMeta | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [apiAttempt, setApiAttempt] = useState(0);
+  const apiKey = `${page}|${query}|${sort.key}|${sort.order}|${refreshKey}|${apiAttempt}`;
+  const [apiLoadedKey, setApiLoadedKey] = useState<string | null>(null);
 
   const [modal, setModal] = useState<ModalState>(null);
   const [opening, setOpening] = useState<string | null>(null);
@@ -288,10 +298,10 @@ export default function InvoiceSupplierPage() {
         if (!active) return;
         setRows(response.data ?? []);
         setCapped((response.meta?.total ?? 0) > LOCAL_LIMIT);
-        setListError(null);
+        setSummaryError(null);
       })
       .catch((error: unknown) => {
-        if (active) setListError(loadErrorText('รายการใบชำระหนี้', error));
+        if (active) setSummaryError(loadErrorText('สรุปใบชำระหนี้', error));
       })
       .finally(() => {
         if (active) setLoadedKey(refreshKey);
@@ -300,6 +310,31 @@ export default function InvoiceSupplierPage() {
       active = false;
     };
   }, [refreshKey]);
+
+  useEffect(() => {
+    if (!apiMode) return;
+    let active = true;
+    const key = `${page}|${query}|${sort.key}|${sort.order}|${refreshKey}|${apiAttempt}`;
+    invoiceSupplierModel
+      .getInvoiceSuppliers(page, PAGE_SIZE, query || undefined, sort.key, sort.order)
+      .then((response) => {
+        if (!active) return;
+        setApiRows(response.data ?? []);
+        setApiMeta(response.meta ?? null);
+        setApiError(null);
+        // A page beyond the end (after a delete) falls back to the last one.
+        if (response.meta && response.meta.last_page > 0 && page > response.meta.last_page) setPage(response.meta.last_page);
+      })
+      .catch((error: unknown) => {
+        if (active) setApiError(loadErrorText('รายการใบชำระหนี้', error));
+      })
+      .finally(() => {
+        if (active) setApiLoadedKey(key);
+      });
+    return () => {
+      active = false;
+    };
+  }, [apiMode, page, query, sort.key, sort.order, refreshKey, apiAttempt]);
 
   useEffect(() => {
     const trimmed = searchText.trim();
@@ -313,6 +348,7 @@ export default function InvoiceSupplierPage() {
 
   const today = todayLocalIso();
   const views = useMemo(() => rows.map((row) => invoiceView(row, today)), [rows, today]);
+  const apiViews = useMemo(() => apiRows.map((row) => invoiceView(row, today)), [apiRows, today]);
 
   const summary = useMemo(() => {
     const open = views.filter((view) => view.status !== 'paid' && view.status !== 'cancelled');
@@ -333,6 +369,7 @@ export default function InvoiceSupplierPage() {
     };
   }, [views, today]);
 
+  // Status chips and a status filter work on the loaded invoices; the API has no status filter.
   const searched = useMemo(() => (query ? views.filter((view) => matches(view, query)) : views), [views, query]);
   const counts = useMemo(() => {
     const result: Record<StatusFilter, number> = { all: searched.length, pending: 0, partial: 0, overdue: 0, paid: 0, cancelled: 0 };
@@ -342,27 +379,33 @@ export default function InvoiceSupplierPage() {
     return result;
   }, [searched]);
 
-  const filtered = useMemo(() => {
-    const list = statusFilter === 'all' ? searched : searched.filter((view) => view.status === statusFilter);
+  const localFiltered = useMemo(() => {
+    if (apiMode) return [];
     const sign = sort.order === 'ASC' ? 1 : -1;
     const value = (view: InvoiceView) =>
       sort.key === 'invoice_supplier_total' ? view.total : new Date(view.row[sort.key]).getTime() || 0;
-    return [...list].sort((a, b) => sign * (value(a) - value(b)));
-  }, [searched, statusFilter, sort]);
+    return searched.filter((view) => view.status === statusFilter).sort((a, b) => sign * (value(a) - value(b)));
+  }, [apiMode, searched, statusFilter, sort]);
 
-  const total = filtered.length;
-  const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const loading = apiMode ? apiLoadedKey !== apiKey : summaryLoading;
+  const listError = apiMode ? apiError : summaryError;
+  const total = apiMode ? apiMeta?.total ?? apiRows.length : localFiltered.length;
+  const lastPage = apiMode ? Math.max(1, apiMeta?.last_page ?? 1) : Math.max(1, Math.ceil(total / PAGE_SIZE));
   const shownPage = Math.min(page, lastPage);
-  const pageRows = filtered.slice((shownPage - 1) * PAGE_SIZE, shownPage * PAGE_SIZE);
+  const pageRows = apiMode ? apiViews : localFiltered.slice((shownPage - 1) * PAGE_SIZE, shownPage * PAGE_SIZE);
   const pagerMeta: PaginationMeta = { total, page: shownPage, last_page: lastPage, limit: PAGE_SIZE };
   const from = total === 0 ? 0 : (shownPage - 1) * PAGE_SIZE + 1;
   const to = Math.min(shownPage * PAGE_SIZE, total);
   const filteredBy = Boolean(query) || statusFilter !== 'all';
-  const nothingYet = !loading && !listError && views.length === 0;
-  const noMatch = !loading && !listError && views.length > 0 && total === 0;
+  const nothingYet = !loading && !listError && total === 0 && !filteredBy;
+  const noMatch = !loading && !listError && total === 0 && filteredBy;
+  const retryList = () => (apiMode ? setApiAttempt((value) => value + 1) : refresh());
 
   const chips: StatusFilter[] = ['all', ...DISPLAY_STATUS_KEYS.filter((key) => key !== 'cancelled' || counts.cancelled > 0)];
   const chipLabel = (key: StatusFilter) => (key === 'all' ? 'ทั้งหมด' : DISPLAY_STATUS_LABELS[key]);
+  // "ทั้งหมด" is the API's own count when it lists the table; the others count the loaded invoices.
+  const chipCount = (key: StatusFilter) => (key === 'all' && apiMode && apiMeta ? apiMeta.total : counts[key]);
+  const chipsLoading = summaryLoading || (apiMode && loading);
 
   const toggleSort = (key: SortKey) => {
     setSort((current) => (current.key === key ? { key, order: current.order === 'ASC' ? 'DESC' : 'ASC' } : { key, order: 'DESC' }));
@@ -376,7 +419,12 @@ export default function InvoiceSupplierPage() {
     </button>
   );
 
-  const currentView = modal && modal.kind !== 'create' ? views.find((view) => view.row.invoice_supplier_id === modal.id) ?? null : null;
+  const currentView =
+    modal && modal.kind !== 'create'
+      ? apiViews.find((view) => view.row.invoice_supplier_id === modal.id) ??
+        views.find((view) => view.row.invoice_supplier_id === modal.id) ??
+        null
+      : null;
 
   const openWithAccounts = async (key: string, supplierId: string | undefined, next: (accounts: InvoiceSupplierPayment[]) => ModalState) => {
     setOpening(key);
@@ -403,8 +451,11 @@ export default function InvoiceSupplierPage() {
 
   const handleCreate = async (receipt: PurchaseReceipt, payload: InvoiceSupplierFormPayload) => {
     const created = await invoiceSupplierModel.createInvoiceSupplier(buildCreateDto(receipt.purchase_receipt_id, payload));
+    // The API answers with `{ data: invoice }` (findOne), which the model passes on as it is.
+    const wrapped = created as InvoiceSupplierRow & { data?: InvoiceSupplierRow };
+    const code = wrapped?.data?.invoice_supplier_code ?? wrapped?.invoice_supplier_code;
     setModal(null);
-    toast({ message: `ออกใบชำระหนี้ ${created?.invoice_supplier_code ?? ''} แล้ว`, tone: 'success' });
+    toast({ message: code ? `ออกใบชำระหนี้ ${code} แล้ว` : 'ออกใบชำระหนี้แล้ว', tone: 'success' });
     refresh();
   };
 
@@ -429,8 +480,16 @@ export default function InvoiceSupplierPage() {
     }
   };
 
-  const statsReady = !loading && !listError;
-  const stat = (value: string) => (statsReady ? <span className="ka-is-kpi__v numeric">{value}</span> : <span className="ka-skel" aria-hidden="true" />);
+  const statsReady = !summaryLoading && !summaryError;
+  // A failed load shows a dash and the banner above the cards, never an endless skeleton.
+  const stat = (value: string) =>
+    statsReady ? (
+      <span className="ka-is-kpi__v numeric">{value}</span>
+    ) : summaryError ? (
+      <span className="ka-is-kpi__v">–</span>
+    ) : (
+      <span className="ka-skel" aria-hidden="true" />
+    );
   const count = (value: number) => `${value.toLocaleString('th-TH')} ใบ`;
 
   return (
@@ -442,7 +501,9 @@ export default function InvoiceSupplierPage() {
         </div>
       </div>
 
-      <section className="ka-is-kpis" aria-label="สรุปยอด" aria-busy={loading || undefined}>
+      {summaryError && <LoadErrorBanner message={summaryError} onRetry={refresh} />}
+
+      <section className="ka-is-kpis" aria-label="สรุปยอด" aria-busy={summaryLoading || undefined}>
         <div className="ka-is-kpi">
           <span className="ka-is-kpi__icon" data-tone="brand"><Icon d={ICONS.money} /></span>
           <div className="ka-is-kpi__body">
@@ -474,14 +535,14 @@ export default function InvoiceSupplierPage() {
         <div className="ka-is-kpi">
           <span className="ka-is-kpi__icon" data-tone="success"><Icon d={ICONS.check} /></span>
           <div className="ka-is-kpi__body">
-            <span className="ka-is-kpi__k">ชำระครบ ใบเดือนนี้</span>
+            <span className="ka-is-kpi__k">จ่ายแล้วเดือนนี้</span>
             {stat(formatBaht(summary.paid.amount))}
-            <span className="ka-is-kpi__n">{statsReady ? `${count(summary.paid.count)} · ลงวันที่ ${monthLabel(today)}` : ' '}</span>
+            <span className="ka-is-kpi__n">{statsReady ? `${count(summary.paid.count)} ที่ชำระครบ · ลงวันที่ ${monthLabel(today)}` : ' '}</span>
           </div>
         </div>
       </section>
 
-      <section className="ka-is-hero" aria-label="สรุปยอด" aria-busy={loading || undefined}>
+      <section className="ka-is-hero" aria-label="สรุปยอด" aria-busy={summaryLoading || undefined}>
         <div className="ka-is-hero__main">
           <span className="ka-is-hero__k">ยอดค้างชำระทั้งหมด</span>
           <span className="ka-is-hero__v numeric">{statsReady ? formatBaht(summary.open.amount) : '–'}</span>
@@ -498,7 +559,7 @@ export default function InvoiceSupplierPage() {
             <b className="numeric">{statsReady ? count(summary.open.count) : '–'}</b>
           </div>
           <div>
-            <span className="ka-po-cap">ชำระครบ ใบเดือนนี้</span>
+            <span className="ka-po-cap">จ่ายแล้วเดือนนี้</span>
             <b className="numeric text-[var(--success)]">{statsReady ? formatBaht(summary.paid.amount) : '–'}</b>
           </div>
         </div>
@@ -533,21 +594,21 @@ export default function InvoiceSupplierPage() {
               }}
             >
               {chipLabel(key)}
-              <span className="numeric">{loading ? '–' : counts[key].toLocaleString('th-TH')}</span>
+              <span className="numeric">{chipsLoading ? '–' : chipCount(key).toLocaleString('th-TH')}</span>
             </button>
           ))}
         </div>
 
         {capped && (
           <p className="ka-po-cap ka-po-cp !py-2" role="note">
-            สรุปยอด ค้นหา และกรองสถานะ จาก {LOCAL_LIMIT.toLocaleString('th-TH')} ใบล่าสุด
+            การ์ดสรุป ตัวนับสถานะ และตัวกรองสถานะ คิดจาก {LOCAL_LIMIT.toLocaleString('th-TH')} ใบล่าสุด ส่วนรายการ “ทั้งหมด” ค้นหาได้ทุกใบ
           </p>
         )}
 
         <div aria-busy={loading || undefined}>
           {listError && (
             <div className="ka-po-cp">
-              <LoadErrorBanner message={listError} onRetry={refresh} />
+              <LoadErrorBanner message={listError} onRetry={retryList} />
             </div>
           )}
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useId, useMemo, useState } from 'react';
+import { FormEvent, KeyboardEvent, useId, useMemo, useState } from 'react';
 import Modal from '@/components/Modal';
 import CustomSelect from '@/components/CustomSelect';
 import DocumentCode from '@/components/DocumentCode';
@@ -99,6 +99,18 @@ export default function InvoiceForm(props: InvoiceFormProps) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
+  // Most payment edits are clicks (method, account, add, remove, fill), which the Modal's input-based guess
+  // misses; compare what is on screen with what the form opened with instead (TASK-0327 review F3).
+  const snapshot = (fields: { name: string; docDate: string; dueDate: string; payments: PaymentDraft[] }) =>
+    JSON.stringify([
+      fields.name,
+      fields.docDate,
+      fields.dueDate,
+      fields.payments.map((payment) => [payment.key, payment.method, payment.payment_id ?? '', payment.amount]),
+    ]);
+  const [initial] = useState(() => snapshot({ name, docDate, dueDate, payments }));
+  const dirty = snapshot({ name, docDate, dueDate, payments }) !== initial;
+
   const parsed = useMemo(() => payments.map((payment) => parseAmount(payment.amount)), [payments]);
   const paid = useMemo(() => Math.round(parsed.reduce<number>((sum, value) => sum + (value ?? 0), 0) * 100) / 100, [parsed]);
   const remaining = Math.round((total - paid) * 100) / 100;
@@ -137,6 +149,28 @@ export default function InvoiceForm(props: InvoiceFormProps) {
 
   const update = (key: string, change: Partial<PaymentDraft>) =>
     setPayments((current) => current.map((payment) => (payment.key === key ? { ...payment, ...change } : payment)));
+
+  const chooseMethod = (payment: PaymentDraft, method: InvoicePaymentMethod) =>
+    update(payment.key, {
+      method,
+      payment_id: method === 'bank' ? payment.payment_id || availablePayments[0]?.payment_id : undefined,
+    });
+
+  // A radio group: one Tab stop, arrows move the choice (same keys as the purchase forms' segmented controls).
+  const onMethodKey = (event: KeyboardEvent<HTMLDivElement>, payment: PaymentDraft, idBase: string) => {
+    const keys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'];
+    if (!keys.includes(event.key)) return;
+    event.preventDefault();
+    const enabled: InvoicePaymentMethod[] = hasAccounts ? ['cash', 'bank'] : ['cash'];
+    const index = Math.max(0, enabled.indexOf(payment.method));
+    let next = index;
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % enabled.length;
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index - 1 + enabled.length) % enabled.length;
+    if (event.key === 'Home') next = 0;
+    if (event.key === 'End') next = enabled.length - 1;
+    chooseMethod(payment, enabled[next]);
+    document.getElementById(`${idBase}-${enabled[next]}`)?.focus();
+  };
 
   const addPayment = (amount = 0) =>
     setPayments((current) => [...current, newPayment(defaultMethod, availablePayments[0]?.payment_id, amount)]);
@@ -191,6 +225,7 @@ export default function InvoiceForm(props: InvoiceFormProps) {
   return (
     <Modal
       guardUnsaved
+      dirty={dirty}
       isOpen={isOpen}
       onClose={onClose}
       size="xl"
@@ -413,21 +448,23 @@ export default function InvoiceForm(props: InvoiceFormProps) {
                   </span>
                   <div className="ka-is-c ka-is-c--m">
                     <span className="ka-po-lab" id={`${amountId}-m`}>วิธีชำระ</span>
-                    <div className="ka-po-seg" role="radiogroup" aria-labelledby={`${amountId}-m`}>
+                    <div
+                      className="ka-po-seg"
+                      role="radiogroup"
+                      aria-labelledby={`${amountId}-m`}
+                      onKeyDown={(event) => onMethodKey(event, payment, amountId)}
+                    >
                       {(['cash', 'bank'] as const).map((method) => (
                         <button
                           key={method}
+                          id={`${amountId}-${method}`}
                           type="button"
                           role="radio"
                           aria-checked={payment.method === method}
+                          tabIndex={payment.method === method ? 0 : -1}
                           disabled={method === 'bank' && !hasAccounts}
                           title={method === 'bank' && !hasAccounts ? 'ผู้จัดจำหน่ายนี้ยังไม่มีบัญชีธนาคาร' : undefined}
-                          onClick={() =>
-                            update(payment.key, {
-                              method,
-                              payment_id: method === 'bank' ? payment.payment_id || availablePayments[0]?.payment_id : undefined,
-                            })
-                          }
+                          onClick={() => chooseMethod(payment, method)}
                         >
                           {method === 'cash' ? 'เงินสด' : 'ธนาคาร'}
                         </button>
@@ -444,8 +481,10 @@ export default function InvoiceForm(props: InvoiceFormProps) {
                           onChange={(value) => update(payment.key, { payment_id: value })}
                           options={accountOptions}
                           placeholder="เลือกบัญชี"
+                          aria-invalid={Boolean(accountError)}
+                          aria-describedby={accountError ? `${amountId}-acc-err` : undefined}
                         />
-                        {accountError && <p className="ka-is-err">{accountError}</p>}
+                        {accountError && <p id={`${amountId}-acc-err`} className="ka-is-err">{accountError}</p>}
                       </>
                     ) : (
                       <span className="ka-is-cashnote">ไม่ต้องเลือกบัญชีสำหรับเงินสด</span>
