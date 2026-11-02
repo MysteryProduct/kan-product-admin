@@ -589,6 +589,7 @@ export default function InvoiceSupplierPage() {
               key={key}
               type="button"
               aria-pressed={statusFilter === key}
+              disabled={Boolean(summaryError) && key !== 'all' && statusFilter !== key}
               onClick={() => {
                 setStatusFilter(key);
                 setPage(1);
@@ -610,6 +611,27 @@ export default function InvoiceSupplierPage() {
           {listError && apiMode && (
             <div className="ka-po-cp">
               <LoadErrorBanner message={listError} onRetry={retryList} />
+            </div>
+          )}
+
+          {/* A status filter reads the summary load, whose banner sits above the cards and may be off screen (TASK-0327 review F15). */}
+          {listError && !apiMode && (
+            <div className="ka-po-empty" role="alert">
+              <p className="ka-po-empty__t">กรองสถานะ “{chipLabel(statusFilter)}” ไม่ได้ เพราะโหลดข้อมูลสรุปไม่สำเร็จ</p>
+              <p className="ka-po-cap">ลองโหลดใหม่ หรือกลับไปดูรายการทั้งหมด</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                <button type="button" className="ka-btn" onClick={retryList}>ลองใหม่</button>
+                <button
+                  type="button"
+                  className="ka-btn"
+                  onClick={() => {
+                    setStatusFilter('all');
+                    setPage(1);
+                  }}
+                >
+                  ดูทั้งหมด
+                </button>
+              </div>
             </div>
           )}
 
