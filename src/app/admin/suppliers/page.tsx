@@ -50,7 +50,6 @@ export default function SupplierPage() {
         message: '',
     });
 
-
     const handleSearch = () => {
         setCurrentPage(1);
         setAppliedSearchQuery(searchQuery.trim());

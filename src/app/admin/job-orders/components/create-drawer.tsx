@@ -199,20 +199,20 @@ export default function CreateJobOrderDrawer({ isOpen, onClose, onSuccess, initi
   if (!shownFor || shownFor[0] !== isOpen || shownFor[1] !== initialData) {
     setShownFor([isOpen, initialData]);
     if (isOpen) {
-        setType((initialData?.job_order_type as JobOrderType) || 'website');
-        setVariantId(initialData?.product_variant_id ? String(initialData.product_variant_id) : '');
-        setName(initialData?.job_order_name || '');
-        setDescription(initialData?.job_order_description || '');
-        setQty(typeof initialData?.job_order_qty === 'number' ? String(initialData.job_order_qty) : '1');
-        setPrice(typeof initialData?.job_order_price === 'number' ? String(initialData.job_order_price) : '0');
-        setTargetDate(initialData?.target_date ? String(initialData.target_date).slice(0, 10) : todayLocalIso());
-        setSizeId(initialData?.size_id ? String(initialData.size_id) : '');
-        setColorId(initialData?.color_id ? String(initialData.color_id) : '');
-        setRows(initialData?.jobOrderMaterials?.length ? initialData.jobOrderMaterials.map((item) => ({ id: crypto.randomUUID(), material_id: item.material_id, material_qty: Number(item.material_qty) || 1, material_name: item.material_name })) : [newRow()]);
-        setErrors({});
-        setSaveError('');
-        setDirty(false);
-        setPickerQuery('');
+      setType((initialData?.job_order_type as JobOrderType) || 'website');
+      setVariantId(initialData?.product_variant_id ? String(initialData.product_variant_id) : '');
+      setName(initialData?.job_order_name || '');
+      setDescription(initialData?.job_order_description || '');
+      setQty(typeof initialData?.job_order_qty === 'number' ? String(initialData.job_order_qty) : '1');
+      setPrice(typeof initialData?.job_order_price === 'number' ? String(initialData.job_order_price) : '0');
+      setTargetDate(initialData?.target_date ? String(initialData.target_date).slice(0, 10) : todayLocalIso());
+      setSizeId(initialData?.size_id ? String(initialData.size_id) : '');
+      setColorId(initialData?.color_id ? String(initialData.color_id) : '');
+      setRows(initialData?.jobOrderMaterials?.length ? initialData.jobOrderMaterials.map((item) => ({ id: crypto.randomUUID(), material_id: item.material_id, material_qty: Number(item.material_qty) || 1, material_name: item.material_name })) : [newRow()]);
+      setErrors({});
+      setSaveError('');
+      setDirty(false);
+      setPickerQuery('');
     }
   }
 
