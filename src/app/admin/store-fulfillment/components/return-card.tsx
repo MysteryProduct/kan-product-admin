@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useNow } from "@/hooks/useNow";
 import StoreFulfillmentModel from "@/models/store-fulfillment";
 import { StoreReturnReason, StoreReturns } from "@/types/store-fulfillment";
 import { getApiErrorMessage } from "@/lib/api-error";
@@ -52,8 +53,8 @@ export default function ReturnCard({
   const [confirming, setConfirming] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
-  // The time the card was opened, read once (not on every render).
-  const [now] = useState(() => Date.now());
+  // Follows the clock, so the days since receipt and the return window follow the date.
+  const now = useNow();
 
   const chosen = returnable
     .map((line) => ({ line, entry: draft[line.saleOrderListId] }))
