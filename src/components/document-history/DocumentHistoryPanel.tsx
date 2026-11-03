@@ -263,7 +263,8 @@ export default function DocumentHistoryPanel({ endpoint, variant = 'button', lim
   // the dialog (its panel) instead of falling to the page behind it.
   const panelFocus = useRef<HTMLSpanElement>(null);
   useEffect(() => {
-    if (!open || loading) return;
+    // Also while loading: "ลองอีกครั้ง" is replaced by the placeholder the moment it is pressed (review F6).
+    if (!open) return;
     const active = document.activeElement;
     if (active && active !== document.body && active.isConnected) return;
     const panel = panelFocus.current?.closest<HTMLElement>('[role="dialog"]');
