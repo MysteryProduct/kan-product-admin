@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import ProductDetailModal from './components/detail';
 
@@ -20,6 +20,8 @@ import { toNameOptions } from '@/lib/filter-options';
 import CategoryModel from '@/models/category';
 import ColorModel from '@/models/color';
 const productModel = new ProductModel();
+// Nothing to subscribe to: only used to tell the browser render from the server and hydration ones.
+const subscribeNever = () => () => {};
 const categoryModel = new CategoryModel();
 const colorModel = new ColorModel();
 import StorePolicy from './components/store-policy';
@@ -186,24 +188,21 @@ export default function ProductsPage() {
   }, [chipFilters, stockTab]);
 
   // The number behind each tab: the API's total for the same search and chips, one small request per tab.
-  const loadCounts = useCallback(async () => {
+  const loadCounts = useCallback(() => {
     const base: Record<string, string> = { ...filters };
     delete base.stock;
     delete base.store;
-    try {
-      const results = await Promise.all(
-        STOCK_TABS.map((tab) =>
-          productModel.getProducts(1, 1, appliedSearchQuery, null, 'ASC', {
-            ...base,
-            ...(tab.value ? { stock: JSON.stringify([tab.value]) } : {}),
-            ...(tab.store ? { store: JSON.stringify([tab.store]) } : {}),
-          }),
-        ),
-      );
-      setCounts(Object.fromEntries(STOCK_TABS.map((tab, index) => [tab.key, results[index].meta.total])));
-    } catch {
-      setCounts({});
-    }
+    return Promise.all(
+      STOCK_TABS.map((tab) =>
+        productModel.getProducts(1, 1, appliedSearchQuery, null, 'ASC', {
+          ...base,
+          ...(tab.value ? { stock: JSON.stringify([tab.value]) } : {}),
+          ...(tab.store ? { store: JSON.stringify([tab.store]) } : {}),
+        }),
+      ),
+    )
+      .then((results) => setCounts(Object.fromEntries(STOCK_TABS.map((tab, index) => [tab.key, results[index].meta.total]))))
+      .catch(() => setCounts({}));
   }, [appliedSearchQuery, filters]);
 
   useEffect(() => {
@@ -225,42 +224,62 @@ export default function ProductsPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const loadProducts = useCallback(
-    async (page: number) => {
+  const requestProducts = useCallback(
+    (page: number) => {
       const ticket = listGate.current.begin();
-      try {
-        setLoading(true);
-        setListError(null);
-        const data = await productModel.getProducts(page, 10, appliedSearchQuery, sortField, sortOrder, filters);
-        // A slower answer to an older query must not replace the current one.
-        if (!listGate.current.isLatest(ticket)) return;
-        setProducts(data);
-        setMeta(data.meta);
-        const present = new Set(data.data.map((product) => product.product_id));
-        setSelectedIds((prev) => {
-          const kept = new Set([...prev].filter((id) => present.has(id)));
-          return kept.size === prev.size ? prev : kept;
+      return productModel
+        .getProducts(page, 10, appliedSearchQuery, sortField, sortOrder, filters)
+        .then((data) => {
+          // A slower answer to an older query must not replace the current one.
+          if (!listGate.current.isLatest(ticket)) return;
+          setProducts(data);
+          setMeta(data.meta);
+          const present = new Set(data.data.map((product) => product.product_id));
+          setSelectedIds((prev) => {
+            const kept = new Set([...prev].filter((id) => present.has(id)));
+            return kept.size === prev.size ? prev : kept;
+          });
+          void loadPolicies(data.data.map((product) => product.product_id));
+        })
+        .catch((error) => {
+          if (!listGate.current.isLatest(ticket)) return;
+          console.error('Failed to fetch products:', error);
+          setListError(loadErrorText('รายการสินค้า', error));
+        })
+        .finally(() => {
+          if (listGate.current.isLatest(ticket)) setLoading(false);
         });
-        void loadPolicies(data.data.map((product) => product.product_id));
-      } catch (error) {
-        if (!listGate.current.isLatest(ticket)) return;
-        console.error('Failed to fetch products:', error);
-        setListError(loadErrorText('รายการสินค้า', error));
-      } finally {
-        if (listGate.current.isLatest(ticket)) setLoading(false);
-      }
     },
     [appliedSearchQuery, sortField, sortOrder, filters, loadPolicies],
   );
 
-  useEffect(() => {
-    void loadProducts(currentPage);
-  }, [currentPage, loadProducts]);
+  // A new query shows the loading state at once (during render); the effect only sends the request.
+  const productsQuery = [currentPage, appliedSearchQuery, sortField, sortOrder, filters] as const;
+  const [requested, setRequested] = useState<typeof productsQuery | null>(null);
+  if (!requested || productsQuery.some((value, index) => value !== requested[index])) {
+    setRequested(productsQuery);
+    setLoading(true);
+    setListError(null);
+  }
 
-  // Column preferences are read after mount (the server cannot see storage) and per employee.
   useEffect(() => {
+    void requestProducts(currentPage);
+  }, [currentPage, requestProducts]);
+
+  const loadProducts = (page: number) => {
+    setLoading(true);
+    setListError(null);
+    return requestProducts(page);
+  };
+
+  // Column preferences are read in the browser (the server cannot see storage) and per employee;
+  // the server and hydration renders keep the defaults.
+  const inBrowser = useSyncExternalStore(subscribeNever, () => true, () => false);
+  const [columnsFor, setColumnsFor] = useState<string | null>(null);
+  if (inBrowser && columnsFor !== preferenceStorageKey) {
+    setColumnsFor(preferenceStorageKey);
     setHiddenColumns(loadHiddenColumns(browserStorage(), preferenceStorageKey, HIDEABLE_KEYS, REQUIRED_KEYS));
-  }, [preferenceStorageKey]);
+  }
 
   // The selection belongs to the rows of one query and page.
   const clearSelection = () => setSelectedIds(new Set());

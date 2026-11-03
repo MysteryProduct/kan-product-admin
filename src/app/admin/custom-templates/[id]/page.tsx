@@ -62,41 +62,55 @@ export default function CustomTemplateEditorPage() {
   const dirty = useMemo(() => form !== null && JSON.stringify(form) !== saved, [form, saved]);
 
   const open = useCallback(
-    async (templateId: string, number?: number) => {
-      const t = await model.getTemplate(templateId);
-      const target =
-        number ??
-        t.revisions.find((r) => r.status === 'draft')?.revision ??
-        t.revisions.find((r) => r.status === 'published')?.revision ??
-        t.revisions[0].revision;
-      const detail = await model.getRevision(templateId, target);
-      const next = formFromRevision(detail);
-      setHead(t);
-      setRevision(detail);
-      setForm(next);
-      setSaved(JSON.stringify(next));
-    },
+    (templateId: string, number?: number) =>
+      model.getTemplate(templateId).then((t) => {
+        const target =
+          number ??
+          t.revisions.find((r) => r.status === 'draft')?.revision ??
+          t.revisions.find((r) => r.status === 'published')?.revision ??
+          t.revisions[0].revision;
+        return model.getRevision(templateId, target).then((detail) => {
+          const next = formFromRevision(detail);
+          setHead(t);
+          setRevision(detail);
+          setForm(next);
+          setSaved(JSON.stringify(next));
+        });
+      }),
     [],
   );
 
-  const load = useCallback(async () => {
+  const request = useCallback(
+    () =>
+      open(id)
+        .catch((error) => setLoadError(loadErrorText('แบบสินค้า', error)))
+        .then(() => Promise.allSettled([model.getMaterialChoices(), model.getUnitChoices()]))
+        .then(([m, u]) => {
+          if (m.status === 'fulfilled') setMaterials(m.value);
+          if (u.status === 'fulfilled') setUnits(u.value);
+          setChoiceError(partialLoadText([m.status === 'rejected' && 'วัตถุดิบ', u.status === 'rejected' && 'หน่วย'].filter(Boolean) as string[]));
+          setLoading(false);
+        }),
+    [id, open],
+  );
+
+  // Another template shows the loading state at once (during render); the effect only sends the requests.
+  const [requested, setRequested] = useState<string | null>(null);
+  if (requested !== id) {
+    setRequested(id);
     setLoading(true);
     setLoadError(null);
-    try {
-      await open(id);
-    } catch (error) {
-      setLoadError(loadErrorText('แบบสินค้า', error));
-    }
-    const [m, u] = await Promise.allSettled([model.getMaterialChoices(), model.getUnitChoices()]);
-    if (m.status === 'fulfilled') setMaterials(m.value);
-    if (u.status === 'fulfilled') setUnits(u.value);
-    setChoiceError(partialLoadText([m.status === 'rejected' && 'วัตถุดิบ', u.status === 'rejected' && 'หน่วย'].filter(Boolean) as string[]));
-    setLoading(false);
-  }, [id, open]);
+  }
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void request();
+  }, [request]);
+
+  const load = () => {
+    setLoading(true);
+    setLoadError(null);
+    return request();
+  };
 
   const isDraft = revision?.status === 'draft';
   const editable = isDraft && canEdit;
