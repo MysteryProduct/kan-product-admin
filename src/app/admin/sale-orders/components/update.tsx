@@ -95,40 +95,47 @@ export default function UpdateSaleOrderForm({ isOpen, onClose, onSuccess, initia
 
     const existingFetchIds = useMemo(() => new Set(items.map((item) => item.fetch_sale_order_id).filter(Boolean)), [items]);
 
-    useEffect(() => {
-        if (!isOpen || !initialData) return;
-        setSaleOrderName(initialData.sale_order_name || '');
-        setSaleOrderDetail(initialData.sale_order_detail || '');
-        setShippingAddressName(initialData.shipping_address_name || '');
-        setSaleOrderType(initialData.sale_order_type || 'order');
-        setVatType(initialData.vat_type || 'none');
-        setItems((initialData.saleOrderLists || []).map(mapListToFormItem));
-        setErrors({});
-    }, [isOpen, initialData?.sale_order_id]);
+    // Reset form when opened or given another order (during render, so the old values never show).
+    const saleOrderId = initialData?.sale_order_id;
+    const [shownFor, setShownFor] = useState<[boolean, typeof saleOrderId] | null>(null);
+    if (!shownFor || shownFor[0] !== isOpen || shownFor[1] !== saleOrderId) {
+        setShownFor([isOpen, saleOrderId]);
+        if (isOpen && initialData) {
+            setSaleOrderName(initialData.sale_order_name || '');
+            setSaleOrderDetail(initialData.sale_order_detail || '');
+            setShippingAddressName(initialData.shipping_address_name || '');
+            setSaleOrderType(initialData.sale_order_type || 'order');
+            setVatType(initialData.vat_type || 'none');
+            setItems((initialData.saleOrderLists || []).map(mapListToFormItem));
+            setErrors({});
+        }
+    }
+
+    // The picker shows its spinner as soon as its query changes (during render); the effect only fetches.
+    const [selectionQuery, setSelectionQuery] = useState<[boolean, number, string, typeof items] | null>(null);
+    if (!selectionQuery || selectionQuery[0] !== isSelectModalOpen || selectionQuery[1] !== selectionPage || selectionQuery[2] !== selectionAppliedSearch || selectionQuery[3] !== items) {
+        setSelectionQuery([isSelectModalOpen, selectionPage, selectionAppliedSearch, items]);
+        if (isSelectModalOpen) setIsSelectionLoading(true);
+    }
+
+    const fetchSelectionItems = () =>
+        saleOrderModel
+            .getFetchSaleOrders(selectionPage, 10, selectionAppliedSearch)
+            .then((response: FetchSaleOrderResponse) => {
+                setSelectionRows((response.data || []).filter((row) => !existingFetchIds.has(row.fetch_sale_order_id)));
+                setSelectionMeta(response.meta || null);
+            })
+            .catch((error) => {
+                console.error('Failed to fetch selectable fetch-sale-orders:', error);
+                setSelectionRows([]);
+                setSelectionMeta(null);
+            })
+            .finally(() => setIsSelectionLoading(false));
 
     useEffect(() => {
         if (!isSelectModalOpen) return;
         void fetchSelectionItems();
     }, [isSelectModalOpen, selectionPage, selectionAppliedSearch, items]);
-
-    const fetchSelectionItems = async () => {
-        try {
-            setIsSelectionLoading(true);
-            const response: FetchSaleOrderResponse = await saleOrderModel.getFetchSaleOrders(
-                selectionPage,
-                10,
-                selectionAppliedSearch,
-            );
-            setSelectionRows((response.data || []).filter((row) => !existingFetchIds.has(row.fetch_sale_order_id)));
-            setSelectionMeta(response.meta || null);
-        } catch (error) {
-            console.error('Failed to fetch selectable fetch-sale-orders:', error);
-            setSelectionRows([]);
-            setSelectionMeta(null);
-        } finally {
-            setIsSelectionLoading(false);
-        }
-    };
 
     const calculateItemTotal = (item: SaleOrderItemForm) =>
         Number(item.sale_order_list_qty) * Number(item.sale_order_list_price);

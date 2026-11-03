@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Modal from '@/components/Modal';
 import EmployeeLicenseModel from '@/models/employee-license';
 import type { EmployeeLicense } from '@/types/employee-license';
@@ -21,11 +21,15 @@ export default function LicenseFormModal({ isOpen, license, onClose, onSaved }: 
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    setName(license?.license_name ?? '');
-    setError(null);
-  }, [isOpen, license]);
+  // Reset when opened or given another license (during render, so the old values never show).
+  const [shownFor, setShownFor] = useState<[boolean, typeof license] | null>(null);
+  if (!shownFor || shownFor[0] !== isOpen || shownFor[1] !== license) {
+    setShownFor([isOpen, license]);
+    if (isOpen) {
+      setName(license?.license_name ?? '');
+      setError(null);
+    }
+  }
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();

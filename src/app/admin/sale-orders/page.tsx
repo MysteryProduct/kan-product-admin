@@ -72,47 +72,71 @@ export default function SaleOrderPage() {
         message: '',
     });
 
-    useEffect(() => {
-        void loadFetchSaleOrders();
-    }, [fetchSaleOrderPage, fetchSaleOrderAppliedSearch]);
+    const requestFetchSaleOrders = (page = fetchSaleOrderPage, search = fetchSaleOrderAppliedSearch) =>
+        saleOrderModel
+            .getFetchSaleOrders(page, 10, search)
+            .then((result) => {
+                setFetchSaleOrders(result);
+                setFetchSaleOrderMeta(result.meta);
+            })
+            .catch((error) => {
+                console.error('Failed to fetch fetch-sale-orders:', error);
+                setReadyItemsError(loadErrorText('รายการสินค้าพร้อมขาย', error));
+            })
+            .finally(() => setLoading(false));
 
-    useEffect(() => {
-        void loadSaleOrders();
-    }, [saleOrderPage, saleOrderAppliedSearch, saleOrderSortField, saleOrderSortOrder, saleOrderType]);
-
-    const loadFetchSaleOrders = async (page = fetchSaleOrderPage, search = fetchSaleOrderAppliedSearch) => {
-        try {
-            setLoading(true);
-            setReadyItemsError(null);
-            const result = await saleOrderModel.getFetchSaleOrders(page, 10, search);
-            setFetchSaleOrders(result);
-            setFetchSaleOrderMeta(result.meta);
-        } catch (error) {
-            console.error('Failed to fetch fetch-sale-orders:', error);
-            setReadyItemsError(loadErrorText('รายการสินค้าพร้อมขาย', error));
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const loadSaleOrders = async (
+    const requestSaleOrders = (
         page = saleOrderPage,
         search = saleOrderAppliedSearch,
         sortField = saleOrderSortField,
         sortOrder = saleOrderSortOrder,
-    ) => {
-        try {
-            setLoading(true);
-            setListError(null);
-            const result = await saleOrderModel.getSaleOrders(page, 10, search, sortField, sortOrder, saleOrderType);
-            setSaleOrders(result);
-            setSaleOrderMeta(result.meta);
-        } catch (error) {
-            console.error('Failed to fetch sale orders:', error);
-            setListError(loadErrorText('รายการใบขายสินค้า', error));
-        } finally {
-            setLoading(false);
-        }
+    ) =>
+        saleOrderModel
+            .getSaleOrders(page, 10, search, sortField, sortOrder, saleOrderType)
+            .then((result) => {
+                setSaleOrders(result);
+                setSaleOrderMeta(result.meta);
+            })
+            .catch((error) => {
+                console.error('Failed to fetch sale orders:', error);
+                setListError(loadErrorText('รายการใบขายสินค้า', error));
+            })
+            .finally(() => setLoading(false));
+
+    // A new query of either list shows the loading state at once (during render); the effects only send the requests.
+    const readyQuery = [fetchSaleOrderPage, fetchSaleOrderAppliedSearch] as const;
+    const [readyRequested, setReadyRequested] = useState<typeof readyQuery | null>(null);
+    if (!readyRequested || readyQuery.some((value, index) => value !== readyRequested[index])) {
+        setReadyRequested(readyQuery);
+        setLoading(true);
+        setReadyItemsError(null);
+    }
+    const listQuery = [saleOrderPage, saleOrderAppliedSearch, saleOrderSortField, saleOrderSortOrder, saleOrderType] as const;
+    const [listRequested, setListRequested] = useState<typeof listQuery | null>(null);
+    if (!listRequested || listQuery.some((value, index) => value !== listRequested[index])) {
+        setListRequested(listQuery);
+        setLoading(true);
+        setListError(null);
+    }
+
+    useEffect(() => {
+        void requestFetchSaleOrders();
+    }, [fetchSaleOrderPage, fetchSaleOrderAppliedSearch]);
+
+    useEffect(() => {
+        void requestSaleOrders();
+    }, [saleOrderPage, saleOrderAppliedSearch, saleOrderSortField, saleOrderSortOrder, saleOrderType]);
+
+    const loadFetchSaleOrders = (...args: Parameters<typeof requestFetchSaleOrders>) => {
+        setLoading(true);
+        setReadyItemsError(null);
+        return requestFetchSaleOrders(...args);
+    };
+
+    const loadSaleOrders = (...args: Parameters<typeof requestSaleOrders>) => {
+        setLoading(true);
+        setListError(null);
+        return requestSaleOrders(...args);
     };
 
     const handleSaleOrderSortChange = (sort: { key: string; direction: 'ASC' | 'DESC' } | null) => {

@@ -45,24 +45,33 @@ export default function LicensePage() {
   const [result, setResult] = useState<ResultState>({ isOpen: false, status: 'success', action: 'insert', message: '' });
   const matrixRef = useRef<HTMLDivElement>(null);
 
-  const fetchLicenses = useCallback(
-    async (page = currentPage, query = appliedSearch) => {
-      try {
-        setLoading(true);
-        setListError(null);
-        setLicenses(await licenseModel.getLicenses(page, 10, query));
-      } catch (error) {
-        setListError(error instanceof Error ? error.message : 'โหลดรายการกลุ่มสิทธิ์ไม่สำเร็จ');
-      } finally {
-        setLoading(false);
-      }
-    },
+  const requestLicenses = useCallback(
+    (page = currentPage, query = appliedSearch) =>
+      licenseModel
+        .getLicenses(page, 10, query)
+        .then(setLicenses)
+        .catch((error) => setListError(error instanceof Error ? error.message : 'โหลดรายการกลุ่มสิทธิ์ไม่สำเร็จ'))
+        .finally(() => setLoading(false)),
     [currentPage, appliedSearch],
   );
 
+  // A new query shows the loading state at once (during render); the effect only sends the request.
+  const [requested, setRequested] = useState<[number, string] | null>(null);
+  if (!requested || requested[0] !== currentPage || requested[1] !== appliedSearch) {
+    setRequested([currentPage, appliedSearch]);
+    setLoading(true);
+    setListError(null);
+  }
+
   useEffect(() => {
-    void fetchLicenses();
-  }, [fetchLicenses]);
+    void requestLicenses();
+  }, [requestLicenses]);
+
+  const fetchLicenses = (page = currentPage, query = appliedSearch) => {
+    setLoading(true);
+    setListError(null);
+    return requestLicenses(page, query);
+  };
 
   // In-app links (sidebar, header) navigate client-side, so beforeunload never fires for them.
   // While the matrix is dirty, intercept plain same-origin anchor clicks and ask first.

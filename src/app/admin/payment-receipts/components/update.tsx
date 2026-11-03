@@ -84,23 +84,24 @@ export default function UpdatePaymentReceiptForm({
 		void loadBankAccounts();
 	}, [isOpen]);
 
-	useEffect(() => {
-		if (!isOpen || !initialData) {
-			return;
+	// Reset form when opened or given another receipt (during render, so the old values never show).
+	const [shownFor, setShownFor] = useState<[boolean, typeof initialData] | null>(null);
+	if (!shownFor || shownFor[0] !== isOpen || shownFor[1] !== initialData) {
+		setShownFor([isOpen, initialData]);
+		if (isOpen && initialData) {
+			setFormData({
+				payment_receipt_code: initialData.payment_receipt_code || '',
+				payment_receipt_type: initialData.payment_receipt_type || 'full',
+				payment_method: initialData.payment_method === 'cash' ? 'cash' : 'bank',
+				amount_paid: String(Number(initialData.amount_paid || 0).toFixed(2)),
+				payment_date: String(initialData.payment_date || '').slice(0, 10),
+				payment_status: initialData.payment_status || 'paid',
+				payment_receipt_remark: initialData.payment_receipt_remark || '',
+				account_id: initialData.account_id || '',
+			});
+			setErrors({});
 		}
-
-		setFormData({
-			payment_receipt_code: initialData.payment_receipt_code || '',
-			payment_receipt_type: initialData.payment_receipt_type || 'full',
-			payment_method: initialData.payment_method === 'cash' ? 'cash' : 'bank',
-			amount_paid: String(Number(initialData.amount_paid || 0).toFixed(2)),
-			payment_date: String(initialData.payment_date || '').slice(0, 10),
-			payment_status: initialData.payment_status || 'paid',
-			payment_receipt_remark: initialData.payment_receipt_remark || '',
-			account_id: initialData.account_id || '',
-		});
-		setErrors({});
-	}, [isOpen, initialData]);
+	}
 
 	const validate = () => {
 		const nextErrors: Record<string, string> = {};

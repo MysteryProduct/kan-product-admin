@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useNow } from '@/hooks/useNow';
 import StoreFulfillmentModel from '@/models/store-fulfillment';
 import {
   ConvertToDeliveryDto,
@@ -81,11 +82,13 @@ export default function DeliveryConversionCard({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState('');
+  // Follows the clock, so the missed-appointment state changes while the page stays open.
+  const now = useNow();
 
   const pickup = order.pickup;
   const missedSecond =
     !!pickup?.secondAppointmentAt &&
-    new Date(pickup.secondAppointmentAt).getTime() < Date.now() &&
+    new Date(pickup.secondAppointmentAt).getTime() < now &&
     pickup.status !== 'picked_up';
   const convertible =
     canEdit &&

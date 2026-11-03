@@ -47,16 +47,24 @@ export default function UpdateMaterialForm({ isOpen, onClose, onSuccess, initial
 		message: '',
 	});
 
+	// Reset form when opened or given another record (during render, so the old values never show).
+	const [shownFor, setShownFor] = useState<[boolean, typeof initialData] | null>(null);
+	if (!shownFor || shownFor[0] !== isOpen || shownFor[1] !== initialData) {
+		setShownFor([isOpen, initialData]);
+		if (isOpen) {
+			setMaterialName(initialData.material_name || '');
+			setMaterialDescription(initialData.material_description || '');
+			setMaterialPrice(String(initialData.material_price ?? ''));
+			setMaterialSize(initialData.size_id ?? 0);
+			setMaterialColor(initialData.color_id ?? 0);
+			setError(null);
+		}
+	}
+
 	useEffect(() => {
 		if (!isOpen) {
 			return;
 		}
-		setMaterialName(initialData.material_name || '');
-		setMaterialDescription(initialData.material_description || '');
-		setMaterialPrice(String(initialData.material_price ?? ''));
-		setMaterialSize(initialData.size_id ?? 0);
-		setMaterialColor(initialData.color_id ?? 0);
-		setError(null);
 		const fetchOptions = async () => {
 			const sizes = await sizeModel.getSizes();
 			const colors = await colorModel.getColors();

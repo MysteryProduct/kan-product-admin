@@ -39,6 +39,18 @@ export default function UpdateSizeForm({ isOpen, onClose, onSuccess, initialData
 
 	const selectedCount = useMemo(() => selectedCategoryIds.length, [selectedCategoryIds.length]);
 
+	// Reset form when opened or given another size (during render, so the old values never show).
+	const [shownFor, setShownFor] = useState<[boolean, typeof initialData] | null>(null);
+	if (!shownFor || shownFor[0] !== isOpen || shownFor[1] !== initialData) {
+		setShownFor([isOpen, initialData]);
+		if (isOpen) {
+			setSizeName(initialData.size_name || '');
+			setError(null);
+			setResultDialog((prev) => ({ ...prev, isOpen: false }));
+			setLoadError(null);
+		}
+	}
+
 	useEffect(() => {
 		if (!isOpen) {
 			return;
@@ -46,7 +58,6 @@ export default function UpdateSizeForm({ isOpen, onClose, onSuccess, initialData
 
 		const fetchFormData = async () => {
 			// One failing request must not hide the other, and the person needs to know which one is missing.
-			setLoadError(null);
 			const results = await Promise.allSettled([
 				categoryModel.getAllCategories(),
 				sizeModel.getCategoryRelationsBySize(initialData.size_id),
@@ -66,9 +77,6 @@ export default function UpdateSizeForm({ isOpen, onClose, onSuccess, initialData
 			}
 		};
 
-		setSizeName(initialData.size_name || '');
-		setError(null);
-		setResultDialog((prev) => ({ ...prev, isOpen: false }));
 		fetchFormData();
 	}, [isOpen, initialData]);
 

@@ -35,6 +35,18 @@ export default function InsertSizeForm({ isOpen, onClose, onSuccess }: InsertSiz
 
 	const selectedCount = useMemo(() => selectedCategoryIds.length, [selectedCategoryIds.length]);
 
+	// Reset form when opened (during render, so the old values never show).
+	const [openedAt, setOpenedAt] = useState(false);
+	if (openedAt !== isOpen) {
+		setOpenedAt(isOpen);
+		if (isOpen) {
+			setSizeName('');
+			setSelectedCategoryIds([]);
+			setError(null);
+			setResultDialog((prev) => ({ ...prev, isOpen: false }));
+		}
+	}
+
 	useEffect(() => {
 		if (!isOpen) {
 			return;
@@ -51,10 +63,6 @@ export default function InsertSizeForm({ isOpen, onClose, onSuccess }: InsertSiz
 		};
 
 		fetchCategories();
-		setSizeName('');
-		setSelectedCategoryIds([]);
-		setError(null);
-		setResultDialog((prev) => ({ ...prev, isOpen: false }));
 	}, [isOpen]);
 
 	const toggleCategory = (categoryId: number) => {

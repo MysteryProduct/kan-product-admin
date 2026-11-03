@@ -174,9 +174,15 @@ export function ModelSection({ form, onChange, readOnly, file, busy, loadBytes, 
     load.current = loadBytes;
   });
 
-  useEffect(() => {
+  // Another file clears the old preview during render; the effect only reads the new one.
+  const [shownFile, setShownFile] = useState(fileId);
+  if (shownFile !== fileId) {
+    setShownFile(fileId);
     setBytes(null);
     setViewerNote('');
+  }
+
+  useEffect(() => {
     if (!fileId) return;
     let live = true;
     load.current()

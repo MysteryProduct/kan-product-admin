@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef } from 'react';
 import type { JobOrder } from '@/types/job-order';
-import { bangkokDayKey, BOARD_COLUMNS, buildCalendarCells, count, getDueInfo, normalizeStatus, toIsoDate, WEEKDAY_LABELS } from '../board-model';
+import { bangkokDayKey, BOARD_COLUMNS, buildCalendarCells, count, getDueInfo, getVariantLabel, normalizeStatus, toIsoDate, WEEKDAY_LABELS } from '../board-model';
 import { NextStepButton, type JobCardActions } from './job-card';
 
 interface CalendarViewProps {
@@ -104,7 +104,7 @@ export default function CalendarView({ isLoading, monthDate, jobs, todayKey, sel
 								}}
 							>
 								<span className="ka-cell__d numeric">{cell.date.getDate()}</span>
-								{shown.map((job) => <span key={job.job_order_id} className="ka-ev" data-tone={toneOf(job)}>{job.job_order_name}</span>)}
+								{shown.map((job) => <span key={job.job_order_id} className="ka-ev" data-tone={toneOf(job)}>{getVariantLabel(job).title}</span>)}
 								{more > 0 && <span className="ka-jo-more">+{count(more)} งาน</span>}
 							</button>
 						);
@@ -120,7 +120,7 @@ export default function CalendarView({ isLoading, monthDate, jobs, todayKey, sel
 					<div key={job.job_order_id} className="ka-jo-pj">
 						<span className="ka-jo-dot" style={{ background: dotColor(job) }} aria-hidden="true" />
 						<div className="ka-jo-pj__body">
-							<button type="button" className="ka-jo-row__title" onClick={() => actions.onView(job)}>{job.job_order_name}</button>
+							<button type="button" className="ka-jo-row__title" onClick={() => actions.onView(job)}>{getVariantLabel(job).title}</button>
 							<p className="ka-todo__cap numeric m-0">{job.job_order_code} · {count(job.job_order_qty ?? 0)} ชิ้น · {statusLabel(job)}</p>
 						</div>
 						<NextStepButton job={job} canEdit={canEdit} onMove={actions.onMove} />
@@ -134,7 +134,7 @@ export default function CalendarView({ isLoading, monthDate, jobs, todayKey, sel
 							<div key={job.job_order_id} className="ka-jo-pj">
 								<span className="ka-jo-dot" style={{ background: dotColor(job) }} aria-hidden="true" />
 								<div className="ka-jo-pj__body">
-									<button type="button" className="ka-jo-row__title" onClick={() => actions.onView(job)}>{job.job_order_name}</button>
+									<button type="button" className="ka-jo-row__title" onClick={() => actions.onView(job)}>{getVariantLabel(job).title}</button>
 									<p className="ka-todo__cap m-0">{getDueInfo(job).text} · {statusLabel(job)}</p>
 								</div>
 							</div>

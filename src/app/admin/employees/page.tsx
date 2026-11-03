@@ -38,24 +38,33 @@ export default function EmployeesPage() {
   const [employeeToDisable, setEmployeeToDisable] = useState<Employee | null>(null);
   const [result, setResult] = useState<ResultState>({ isOpen: false, status: 'success', action: 'insert', message: '' });
 
-  const fetchEmployees = useCallback(
-    async (page = currentPage, query = appliedSearch) => {
-      try {
-        setLoading(true);
-        setListError(null);
-        setEmployees(await employeeModel.getEmployees(page, 10, query));
-      } catch (error) {
-        setListError(error instanceof Error ? error.message : 'โหลดรายการพนักงานไม่สำเร็จ');
-      } finally {
-        setLoading(false);
-      }
-    },
+  const requestEmployees = useCallback(
+    (page = currentPage, query = appliedSearch) =>
+      employeeModel
+        .getEmployees(page, 10, query)
+        .then(setEmployees)
+        .catch((error) => setListError(error instanceof Error ? error.message : 'โหลดรายการพนักงานไม่สำเร็จ'))
+        .finally(() => setLoading(false)),
     [currentPage, appliedSearch],
   );
 
+  // A new query shows the loading state at once (during render); the effect only sends the request.
+  const [requested, setRequested] = useState<[number, string] | null>(null);
+  if (!requested || requested[0] !== currentPage || requested[1] !== appliedSearch) {
+    setRequested([currentPage, appliedSearch]);
+    setLoading(true);
+    setListError(null);
+  }
+
   useEffect(() => {
-    void fetchEmployees();
-  }, [fetchEmployees]);
+    void requestEmployees();
+  }, [requestEmployees]);
+
+  const fetchEmployees = (page = currentPage, query = appliedSearch) => {
+    setLoading(true);
+    setListError(null);
+    return requestEmployees(page, query);
+  };
 
   const handleSearch = () => {
     setCurrentPage(1);

@@ -400,7 +400,7 @@ export default function ProductEditor({ mode, product, policy: initialPolicy }: 
     'aria-invalid': errors[key] ? true : undefined,
     'aria-describedby': errors[key] ? `${key}-error` : undefined,
   });
-  const FieldError = ({ id }: { id: string }) =>
+  const fieldError = (id: string) =>
     errors[id] ? (
       <span id={`${id}-error`} className="ka-error" role="alert">
         {errors[id]}
@@ -458,7 +458,7 @@ export default function ProductEditor({ mode, product, policy: initialPolicy }: 
                   ชื่อสินค้า <span className="ka-req">*</span>
                 </label>
                 <input id="product-name" className="ka-input" value={name} maxLength={255} onChange={(event) => touch(setName)(event.target.value)} {...field('name')} />
-                <FieldError id="name" />
+                {fieldError('name')}
               </div>
               <div className="ka-field">
                 <label htmlFor="product-description" className="ka-label">
@@ -472,7 +472,7 @@ export default function ProductEditor({ mode, product, policy: initialPolicy }: 
                   onChange={(event) => touch(setDescription)(event.target.value)}
                   {...field('description')}
                 />
-                <FieldError id="description" />
+                {fieldError('description')}
               </div>
               <div className="ka-editor__g2">
                 <div className="ka-field">
@@ -487,7 +487,7 @@ export default function ProductEditor({ mode, product, policy: initialPolicy }: 
                     placeholder="เลือกประเภทสินค้า"
                     {...field('category')}
                   />
-                  <FieldError id="category" />
+                  {fieldError('category')}
                 </div>
                 <div className="ka-field">
                   <label htmlFor="product-unit" className="ka-label">หน่วยนับ</label>
@@ -550,7 +550,7 @@ export default function ProductEditor({ mode, product, policy: initialPolicy }: 
                             placeholder="เลือกขนาด"
                             {...field(`${at}.size`)}
                           />
-                          <FieldError id={`${at}.size`} />
+                          {fieldError(`${at}.size`)}
                         </div>
                         <div className="ka-field">
                           <label htmlFor={`${at}-color`} className="ka-label">สี <span className="ka-req">*</span></label>
@@ -562,7 +562,7 @@ export default function ProductEditor({ mode, product, policy: initialPolicy }: 
                             placeholder="เลือกสี"
                             {...field(`${at}.color`)}
                           />
-                          <FieldError id={`${at}.color`} />
+                          {fieldError(`${at}.color`)}
                         </div>
                         <div className="ka-field">
                           <label htmlFor={`${at}-price`} className="ka-label">ราคา (บาท) <span className="ka-req">*</span></label>
@@ -578,7 +578,7 @@ export default function ProductEditor({ mode, product, policy: initialPolicy }: 
                             onChange={(event) => setVariant(variant.key, { product_variant_price: event.target.value })}
                             {...field(`${at}.price`)}
                           />
-                          <FieldError id={`${at}.price`} />
+                          {fieldError(`${at}.price`)}
                         </div>
                         <div className="ka-field">
                           <label htmlFor={`${at}-status`} className="ka-label">สถานะ</label>
@@ -602,7 +602,7 @@ export default function ProductEditor({ mode, product, policy: initialPolicy }: 
                             placeholder="เลือกหน่วยนับ"
                             {...field(`${at}.unit`)}
                           />
-                          <FieldError id={`${at}.unit`} />
+                          {fieldError(`${at}.unit`)}
                         </div>
                       </div>
 
@@ -648,7 +648,7 @@ export default function ProductEditor({ mode, product, policy: initialPolicy }: 
                             </div>
                           );
                         })}
-                        <FieldError id={`${at}.materials`} />
+                        {fieldError(`${at}.materials`)}
                       </div>
 
                       <div className="ka-variant__files">
@@ -700,7 +700,7 @@ export default function ProductEditor({ mode, product, policy: initialPolicy }: 
                             </label>
                           )}
                         </div>
-                        <FieldError id={`${at}.files`} />
+                        {fieldError(`${at}.files`)}
                       </div>
                     </div>
                   </article>
@@ -805,7 +805,7 @@ export default function ProductEditor({ mode, product, policy: initialPolicy }: 
                   <span className="ka-todo__cap">JPG, PNG, WebP หรือวิดีโอ · สูงสุด {MAX_PRODUCT_FILES} ไฟล์ · รูปแรกเป็นรูปหลัก</span>
                 </label>
               )}
-              <FieldError id="files" />
+              {fieldError('files')}
             </div>
           </section>
 

@@ -21,10 +21,16 @@ export default function EditProductPage() {
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
 
+  // A new read (another product or a retry) clears the old error during render; the effect only reads.
+  const [readFor, setReadFor] = useState<[typeof id, number, boolean] | null>(null);
+  if (!readFor || readFor[0] !== id || readFor[1] !== attempt || readFor[2] !== canEdit) {
+    setReadFor([id, attempt, canEdit]);
+    if (id && canEdit) setError(null);
+  }
+
   useEffect(() => {
     if (!id || !canEdit) return;
     let active = true;
-    setError(null);
     Promise.all([productModel.getProductById(id), productModel.getStorePolicies([id]).catch(() => [])])
       .then(([product, policies]) => {
         if (!active) return;

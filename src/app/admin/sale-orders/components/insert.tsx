@@ -77,7 +77,11 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
 
     const existingFetchIds = useMemo(() => new Set(items.map((item) => item.fetch_sale_order_id)), [items]);
 
-    useEffect(() => {
+    // Reset form when opened or given another fetched order (during render, so the old values never show).
+    const initialFetchId = initialFetchSaleOrder?.fetch_sale_order_id;
+    const [shownFor, setShownFor] = useState<[boolean, typeof initialFetchId] | null>(null);
+    if (!shownFor || shownFor[0] !== isOpen || shownFor[1] !== initialFetchId) {
+        setShownFor([isOpen, initialFetchId]);
         if (isOpen) {
             setSaleOrderName('');
             setSaleOrderDetail('');
@@ -91,31 +95,33 @@ export default function InsertSaleOrderForm({ isOpen, onClose, onSuccess, initia
                 setItems([]);
             }
         }
-    }, [isOpen, initialFetchSaleOrder?.fetch_sale_order_id]);
+    }
+
+    // The picker shows its spinner as soon as its query changes (during render); the effect only fetches.
+    const [selectionQuery, setSelectionQuery] = useState<[boolean, number, string, typeof items] | null>(null);
+    if (!selectionQuery || selectionQuery[0] !== isSelectModalOpen || selectionQuery[1] !== selectionPage || selectionQuery[2] !== selectionAppliedSearch || selectionQuery[3] !== items) {
+        setSelectionQuery([isSelectModalOpen, selectionPage, selectionAppliedSearch, items]);
+        if (isSelectModalOpen) setIsSelectionLoading(true);
+    }
+
+    const fetchSelectionItems = () =>
+        saleOrderModel
+            .getFetchSaleOrders(selectionPage, 10, selectionAppliedSearch)
+            .then((response: FetchSaleOrderResponse) => {
+                setSelectionRows((response.data || []).filter((row) => !existingFetchIds.has(row.fetch_sale_order_id)));
+                setSelectionMeta(response.meta || null);
+            })
+            .catch((error) => {
+                console.error('Failed to fetch selectable fetch-sale-orders:', error);
+                setSelectionRows([]);
+                setSelectionMeta(null);
+            })
+            .finally(() => setIsSelectionLoading(false));
 
     useEffect(() => {
         if (!isSelectModalOpen) return;
         void fetchSelectionItems();
     }, [isSelectModalOpen, selectionPage, selectionAppliedSearch, items]);
-
-    const fetchSelectionItems = async () => {
-        try {
-            setIsSelectionLoading(true);
-            const response: FetchSaleOrderResponse = await saleOrderModel.getFetchSaleOrders(
-                selectionPage,
-                10,
-                selectionAppliedSearch,
-            );
-            setSelectionRows((response.data || []).filter((row) => !existingFetchIds.has(row.fetch_sale_order_id)));
-            setSelectionMeta(response.meta || null);
-        } catch (error) {
-            console.error('Failed to fetch selectable fetch-sale-orders:', error);
-            setSelectionRows([]);
-            setSelectionMeta(null);
-        } finally {
-            setIsSelectionLoading(false);
-        }
-    };
 
     const calculateItemTotal = (item: SaleOrderItemForm) =>
         Number(item.sale_order_list_qty) * Number(item.sale_order_list_price);

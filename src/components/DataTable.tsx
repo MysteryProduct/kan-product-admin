@@ -222,10 +222,12 @@ function DataTableInner<T>(
       };
     }, [showFilterKey]);
 
-    React.useEffect(() => {
-      if (!disabled) return;
-      setShowFilterKey(null);
-    }, [disabled]);
+    // A table that becomes disabled closes its open filter (during render).
+    const [wasDisabled, setWasDisabled] = React.useState(disabled);
+    if (wasDisabled !== disabled) {
+      setWasDisabled(disabled);
+      if (disabled) setShowFilterKey(null);
+    }
     // Handle sort
     const handleSort = (key: string) => {
       const nextSort =

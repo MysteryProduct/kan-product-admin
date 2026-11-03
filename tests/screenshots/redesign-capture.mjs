@@ -74,7 +74,7 @@ for (const width of WIDTHS) {
   // Calendar view and the create drawer, from the board.
   await page.goto(`${base}/admin/job-orders`);
   await settle();
-  await page.getByRole('button', { name: 'ปฏิทิน' }).click();
+  await page.getByRole('tab', { name: 'ปฏิทิน' }).click();
   await settle();
   await shot(`production-calendar-${width}`);
   const create = page.getByRole('button', { name: 'สร้างงานผลิต' }).first();

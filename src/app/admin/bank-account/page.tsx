@@ -53,30 +53,42 @@ export default function BankAccountPage() {
 		message: '',
 	});
 
-	useEffect(() => {
-		void fetchBankAccounts();
-	}, [currentPage, appliedSearch, sortField, sortOrder]);
-
-	const fetchBankAccounts = async (
+	const requestBankAccounts = (
 		page = currentPage,
 		query = appliedSearch,
 		nextSortField = sortField,
 		nextSortOrder = sortOrder,
-	) => {
-		try {
-			setLoading(true);
-			const response = await bankAccountModel.getBankAccounts(page, 10, query, nextSortField, nextSortOrder);
-			setBankAccounts(response);
-			setMeta(response.meta);
-		} catch (error) {
-			setResultDialog({
-				isOpen: true,
-				status: 'error',
-				message: error instanceof Error ? error.message : 'ไม่สามารถโหลดข้อมูลบัญชีรับเงินได้',
-			});
-		} finally {
-			setLoading(false);
-		}
+	) =>
+		bankAccountModel
+			.getBankAccounts(page, 10, query, nextSortField, nextSortOrder)
+			.then((response) => {
+				setBankAccounts(response);
+				setMeta(response.meta);
+			})
+			.catch((error) => {
+				setResultDialog({
+					isOpen: true,
+					status: 'error',
+					message: error instanceof Error ? error.message : 'ไม่สามารถโหลดข้อมูลบัญชีรับเงินได้',
+				});
+			})
+			.finally(() => setLoading(false));
+
+	// A new query shows the loading state at once (during render); the effect only sends the request.
+	const listQuery = [currentPage, appliedSearch, sortField, sortOrder] as const;
+	const [requested, setRequested] = useState<typeof listQuery | null>(null);
+	if (!requested || listQuery.some((value, index) => value !== requested[index])) {
+		setRequested(listQuery);
+		setLoading(true);
+	}
+
+	useEffect(() => {
+		void requestBankAccounts();
+	}, [currentPage, appliedSearch, sortField, sortOrder]);
+
+	const fetchBankAccounts = (...args: Parameters<typeof requestBankAccounts>) => {
+		setLoading(true);
+		return requestBankAccounts(...args);
 	};
 
 	const handleSortChange = (sort: { key: string; direction: 'ASC' | 'DESC' } | null) => {

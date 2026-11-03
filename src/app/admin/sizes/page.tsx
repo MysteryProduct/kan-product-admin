@@ -51,30 +51,42 @@ export default function SizesPage() {
 
 	const totalSizes = useMemo(() => meta?.total ?? sizes.length, [meta?.total, sizes.length]);
 
-	const fetchSizes = useCallback(async (checkPageAfterDelete = false) => {
-		try {
-			setLoading(true);
-			let pageToFetch = currentPage;
+	const requestSizes = useCallback((pageToFetch = currentPage) =>
+		sizeModel
+			.getSizes(pageToFetch, 10, appliedSearchQuery)
+			.then((response) => {
+				setSizes(response.data);
+				setMeta(response.meta);
+			})
+			.catch((error) => {
+				console.error('Error fetching sizes:', error);
+				setResultDialog({
+					isOpen: true,
+					status: 'error',
+					message: 'ไม่สามารถดึงข้อมูลขนาดสินค้าได้',
+				});
+			})
+			.finally(() => setLoading(false)), [appliedSearchQuery, currentPage, sizeModel]);
 
-			if (checkPageAfterDelete && currentPage > 1 && sizes.length === 1) {
-				pageToFetch = currentPage - 1;
-				setCurrentPage(pageToFetch);
-			}
+	// The effect below reads again whenever these change; the loading state shows at once (during render).
+	const sizesQuery = [appliedSearchQuery, currentPage, sizeModel] as const;
+	const [requested, setRequested] = useState<typeof sizesQuery | null>(null);
+	if (!requested || sizesQuery.some((value, index) => value !== requested[index])) {
+		setRequested(sizesQuery);
+		setLoading(true);
+	}
 
-			const response = await sizeModel.getSizes(pageToFetch, 10, appliedSearchQuery);
-			setSizes(response.data);
-			setMeta(response.meta);
-		} catch (error) {
-			console.error('Error fetching sizes:', error);
-			setResultDialog({
-				isOpen: true,
-				status: 'error',
-				message: 'ไม่สามารถดึงข้อมูลขนาดสินค้าได้',
-			});
-		} finally {
-			setLoading(false);
+	const fetchSizes = (checkPageAfterDelete = false) => {
+		setLoading(true);
+		let pageToFetch = currentPage;
+
+		if (checkPageAfterDelete && currentPage > 1 && sizes.length === 1) {
+			pageToFetch = currentPage - 1;
+			setCurrentPage(pageToFetch);
 		}
-	}, [appliedSearchQuery, currentPage, sizeModel, sizes.length]);
+
+		return requestSizes(pageToFetch);
+	};
 
 	const loadRelationForSize = useCallback(async (size: Size): Promise<SizeCategoryRelation> => {
 		try {
@@ -98,12 +110,18 @@ export default function SizesPage() {
 	}, [loadRelationForSize]);
 
 	useEffect(() => {
-		fetchSizes();
-	}, [fetchSizes]);
+		requestSizes();
+	}, [requestSizes]);
+
+	// No rows means no relations (during render, so stale ones never show).
+	const [relationsFor, setRelationsFor] = useState(sizes);
+	if (relationsFor !== sizes) {
+		setRelationsFor(sizes);
+		if (sizes.length === 0) setRelationsBySizeId({});
+	}
 
 	useEffect(() => {
 		if (sizes.length === 0) {
-			setRelationsBySizeId({});
 			return;
 		}
 

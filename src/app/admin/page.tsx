@@ -29,21 +29,28 @@ export default function Home() {
   const [stockReload, setStockReload] = useState(0);
   const [stockState, setStockState] = useState<'loading' | 'shown' | 'failed'>('loading');
 
-  const load = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      setSummary(await dashboardModel.getSummary());
-      setError(null);
-    } catch (loadError) {
-      setError(loadErrorText('ภาพรวม', loadError));
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  // The first read starts in the loading state; the effect only sends the request.
+  const requestSummary = useCallback(
+    () =>
+      dashboardModel
+        .getSummary()
+        .then((next) => {
+          setSummary(next);
+          setError(null);
+        })
+        .catch((loadError) => setError(loadErrorText('ภาพรวม', loadError)))
+        .finally(() => setIsLoading(false)),
+    [],
+  );
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void requestSummary();
+  }, [requestSummary]);
+
+  const load = () => {
+    setIsLoading(true);
+    return requestSummary();
+  };
 
   // Money received comes from the sales dashboard's figures. If they cannot be read the card is left
   // out: the page does not show an error for a block the employee may not have.

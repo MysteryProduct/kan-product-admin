@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { UpdateColorDto } from '@/types/color';
 import ColorModel from '@/models/color';
 import ActionResultDialog from '@/components/ActionResultDialog';
@@ -25,14 +25,16 @@ export default function UpdateColorForm({ isOpen, onClose, onSuccess, initialDat
         message: '',
     });
 
-    useEffect(() => {
+    // Reset form when opened or given another record (during render, so the old values never show).
+    const [shownFor, setShownFor] = useState<[boolean, typeof initialData] | null>(null);
+    if (!shownFor || shownFor[0] !== isOpen || shownFor[1] !== initialData) {
+        setShownFor([isOpen, initialData]);
         if (isOpen) {
-            // Reset form when opened
             setFormData(initialData);
             setError(null);
             setResultDialog((prev) => ({ ...prev, isOpen: false }));
         }
-    }, [isOpen, initialData]);
+    }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
