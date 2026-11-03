@@ -2,6 +2,8 @@ import { calculateVatSummary, type VatType } from '@/lib/vat';
 
 /** One line of the form, with quantity and price already read as numbers. */
 export interface SoBodyLine {
+  /** The saved line being edited, so the API keeps its product variant and reservation (TASK-0339). */
+  sale_order_list_id?: string;
   fetch_sale_order_id?: string;
   product_name: string;
   qty: number;
@@ -35,6 +37,7 @@ export function buildSaleOrderBody(fields: SoBodyFields, lines: SoBodyLine[], sh
     sale_order_vat_amount: vatSummary.vatAmount,
     sale_order_total: vatSummary.total,
     saleOrderLists: lines.map((line) => ({
+      sale_order_list_id: line.sale_order_list_id || undefined,
       fetch_sale_order_id: line.fetch_sale_order_id || undefined,
       product_name: line.product_name,
       sale_order_list_qty: line.qty,
