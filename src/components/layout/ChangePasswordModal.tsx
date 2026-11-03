@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Modal from '@/components/Modal';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -20,13 +20,17 @@ export default function ChangePasswordModal({ isOpen, onClose, onChanged }: Chan
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    setCurrent('');
-    setNext('');
-    setConfirm('');
-    setError(null);
-  }, [isOpen]);
+  // Reset when opened (during render, so the old values never show).
+  const [openedAt, setOpenedAt] = useState(false);
+  if (openedAt !== isOpen) {
+    setOpenedAt(isOpen);
+    if (isOpen) {
+      setCurrent('');
+      setNext('');
+      setConfirm('');
+      setError(null);
+    }
+  }
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();

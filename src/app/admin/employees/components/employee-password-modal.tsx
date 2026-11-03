@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Modal from '@/components/Modal';
 import EmployeeModel from '@/models/employee';
 import type { Employee } from '@/types/employee';
@@ -23,12 +23,16 @@ export default function EmployeePasswordModal({ isOpen, employee, isOwn, onClose
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    setPassword('');
-    setConfirm('');
-    setError(null);
-  }, [isOpen, employee]);
+  // Reset when opened or given another employee (during render, so the old values never show).
+  const [shownFor, setShownFor] = useState<[boolean, typeof employee] | null>(null);
+  if (!shownFor || shownFor[0] !== isOpen || shownFor[1] !== employee) {
+    setShownFor([isOpen, employee]);
+    if (isOpen) {
+      setPassword('');
+      setConfirm('');
+      setError(null);
+    }
+  }
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();

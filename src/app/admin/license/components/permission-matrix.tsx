@@ -100,23 +100,38 @@ export default function PermissionMatrix({
     setDraft(loaded);
   };
 
-  const load = useCallback(async () => {
+  const request = useCallback(
+    () =>
+      licenseModel
+        .getPermissions(license.license_id)
+        .then(apply)
+        .catch((error) => {
+          setMatrix(null);
+          setLoadError(error instanceof Error ? error.message : 'โหลดสิทธิ์ของกลุ่มนี้ไม่สำเร็จ');
+        })
+        .finally(() => setLoading(false)),
+    [license.license_id],
+  );
+
+  // Another license shows the loading state at once (during render); the effect only sends the request.
+  const [requested, setRequested] = useState<string | null>(null);
+  if (requested !== license.license_id) {
+    setRequested(license.license_id);
     setLoading(true);
     setLoadError(null);
     setSaveError(null);
-    try {
-      apply(await licenseModel.getPermissions(license.license_id));
-    } catch (error) {
-      setMatrix(null);
-      setLoadError(error instanceof Error ? error.message : 'โหลดสิทธิ์ของกลุ่มนี้ไม่สำเร็จ');
-    } finally {
-      setLoading(false);
-    }
-  }, [license.license_id]);
+  }
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void request();
+  }, [request]);
+
+  const load = () => {
+    setLoading(true);
+    setLoadError(null);
+    setSaveError(null);
+    return request();
+  };
 
   const changed = useMemo(() => changedMenuIds(original, draft), [original, draft]);
   const dirty = changed.length > 0;

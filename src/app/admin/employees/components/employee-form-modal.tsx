@@ -75,30 +75,36 @@ export default function EmployeeFormModal({
   const [licenseLoading, setLicenseLoading] = useState(false);
   const [licenseError, setLicenseError] = useState<string | null>(null);
 
+  // Reset form when opened or given another employee (during render, so the old values never show).
+  const [shownFor, setShownFor] = useState<[boolean, typeof employee, typeof licenseLockedReason] | null>(null);
+  if (!shownFor || shownFor[0] !== isOpen || shownFor[1] !== employee || shownFor[2] !== licenseLockedReason) {
+    setShownFor([isOpen, employee, licenseLockedReason]);
+    if (isOpen) {
+      setForm(
+        employee
+          ? {
+              employee_username: employee.employee_username,
+              employee_password: '',
+              employee_firstname: employee.employee_firstname,
+              employee_lastname: employee.employee_lastname,
+              employee_address: employee.employee_address,
+              employee_phone: employee.employee_phone,
+              employee_email: employee.employee_email,
+              license_id: employee.license_id,
+            }
+          : EMPTY_FORM,
+      );
+      setErrors({});
+      setSubmitError(null);
+      setLicenses([]);
+      setLicenseError(null);
+      if (!licenseLockedReason) setLicenseLoading(true);
+    }
+  }
+
   useEffect(() => {
-    if (!isOpen) return;
-    setForm(
-      employee
-        ? {
-            employee_username: employee.employee_username,
-            employee_password: '',
-            employee_firstname: employee.employee_firstname,
-            employee_lastname: employee.employee_lastname,
-            employee_address: employee.employee_address,
-            employee_phone: employee.employee_phone,
-            employee_email: employee.employee_email,
-            license_id: employee.license_id,
-          }
-        : EMPTY_FORM,
-    );
-    setErrors({});
-    setSubmitError(null);
-    setLicenses([]);
-    setLicenseError(null);
-    if (licenseLockedReason) return;
+    if (!isOpen || licenseLockedReason) return;
     let cancelled = false;
-    setLicenseLoading(true);
-    setLicenseError(null);
     loadAllLicenses()
       .then((all) => {
         if (!cancelled) setLicenses(all);

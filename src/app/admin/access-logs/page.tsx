@@ -45,24 +45,39 @@ export default function AccessLogsPage() {
   // slower earlier response show the rows of a filter that is no longer selected.
   const requestVersion = useRef(0);
 
-  const fetchLogs = useCallback(async () => {
+  const requestLogs = useCallback(() => {
     const version = ++requestVersion.current;
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await accessLogModel.getLogs(currentPage, PAGE_SIZE, type ?? undefined);
-      if (version === requestVersion.current) setLogs(response);
-    } catch (err) {
-      if (version === requestVersion.current)
-        setError(err instanceof Error ? err.message : 'โหลดประวัติไม่สำเร็จ');
-    } finally {
-      if (version === requestVersion.current) setLoading(false);
-    }
+    return accessLogModel
+      .getLogs(currentPage, PAGE_SIZE, type ?? undefined)
+      .then((response) => {
+        if (version === requestVersion.current) setLogs(response);
+      })
+      .catch((err) => {
+        if (version === requestVersion.current)
+          setError(err instanceof Error ? err.message : 'โหลดประวัติไม่สำเร็จ');
+      })
+      .finally(() => {
+        if (version === requestVersion.current) setLoading(false);
+      });
   }, [currentPage, type]);
 
+  // A new query shows the loading state at once (during render); the effect only sends the request.
+  const [requested, setRequested] = useState<[number, AccessLogType | null] | null>(null);
+  if (!requested || requested[0] !== currentPage || requested[1] !== type) {
+    setRequested([currentPage, type]);
+    setLoading(true);
+    setError(null);
+  }
+
   useEffect(() => {
-    void fetchLogs();
-  }, [fetchLogs]);
+    void requestLogs();
+  }, [requestLogs]);
+
+  const fetchLogs = () => {
+    setLoading(true);
+    setError(null);
+    void requestLogs();
+  };
 
   const columns: DataTableColumn<AccessLogEntry>[] = [
     {
@@ -160,7 +175,7 @@ export default function AccessLogsPage() {
           <div role="alert" className="ka-banner ka-banner--danger mx-4 mt-4">
             <span>
               {error}{' '}
-              <button type="button" className="font-semibold underline" onClick={() => void fetchLogs()}>
+              <button type="button" className="font-semibold underline" onClick={fetchLogs}>
                 ลองอีกครั้ง
               </button>
             </span>
