@@ -498,12 +498,12 @@
     {
       "name": "skeleton list: placeholder of the open view (E1)",
       "ok": true,
-      "note": "30"
+      "note": "8"
     },
     {
       "name": "skeleton calendar: placeholder of the open view (E1)",
       "ok": true,
-      "note": "2"
+      "note": "8"
     },
     {
       "name": "load error: LoadErrorBanner with retry (E4)",
@@ -932,6 +932,19 @@
       "bg": "rgb(253, 236, 229)",
       "style": "solid"
     },
+    "aborted": [
+      {
+        "query": "?view=board",
+        "error": "page.goto: Timeout 30000ms exceeded."
+      }
+    ],
+    "reloads": [
+      {
+        "query": "?view=board",
+        "attempt": 1,
+        "pending": []
+      }
+    ],
     "reducedMotion": {
       "reduce": "none",
       "normal": "matrix(1, 0, 0, 1, 0, -1)"
