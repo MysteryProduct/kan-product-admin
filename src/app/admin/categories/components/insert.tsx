@@ -31,7 +31,10 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
         message: '',
     });
 
-    useEffect(() => {
+    // Reset form when opened (during render, so the old values never show).
+    const [openedAt, setOpenedAt] = useState(false);
+    if (openedAt !== isOpen) {
+        setOpenedAt(isOpen);
         if (isOpen) {
             setFormData({
                 category_name: '',
@@ -39,7 +42,11 @@ export default function CategoryForm({ isOpen, onClose, onSuccess }: CategoryFor
             });
             setError(null);
             setResultDialog((prev) => ({ ...prev, isOpen: false }));
+        }
+    }
 
+    useEffect(() => {
+        if (isOpen) {
             const fetchSizes = async () => {
                 try {
                     const sizeModel = new SizeModel();

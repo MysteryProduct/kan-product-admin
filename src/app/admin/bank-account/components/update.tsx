@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Cookies from 'js-cookie';
 import ActionResultDialog from '@/components/ActionResultDialog';
 import BankAccountModel from '@/models/bank-account';
@@ -39,7 +39,10 @@ export default function UpdateBankAccountForm({ isOpen, onClose, onSuccess, init
 		message: '',
 	});
 
-	useEffect(() => {
+	// Reset form when opened or given another record (during render, so the old values never show).
+	const [shownFor, setShownFor] = useState<[boolean, typeof initialData] | null>(null);
+	if (!shownFor || shownFor[0] !== isOpen || shownFor[1] !== initialData) {
+		setShownFor([isOpen, initialData]);
 		if (isOpen && initialData) {
 			setFormData({
 				account_number: initialData.account_number || '',
@@ -49,7 +52,7 @@ export default function UpdateBankAccountForm({ isOpen, onClose, onSuccess, init
 			});
 			setErrors({});
 		}
-	}, [isOpen, initialData]);
+	}
 
 	const validate = () => {
 		const nextErrors: Record<string, string> = {};

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { CreateColorDto } from '@/types/color';
 import ColorModel from '@/models/color';
 import ActionResultDialog from '@/components/ActionResultDialog';
@@ -29,9 +29,11 @@ export default function ColorForm({ isOpen, onClose, onSuccess }: ColorFormProps
     message: '',
   });
 
-  useEffect(() => {
+  // Reset form when opened (during render, so the old values never show).
+  const [openedAt, setOpenedAt] = useState(false);
+  if (openedAt !== isOpen) {
+    setOpenedAt(isOpen);
     if (isOpen) {
-      // Reset form when opened
       setFormData({
         color_name: '',
         color_hex: '#000000',
@@ -39,7 +41,7 @@ export default function ColorForm({ isOpen, onClose, onSuccess }: ColorFormProps
       setError(null);
       setResultDialog((prev) => ({ ...prev, isOpen: false }));
     }
-  }, [isOpen]);
+  }
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({

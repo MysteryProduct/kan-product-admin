@@ -43,28 +43,36 @@ const ProductUnitPage = () => {
         message: '',
     });
 
-    const fetchProductUnits = async () => {
-        try {
-            setLoading(true);
-            setListError(null);
-            const response: ApiProductUnitResponse = await productUnitModel.getProductUnits(
-                currentPage,
-                limit,
-                appliedSearchQuery
-            );
-            setProductUnits(response.data);
-            setMeta(response.meta);
-        } catch (error) {
-            console.error('Error fetching product units:', error);
-            setListError(loadErrorText('รายการหน่วยสินค้า', error));
-        } finally {
-            setLoading(false);
-        }
-    };
+    const requestProductUnits = () =>
+        productUnitModel
+            .getProductUnits(currentPage, limit, appliedSearchQuery)
+            .then((response: ApiProductUnitResponse) => {
+                setProductUnits(response.data);
+                setMeta(response.meta);
+            })
+            .catch((error) => {
+                console.error('Error fetching product units:', error);
+                setListError(loadErrorText('รายการหน่วยสินค้า', error));
+            })
+            .finally(() => setLoading(false));
+
+    // A new query shows the loading state at once (during render); the effect only sends the request.
+    const [requested, setRequested] = useState<[number, string] | null>(null);
+    if (!requested || requested[0] !== currentPage || requested[1] !== appliedSearchQuery) {
+        setRequested([currentPage, appliedSearchQuery]);
+        setLoading(true);
+        setListError(null);
+    }
 
     useEffect(() => {
-        fetchProductUnits();
+        requestProductUnits();
     }, [currentPage, appliedSearchQuery]);
+
+    const fetchProductUnits = () => {
+        setLoading(true);
+        setListError(null);
+        return requestProductUnits();
+    };
 
     const handleSearch = () => {
         setCurrentPage(1);

@@ -35,7 +35,10 @@ export default function UpdateCategoryForm({ isOpen, onClose, onSuccess, initial
         status: 'success',
         message: '',
     });
-    useEffect(() => {
+    // Reset form when opened or given another record (during render, so the old values never show).
+    const [shownFor, setShownFor] = useState<[boolean, typeof initialData] | null>(null);
+    if (!shownFor || shownFor[0] !== isOpen || shownFor[1] !== initialData) {
+        setShownFor([isOpen, initialData]);
         if (isOpen) {
             setFormData({
                 ...initialData,
@@ -43,10 +46,14 @@ export default function UpdateCategoryForm({ isOpen, onClose, onSuccess, initial
             });
             setError(null);
             setResultDialog((prev) => ({ ...prev, isOpen: false }));
+            setLoadError(null);
+        }
+    }
 
+    useEffect(() => {
+        if (isOpen) {
             const fetchFormData = async () => {
                 const sizeModel = new SizeModel();
-                setLoadError(null);
                 try {
                     const response = await sizeModel.getAllSizes();
                     setSizes(response.data);

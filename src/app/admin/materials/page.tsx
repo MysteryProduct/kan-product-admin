@@ -78,24 +78,37 @@ export default function MaterialsPage() {
 		};
 		void fetchOptions();
 	}, []);
-	const fetchMaterials = useCallback(async (targetPage = currentPage) => {
-		try {
-			setLoading(true);
-			setListError(null);
-			const response = await materialModel.getMaterials(targetPage, 10, appliedSearchQuery, sortField, sortOrder, filters);
-			setMaterials(response);
-			setMeta(response.meta);
-		} catch (error) {
-			console.error('Failed to fetch materials:', error);
-			setListError(loadErrorText('รายการวัตถุดิบ', error));
-		} finally {
-			setLoading(false);
-		}
-	}, [appliedSearchQuery, currentPage, sortField, sortOrder, filters]);
+	const requestMaterials = useCallback((targetPage = currentPage) =>
+		materialModel
+			.getMaterials(targetPage, 10, appliedSearchQuery, sortField, sortOrder, filters)
+			.then((response) => {
+				setMaterials(response);
+				setMeta(response.meta);
+			})
+			.catch((error) => {
+				console.error('Failed to fetch materials:', error);
+				setListError(loadErrorText('รายการวัตถุดิบ', error));
+			})
+			.finally(() => setLoading(false)), [appliedSearchQuery, currentPage, sortField, sortOrder, filters]);
+
+	// A new query shows the loading state at once (during render); the effect only sends the request.
+	const query = [appliedSearchQuery, currentPage, sortField, sortOrder, filters] as const;
+	const [requested, setRequested] = useState<typeof query | null>(null);
+	if (!requested || query.some((value, index) => value !== requested[index])) {
+		setRequested(query);
+		setLoading(true);
+		setListError(null);
+	}
 
 	useEffect(() => {
-		void fetchMaterials();
-	}, [fetchMaterials]);
+		void requestMaterials();
+	}, [requestMaterials]);
+
+	const fetchMaterials = (targetPage = currentPage) => {
+		setLoading(true);
+		setListError(null);
+		return requestMaterials(targetPage);
+	};
 
 	const handleSearch = () => {
 		setCurrentPage(1);
