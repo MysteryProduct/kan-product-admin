@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import Cookies from 'js-cookie';
 import axios from '@/lib/axios';
 import Button from '@/components/Button';
@@ -193,24 +194,27 @@ export default function CreateJobOrderDrawer({ isOpen, onClose, onSuccess, initi
     };
   }, [isOpen]);
 
-  // Reset to the seed each time the panel opens.
-  useEffect(() => {
-    if (!isOpen) return;
-    setType((initialData?.job_order_type as JobOrderType) || 'website');
-    setVariantId(initialData?.product_variant_id ? String(initialData.product_variant_id) : '');
-    setName(initialData?.job_order_name || '');
-    setDescription(initialData?.job_order_description || '');
-    setQty(typeof initialData?.job_order_qty === 'number' ? String(initialData.job_order_qty) : '1');
-    setPrice(typeof initialData?.job_order_price === 'number' ? String(initialData.job_order_price) : '0');
-    setTargetDate(initialData?.target_date ? String(initialData.target_date).slice(0, 10) : todayLocalIso());
-    setSizeId(initialData?.size_id ? String(initialData.size_id) : '');
-    setColorId(initialData?.color_id ? String(initialData.color_id) : '');
-    setRows(initialData?.jobOrderMaterials?.length ? initialData.jobOrderMaterials.map((item) => ({ id: crypto.randomUUID(), material_id: item.material_id, material_qty: Number(item.material_qty) || 1, material_name: item.material_name })) : [newRow()]);
-    setErrors({});
-    setSaveError('');
-    setDirty(false);
-    setPickerQuery('');
-  }, [isOpen, initialData]);
+  // Reset to the seed each time the panel opens (during render, so the old values never show).
+  const [shownFor, setShownFor] = useState<[boolean, typeof initialData] | null>(null);
+  if (!shownFor || shownFor[0] !== isOpen || shownFor[1] !== initialData) {
+    setShownFor([isOpen, initialData]);
+    if (isOpen) {
+        setType((initialData?.job_order_type as JobOrderType) || 'website');
+        setVariantId(initialData?.product_variant_id ? String(initialData.product_variant_id) : '');
+        setName(initialData?.job_order_name || '');
+        setDescription(initialData?.job_order_description || '');
+        setQty(typeof initialData?.job_order_qty === 'number' ? String(initialData.job_order_qty) : '1');
+        setPrice(typeof initialData?.job_order_price === 'number' ? String(initialData.job_order_price) : '0');
+        setTargetDate(initialData?.target_date ? String(initialData.target_date).slice(0, 10) : todayLocalIso());
+        setSizeId(initialData?.size_id ? String(initialData.size_id) : '');
+        setColorId(initialData?.color_id ? String(initialData.color_id) : '');
+        setRows(initialData?.jobOrderMaterials?.length ? initialData.jobOrderMaterials.map((item) => ({ id: crypto.randomUUID(), material_id: item.material_id, material_qty: Number(item.material_qty) || 1, material_name: item.material_name })) : [newRow()]);
+        setErrors({});
+        setSaveError('');
+        setDirty(false);
+        setPickerQuery('');
+    }
+  }
 
   // Stock is read for the materials on the form whenever the set changes.
   const materialIds = rows.map((row) => row.material_id).filter(Boolean).join(',');
@@ -317,7 +321,7 @@ export default function CreateJobOrderDrawer({ isOpen, onClose, onSuccess, initi
     return !q || `${item.productCode ?? ''} ${item.productName} ${item.sizeName} ${item.colorName}`.toLowerCase().includes(q);
   });
 
-  const FieldError = ({ id }: { id: string }) => (errors[id] ? <span id={`jo-${id}-error`} className="ka-error" role="alert">{errors[id]}</span> : null);
+  const fieldError = (id: string) => (errors[id] ? <span id={`jo-${id}-error`} className="ka-error" role="alert">{errors[id]}</span> : null);
   const aria = (id: string) => ({ 'aria-invalid': errors[id] ? true : undefined, 'aria-describedby': errors[id] ? `jo-${id}-error` : undefined });
 
   return (
@@ -406,7 +410,7 @@ export default function CreateJobOrderDrawer({ isOpen, onClose, onSuccess, initi
               <span className="ka-btn ka-btn--ghost ka-btn--sm">{chosen ? 'เปลี่ยน' : 'เลือก'}</span>
             </button>
             <span className="ka-help">ค้นหาครั้งเดียว ได้ทั้งสินค้า ขนาด และสี</span>
-            <FieldError id="variant" />
+            {fieldError('variant')}
             <Popover open={pickerOpen} onClose={() => setPickerOpen(false)} anchorRef={pickerRef} title="เลือกสินค้าที่ผลิต" width={440}>
               <div className="ka-input-wrap mb-2">
                 <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -431,7 +435,7 @@ export default function CreateJobOrderDrawer({ isOpen, onClose, onSuccess, initi
             <label htmlFor="jo-name" className="ka-label">ชื่องานผลิต <span className="ka-req">*</span></label>
             <input id="jo-name" className="ka-input" value={name} maxLength={255} onChange={(event) => { touch(); setName(event.target.value); }} {...aria('name')} />
             <span className="ka-help">ตั้งจากสินค้าที่เลือก แก้ได้</span>
-            <FieldError id="name" />
+            {fieldError('name')}
           </div>
 
           <div className="ka-editor__g2">
@@ -446,13 +450,13 @@ export default function CreateJobOrderDrawer({ isOpen, onClose, onSuccess, initi
                   <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" d="M12 6v12M6 12h12" /></svg>
                 </button>
               </div>
-              <FieldError id="qty" />
+              {fieldError('qty')}
             </div>
             <div className="ka-field">
               <label htmlFor="jo-date" className="ka-label">วันที่เป้าหมาย <span className="ka-req">*</span></label>
               <input id="jo-date" type="date" className="ka-input" value={targetDate} onChange={(event) => { touch(); setTargetDate(event.target.value); }} {...aria('targetDate')} />
               <span className="ka-help">{targetDate ? `${formatThaiDate(targetDate)} · ${daysAway(targetDate)}` : ''}</span>
-              <FieldError id="targetDate" />
+              {fieldError('targetDate')}
             </div>
             <div className="ka-field">
               <label htmlFor="jo-size" className="ka-label">ขนาด <span className="ka-req">*</span></label>
@@ -464,7 +468,7 @@ export default function CreateJobOrderDrawer({ isOpen, onClose, onSuccess, initi
                 placeholder="เลือกขนาด"
                 {...aria('size')}
               />
-              <FieldError id="size" />
+              {fieldError('size')}
             </div>
             <div className="ka-field">
               <label htmlFor="jo-color" className="ka-label">สี <span className="ka-req">*</span></label>
@@ -476,7 +480,7 @@ export default function CreateJobOrderDrawer({ isOpen, onClose, onSuccess, initi
                 placeholder="เลือกสี"
                 {...aria('color')}
               />
-              <FieldError id="color" />
+              {fieldError('color')}
             </div>
             <div className="ka-field">
               <label htmlFor="jo-owner" className="ka-label">ผู้รับผิดชอบ</label>
@@ -486,7 +490,7 @@ export default function CreateJobOrderDrawer({ isOpen, onClose, onSuccess, initi
               <label htmlFor="jo-price" className="ka-label">ราคาสินค้า (บาท)</label>
               <input id="jo-price" type="number" min={0} step="0.01" inputMode="decimal" className="ka-input numeric text-right" value={price} onChange={(event) => { touch(); setPrice(event.target.value); }} {...aria('price')} />
               <span className="ka-help">ดึงจากราคาของแบบที่เลือก</span>
-              <FieldError id="price" />
+              {fieldError('price')}
             </div>
           </div>
 
@@ -547,13 +551,13 @@ export default function CreateJobOrderDrawer({ isOpen, onClose, onSuccess, initi
                 );
               })}
             </div>
-            <FieldError id="materials" />
+            {fieldError('materials')}
             {shortCount > 0 && (
               <div role="alert" className="ka-banner ka-banner--danger mt-2">
                 <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4l9 16H3zM12 10v4M12 17h.01" /></svg>
                 <span>
                   วัตถุดิบไม่พอ {count(shortCount)} รายการ ระบบจองวัตถุดิบตอนสร้างงาน จึงยังบันทึกงานนี้ไม่ได้ รับของเข้าก่อน หรือลดจำนวนที่ผลิต{' '}
-                  <a href="/admin/purchase-orders" className="font-semibold whitespace-nowrap">สร้างใบสั่งซื้อ →</a>
+                  <Link href="/admin/purchase-orders" className="font-semibold whitespace-nowrap">สร้างใบสั่งซื้อ →</Link>
                 </span>
               </div>
             )}

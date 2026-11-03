@@ -184,23 +184,24 @@ export default function UpdateJobOrderForm({
 		void loadData();
 	}, [isOpen]);
 
-	useEffect(() => {
-		if (!isOpen || !jobOrder) {
-			return;
+	// Reset form when opened or given another job (during render, so the old values never show).
+	const [shownFor, setShownFor] = useState<[boolean, typeof jobOrder] | null>(null);
+	if (!shownFor || shownFor[0] !== isOpen || shownFor[1] !== jobOrder) {
+		setShownFor([isOpen, jobOrder]);
+		if (isOpen && jobOrder) {
+			setJobOrderType((jobOrder.job_order_type as JobOrderType) || 'website');
+			setProductVariantId(jobOrder.product_variant_id ? String(jobOrder.product_variant_id) : '');
+			setJobOrderName(jobOrder.job_order_name || '');
+			setJobOrderDescription(jobOrder.job_order_description || '');
+			setJobOrderQty(typeof jobOrder.job_order_qty === 'number' ? String(jobOrder.job_order_qty) : '0');
+			setJobOrderPrice(jobOrder.job_order_price ? String(jobOrder.job_order_price) : '0');
+			setTargetDate(jobOrder.target_date ? String(jobOrder.target_date).slice(0, 10) : '');
+			setSizeId(jobOrder.size_id ? String(jobOrder.size_id) : '');
+			setColorId(jobOrder.color_id ? String(jobOrder.color_id) : '');
+			setMaterials(mapJobMaterials(jobOrder.jobOrderMaterials || jobOrder.job_order_materials));
+			setErrors({});
 		}
-		
-		setJobOrderType((jobOrder.job_order_type as JobOrderType) || 'website');
-		setProductVariantId(jobOrder.product_variant_id ? String(jobOrder.product_variant_id) : '');
-		setJobOrderName(jobOrder.job_order_name || '');
-		setJobOrderDescription(jobOrder.job_order_description || '');
-		setJobOrderQty(typeof jobOrder.job_order_qty === 'number' ? String(jobOrder.job_order_qty) : '0');
-		setJobOrderPrice(jobOrder.job_order_price ? String(jobOrder.job_order_price) : '0');
-		setTargetDate(jobOrder.target_date ? String(jobOrder.target_date).slice(0, 10) : '');
-		setSizeId(jobOrder.size_id ? String(jobOrder.size_id) : '');
-		setColorId(jobOrder.color_id ? String(jobOrder.color_id) : '');
-		setMaterials(mapJobMaterials(jobOrder.jobOrderMaterials || jobOrder.job_order_materials));
-		setErrors({});
-	}, [isOpen, jobOrder]);
+	}
 
 	const syncDefaultsFromVariant = (nextVariantId: string) => {
 		const selected = variantOptions.find((option) => option.value === nextVariantId);
