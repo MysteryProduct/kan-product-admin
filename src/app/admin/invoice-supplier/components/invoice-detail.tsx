@@ -182,7 +182,7 @@ export default function InvoiceDetail({ isOpen, onClose, view, availablePayments
 
       <section className="ka-is-sec" aria-labelledby="is-detail-history">
         <h3 id="is-detail-history" className="ka-is-h3">ประวัติเอกสาร</h3>
-        <DocumentHistoryPanel endpoint={`/invoice-supplier/${row.invoice_supplier_id}/history`} variant="timeline" limit={3} />
+        <DocumentHistoryPanel endpoint={`/invoice-supplier/${row.invoice_supplier_id}/history`} variant="timeline" limit={3} documentLabel={[row.invoice_supplier_code, row.invoice_supplier_name].filter(Boolean).join(' · ')} />
       </section>
     </Modal>
   );

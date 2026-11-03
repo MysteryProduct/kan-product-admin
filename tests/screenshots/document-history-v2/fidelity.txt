@@ -1,0 +1,28 @@
+w     landmark            dx     dy     dw     dh     design                app                   
+1440  dialog              0      0      8      64     760×984 16px/400      768×1048 16px/400     
+1440  icon tile           0      0      0      0      48×48 16px/400        48×48 16px/400        
+1440  title               0      0      8      0      580×32 22px/700       588×32 22px/700       
+1440  label               0      0      8      0      580×22 14px/400       588×22 14px/400       
+1440  summary card 1      0      0      2.6    0      226.7×74 16px/400     229.3×74 16px/400     
+1440  day heading         0      0      8      0      704×20 13px/600       712×20 13px/600       
+1440  first action icon   0      0      0      0      40×40 16px/400        40×40 16px/400        
+1440  first action name   0      0      -1     0      61×26 17px/600        60×26 17px/600        
+1440  first time          9      0      -1     0      36×22 14px/400        35×22 14px/400        
+1440  reason              0      0      8      0      648×42 14px/400       656×42 14px/400       
+1440  first change box    0      0      8      -2     648×99 16px/400       656×97 16px/400       
+1440  first status badge  0      0      -2     -2     104×26 13px/600       102×24 13px/600       
+1440  second day heading  0      -4     8      0      704×20 13px/600       712×20 13px/600       
+1440  edit change box     0      -4     8      0      648×161 16px/400      656×161 16px/400      
+1440  added item row      0      -4     8      0      472×24 15px/400       480×24 15px/400       
+1440  foot                0      64     8      0      760×77 16px/400       768×77 16px/400       
+390   sheet               0      0      0      -65    390×1460 16px/400     390×1395 16px/400     
+390   icon tile           0      9      0      0      40×40 16px/400        40×40 16px/400        
+390   title               0      -2     0      0      250×28 19px/700       250×28 19px/700       
+390   day heading         0      52     0      0      358×20 13px/600       358×20 13px/600       
+390   first action icon   0      52     0      0      32×32 16px/400        32×32 16px/400        
+390   first action name   0      52     219    0      56×26 16px/600        275×26 16px/600       
+390   reason              0      52     0      0      314×38 14px/400       314×38 14px/400       
+390   first change box    0      52     0      -6     314×145 16px/400      314×139 16px/400      
+390   first status badge  0      50     -2     -2     104×26 13px/600       102×24 13px/600       
+390   added item row      0      40     0      0      290×22 14px/400       290×22 14px/400       
+390   foot button         0      -57    0      0      358×48 16px/600       358×48 16px/600       

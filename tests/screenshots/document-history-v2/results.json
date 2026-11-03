@@ -1,0 +1,771 @@
+{
+  "results": [
+    {
+      "name": "caller sale-order: the dialog opens with the document's label and no id",
+      "ok": true,
+      "note": "SO202611030220 · ทดสอบ TASK-0336 คืนสินค้า · 509 chars"
+    },
+    {
+      "name": "caller sale-order-custom: the dialog opens with the document's label and no id",
+      "ok": true,
+      "note": "SO202610290003 · Custom TEE-101 · 371 chars"
+    },
+    {
+      "name": "caller purchase-order: the dialog opens with the document's label and no id",
+      "ok": true,
+      "note": "PO202611010113 · test · 495 chars"
+    },
+    {
+      "name": "caller purchase-receipt: the dialog opens with the document's label and no id",
+      "ok": true,
+      "note": "PR202609100001 · 548 chars"
+    },
+    {
+      "name": "caller job-order: the dialog opens with the document's label and no id",
+      "ok": true,
+      "note": "JOT0323-06 · แก้วกาแฟเซรามิก · 82 chars"
+    },
+    {
+      "name": "caller invoice-supplier: the dialog opens with the document's label and no id",
+      "ok": true,
+      "note": "IS202611020002 · ใบชำระหนี้ บริษัท ไทยสตีล ซัพพลาย จำกัด · 110 chars"
+    },
+    {
+      "name": "caller payment-receipt: the dialog opens with the document's label and no id",
+      "ok": true,
+      "note": "RE202609240001 · 241 chars"
+    },
+    {
+      "name": "caller sale-order: the on-page timeline still lists entries as before",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "keyboard: Tab stays in the dialog and every stop shows focus",
+      "ok": true,
+      "note": "[{\"inside\":true,\"ring\":true},{\"inside\":true,\"ring\":true},{\"inside\":true,\"ring\":true},{\"inside\":true,\"ring\":true},{\"inside\":true,\"ring\":true},{\"inside\":true,\"ring\":true}]"
+    },
+    {
+      "name": "keyboard: closing returns focus to \"ดูประวัติทั้งหมด\"",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "fixture: grouped by day, today labelled",
+      "ok": true,
+      "note": "ประวัติการเปลี่ยนแปลง\n\nSO202611030220 · ทดสอบ TASK-0336 คืนสินค้า\n\nเหตุการณ์ทั้งหมด\n9 รายการ\nโหลดแล้ว\n4 จาก 9 รายการ\nวัน"
+    },
+    {
+      "name": "fixture: the system shows as \"ระบบ\" and no id is printed",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "fixture: a return reads \"คืน 10 จาก 150\"",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "fixture: an edit reads added, quantity changed and removed",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "fixture: creation has no \"– →\" and a first status",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "fixture: not all loaded, so who and when give way to \"โหลดแล้ว 4 จาก 9\"",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "fixture: the foot says how many are shown and offers more",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "load more: a failure keeps the entries and offers a retry",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "summary: all loaded shows 3 people and \"29 ต.ค. – 3 พ.ย. 2569\"",
+      "ok": true,
+      "note": "ประวัติการเปลี่ยนแปลง\n\nSO202611030220 · ทดสอบ TASK-0336 คืนสินค้า\n\nเหตุการณ์ทั้งหมด\n4 รายการ\nผู้ดำเนินการ\nsu\nนภ\n3 คน\nช่วงเวลา\n29 ต.ค. – 3 พ.ย. 2569\nวันนี้ · 3 พ"
+    },
+    {
+      "name": "width 834: the dialog fits, nothing runs sideways, the page does not scroll",
+      "ok": true,
+      "note": "{\"inside\":true,\"side\":0,\"doc\":0}"
+    },
+    {
+      "name": "width 390: the dialog fits, nothing runs sideways, the page does not scroll",
+      "ok": true,
+      "note": "{\"inside\":true,\"side\":0,\"doc\":0}"
+    },
+    {
+      "name": "width 320: the dialog fits, nothing runs sideways, the page does not scroll",
+      "ok": true,
+      "note": "{\"inside\":true,\"side\":0,\"doc\":0}"
+    },
+    {
+      "name": "a long reason wraps inside the dialog at 320px",
+      "ok": true,
+      "note": "{\"lines\":11,\"side\":0}"
+    },
+    {
+      "name": "state 1440: a failed load says so and offers a retry",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "state 1440: retry loads the entries",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "state 1440: no history says so",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "state 1440: loading shows the placeholder timeline",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "state 390: a failed load says so and offers a retry",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "state 390: retry loads the entries",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "state 390: no history says so",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "state 390: loading shows the placeholder timeline",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "dark: the dialog uses the dark surface",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "reduced motion: the placeholder does not pulse",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "no console or page errors",
+      "ok": true,
+      "note": ""
+    }
+  ],
+  "consoleErrors": [],
+  "fidelity": [
+    {
+      "width": 1440,
+      "name": "dialog",
+      "dx": 0,
+      "dy": 0,
+      "dw": 8,
+      "dh": 64,
+      "design": {
+        "x": 340,
+        "y": 48,
+        "w": 760,
+        "h": 984,
+        "font": "16px/400"
+      },
+      "app": {
+        "x": 336,
+        "y": 16,
+        "w": 768,
+        "h": 1048,
+        "font": "16px/400"
+      }
+    },
+    {
+      "width": 1440,
+      "name": "icon tile",
+      "dx": 0,
+      "dy": 0,
+      "dw": 0,
+      "dh": 0,
+      "design": {
+        "x": 368,
+        "y": 72,
+        "w": 48,
+        "h": 48,
+        "font": "16px/400"
+      },
+      "app": {
+        "x": 364,
+        "y": 40,
+        "w": 48,
+        "h": 48,
+        "font": "16px/400"
+      }
+    },
+    {
+      "width": 1440,
+      "name": "title",
+      "dx": 0,
+      "dy": 0,
+      "dw": 8,
+      "dh": 0,
+      "design": {
+        "x": 432,
+        "y": 72,
+        "w": 580,
+        "h": 32,
+        "font": "22px/700"
+      },
+      "app": {
+        "x": 428,
+        "y": 40,
+        "w": 588,
+        "h": 32,
+        "font": "22px/700"
+      }
+    },
+    {
+      "width": 1440,
+      "name": "label",
+      "dx": 0,
+      "dy": 0,
+      "dw": 8,
+      "dh": 0,
+      "design": {
+        "x": 432,
+        "y": 106,
+        "w": 580,
+        "h": 22,
+        "font": "14px/400"
+      },
+      "app": {
+        "x": 428,
+        "y": 74,
+        "w": 588,
+        "h": 22,
+        "font": "14px/400"
+      }
+    },
+    {
+      "width": 1440,
+      "name": "summary card 1",
+      "dx": 0,
+      "dy": 0,
+      "dw": 2.6,
+      "dh": 0,
+      "design": {
+        "x": 368,
+        "y": 148,
+        "w": 226.7,
+        "h": 74,
+        "font": "16px/400"
+      },
+      "app": {
+        "x": 364,
+        "y": 116,
+        "w": 229.3,
+        "h": 74,
+        "font": "16px/400"
+      }
+    },
+    {
+      "width": 1440,
+      "name": "day heading",
+      "dx": 0,
+      "dy": 0,
+      "dw": 8,
+      "dh": 0,
+      "design": {
+        "x": 368,
+        "y": 263,
+        "w": 704,
+        "h": 20,
+        "font": "13px/600"
+      },
+      "app": {
+        "x": 364,
+        "y": 231,
+        "w": 712,
+        "h": 20,
+        "font": "13px/600"
+      }
+    },
+    {
+      "width": 1440,
+      "name": "first action icon",
+      "dx": 0,
+      "dy": 0,
+      "dw": 0,
+      "dh": 0,
+      "design": {
+        "x": 368,
+        "y": 295,
+        "w": 40,
+        "h": 40,
+        "font": "16px/400"
+      },
+      "app": {
+        "x": 364,
+        "y": 263,
+        "w": 40,
+        "h": 40,
+        "font": "16px/400"
+      }
+    },
+    {
+      "width": 1440,
+      "name": "first action name",
+      "dx": 0,
+      "dy": 0,
+      "dw": -1,
+      "dh": 0,
+      "design": {
+        "x": 424,
+        "y": 302,
+        "w": 61,
+        "h": 26,
+        "font": "17px/600"
+      },
+      "app": {
+        "x": 420,
+        "y": 270,
+        "w": 60,
+        "h": 26,
+        "font": "17px/600"
+      }
+    },
+    {
+      "width": 1440,
+      "name": "first time",
+      "dx": 9,
+      "dy": 0,
+      "dw": -1,
+      "dh": 0,
+      "design": {
+        "x": 1036,
+        "y": 304,
+        "w": 36,
+        "h": 22,
+        "font": "14px/400"
+      },
+      "app": {
+        "x": 1041,
+        "y": 272,
+        "w": 35,
+        "h": 22,
+        "font": "14px/400"
+      }
+    },
+    {
+      "width": 1440,
+      "name": "reason",
+      "dx": 0,
+      "dy": 0,
+      "dw": 8,
+      "dh": 0,
+      "design": {
+        "x": 424,
+        "y": 345,
+        "w": 648,
+        "h": 42,
+        "font": "14px/400"
+      },
+      "app": {
+        "x": 420,
+        "y": 313,
+        "w": 656,
+        "h": 42,
+        "font": "14px/400"
+      }
+    },
+    {
+      "width": 1440,
+      "name": "first change box",
+      "dx": 0,
+      "dy": 0,
+      "dw": 8,
+      "dh": -2,
+      "design": {
+        "x": 424,
+        "y": 397,
+        "w": 648,
+        "h": 99,
+        "font": "16px/400"
+      },
+      "app": {
+        "x": 420,
+        "y": 365,
+        "w": 656,
+        "h": 97,
+        "font": "16px/400"
+      }
+    },
+    {
+      "width": 1440,
+      "name": "first status badge",
+      "dx": 0,
+      "dy": 0,
+      "dw": -2,
+      "dh": -2,
+      "design": {
+        "x": 584,
+        "y": 411,
+        "w": 104,
+        "h": 26,
+        "font": "13px/600"
+      },
+      "app": {
+        "x": 580,
+        "y": 379,
+        "w": 102,
+        "h": 24,
+        "font": "13px/600"
+      }
+    },
+    {
+      "width": 1440,
+      "name": "second day heading",
+      "dx": 0,
+      "dy": -4,
+      "dw": 8,
+      "dh": 0,
+      "design": {
+        "x": 368,
+        "y": 656,
+        "w": 704,
+        "h": 20,
+        "font": "13px/600"
+      },
+      "app": {
+        "x": 364,
+        "y": 620,
+        "w": 712,
+        "h": 20,
+        "font": "13px/600"
+      }
+    },
+    {
+      "width": 1440,
+      "name": "edit change box",
+      "dx": 0,
+      "dy": -4,
+      "dw": 8,
+      "dh": 0,
+      "design": {
+        "x": 424,
+        "y": 738,
+        "w": 648,
+        "h": 161,
+        "font": "16px/400"
+      },
+      "app": {
+        "x": 420,
+        "y": 702,
+        "w": 656,
+        "h": 161,
+        "font": "16px/400"
+      }
+    },
+    {
+      "width": 1440,
+      "name": "added item row",
+      "dx": 0,
+      "dy": -4,
+      "dw": 8,
+      "dh": 0,
+      "design": {
+        "x": 584,
+        "y": 797,
+        "w": 472,
+        "h": 24,
+        "font": "15px/400"
+      },
+      "app": {
+        "x": 580,
+        "y": 761,
+        "w": 480,
+        "h": 24,
+        "font": "15px/400"
+      }
+    },
+    {
+      "width": 1440,
+      "name": "foot",
+      "dx": 0,
+      "dy": 64,
+      "dw": 8,
+      "dh": 0,
+      "design": {
+        "x": 340,
+        "y": 955,
+        "w": 760,
+        "h": 77,
+        "font": "16px/400"
+      },
+      "app": {
+        "x": 336,
+        "y": 987,
+        "w": 768,
+        "h": 77,
+        "font": "16px/400"
+      }
+    },
+    {
+      "width": 390,
+      "name": "sheet",
+      "dx": 0,
+      "dy": 0,
+      "dw": 0,
+      "dh": -65,
+      "design": {
+        "x": 0,
+        "y": 40,
+        "w": 390,
+        "h": 1460,
+        "font": "16px/400"
+      },
+      "app": {
+        "x": 0,
+        "y": 105,
+        "w": 390,
+        "h": 1395,
+        "font": "16px/400"
+      }
+    },
+    {
+      "width": 390,
+      "name": "icon tile",
+      "dx": 0,
+      "dy": 9,
+      "dw": 0,
+      "dh": 0,
+      "design": {
+        "x": 16,
+        "y": 70,
+        "w": 40,
+        "h": 40,
+        "font": "16px/400"
+      },
+      "app": {
+        "x": 16,
+        "y": 144,
+        "w": 40,
+        "h": 40,
+        "font": "16px/400"
+      }
+    },
+    {
+      "width": 390,
+      "name": "title",
+      "dx": 0,
+      "dy": -2,
+      "dw": 0,
+      "dh": 0,
+      "design": {
+        "x": 68,
+        "y": 66,
+        "w": 250,
+        "h": 28,
+        "font": "19px/700"
+      },
+      "app": {
+        "x": 68,
+        "y": 129,
+        "w": 250,
+        "h": 28,
+        "font": "19px/700"
+      }
+    },
+    {
+      "width": 390,
+      "name": "day heading",
+      "dx": 0,
+      "dy": 52,
+      "dw": 0,
+      "dh": 0,
+      "design": {
+        "x": 16,
+        "y": 145,
+        "w": 358,
+        "h": 20,
+        "font": "13px/600"
+      },
+      "app": {
+        "x": 16,
+        "y": 262,
+        "w": 358,
+        "h": 20,
+        "font": "13px/600"
+      }
+    },
+    {
+      "width": 390,
+      "name": "first action icon",
+      "dx": 0,
+      "dy": 52,
+      "dw": 0,
+      "dh": 0,
+      "design": {
+        "x": 16,
+        "y": 177,
+        "w": 32,
+        "h": 32,
+        "font": "16px/400"
+      },
+      "app": {
+        "x": 16,
+        "y": 294,
+        "w": 32,
+        "h": 32,
+        "font": "16px/400"
+      }
+    },
+    {
+      "width": 390,
+      "name": "first action name",
+      "dx": 0,
+      "dy": 52,
+      "dw": 219,
+      "dh": 0,
+      "design": {
+        "x": 60,
+        "y": 177,
+        "w": 56,
+        "h": 26,
+        "font": "16px/600"
+      },
+      "app": {
+        "x": 60,
+        "y": 294,
+        "w": 275,
+        "h": 26,
+        "font": "16px/600"
+      }
+    },
+    {
+      "width": 390,
+      "name": "reason",
+      "dx": 0,
+      "dy": 52,
+      "dw": 0,
+      "dh": 0,
+      "design": {
+        "x": 60,
+        "y": 231,
+        "w": 314,
+        "h": 38,
+        "font": "14px/400"
+      },
+      "app": {
+        "x": 60,
+        "y": 348,
+        "w": 314,
+        "h": 38,
+        "font": "14px/400"
+      }
+    },
+    {
+      "width": 390,
+      "name": "first change box",
+      "dx": 0,
+      "dy": 52,
+      "dw": 0,
+      "dh": -6,
+      "design": {
+        "x": 60,
+        "y": 277,
+        "w": 314,
+        "h": 145,
+        "font": "16px/400"
+      },
+      "app": {
+        "x": 60,
+        "y": 394,
+        "w": 314,
+        "h": 139,
+        "font": "16px/400"
+      }
+    },
+    {
+      "width": 390,
+      "name": "first status badge",
+      "dx": 0,
+      "dy": 50,
+      "dw": -2,
+      "dh": -2,
+      "design": {
+        "x": 72,
+        "y": 315,
+        "w": 104,
+        "h": 26,
+        "font": "13px/600"
+      },
+      "app": {
+        "x": 72,
+        "y": 430,
+        "w": 102,
+        "h": 24,
+        "font": "13px/600"
+      }
+    },
+    {
+      "width": 390,
+      "name": "added item row",
+      "dx": 0,
+      "dy": 40,
+      "dw": 0,
+      "dh": 0,
+      "design": {
+        "x": 72,
+        "y": 793,
+        "w": 290,
+        "h": 22,
+        "font": "14px/400"
+      },
+      "app": {
+        "x": 72,
+        "y": 898,
+        "w": 290,
+        "h": 22,
+        "font": "14px/400"
+      }
+    },
+    {
+      "width": 390,
+      "name": "foot button",
+      "dx": 0,
+      "dy": -57,
+      "dw": 0,
+      "dh": 0,
+      "design": {
+        "x": 16,
+        "y": 1400,
+        "w": 358,
+        "h": 48,
+        "font": "16px/600"
+      },
+      "app": {
+        "x": 16,
+        "y": 1408,
+        "w": 358,
+        "h": 48,
+        "font": "16px/600"
+      }
+    }
+  ]
+}

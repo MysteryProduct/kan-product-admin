@@ -104,7 +104,7 @@ export default function PaymentReceiptDetailModal({
 				</div>
 			</div>
 			<div className="mt-4">
-				<DocumentHistoryPanel endpoint={`/payment-receipts/${paymentReceipt.payment_receipt_id}/history`} />
+				<DocumentHistoryPanel endpoint={`/payment-receipts/${paymentReceipt.payment_receipt_id}/history`} documentLabel={paymentReceipt.payment_receipt_code || undefined} />
 			</div>
 		</Modal>
 	);

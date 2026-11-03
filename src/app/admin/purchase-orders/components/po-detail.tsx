@@ -386,7 +386,7 @@ export default function PurchaseOrderDetail({ purchaseOrder: order, onChanged }:
 
           <section className="ka-card ka-po-cp ka-po-noprint" aria-labelledby="po-history">
             <h2 id="po-history" className="ka-po-h2 ka-po-h2--gap">ประวัติ</h2>
-            <DocumentHistoryPanel key={historyKey} endpoint={`/purchase-order/${id}/history`} variant="timeline" onEntries={setHistory} />
+            <DocumentHistoryPanel key={historyKey} endpoint={`/purchase-order/${id}/history`} variant="timeline" onEntries={setHistory} documentLabel={[order.purchase_order_code, order.purchase_order_name].filter(Boolean).join(' · ')} />
           </section>
         </aside>
       </div>

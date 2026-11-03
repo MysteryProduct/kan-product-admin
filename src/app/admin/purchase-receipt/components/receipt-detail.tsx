@@ -385,7 +385,7 @@ export default function ReceiptDetail({ receipt, order, onChanged }: Props) {
 
           <section className="ka-card ka-po-cp ka-po-noprint" aria-labelledby="pr-history">
             <h2 id="pr-history" className="ka-po-h2 ka-po-h2--gap">ประวัติ</h2>
-            <DocumentHistoryPanel key={historyKey} endpoint={`/purchase-receipt/${id}/history`} variant="timeline" onEntries={setHistory} />
+            <DocumentHistoryPanel key={historyKey} endpoint={`/purchase-receipt/${id}/history`} variant="timeline" onEntries={setHistory} documentLabel={receipt.purchase_receipt_code || undefined} />
           </section>
         </aside>
       </div>

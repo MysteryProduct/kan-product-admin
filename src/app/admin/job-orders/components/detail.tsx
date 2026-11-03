@@ -201,7 +201,7 @@ export default function JobOrderDetailModal({
           </div>
         )}
 
-        <DocumentHistoryPanel endpoint={`/job-order/${jobOrder.job_order_id}/history`} />
+        <DocumentHistoryPanel endpoint={`/job-order/${jobOrder.job_order_id}/history`} documentLabel={[jobOrder.job_order_code, jobOrder.job_order_name].filter(Boolean).join(' · ')} />
       </div>
     </Modal>
   );

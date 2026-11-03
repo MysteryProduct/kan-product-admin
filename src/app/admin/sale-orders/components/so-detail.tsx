@@ -498,7 +498,7 @@ export default function SaleOrderDetail({ saleOrder: order, onChanged, openRetur
 
           <section className="ka-so-card ka-so-side ka-so-noprint" aria-labelledby="so-history">
             <h2 id="so-history" className="ka-so-h2">ประวัติเอกสาร</h2>
-            <DocumentHistoryPanel key={historyKey} endpoint={`/sale-order/${id}/history`} variant="timeline" onEntries={setHistory} />
+            <DocumentHistoryPanel key={historyKey} endpoint={`/sale-order/${id}/history`} variant="timeline" onEntries={setHistory} documentLabel={[order.sale_order_code, order.sale_order_name].filter(Boolean).join(' · ')} />
           </section>
         </aside>
       </div>

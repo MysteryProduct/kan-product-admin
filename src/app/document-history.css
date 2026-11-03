@@ -1,0 +1,180 @@
+/* The "ประวัติการเปลี่ยนแปลง" dialog (TASK-0338), to the canvas artboards History (1440) and History-Phone (390).
+   Scoped by `.ka-hist` on the Modal panel so other dialogs keep the shared `.ka-modal*` look. Tokens only. */
+@layer components {
+
+/* ---------- Shell ---------- */
+.ka-hist .ka-modal__head { align-items: flex-start; gap: 16px; padding-top: 24px; padding-bottom: 20px; border-bottom: 0; }
+.ka-hist .ka-modal__title { font: 700 22px/32px var(--ka-font); }
+.ka-hist .ka-modal__desc { margin-top: 2px; overflow-wrap: anywhere; }
+.ka-hist .ka-modal__head > .ka-btn--icon { width: 44px; min-height: 44px; height: 44px; }
+.ka-hist .ka-modal__body { padding-top: 0; padding-bottom: 8px; }
+.ka-hist .ka-modal__foot { padding-top: 16px; padding-bottom: 16px; }
+.ka-hist__tile {
+  display: flex; flex: none; align-items: center; justify-content: center; width: 48px; height: 48px;
+  border-radius: 12px; background: var(--brand-soft); color: var(--brand-ink);
+}
+.ka-hist__tile svg { width: 24px; height: 24px; }
+
+/* ---------- Summary: three figures above the list, kept in view while it scrolls ---------- */
+.ka-hist__sum {
+  position: sticky; top: 0; z-index: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;
+  margin: 0 -28px; padding: 0 28px 20px; border-bottom: 1px solid var(--border); background: var(--bg-surface);
+}
+.ka-hist__stat { display: flex; flex-direction: column; min-width: 0; padding: 12px 16px; border-radius: 12px; background: var(--bg-subtle); }
+.ka-hist__stat--wide { grid-column: span 2; }
+.ka-hist__k { font-size: 13px; line-height: 20px; color: var(--ink-muted); }
+.ka-hist__v { display: flex; align-items: center; gap: 8px; font: 700 20px/30px var(--ka-font); }
+.ka-hist__v--sm { font-size: 16px; font-weight: 600; }
+.ka-hist__stack { display: flex; }
+.ka-hist__stack > .ka-hist__av { width: 26px; height: 26px; font-size: 12px; border: 2px solid var(--bg-subtle); box-sizing: content-box; }
+.ka-hist__stack > .ka-hist__av + .ka-hist__av { margin-left: -8px; }
+.ka-hist__sumline { display: none; }
+
+/* ---------- Days and entries ---------- */
+.ka-hist__days { display: flex; flex-direction: column; gap: 4px; padding-top: 20px; }
+.ka-hist__dayh {
+  display: flex; align-items: center; gap: 12px; margin: 0 0 12px;
+  font: 600 13px/20px var(--ka-font); color: var(--ink-muted);
+}
+.ka-hist__day + .ka-hist__day .ka-hist__dayh { margin-top: 4px; }
+.ka-hist__dayh::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.ka-hist__list { display: flex; flex-direction: column; margin: 0; padding: 0; list-style: none; }
+.ka-hist__item { display: grid; grid-template-columns: 40px minmax(0, 1fr); column-gap: 16px; }
+.ka-hist__rail { display: flex; flex-direction: column; align-items: center; }
+.ka-hist__ic {
+  display: flex; flex: none; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%;
+  background: var(--neutral-soft); color: var(--ink-muted);
+}
+.ka-hist__ic svg { width: 20px; height: 20px; }
+.ka-hist__ic[data-tone="brand"] { background: var(--action); color: var(--on-action); }
+.ka-hist__ic[data-tone="info"] { background: var(--info-soft); color: var(--info); }
+.ka-hist__ic[data-tone="success"] { background: var(--success-soft); color: var(--success); }
+.ka-hist__ic[data-tone="warning"] { background: var(--warning-soft); color: var(--warning); }
+.ka-hist__ic[data-tone="danger"] { background: var(--danger-soft); color: var(--danger); }
+.ka-hist__dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.ka-hist__line { flex: 1; width: 2px; margin: 6px 0; background: var(--border); }
+.ka-hist__main { display: flex; flex-direction: column; gap: 10px; min-width: 0; padding-bottom: 24px; }
+.ka-hist__item:last-child:not(:has(.ka-hist__line)) .ka-hist__main { padding-bottom: 16px; }
+.ka-hist__head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; min-height: 40px; }
+.ka-hist__act { font: 600 17px/26px var(--ka-font); }
+.ka-hist__who { display: inline-flex; align-items: center; gap: 6px; min-width: 0; font-size: 14px; line-height: 22px; color: var(--ink-muted); }
+.ka-hist__by { display: none; }
+.ka-hist__time { margin-left: auto; font-size: 14px; line-height: 22px; color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+
+/* Avatar: initials on a soft tone, or an icon for the system and for someone not in the system. */
+.ka-hist__av {
+  display: inline-flex; flex: none; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--neutral-soft); color: var(--ink-muted); font: 700 11px/1 var(--ka-font);
+}
+.ka-hist__av svg { width: 13px; height: 13px; }
+.ka-hist__av[data-tone="brand"] { background: var(--brand-soft); color: var(--brand-ink); }
+.ka-hist__av[data-tone="info"] { background: var(--info-soft); color: var(--info); }
+.ka-hist__av[data-tone="success"] { background: var(--success-soft); color: var(--success); }
+.ka-hist__av[data-tone="warning"] { background: var(--warning-soft); color: var(--warning); }
+
+/* Reason, in the soft tone of its action. */
+.ka-hist__why { margin: 0; padding: 10px 14px; border-radius: 10px; background: var(--bg-subtle); font-size: 14px; line-height: 22px; overflow-wrap: anywhere; }
+.ka-hist__why b { font-weight: 600; }
+.ka-hist__why[data-tone="warning"] { background: var(--warning-soft); }
+.ka-hist__why[data-tone="danger"] { background: var(--danger-soft); }
+.ka-hist__why[data-tone="success"] { background: var(--success-soft); }
+.ka-hist__why[data-tone="info"] { background: var(--info-soft); }
+.ka-hist__why[data-tone="brand"] { background: var(--brand-soft); }
+
+/* What changed: label and values, goods below a rule. */
+.ka-hist__box { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 14px 16px; border-radius: 12px; background: var(--bg-subtle); }
+.ka-hist__row { display: grid; grid-template-columns: 132px minmax(0, 1fr); align-items: center; gap: 12px; }
+.ka-hist__row--sep { align-items: start; padding-top: 10px; border-top: 1px solid var(--border); }
+.ka-hist__row dt { font-size: 14px; line-height: 22px; color: var(--ink-muted); }
+.ka-hist__row dd { margin: 0; min-width: 0; font-size: 15px; line-height: 24px; }
+.ka-hist__vals { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ka-hist__vals b { font-weight: 600; overflow-wrap: anywhere; }
+.ka-hist__old { color: var(--ink-muted); }
+.ka-hist__to { flex: none; width: 16px; height: 16px; color: var(--brand-ink); }
+.ka-hist__items { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.ka-hist__it { display: flex; align-items: center; gap: 10px; }
+.ka-hist__it[data-kind="listed"] { align-items: baseline; }
+.ka-hist__itname { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.ka-hist__it[data-kind="removed"] .ka-hist__itname, .ka-hist__it[data-kind="removed"] .ka-hist__itqty { color: var(--ink-muted); }
+.ka-hist__itqty { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ka-hist__it:not([data-kind="qty"]):not([data-kind="removed"]) .ka-hist__itqty { font-weight: 600; }
+.ka-hist__itqty b { font-weight: 600; }
+.ka-hist__tag {
+  flex: none; width: 64px; height: 24px; border-radius: 6px; text-align: center;
+  font: 600 12px/24px var(--ka-font); background: var(--neutral-soft); color: var(--ink-muted);
+}
+.ka-hist__tag[data-tone="success"] { background: var(--success-soft); color: var(--success); }
+.ka-hist__tag[data-tone="danger"] { background: var(--danger-soft); color: var(--danger); }
+.ka-hist__tag[data-tone="info"] { background: var(--info-soft); color: var(--info); }
+
+/* ---------- Foot, states ---------- */
+.ka-hist__foot { display: flex; align-items: center; gap: 16px; width: 100%; }
+.ka-hist__count { font-size: 14px; line-height: 22px; color: var(--ink-muted); }
+.ka-hist__foot > .ka-btn { flex: none; margin-left: auto; min-height: 44px; font-weight: 600; }
+.ka-hist__short { display: none; }
+.ka-hist__err { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 20px 0 12px; }
+.ka-hist__err > .ka-btn { margin-left: auto; }
+.ka-hist__empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 48px 0; color: var(--ink-muted); }
+.ka-hist__empty p { margin: 0; }
+.ka-hist__skel { display: flex; flex-direction: column; gap: 24px; padding-top: 20px; }
+.ka-hist__skelrow { display: grid; grid-template-columns: 40px minmax(0, 1fr); column-gap: 16px; }
+.ka-hist__skelic { width: 40px; height: 40px; border-radius: 50%; background: var(--bg-subtle); }
+.ka-hist__skelbody { display: flex; flex-direction: column; gap: 10px; }
+.ka-hist__skelbody i { display: block; height: 14px; border-radius: 7px; background: var(--bg-subtle); animation: ka-hist-pulse 1.4s var(--ka-ease) infinite alternate; }
+.ka-hist__skelbody i:nth-child(1) { width: 40%; height: 18px; }
+.ka-hist__skelbody i:nth-child(2) { width: 70%; }
+.ka-hist__skelbody i:nth-child(3) { width: 100%; height: 56px; border-radius: 12px; }
+@keyframes ka-hist-pulse { from { opacity: 1; } to { opacity: 0.55; } }
+@media (prefers-reduced-motion: reduce) { .ka-hist__skelbody i { animation: none; } }
+
+/* ---------- Phone: the bottom sheet of History-Phone ---------- */
+@media (max-width: 639px) {
+  .ka-hist .ka-modal__head { align-items: center; gap: 12px; padding-top: 12px; padding-bottom: 14px; }
+  .ka-hist .ka-modal__title { font-size: 19px; line-height: 28px; }
+  .ka-hist .ka-modal__desc { font-size: 13px; line-height: 20px; }
+  .ka-hist__tile { width: 40px; height: 40px; border-radius: 10px; }
+  .ka-hist__tile svg { width: 20px; height: 20px; }
+  .ka-hist__sum { display: none; }
+  .ka-hist__sumline {
+    position: sticky; top: 0; z-index: 1; display: block; margin: 0 -16px; padding: 0 16px 12px; border-bottom: 1px solid var(--border);
+    background: var(--bg-surface); font-size: 13px; line-height: 20px; color: var(--ink-muted);
+  }
+  .ka-hist__days { padding-top: 16px; }
+  .ka-hist__item { grid-template-columns: 32px minmax(0, 1fr); column-gap: 12px; }
+  .ka-hist__ic { width: 32px; height: 32px; }
+  .ka-hist__ic svg { width: 16px; height: 16px; }
+  .ka-hist__main { gap: 8px; padding-bottom: 20px; }
+  .ka-hist__head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 8px; min-height: 0; }
+  .ka-hist__act { font-size: 16px; }
+  .ka-hist__time { grid-column: 2; grid-row: 1; font-size: 13px; line-height: 20px; }
+  .ka-hist__who { grid-column: 1 / -1; font-size: 13px; line-height: 20px; }
+  .ka-hist__who > .ka-hist__av { display: none; }
+  .ka-hist__by { display: inline; }
+  .ka-hist__why { padding: 8px 12px; }
+  .ka-hist__box { padding: 12px; }
+  .ka-hist__row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .ka-hist__row dt { font-size: 13px; line-height: 20px; }
+  .ka-hist__items { font-size: 14px; line-height: 22px; }
+  .ka-hist__tag { width: 60px; height: 22px; line-height: 22px; }
+  .ka-hist__to { width: 14px; height: 14px; }
+  .ka-hist__foot { flex-direction: column; align-items: stretch; gap: 8px; }
+  .ka-hist__foot > .ka-btn { order: -1; margin-left: 0; min-height: 48px; font-size: 16px; }
+  .ka-hist__count { font-size: 13px; line-height: 20px; text-align: center; }
+  .ka-hist__long { display: none; }
+  .ka-hist__short { display: inline; }
+  .ka-hist__skelrow { grid-template-columns: 32px minmax(0, 1fr); column-gap: 12px; }
+  .ka-hist__skelic { width: 32px; height: 32px; }
+}
+
+}
+
+/* Modal sets its padding with utilities (a later layer), so the artboards' gutters sit outside the layer to win:
+   28px beside a centred dialog, 16px in the phone sheet, and no top padding where the summary starts the body.
+   They touch only `.ka-hist` panels. */
+.ka-hist .ka-modal__body { padding-top: 0; padding-bottom: 8px; }
+@media (min-width: 640px) {
+  .ka-hist .ka-modal__head, .ka-hist .ka-modal__body, .ka-hist .ka-modal__foot { padding-left: 28px; padding-right: 28px; }
+}
+@media (max-width: 639px) {
+  .ka-hist .ka-modal__head, .ka-hist .ka-modal__body, .ka-hist .ka-modal__foot { padding-left: 16px; padding-right: 16px; }
+}
