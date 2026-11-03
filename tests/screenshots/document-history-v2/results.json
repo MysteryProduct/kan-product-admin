@@ -91,6 +91,26 @@
       "note": ""
     },
     {
+      "name": "load more: retry after a failure adds page 2 and the foot reaches 6 of 6",
+      "ok": true,
+      "note": "→ 200\nนำออก\nสติกเกอร์โลโก้ไดคัท\n× 500\nแสดง 6 จาก 6 รายการ · ไม่แสดงราคาและต้นทุน"
+    },
+    {
+      "name": "load more: with everything loaded, who and when are told",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "keyboard: focus stays in the dialog after the retry button leaves",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "keyboard: Tab after loading more stays in the dialog",
+      "ok": true,
+      "note": ""
+    },
+    {
       "name": "summary: all loaded shows 3 people and \"29 ต.ค. – 3 พ.ย. 2569\"",
       "ok": true,
       "note": "ประวัติการเปลี่ยนแปลง\n\nSO202611030220 · ทดสอบ TASK-0336 คืนสินค้า\n\nเหตุการณ์ทั้งหมด\n4 รายการ\nผู้ดำเนินการ\nsu\nนภ\n3 คน\nช่วงเวลา\n29 ต.ค. – 3 พ.ย. 2569\nวันนี้ · 3 พ"

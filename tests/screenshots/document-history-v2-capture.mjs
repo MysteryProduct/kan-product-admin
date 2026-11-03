@@ -304,6 +304,43 @@ await dialogShot('history-loadmore-error-1440');
 await closeHistory();
 consoleErrors.splice(errorsBefore);
 
+// Loading more works: page 2 is added, the foot reaches "6 จาก 6", the button goes, who and when appear,
+// and focus stays in the dialog after the button leaves (review F1, F2).
+await page.unroute(HISTORY);
+const extra = [
+  { ...fixtureEntries[1], document_history_id: 'p2a', created_at: new Date(Date.UTC(2026, 9, 27, 2, 0)).toISOString() },
+  { ...fixtureEntries[2], document_history_id: 'p2b', created_at: new Date(Date.UTC(2026, 9, 26, 2, 0)).toISOString() },
+];
+let secondPageFails = true;
+await page.route(HISTORY, (route) => {
+  const url = new URL(route.request().url());
+  if (url.searchParams.get('page') === '2') {
+    if (secondPageFails) return route.abort('failed');
+    return route.fulfill({ json: { data: extra, meta: { total: 6, page: 2, limit: 20, last_page: 2 } } });
+  }
+  return route.fulfill({ json: { data: fixtureEntries, meta: { total: 6, page: 1, limit: 20, last_page: 2 } } });
+});
+const errorsBeforeMore = consoleErrors.length;
+await openHistory();
+const insideDialog = () => page.evaluate(() => Boolean(document.activeElement?.closest('.ka-hist')));
+await page.locator('.ka-hist .ka-modal__foot button').focus();
+await page.keyboard.press('Enter');
+await page.waitForSelector('.ka-hist__err button', { timeout: 10000 });
+secondPageFails = false;
+await page.locator('.ka-hist__err button').focus();
+await page.keyboard.press('Enter');
+await page.waitForFunction(() => document.querySelectorAll('.ka-hist__item').length === 6, null, { timeout: 10000 });
+await page.waitForTimeout(400);
+const afterRetry = await dialogText();
+check('load more: retry after a failure adds page 2 and the foot reaches 6 of 6', /แสดง 6 จาก 6 รายการ/.test(afterRetry) && (await page.locator('.ka-hist .ka-modal__foot button').count()) === 0, afterRetry.slice(-80));
+check('load more: with everything loaded, who and when are told', /ผู้ดำเนินการ/.test(afterRetry) && /ช่วงเวลา/.test(afterRetry));
+check('keyboard: focus stays in the dialog after the retry button leaves', await insideDialog());
+await page.keyboard.press('Tab');
+await page.keyboard.press('Tab');
+check('keyboard: Tab after loading more stays in the dialog', await insideDialog());
+await closeHistory();
+consoleErrors.splice(errorsBeforeMore);
+
 // Every entry loaded: who and when are told (AC2).
 await page.unroute(HISTORY);
 await page.route(HISTORY, (route) => route.fulfill({ json: { data: fixtureEntries, meta: { total: 4, page: 1, limit: 20, last_page: 1 } } }));

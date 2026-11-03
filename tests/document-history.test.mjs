@@ -84,6 +84,8 @@ test('a status change is two badges in the document\'s tones; a first status sta
   assert.deepEqual([paid.before, paid.after], ['ชำระบางส่วน', 'ชำระครบแล้ว'], 'sale-order words, not goods received');
   const po = history.fieldChanges(entry({ previous_value: { purchase_order_status: 'draft' }, next_value: { purchase_order_status: 'pending' } }))[0];
   assert.deepEqual([po.beforeTone, po.afterTone], ['neutral', 'warning']);
+  const job = history.fieldChanges(entry({ previous_value: { job_order_status: 'in_progress' }, next_value: { job_order_status: 'completed' } }))[0];
+  assert.deepEqual([job.beforeTone, job.afterTone], ['info', 'success'], 'job orders get tones too (review F5)');
   const invoice = history.fieldChanges(entry({ previous_value: { invoice_supplier_status: 'pending' }, next_value: { invoice_supplier_status: 'partial' } }))[0];
   assert.deepEqual([invoice.before, invoice.after], ['รอชำระ', 'ชำระบางส่วน']);
   const created = history.fieldChanges(entry({ action: 'created', next_value: { sale_order_status: 'pending', sale_order_type: 'order', sale_order_list_price: 120 } }));

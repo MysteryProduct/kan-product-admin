@@ -143,12 +143,16 @@ export function timeOf(value: string): string {
 
 // ---------------------------------------------------------------- fields (R8, D9, D10)
 
+// Job orders have no shared tone map; these follow the same rule as the others (waiting / in progress / done / cancelled).
+const JOB_ORDER_STATUS_TONE: Record<string, BadgeTone> = { pending: 'warning', in_progress: 'info', completed: 'success', cancelled: 'danger' };
+
 const STATUS_TONES: Record<string, Record<string, BadgeTone>> = {
   sale_order_status: SALE_ORDER_STATUS_TONE,
   purchase_order_status: PURCHASE_ORDER_STATUS_TONE,
   purchase_receipt_status: PURCHASE_ORDER_STATUS_TONE,
   invoice_supplier_status: INVOICE_SUPPLIER_STATUS_TONE,
   payment_status: PAYMENT_RECEIPT_STATUS_TONE,
+  job_order_status: JOB_ORDER_STATUS_TONE,
 };
 
 /** The tone of a status value; a field or value with no tone map is neutral. */

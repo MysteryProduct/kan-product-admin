@@ -96,7 +96,7 @@ function ItemRow({ change }: { change: ItemChange }) {
         ) : change.kind === 'status' && change.status ? (
           <span className="ka-hist__vals">
             {change.status.before && <StatusBadge tone={change.status.beforeTone}>{change.status.before}</StatusBadge>}
-            <ChangeArrow />
+            {change.status.before && <ChangeArrow />}
             {change.status.after && <StatusBadge tone={change.status.afterTone}>{change.status.after}</StatusBadge>}
           </span>
         ) : (
@@ -225,31 +225,50 @@ export default function DocumentHistoryPanel({ endpoint, variant = 'button', lim
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
+  // Each load gets a number; an answer to an older one (the dialog was closed and opened again) is dropped.
+  const request = useRef(0);
 
   const loadHistory = async (nextPage: number) => {
+    const ticket = ++request.current;
     setLoading(true);
     setError('');
     try {
       const response = await axiosInstance.get<HistoryResponse>(endpoint, {
         params: { page: nextPage, limit: PAGE_SIZE },
       });
+      if (ticket !== request.current) return;
       const loaded = response.data.data ?? [];
       setEntries((current) => (nextPage === 1 ? loaded : [...current, ...loaded]));
       setPage(response.data.meta?.page ?? nextPage);
       setLastPage(response.data.meta?.last_page ?? nextPage);
       setTotal((current) => response.data.meta?.total ?? (nextPage === 1 ? loaded.length : current + loaded.length));
     } catch {
+      if (ticket !== request.current) return;
       setError(nextPage === 1 ? 'ไม่สามารถโหลดประวัติการเปลี่ยนแปลงได้' : 'โหลดประวัติเพิ่มเติมไม่สำเร็จ');
     } finally {
-      setLoading(false);
+      if (ticket === request.current) setLoading(false);
     }
   };
 
   const openHistory = () => {
     setOpen(true);
     setEntries([]);
+    setPage(1);
+    setLastPage(1);
+    setTotal(0);
     void loadHistory(1);
   };
+
+  // "โหลดประวัติเพิ่มเติม" and "ลองอีกครั้ง" leave the page once they have done their job; focus then stays in
+  // the dialog (its panel) instead of falling to the page behind it.
+  const panelFocus = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (!open || loading) return;
+    const active = document.activeElement;
+    if (active && active !== document.body && active.isConnected) return;
+    const panel = panelFocus.current?.closest<HTMLElement>('[role="dialog"]');
+    panel?.focus();
+  }, [open, loading, entries.length, error]);
 
   const [recent, setRecent] = useState<Entry[] | null>(null);
   const [recentError, setRecentError] = useState(false);
@@ -291,7 +310,7 @@ export default function DocumentHistoryPanel({ endpoint, variant = 'button', lim
       layer="elevated"
       className="ka-hist"
       media={
-        <span className="ka-hist__tile" aria-hidden="true">
+        <span ref={panelFocus} className="ka-hist__tile" aria-hidden="true">
           <Icon d={CLOCK} />
         </span>
       }
