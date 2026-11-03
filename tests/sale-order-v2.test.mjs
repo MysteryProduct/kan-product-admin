@@ -78,6 +78,12 @@ test('commands follow the status and the type', () => {
   assert.ok(!allows.approve(order({ sale_order_status: 'pending', sale_order_type: 'custom' })));
   assert.ok(allows.edit(order({ sale_order_status: 'pending' })));
   assert.ok(!allows.edit(order({ sale_order_status: 'approved' })));
+  // TASK-0340: a store order is never edited, in any status, and the edit page says why.
+  for (const status of ['pending', 'approved', 'paid', 'cancelled']) {
+    assert.ok(!allows.edit(order({ sale_order_status: status, sale_order_type: 'store' })), status);
+  }
+  assert.match(display.editRefusal(order({ sale_order_status: 'pending', sale_order_type: 'store' })), /หน้าร้าน/);
+  assert.match(display.editRefusal(order({ sale_order_status: 'approved' })), /รออนุมัติ/);
   assert.ok(allows.remove(order({ sale_order_status: 'pending' })));
   assert.ok(!allows.remove(order({ sale_order_status: 'pending', sale_order_type: 'store' })));
   assert.ok(allows.cancel(order({ sale_order_status: 'pending', sale_order_type: 'store' })));

@@ -7,7 +7,7 @@ import DocumentCode from '@/components/DocumentCode';
 import SaleOrderFormPage from '../../components/so-form';
 import { NoPermissionNote, PageLoadError, PageLoading } from '../../components/page-states';
 import { useSaleOrder } from '../../hooks/useSaleOrder';
-import { allows, statusLabel } from '../../lib/so-display';
+import { allows, editRefusal } from '../../lib/so-display';
 
 export default function EditSaleOrderPage() {
   const id = useParams<{ id: string }>()?.id;
@@ -18,14 +18,13 @@ export default function EditSaleOrderPage() {
   if (isLoaded && !canEdit) return <NoPermissionNote action="แก้ไขใบสั่งขาย" />;
   if (error) return <PageLoadError message={error} onRetry={reload} />;
   if (!order) return <PageLoading what="ใบสั่งขาย" />;
-  // The API edits an order before it is approved; custom orders are changed through their own flow.
+  // The API edits an order before it is approved; custom orders change through their own flow, store orders never.
   if (!allows.edit(order)) {
     return (
       <div className="ka-page-body">
         <div role="note" className="ka-banner">
           <span>
-            ใบสั่งขาย <DocumentCode code={order.sale_order_code} legacyCode={order.legacy_code} /> อยู่สถานะ “
-            {statusLabel(order.sale_order_status)}” แก้ไขได้เฉพาะใบที่รออนุมัติและไม่ใช่งานผลิต Custom{' '}
+            ใบสั่งขาย <DocumentCode code={order.sale_order_code} legacyCode={order.legacy_code} /> {editRefusal(order)}{' '}
             <Link href={`/admin/sale-orders/${order.sale_order_id}`} className="font-semibold">ดูรายละเอียด</Link>
           </span>
         </div>

@@ -115,9 +115,17 @@ export function returnableQty(line: SaleOrderList): number {
   return Math.max(0, Number(line.sale_order_list_qty) - Number(line.returned_qty ?? 0));
 }
 
+/** Why the edit page shows a note instead of the form, read after the order's code. */
+export function editRefusal(order: SaleOrder): string {
+  if (order.sale_order_type === 'store') return 'เป็นใบหน้าร้าน แก้ไขไม่ได้ ยอดต้องเป็นยอดที่ลูกค้าชำระผ่านหน้าร้านเท่านั้น';
+  return `อยู่สถานะ “${statusLabel(order.sale_order_status)}” แก้ไขได้เฉพาะใบที่รออนุมัติและไม่ใช่งานผลิต Custom`;
+}
+
 /** Which commands an order offers, by its status and type; the page also checks the employee's permission. */
 export const allows = {
-  edit: (order: SaleOrder) => order.sale_order_status === 'pending' && order.sale_order_type !== 'custom',
+  /** Store orders are paid only by the storefront customer, so the API refuses to edit them (TASK-0340). */
+  edit: (order: SaleOrder) =>
+    order.sale_order_status === 'pending' && order.sale_order_type !== 'custom' && order.sale_order_type !== 'store',
   /** The API refuses to delete a store order or a custom order. */
   remove: (order: SaleOrder) =>
     order.sale_order_status === 'pending' && order.sale_order_type !== 'custom' && order.sale_order_type !== 'store',
