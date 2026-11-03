@@ -1,0 +1,1355 @@
+[
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "title h1",
+    "design": {
+      "x": 288,
+      "y": 89,
+      "w": 334,
+      "h": 36,
+      "font": "24px/700"
+    },
+    "app": {
+      "x": 288,
+      "y": 88,
+      "w": 965,
+      "h": 36,
+      "font": "24px/700"
+    },
+    "dx": 0,
+    "dw": 631,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "kpi card 1",
+    "design": {
+      "x": 288,
+      "y": 175,
+      "w": 270,
+      "h": 154,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 288,
+      "y": 174,
+      "w": 270,
+      "h": 154,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "kpi card 2",
+    "design": {
+      "x": 574,
+      "y": 175,
+      "w": 270,
+      "h": 154,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 574,
+      "y": 174,
+      "w": 270,
+      "h": 154,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "kpi card 4",
+    "design": {
+      "x": 1146,
+      "y": 175,
+      "w": 270,
+      "h": 154,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 1146,
+      "y": 174,
+      "w": 270,
+      "h": 154,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "ready heading",
+    "design": {
+      "x": 313,
+      "y": 374,
+      "w": 121,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "app": {
+      "x": 313,
+      "y": 373,
+      "w": 122,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "dx": 0,
+    "dw": 1,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "status tabs",
+    "design": {
+      "x": 289,
+      "y": 630,
+      "w": 1126,
+      "h": 53,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 289,
+      "y": 629,
+      "w": 1126,
+      "h": 53,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "table head row",
+    "design": {
+      "x": 289,
+      "y": 755,
+      "w": 1126,
+      "h": 45.5,
+      "font": "14px/400"
+    },
+    "app": {
+      "x": 289,
+      "y": 754,
+      "w": 1126,
+      "h": 42,
+      "font": "15px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": -3.5,
+    "dyRel": 0
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "first table row",
+    "design": {
+      "x": 289,
+      "y": 800.5,
+      "w": 1126,
+      "h": 57.5,
+      "font": "15px/400"
+    },
+    "app": {
+      "x": 289,
+      "y": 796.5,
+      "w": 1126,
+      "h": 73,
+      "font": "15px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 15.5,
+    "dyRel": -3
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "status badge",
+    "design": {
+      "x": 1242.7,
+      "y": 816.5,
+      "w": 26,
+      "h": 26,
+      "font": "13px/600"
+    },
+    "app": {
+      "x": 1222,
+      "y": 821.5,
+      "w": 68,
+      "h": 24,
+      "font": "13px/600"
+    },
+    "dx": -20.7,
+    "dw": 42,
+    "dh": -2,
+    "dyRel": 6
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "title h1",
+    "design": {
+      "x": 24,
+      "y": 89,
+      "w": 570,
+      "h": 36,
+      "font": "24px/700"
+    },
+    "app": {
+      "x": 24,
+      "y": 88,
+      "w": 623,
+      "h": 36,
+      "font": "24px/700"
+    },
+    "dx": 0,
+    "dw": 53,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "kpi card 1",
+    "design": {
+      "x": 24,
+      "y": 175,
+      "w": 387,
+      "h": 108,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 24,
+      "y": 174,
+      "w": 387,
+      "h": 108,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "kpi card 2",
+    "design": {
+      "x": 423,
+      "y": 175,
+      "w": 387,
+      "h": 108,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 423,
+      "y": 174,
+      "w": 387,
+      "h": 108,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "kpi card 4",
+    "design": {
+      "x": 423,
+      "y": 295,
+      "w": 387,
+      "h": 108,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 423,
+      "y": 294,
+      "w": 387,
+      "h": 108,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "ready heading",
+    "design": null,
+    "app": {
+      "x": 45,
+      "y": 447,
+      "w": 122,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "dx": null,
+    "dw": null,
+    "dh": null,
+    "dyRel": null
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "status tabs",
+    "design": {
+      "x": 25,
+      "y": 720,
+      "w": 784,
+      "h": 53,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 25,
+      "y": 703,
+      "w": 784,
+      "h": 53,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": -16
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "table head row",
+    "design": {
+      "x": 25,
+      "y": 849,
+      "w": 784,
+      "h": 42.5,
+      "font": "14px/400"
+    },
+    "app": {
+      "x": 25,
+      "y": 832,
+      "w": 784,
+      "h": 42,
+      "font": "15px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": -0.5,
+    "dyRel": -16
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "first table row",
+    "design": {
+      "x": 25,
+      "y": 891.5,
+      "w": 784,
+      "h": 50.5,
+      "font": "15px/400"
+    },
+    "app": {
+      "x": 25,
+      "y": 874.5,
+      "w": 784,
+      "h": 93,
+      "font": "15px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 42.5,
+    "dyRel": -16
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "status badge",
+    "design": null,
+    "app": {
+      "x": 624,
+      "y": 888,
+      "w": 68,
+      "h": 24,
+      "font": "13px/600"
+    },
+    "dx": null,
+    "dw": null,
+    "dh": null,
+    "dyRel": null
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "title h1",
+    "design": {
+      "x": 16,
+      "y": 81,
+      "w": 358,
+      "h": 34,
+      "font": "22px/700"
+    },
+    "app": {
+      "x": 16,
+      "y": 80,
+      "w": 358,
+      "h": 34,
+      "font": "22px/700"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "kpi card 1",
+    "design": {
+      "x": 16,
+      "y": 161,
+      "w": 174,
+      "h": 92,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 16,
+      "y": 160,
+      "w": 174,
+      "h": 92,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "kpi card 2",
+    "design": {
+      "x": 200,
+      "y": 161,
+      "w": 174,
+      "h": 92,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 200,
+      "y": 160,
+      "w": 174,
+      "h": 92,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "kpi card 4",
+    "design": {
+      "x": 200,
+      "y": 263,
+      "w": 174,
+      "h": 92,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 200,
+      "y": 262,
+      "w": 174,
+      "h": 92,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "ready heading",
+    "design": null,
+    "app": null,
+    "dx": null,
+    "dw": null,
+    "dh": null,
+    "dyRel": null
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "status tabs",
+    "design": {
+      "x": 0,
+      "y": 531,
+      "w": 390,
+      "h": 44,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 0,
+      "y": 524,
+      "w": 390,
+      "h": 44,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": -6
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "table head row",
+    "design": null,
+    "app": null,
+    "dx": null,
+    "dw": null,
+    "dh": null,
+    "dyRel": null
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "first table row",
+    "design": null,
+    "app": null,
+    "dx": null,
+    "dw": null,
+    "dh": null,
+    "dyRel": null
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "status badge",
+    "design": null,
+    "app": null,
+    "dx": null,
+    "dw": null,
+    "dh": null,
+    "dyRel": null
+  },
+  {
+    "screen": "detail",
+    "width": 1440,
+    "name": "code heading",
+    "design": {
+      "x": 288,
+      "y": 89,
+      "w": 174,
+      "h": 36,
+      "font": "24px/700"
+    },
+    "app": {
+      "x": 288,
+      "y": 88,
+      "w": 199,
+      "h": 36,
+      "font": "24px/700"
+    },
+    "dx": 0,
+    "dw": 25,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "detail",
+    "width": 1440,
+    "name": "steps card",
+    "design": {
+      "x": 288,
+      "y": 207,
+      "w": 1128,
+      "h": 128,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 288,
+      "y": 206,
+      "w": 1128,
+      "h": 128,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "detail",
+    "width": 1440,
+    "name": "items heading",
+    "design": {
+      "x": 313,
+      "y": 378,
+      "w": 103,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "app": {
+      "x": 313,
+      "y": 377,
+      "w": 105,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "dx": 0,
+    "dw": 2,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "detail",
+    "width": 1440,
+    "name": "items table head",
+    "design": {
+      "x": 289,
+      "y": 424,
+      "w": 734,
+      "h": 42.5,
+      "font": "14px/400"
+    },
+    "app": {
+      "x": 289,
+      "y": 423,
+      "w": 734,
+      "h": 42,
+      "font": "15px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": -0.5,
+    "dyRel": 0
+  },
+  {
+    "screen": "detail",
+    "width": 1440,
+    "name": "items first row",
+    "design": {
+      "x": 289,
+      "y": 466.5,
+      "w": 734,
+      "h": 68.5,
+      "font": "15px/400"
+    },
+    "app": {
+      "x": 289,
+      "y": 465.5,
+      "w": 734,
+      "h": 72.5,
+      "font": "15px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 4,
+    "dyRel": 0
+  },
+  {
+    "screen": "detail",
+    "width": 1440,
+    "name": "balance card",
+    "design": {
+      "x": 1048,
+      "y": 359,
+      "w": 368,
+      "h": 180,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 1048,
+      "y": 358,
+      "w": 368,
+      "h": 180,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "detail",
+    "width": 1440,
+    "name": "info heading",
+    "design": {
+      "x": 1073,
+      "y": 584,
+      "w": 318,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "app": {
+      "x": 1073,
+      "y": 583,
+      "w": 318,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "detail",
+    "width": 834,
+    "name": "code heading",
+    "design": {
+      "x": 24,
+      "y": 89,
+      "w": 174,
+      "h": 36,
+      "font": "24px/700"
+    },
+    "app": {
+      "x": 24,
+      "y": 88,
+      "w": 199,
+      "h": 36,
+      "font": "24px/700"
+    },
+    "dx": 0,
+    "dw": 25,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "detail",
+    "width": 834,
+    "name": "steps card",
+    "design": {
+      "x": 425,
+      "y": 267,
+      "w": 385,
+      "h": 162,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 425,
+      "y": 288,
+      "w": 385,
+      "h": 162,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 22
+  },
+  {
+    "screen": "detail",
+    "width": 834,
+    "name": "items heading",
+    "design": {
+      "x": 45,
+      "y": 466,
+      "w": 103,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "app": {
+      "x": 45,
+      "y": 491,
+      "w": 105,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "dx": 0,
+    "dw": 2,
+    "dh": 0,
+    "dyRel": 26
+  },
+  {
+    "screen": "detail",
+    "width": 834,
+    "name": "items table head",
+    "design": {
+      "x": 25,
+      "y": 510,
+      "w": 784,
+      "h": 42.5,
+      "font": "14px/400"
+    },
+    "app": {
+      "x": 25,
+      "y": 535,
+      "w": 784,
+      "h": 42,
+      "font": "15px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": -0.5,
+    "dyRel": 26
+  },
+  {
+    "screen": "detail",
+    "width": 834,
+    "name": "items first row",
+    "design": {
+      "x": 25,
+      "y": 552.5,
+      "w": 784,
+      "h": 44.5,
+      "font": "15px/400"
+    },
+    "app": {
+      "x": 25,
+      "y": 577.5,
+      "w": 784,
+      "h": 68.5,
+      "font": "15px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 24,
+    "dyRel": 26
+  },
+  {
+    "screen": "detail",
+    "width": 834,
+    "name": "balance card",
+    "design": {
+      "x": 24,
+      "y": 267,
+      "w": 385,
+      "h": 162,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 24,
+      "y": 288,
+      "w": 385,
+      "h": 162,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 22
+  },
+  {
+    "screen": "detail",
+    "width": 834,
+    "name": "info heading",
+    "design": {
+      "x": 45,
+      "y": 972,
+      "w": 744,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "app": {
+      "x": 45,
+      "y": 1030,
+      "w": 744,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 59
+  },
+  {
+    "screen": "detail",
+    "width": 390,
+    "name": "code heading",
+    "design": {
+      "x": 16,
+      "y": 113,
+      "w": 358,
+      "h": 34,
+      "font": "22px/700"
+    },
+    "app": null,
+    "dx": null,
+    "dw": null,
+    "dh": null,
+    "dyRel": null
+  },
+  {
+    "screen": "detail",
+    "width": 390,
+    "name": "steps card",
+    "design": {
+      "x": 16,
+      "y": 361,
+      "w": 358,
+      "h": 158,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 16,
+      "y": 466,
+      "w": 358,
+      "h": 158,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "detail",
+    "width": 390,
+    "name": "items heading",
+    "design": {
+      "x": 33,
+      "y": 550,
+      "w": 103,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "app": {
+      "x": 33,
+      "y": 659,
+      "w": 105,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "dx": 0,
+    "dw": 2,
+    "dh": 0,
+    "dyRel": 4
+  },
+  {
+    "screen": "detail",
+    "width": 390,
+    "name": "items table head",
+    "design": null,
+    "app": null,
+    "dx": null,
+    "dw": null,
+    "dh": null,
+    "dyRel": null
+  },
+  {
+    "screen": "detail",
+    "width": 390,
+    "name": "items first row",
+    "design": null,
+    "app": {
+      "x": 17,
+      "y": 725,
+      "w": 356,
+      "h": 93,
+      "font": "15px/400"
+    },
+    "dx": null,
+    "dw": null,
+    "dh": null,
+    "dyRel": null
+  },
+  {
+    "screen": "detail",
+    "width": 390,
+    "name": "balance card",
+    "design": {
+      "x": 16,
+      "y": 189,
+      "w": 358,
+      "h": 156,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 16,
+      "y": 294,
+      "w": 358,
+      "h": 156,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "detail",
+    "width": 390,
+    "name": "info heading",
+    "design": {
+      "x": 33,
+      "y": 1256,
+      "w": 324,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "app": {
+      "x": 33,
+      "y": 1180,
+      "w": 324,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": -181
+  },
+  {
+    "screen": "form",
+    "width": 1440,
+    "name": "title h1",
+    "design": {
+      "x": 288,
+      "y": 89,
+      "w": 1128,
+      "h": 36,
+      "font": "24px/700"
+    },
+    "app": {
+      "x": 288,
+      "y": 88,
+      "w": 1128,
+      "h": 36,
+      "font": "24px/700"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "form",
+    "width": 1440,
+    "name": "info card heading",
+    "design": {
+      "x": 313,
+      "y": 200,
+      "w": 686,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "app": {
+      "x": 313,
+      "y": 199,
+      "w": 686,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "form",
+    "width": 1440,
+    "name": "name input",
+    "design": {
+      "x": 313,
+      "y": 272,
+      "w": 686,
+      "h": 42,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 313,
+      "y": 271,
+      "w": 686,
+      "h": 40,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": -2,
+    "dyRel": 0
+  },
+  {
+    "screen": "form",
+    "width": 1440,
+    "name": "lines heading",
+    "design": {
+      "x": 313,
+      "y": 612,
+      "w": 141,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "app": {
+      "x": 313,
+      "y": 609,
+      "w": 143,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "dx": 0,
+    "dw": 2,
+    "dh": 0,
+    "dyRel": -2
+  },
+  {
+    "screen": "form",
+    "width": 1440,
+    "name": "summary heading",
+    "design": {
+      "x": 1073,
+      "y": 200,
+      "w": 318,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "app": {
+      "x": 1073,
+      "y": 199,
+      "w": 318,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "form",
+    "width": 834,
+    "name": "title h1",
+    "design": null,
+    "app": {
+      "x": 23,
+      "y": 87,
+      "w": 1,
+      "h": 36,
+      "font": "24px/700"
+    },
+    "dx": null,
+    "dw": null,
+    "dh": null,
+    "dyRel": null
+  },
+  {
+    "screen": "form",
+    "width": 834,
+    "name": "info card heading",
+    "design": {
+      "x": 49,
+      "y": 114,
+      "w": 736,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "app": {
+      "x": 49,
+      "y": 113,
+      "w": 736,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "form",
+    "width": 834,
+    "name": "name input",
+    "design": {
+      "x": 49,
+      "y": 186,
+      "w": 736,
+      "h": 46,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 49,
+      "y": 185,
+      "w": 736,
+      "h": 44,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": -2,
+    "dyRel": 0
+  },
+  {
+    "screen": "form",
+    "width": 834,
+    "name": "lines heading",
+    "design": {
+      "x": 49,
+      "y": 618,
+      "w": 736,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "app": {
+      "x": 49,
+      "y": 615,
+      "w": 143,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "dx": 0,
+    "dw": -593,
+    "dh": 0,
+    "dyRel": -2
+  },
+  {
+    "screen": "form",
+    "width": 834,
+    "name": "summary heading",
+    "design": {
+      "x": 49,
+      "y": 1328,
+      "w": 736,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "app": {
+      "x": 49,
+      "y": 811,
+      "w": 736,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": -516
+  },
+  {
+    "screen": "form",
+    "width": 390,
+    "name": "title h1",
+    "design": null,
+    "app": {
+      "x": 15,
+      "y": 79,
+      "w": 1,
+      "h": 34,
+      "font": "22px/700"
+    },
+    "dx": null,
+    "dw": null,
+    "dh": null,
+    "dyRel": null
+  },
+  {
+    "screen": "form",
+    "width": 390,
+    "name": "info card heading",
+    "design": {
+      "x": 33,
+      "y": 98,
+      "w": 324,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "app": {
+      "x": 33,
+      "y": 97,
+      "w": 324,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": 0
+  },
+  {
+    "screen": "form",
+    "width": 390,
+    "name": "name input",
+    "design": {
+      "x": 33,
+      "y": 170,
+      "w": 324,
+      "h": 46,
+      "font": "16px/400"
+    },
+    "app": {
+      "x": 33,
+      "y": 169,
+      "w": 324,
+      "h": 44,
+      "font": "16px/400"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": -2,
+    "dyRel": 0
+  },
+  {
+    "screen": "form",
+    "width": 390,
+    "name": "lines heading",
+    "design": {
+      "x": 33,
+      "y": 700,
+      "w": 324,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "app": {
+      "x": 33,
+      "y": 697,
+      "w": 143,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "dx": 0,
+    "dw": -181,
+    "dh": 0,
+    "dyRel": -2
+  },
+  {
+    "screen": "form",
+    "width": 390,
+    "name": "summary heading",
+    "design": {
+      "x": 33,
+      "y": 1282,
+      "w": 324,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "app": {
+      "x": 33,
+      "y": 881,
+      "w": 324,
+      "h": 28,
+      "font": "19px/600"
+    },
+    "dx": 0,
+    "dw": 0,
+    "dh": 0,
+    "dyRel": -400
+  }
+]

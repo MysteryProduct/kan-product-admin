@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import ContactRequestModel from "@/models/contact-request";
 import InvoiceSupplierModel from "@/models/invoice-supplier";
 import PaymentReceiptModel from "@/models/payment-receipt";
-import SaleOrderModel from "@/models/sale-order";
 import SupplierModel from "@/models/supplier";
 import ContactRequestDetailModal from "@/app/admin/contact-requests/components/detail";
 import InvoiceSupplierDetailModal from "@/app/admin/invoice-supplier/components/detail";
@@ -13,7 +12,6 @@ import JobOrderDetailModal from "@/app/admin/job-orders/components/detail";
 import MaterialDetailModal from "@/app/admin/materials/components/detail";
 import ProductDetailModal from "@/app/admin/products/components/detail";
 import PaymentReceiptDetailModal from "@/app/admin/payment-receipts/components/detail";
-import SaleOrderDetailModal from "@/app/admin/sale-orders/components/detail";
 import StoreOrderModal from "@/app/admin/store-fulfillment/components/store-order-modal";
 import { getApiErrorMessage } from "@/lib/api-error";
 import axiosInstance from "@/lib/axios";
@@ -23,10 +21,8 @@ import type { JobOrder } from "@/types/job-order";
 import type { Material } from "@/types/material";
 import type { Product } from "@/types/product";
 import type { PaymentReceipt } from "@/types/payment-receipt";
-import type { SaleOrder } from "@/types/sale-order";
 import type { DashboardListKind } from "@/types/dashboard";
 
-const saleOrderModel = new SaleOrderModel();
 const paymentReceiptModel = new PaymentReceiptModel();
 const contactRequestModel = new ContactRequestModel();
 const invoiceSupplierModel = new InvoiceSupplierModel();
@@ -60,7 +56,6 @@ export const OPENABLE_KINDS: DashboardListKind[] = [
 ];
 
 type Loaded =
-  | { kind: "sale_order"; record: SaleOrder }
   | { kind: "payment_receipt"; record: PaymentReceipt }
   | { kind: "contact_request"; record: ContactRequest }
   | { kind: "product_variant"; record: Product }
@@ -102,10 +97,14 @@ export default function RecordDetail({
       onClose();
       return;
     }
+    // A sale order has its own page too (TASK-0336).
+    if (kind === "sale_order") {
+      router.push(`/admin/sale-orders/${id}`);
+      onClose();
+      return;
+    }
     let cancelled = false;
     const load = async (): Promise<Loaded> => {
-      if (kind === "sale_order")
-        return { kind, record: await saleOrderModel.getSaleOrderById(id) };
       if (kind === "payment_receipt")
         return {
           kind,
@@ -184,16 +183,6 @@ export default function RecordDetail({
     onChanged();
   };
 
-  if (loaded.kind === "sale_order") {
-    return (
-      <SaleOrderDetailModal
-        isOpen
-        onClose={onClose}
-        onSuccess={changed}
-        saleOrder={loaded.record}
-      />
-    );
-  }
   if (loaded.kind === "payment_receipt") {
     return (
       <PaymentReceiptDetailModal

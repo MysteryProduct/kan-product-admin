@@ -7,6 +7,9 @@ import { formatThaiDate, formatThaiDateTime } from '@/lib/date-format';
 
 export type DocumentHistoryEntry = Entry;
 
+// A system or removed actor comes back as its id only; the short timeline leaves it out (the full history still shows it).
+const ID_ONLY = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 type Entry = {
   document_history_id: string;
   action: string;
@@ -182,7 +185,7 @@ export default function DocumentHistoryPanel({ endpoint, variant = 'button', lim
                 <span className="ka-tl__body">
                   <span>
                     <strong>{actions[entry.action] ?? entry.action}</strong>
-                    {entry.actor_name ? ` · ${entry.actor_name}` : ''}
+                    {entry.actor_name && !ID_ONLY.test(entry.actor_name) ? ` · ${entry.actor_name}` : ''}
                   </span>
                   {entry.reason && <span className="ka-tl__reason">เหตุผล: {entry.reason}</span>}
                   <time className="ka-tl__time numeric" dateTime={entry.created_at}>{formatThaiDateTime(entry.created_at)}</time>
