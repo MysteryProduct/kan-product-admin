@@ -52,6 +52,8 @@ export default function ReturnCard({
   const [confirming, setConfirming] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  // The time the card was opened, read once (not on every render).
+  const [now] = useState(() => Date.now());
 
   const chosen = returnable
     .map((line) => ({ line, entry: draft[line.saleOrderListId] }))
@@ -104,7 +106,7 @@ export default function ReturnCard({
 
   const received = returns.receivedDates.map((entry) => ({
     ...entry,
-    days: Math.floor((Date.now() - new Date(entry.date).getTime()) / DAY_MS),
+    days: Math.floor((now - new Date(entry.date).getTime()) / DAY_MS),
   }));
   const allPastWindow =
     received.length > 0 && received.every((entry) => entry.days > RETURN_DAYS);

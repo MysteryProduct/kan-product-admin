@@ -42,39 +42,52 @@ export default function StockOverview({ reloadToken, onOpen, onState }: StockOve
   // overwrite the one asked for after it.
   const latestRequest = useRef(0);
 
-  const load = useCallback(async () => {
+  const request = useCallback(() => {
     const request = ++latestRequest.current;
-    setIsLoading(true);
-    try {
-      const result = await dashboardModel.getStockOverview({});
-      if (request !== latestRequest.current) return;
-      if (result.stock_overview) {
-        setOverview(result.stock_overview);
-        setNotAllowed(false);
-        setError(null);
-      } else if (result.unavailable?.length) {
-        // The block failed on the server. Old numbers must not stay up as if they were current,
-        // and none is drawn as 0: the bar goes and the retry stays.
+    return dashboardModel
+      .getStockOverview({})
+      .then((result) => {
+        if (request !== latestRequest.current) return;
+        if (result.stock_overview) {
+          setOverview(result.stock_overview);
+          setNotAllowed(false);
+          setError(null);
+        } else if (result.unavailable?.length) {
+          // The block failed on the server. Old numbers must not stay up as if they were current,
+          // and none is drawn as 0: the bar goes and the retry stays.
+          setOverview(null);
+          setError(unavailableText(result.unavailable));
+        } else {
+          setOverview(null);
+          setNotAllowed(true);
+          setError(null);
+        }
+      })
+      .catch((loadFailure) => {
+        if (request !== latestRequest.current) return;
         setOverview(null);
-        setError(unavailableText(result.unavailable));
-      } else {
-        setOverview(null);
-        setNotAllowed(true);
-        setError(null);
-      }
-    } catch (loadFailure) {
-      if (request !== latestRequest.current) return;
-      setOverview(null);
-      setError(loadErrorText("สต็อกสินค้า", loadFailure));
-    } finally {
-      if (request === latestRequest.current) setIsLoading(false);
-    }
+        setError(loadErrorText("สต็อกสินค้า", loadFailure));
+      })
+      .finally(() => {
+        if (request === latestRequest.current) setIsLoading(false);
+      });
   }, []);
 
-  // Read again when the page says a record changed.
+  // Read again when the page says a record changed; the loading state shows at once (during render).
+  const [requestedFor, setRequestedFor] = useState<number | null>(null);
+  if (requestedFor !== reloadToken) {
+    setRequestedFor(reloadToken);
+    setIsLoading(true);
+  }
+
   useEffect(() => {
-    void load();
-  }, [load, reloadToken]);
+    void request();
+  }, [request, reloadToken]);
+
+  const load = () => {
+    setIsLoading(true);
+    return request();
+  };
 
   // "Not allowed" (the server hid the block) leaves nothing on screen, so the page keeps its own card.
   const state = overview ? "shown" : error || notAllowed ? "failed" : "loading";

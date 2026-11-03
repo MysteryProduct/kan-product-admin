@@ -31,28 +31,36 @@ export default function StoreFulfillmentPage() {
 
   // Staff find an order in the list below by its code and phone; the id only
   // travels from a row to this call (ADR-0001).
-  const loadOrder = useCallback(async (storeOrderId: string) => {
+  const requestOrder = useCallback((storeOrderId: string) => {
     const request = ++latestRequest.current;
-    setError("");
-    try {
-      const loaded = await storeFulfillmentModel.getOrder(storeOrderId);
-      if (request === latestRequest.current) setOrder(loaded);
-    } catch (err) {
-      if (request !== latestRequest.current) return;
-      setOrder(null);
-      setError(getApiErrorMessage(err));
-    } finally {
-      if (request === latestRequest.current) setOpening(false);
-    }
+    return storeFulfillmentModel
+      .getOrder(storeOrderId)
+      .then((loaded) => {
+        if (request === latestRequest.current) setOrder(loaded);
+      })
+      .catch((err) => {
+        if (request !== latestRequest.current) return;
+        setOrder(null);
+        setError(getApiErrorMessage(err));
+      })
+      .finally(() => {
+        if (request === latestRequest.current) setOpening(false);
+      });
   }, []);
 
+  const loadOrder = (storeOrderId: string) => {
+    setError("");
+    return requestOrder(storeOrderId);
+  };
+
+  // An order linked by the URL opens on arrival; no error has been shown yet, so none is cleared.
   useEffect(() => {
     const orderId = new URLSearchParams(window.location.search).get("orderId");
     if (!canView || !orderId) return;
     chosenOrderId.current = orderId;
-    void loadOrder(orderId);
+    void requestOrder(orderId);
     return () => { latestRequest.current += 1; };
-  }, [canView, loadOrder]);
+  }, [canView, requestOrder]);
 
   // A row of either list below opens its order at the top of the page.
   function openOrder(storeOrderId: string) {

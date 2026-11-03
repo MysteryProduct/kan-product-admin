@@ -81,11 +81,13 @@ export default function DeliveryConversionCard({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState('');
+  // The time the card was opened, read once (not on every render).
+  const [now] = useState(() => Date.now());
 
   const pickup = order.pickup;
   const missedSecond =
     !!pickup?.secondAppointmentAt &&
-    new Date(pickup.secondAppointmentAt).getTime() < Date.now() &&
+    new Date(pickup.secondAppointmentAt).getTime() < now &&
     pickup.status !== 'picked_up';
   const convertible =
     canEdit &&

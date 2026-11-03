@@ -117,40 +117,59 @@ export default function DashboardListModal({ list, onClose, onChanged }: Dashboa
   // Only the newest request may fill the list.
   const latestRequest = useRef(0);
 
-  const load = useCallback(async () => {
+  // Read as plain values so the request below depends on them, not on the filter object.
+  const stockCategoryId = stockFilter?.category_id;
+  const stockSearch = stockFilter?.q;
+
+  const request = useCallback(() => {
     const request = ++latestRequest.current;
-    setIsLoading(true);
     const extra = isStock
       ? {
-          ...(stockFilter?.category_id !== undefined ? { category_id: stockFilter.category_id } : {}),
-          ...(stockFilter?.q ? { q: stockFilter.q } : {}),
+          ...(stockCategoryId !== undefined ? { category_id: stockCategoryId } : {}),
+          ...(stockSearch ? { q: stockSearch } : {}),
           ...(stockStatus ? { status: stockStatus } : {}),
         }
       : {};
-    try {
-      const first: DashboardList = await dashboardModel.getList(list.key, 1, FETCH, extra);
-      let rows = first.data;
-      // A long queue: its oldest rows sit on the last page whichever way the API sorts it,
-      // so take both ends and sort them here.
-      if (list.oldestFirst && first.meta.last_page > 1) {
-        const last = await dashboardModel.getList(list.key, first.meta.last_page, FETCH, extra);
-        rows = [...rows, ...last.data];
-      }
-      if (request !== latestRequest.current) return;
-      if (list.oldestFirst) rows = [...rows].sort(byOldest);
-      setResult({ rows, total: first.meta.total, amountTotal: first.amount_total });
-      setError(null);
-    } catch (loadError) {
-      if (request !== latestRequest.current) return;
-      setError(loadErrorText("รายการ", loadError));
-    } finally {
-      if (request === latestRequest.current) setIsLoading(false);
-    }
-  }, [isStock, list.key, list.oldestFirst, stockFilter?.category_id, stockFilter?.q, stockStatus]);
+    return dashboardModel
+      .getList(list.key, 1, FETCH, extra)
+      .then(async (first: DashboardList) => {
+        let rows = first.data;
+        // A long queue: its oldest rows sit on the last page whichever way the API sorts it,
+        // so take both ends and sort them here.
+        if (list.oldestFirst && first.meta.last_page > 1) {
+          const last = await dashboardModel.getList(list.key, first.meta.last_page, FETCH, extra);
+          rows = [...rows, ...last.data];
+        }
+        if (request !== latestRequest.current) return;
+        if (list.oldestFirst) rows = [...rows].sort(byOldest);
+        setResult({ rows, total: first.meta.total, amountTotal: first.amount_total });
+        setError(null);
+      })
+      .catch((loadError) => {
+        if (request !== latestRequest.current) return;
+        setError(loadErrorText("รายการ", loadError));
+      })
+      .finally(() => {
+        if (request === latestRequest.current) setIsLoading(false);
+      });
+  }, [isStock, list.key, list.oldestFirst, stockCategoryId, stockSearch, stockStatus]);
+
+  // Another list or filter shows the loading state at once (during render); the effect only sends the request.
+  const listQuery = [isStock, list.key, list.oldestFirst, stockCategoryId, stockSearch, stockStatus] as const;
+  const [requested, setRequested] = useState<typeof listQuery | null>(null);
+  if (!requested || listQuery.some((value, index) => value !== requested[index])) {
+    setRequested(listQuery);
+    setIsLoading(true);
+  }
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void request();
+  }, [request]);
+
+  const load = () => {
+    setIsLoading(true);
+    return request();
+  };
 
   const total = result?.total ?? 0;
   const searchable = total > SHOWN;
