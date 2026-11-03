@@ -19,6 +19,14 @@ const unwrapPaymentReceipt = (payload: PaymentReceipt | SinglePaymentReceiptResp
 };
 
 class PaymentReceiptModel {
+  /** The receipts of one sale order, newest payment first, refunds included (TASK-0335). */
+  async getPaymentReceiptsBySaleOrder(saleOrderId: string, limit: number = 50): Promise<PaymentReceiptResponse> {
+    const response = await axiosInstance.get<PaymentReceiptResponse>('/payment-receipts', {
+      params: { sale_order_id: saleOrderId, page: 1, limit },
+    });
+    return response.data;
+  }
+
   async getPaymentReceipts(
     page: number = 1,
     limit: number = 10,

@@ -4,7 +4,9 @@ import {
   FetchSaleOrder,
   FetchSaleOrderResponse,
   SaleOrder,
+  SaleOrderListOptions,
   SaleOrderResponse,
+  SaleOrderSummary,
   UpdateSaleOrderDto,
 } from '@/types/sale-order';
 
@@ -34,7 +36,9 @@ class SaleOrderModel {
     sortOrder?: 'ASC' | 'DESC',
   ): Promise<FetchSaleOrderResponse> {
     try {
-      const response = await axiosInstance.get<FetchSaleOrderResponse>('/fetch-sale-order', {
+      const response = await axiosInstance.get<
+        FetchSaleOrderResponse & { total?: number; totalPages?: number; page?: number; limit?: number }
+      >('/fetch-sale-order', {
         params: {
           page,
           limit,
@@ -43,7 +47,17 @@ class SaleOrderModel {
           ...(sortOrder && { sortOrder }),
         },
       });
-      return response.data;
+      const body = response.data;
+      // The API answers { data, total, page, limit, totalPages } here, not the { data, meta } of the other lists.
+      return {
+        data: body.data,
+        meta: body.meta ?? {
+          total: body.total ?? body.data?.length ?? 0,
+          page: Number(body.page ?? page),
+          last_page: body.totalPages ?? 1,
+          limit: Number(body.limit ?? limit),
+        },
+      };
     } catch (error) {
       console.error('Error fetching fetch sale orders:', error);
       throw error;
@@ -54,14 +68,18 @@ class SaleOrderModel {
     page: number = 1,
     limit: number = 10,
     search?: string,
-    sortField?: 'sale_order_total' | null,
+    sortField?: 'sale_order_total' | 'create_date' | null,
     sortOrder?: 'ASC' | 'DESC',
     saleOrderType?: string,
+    options: SaleOrderListOptions = {},
   ): Promise<SaleOrderResponse> {
     try {
       const response = await axiosInstance.get<SaleOrderResponse>('/sale-order', {
         params: {
           ...(saleOrderType && { type: saleOrderType }),
+          ...(options.statuses?.length && { filters: JSON.stringify({ sale_order_status: options.statuses }) }),
+          ...(options.dateStart && { date_start: options.dateStart }),
+          ...(options.dateEnd && { date_end: options.dateEnd }),
           page,
           limit,
           ...(search && { search }),
@@ -74,6 +92,13 @@ class SaleOrderModel {
       console.error('Error fetching sale orders:', error);
       throw error;
     }
+  }
+
+  async getSaleOrderSummary(saleOrderType?: string): Promise<SaleOrderSummary> {
+    const response = await axiosInstance.get<SaleOrderSummary>('/sale-order/summary', {
+      params: { ...(saleOrderType && { type: saleOrderType }) },
+    });
+    return response.data;
   }
 
   async getSaleOrderById(id: string): Promise<SaleOrder> {

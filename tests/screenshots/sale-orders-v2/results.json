@@ -1,0 +1,614 @@
+{
+  "results": [
+    {
+      "name": "list 390: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "detail pending 390: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "detail approved 390: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "detail partial 390: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "detail paid 390: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "detail returns 390: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "detail cancelled 390: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "form new 390: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "list 834: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "detail pending 834: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "detail approved 834: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "detail partial 834: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "detail paid 834: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "detail returns 834: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "detail cancelled 834: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "form new 834: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "list 1440: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "detail pending 1440: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "detail approved 1440: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "detail partial 1440: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "detail paid 1440: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "detail returns 1440: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "detail cancelled 1440: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "form new 1440: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "list tab all: count 94 equals the filtered total 94",
+      "ok": true,
+      "note": "แสดง 1–10 จาก 94 ใบ"
+    },
+    {
+      "name": "list tab all: URL holds the tab",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list tab pending: count 26 equals the filtered total 26",
+      "ok": true,
+      "note": "แสดง 1–10 จาก 26 ใบ"
+    },
+    {
+      "name": "list tab pending: URL holds the tab",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list tab approved: count 4 equals the filtered total 4",
+      "ok": true,
+      "note": "แสดง 1–4 จาก 4 ใบ"
+    },
+    {
+      "name": "list tab approved: URL holds the tab",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list tab partial: count 3 equals the filtered total 3",
+      "ok": true,
+      "note": "แสดง 1–3 จาก 3 ใบ"
+    },
+    {
+      "name": "list tab partial: URL holds the tab",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list tab paid: count 18 equals the filtered total 18",
+      "ok": true,
+      "note": "แสดง 1–10 จาก 18 ใบ"
+    },
+    {
+      "name": "list tab paid: URL holds the tab",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list tab returns: count 8 equals the filtered total 8",
+      "ok": true,
+      "note": "แสดง 1–8 จาก 8 ใบ"
+    },
+    {
+      "name": "list tab returns: URL holds the tab",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list tab cancelled: count 35 equals the filtered total 35",
+      "ok": true,
+      "note": "แสดง 1–10 จาก 35 ใบ"
+    },
+    {
+      "name": "list tab cancelled: URL holds the tab",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list: a reload keeps the URL state",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list: typing a search puts it in the URL once",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list: no match shows its own state",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list: choosing the current tab again is not stuck loading",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list: the summary cards show the summary figures",
+      "ok": true,
+      "note": "26 / 2328.00 / 2842.00 / 1 vs 26 / 2328.00 / 2842.00 / 1"
+    },
+    {
+      "name": "list: the pending card picks the pending tab",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list: arrow keys move between the tabs",
+      "ok": true,
+      "note": "so-tab-approved, http://localhost:3011/admin/sale-orders?tab=pending"
+    },
+    {
+      "name": "list: back returns to the tab before",
+      "ok": true,
+      "note": "http://localhost:3011/admin/sale-orders?tab=paid"
+    },
+    {
+      "name": "list: the custom range keeps from before to",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list: sorting by total works both ways",
+      "ok": true,
+      "note": "2640,2640,2640 / 0,0,107"
+    },
+    {
+      "name": "list: the empty system says so and offers to create",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "list: a failed load shows a banner with retry and keeps the filters",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "setup: a job with ready-to-sell goods exists to copy from",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "setup: three tagged ready rows were made",
+      "ok": true,
+      "note": "[\"01a1a174-cad4-7163-875e-93844bb60817\",\"01a1a174-cae5-7ac7-8b32-708cc51ff4bb\",\"01a1a174-caef-7569-b013-ffe240ae9428\"]"
+    },
+    {
+      "name": "create: ready-to-sell goods are on the list",
+      "ok": true,
+      "note": "4 cards"
+    },
+    {
+      "name": "create: two chosen cards are counted on the button",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "create: two chosen cards fill two lines",
+      "ok": true,
+      "note": "2"
+    },
+    {
+      "name": "create: the create button names how many are chosen",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "create: the chosen goods fill the first line",
+      "ok": true,
+      "note": "1 lines, qty \"4\""
+    },
+    {
+      "name": "form: \"1.5\" stays as typed in the quantity",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "form: a quantity above the ready quantity warns at once",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "form: a rejected save lists each problem and focuses the first field to fix",
+      "ok": true,
+      "note": "รายการที่ 1: เกินจำนวนพร้อมขาย 4 ชิ้น / รายการที่ 1: ราคาต้องเป็นตัวเลขไม่ติดลบ ทศนิยมไม่เกิน 2 ตำแหน่ง · focus so-08fa3e2a-641b-4b1d-960a-d397e2576839-qty"
+    },
+    {
+      "name": "form: the net total follows the lines (include VAT keeps the price)",
+      "ok": true,
+      "note": "฿240.00"
+    },
+    {
+      "name": "create: the request body carries the same keys as the old dialog",
+      "ok": true,
+      "note": "sale_order_name,sale_order_detail,shipping_address_name,sale_order_type,vat_type,sale_order_subtotal,sale_order_vat_amount,sale_order_total,saleOrderLists,create_by"
+    },
+    {
+      "name": "create: each line carries the same keys as the old dialog",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "create: saved totals match the old VAT calculation (include)",
+      "ok": true,
+      "note": "[15.7,240]"
+    },
+    {
+      "name": "create: the new order is pending and opens on its own page",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "create: a pending order offers approve and edit, not pay or return",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "create: back from the saved order does not return to the form",
+      "ok": true,
+      "note": "http://localhost:3011/admin/sale-orders"
+    },
+    {
+      "name": "edit: the form starts from the saved values",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "edit: the save is accepted",
+      "ok": true,
+      "note": "200"
+    },
+    {
+      "name": "edit: the request body carries the old keys plus update_by",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "edit: the detail shows the new quantity",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "approve: the order is approved and offers payment",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "approve: the balance card shows the whole amount due",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "pay: part payment makes the order partial and the balance card moves",
+      "ok": true,
+      "note": "ยอดค้างรับ฿70.00รับแล้ว ฿50.00 (42%)จาก ฿120.00"
+    },
+    {
+      "name": "pay: the receipt shows in the order",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "pay: paying the rest makes it paid in full",
+      "ok": true,
+      "note": "SO202611030219\nชำระครบแล้ว\nขายจากการสั่งซื้อ"
+    },
+    {
+      "name": "pay: a paid order of ready goods offers neither pay nor return (nothing goes back into stock)",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "return: an order sold from stock could be made",
+      "ok": true,
+      "note": "201 {\"sale_order_id\":\"01a1a175-35a3-7a86-a4a4-cdeb04180531\",\"sale_order_code\":\"SO202611030220\",\"legacy_code\":null,\"user_id\":null,\"user\":null,\"shipping_address_id\":n"
+    },
+    {
+      "name": "return: a paid order sold from stock offers return",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "return: a non-number is explained and nothing is sent",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "return: more than was sold is refused",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "return: pressing confirm twice sends one request",
+      "ok": true,
+      "note": "1"
+    },
+    {
+      "name": "return: the order shows a partial return",
+      "ok": true,
+      "note": "SO202611030220\nคืนสินค้าบางส่วน\nขายจากการสั่งซื้อ"
+    },
+    {
+      "name": "return: a paid order owes nothing after a return",
+      "ok": true,
+      "note": "฿0.00"
+    },
+    {
+      "name": "return: a negative receipt was recorded and shows in the list",
+      "ok": true,
+      "note": "[\"-100.00\"]"
+    },
+    {
+      "name": "cancel: a second order could be made for the flow",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "cancel: the order is cancelled and shows the reason",
+      "ok": true,
+      "note": "ใบสั่งขายนี้ถูกยกเลิก\nเหตุผล: ทดสอบยกเลิก TASK-0336\nDemo Audit · 3 พ.ย. 2569"
+    },
+    {
+      "name": "delete: a third order could be made for the flow",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "delete: the order is deleted and the page returns to the list",
+      "ok": true,
+      "note": "404"
+    },
+    {
+      "name": "route: editing an approved order shows a note, not the form",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "route: #ready focuses the ready-to-sell heading and drops the hash",
+      "ok": true,
+      "note": "http://localhost:3011/admin/sale-orders"
+    },
+    {
+      "name": "custom: the detail shows the custom payment block and no return or edit",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "menu: a pending custom order offers cancel but not edit or delete",
+      "ok": true,
+      "note": "ดูรายละเอียด, ยกเลิกเอกสาร"
+    },
+    {
+      "name": "menu: a paid store order offers neither return nor delete",
+      "ok": true,
+      "note": "ดูรายละเอียด"
+    },
+    {
+      "name": "menu: a cancelled order offers only viewing",
+      "ok": true,
+      "note": "ดูรายละเอียด"
+    },
+    {
+      "name": "form: a ready id that is gone is skipped with a notice",
+      "ok": true,
+      "note": "ข้ามสินค้า 1 รายการที่ไม่พร้อมขายแล้ว"
+    },
+    {
+      "name": "form: leaving a typed form asks first",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "form: searching in the goods picker does not save the order",
+      "ok": true,
+      "note": "0 saves, http://localhost:3011/admin/sale-orders/new?ready=01a1a175-7394-75d4-8ce9-6e9a92d82a2f,00000000-0000-4000-8000-000000000000"
+    },
+    {
+      "name": "edit: a store order keeps its type, shown read-only",
+      "ok": true,
+      "note": "หน้าร้านออนไลน์"
+    },
+    {
+      "name": "list: a link with from and to applies the custom range",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "phone: a cancelled order still offers print in the bottom bar",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "320px list: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "320px detail: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "320px form: no side scroll and no document scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "320px list with the long test name: no side scroll",
+      "ok": true,
+      "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
+    },
+    {
+      "name": "dark list: the dark theme is on",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "dark detail: the dark theme is on",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "dark form: the dark theme is on",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "keyboard: Tab reaches the page controls",
+      "ok": true,
+      "note": "27 stops in the page"
+    },
+    {
+      "name": "keyboard: every stop shows focus",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "reduced motion: the summary cards stop their transitions",
+      "ok": true,
+      "note": "0s"
+    },
+    {
+      "name": "cleanup: no tagged ready rows are left",
+      "ok": true,
+      "note": "0"
+    },
+    {
+      "name": "cleanup: no pending test order is left",
+      "ok": true,
+      "note": "left: SO202611030221:cancelled, SO202611030220:partially_returned, SO202611030219:paid, SO202611030217:cancelled, SO202611030216:partially_returned, SO202611030215:paid, SO202611030213:cancelled, SO202611030212:partially_returned, SO202611030211:paid, SO202611030209:cancelled, SO202611030208:partially_returned, SO202611030207:paid, SO202611030205:cancelled, SO202611030204:partially_returned, SO202611030203:paid, SO202611030202:paid, SO202611030201:paid, SO202611030199:cancelled, SO202611030198:partially_returned, SO202611030197:paid, SO202611030194:cancelled, SO202611030193:partially_returned, SO202611030192:paid, SO202611030190:cancelled, SO202611030189:partially_returned, SO202611030188:paid, SO202611030186:cancelled, SO202611030185:paid, SO202611030182:approved"
+    },
+    {
+      "name": "no console or page errors",
+      "ok": true,
+      "note": ""
+    }
+  ],
+  "consoleErrors": [],
+  "targets": {
+    "pending": "/admin/sale-orders/01a184d4-bbbb-7beb-af80-a64e9c0208c5",
+    "approved": "/admin/sale-orders/01a1a114-edfc-711d-ba46-1e4eccc03f10",
+    "partial": "/admin/sale-orders/01a184de-1f4b-7ffb-9959-db614df2ab24",
+    "paid": "/admin/sale-orders/01a1a165-0b72-7cac-a6ab-213bc73f3e10",
+    "returns": "/admin/sale-orders/01a1a165-53ab-79ff-a2a0-010db541b2dd",
+    "cancelled": "/admin/sale-orders/01a1a165-74f1-7b46-803c-f09559b26365"
+  },
+  "leftNames": [
+    "SO202611030221:cancelled",
+    "SO202611030220:partially_returned",
+    "SO202611030219:paid",
+    "SO202611030217:cancelled",
+    "SO202611030216:partially_returned",
+    "SO202611030215:paid",
+    "SO202611030213:cancelled",
+    "SO202611030212:partially_returned",
+    "SO202611030211:paid",
+    "SO202611030209:cancelled",
+    "SO202611030208:partially_returned",
+    "SO202611030207:paid",
+    "SO202611030205:cancelled",
+    "SO202611030204:partially_returned",
+    "SO202611030203:paid",
+    "SO202611030202:paid",
+    "SO202611030201:paid",
+    "SO202611030199:cancelled",
+    "SO202611030198:partially_returned",
+    "SO202611030197:paid",
+    "SO202611030194:cancelled",
+    "SO202611030193:partially_returned",
+    "SO202611030192:paid",
+    "SO202611030190:cancelled",
+    "SO202611030189:partially_returned",
+    "SO202611030188:paid",
+    "SO202611030186:cancelled",
+    "SO202611030185:paid",
+    "SO202611030182:approved"
+  ]
+}
