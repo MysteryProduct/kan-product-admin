@@ -86,7 +86,10 @@ test('commands follow the status and the type', () => {
   assert.match(display.editRefusal(order({ sale_order_status: 'approved' })), /รออนุมัติ/);
   assert.ok(allows.remove(order({ sale_order_status: 'pending' })));
   assert.ok(!allows.remove(order({ sale_order_status: 'pending', sale_order_type: 'store' })));
-  assert.ok(allows.cancel(order({ sale_order_status: 'pending', sale_order_type: 'store' })));
+  // TASK-0341: an employee neither approves nor cancels a store order; a plain pending order keeps both.
+  assert.ok(!allows.approve(order({ sale_order_status: 'pending', sale_order_type: 'store' })));
+  assert.ok(!allows.cancel(order({ sale_order_status: 'pending', sale_order_type: 'store' })));
+  assert.ok(allows.cancel(order({ sale_order_status: 'pending' })));
   assert.ok(allows.pay(order({ sale_order_status: 'partial' })));
   assert.ok(!allows.pay(order({ sale_order_status: 'paid' })));
   assert.ok(!allows.pay(order({ sale_order_status: 'approved', sale_order_type: 'custom' })));

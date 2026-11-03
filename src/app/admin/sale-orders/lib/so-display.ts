@@ -129,8 +129,10 @@ export const allows = {
   /** The API refuses to delete a store order or a custom order. */
   remove: (order: SaleOrder) =>
     order.sale_order_status === 'pending' && order.sale_order_type !== 'custom' && order.sale_order_type !== 'store',
-  approve: (order: SaleOrder) => order.sale_order_status === 'pending' && order.sale_order_type !== 'custom',
-  cancel: (order: SaleOrder) => order.sale_order_status === 'pending',
+  /** A store order is approved by the customer's payment and cancelled by its payment timeout (TASK-0341). */
+  approve: (order: SaleOrder) =>
+    order.sale_order_status === 'pending' && order.sale_order_type !== 'custom' && order.sale_order_type !== 'store',
+  cancel: (order: SaleOrder) => order.sale_order_status === 'pending' && order.sale_order_type !== 'store',
   /** A custom order is paid through its own deposit flow, not a generic receipt. */
   pay: (order: SaleOrder) =>
     (order.sale_order_status === 'approved' || order.sale_order_status === 'partial') && order.sale_order_type !== 'custom',
