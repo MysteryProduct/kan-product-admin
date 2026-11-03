@@ -50,9 +50,6 @@ export default function SupplierPage() {
         message: '',
     });
 
-    useEffect(() => {
-        fetchSuppliers();
-    }, [currentPage, sortField, sortOrder, appliedSearchQuery]);
 
     const handleSearch = () => {
         setCurrentPage(1);
@@ -65,18 +62,31 @@ export default function SupplierPage() {
         setCurrentPage(1);
     };
 
-    const fetchSuppliers = async (page = currentPage) => {
+    const requestSuppliers = (page = currentPage) =>
+        new SupplierModel()
+            .getSuppliers(page, 10, appliedSearchQuery, sortField, sortOrder)
+            .then((result) => {
+                setSuppliers(result.data);
+                setMeta(result.meta);
+            })
+            .catch((err) => setError(err.message))
+            .finally(() => setLoading(false));
+
+    // A new query shows the loading state at once (during render); the effect only sends the request.
+    const listQuery = [currentPage, sortField, sortOrder, appliedSearchQuery] as const;
+    const [requested, setRequested] = useState<typeof listQuery | null>(null);
+    if (!requested || listQuery.some((value, index) => value !== requested[index])) {
+        setRequested(listQuery);
         setLoading(true);
-        try {
-            const supplierModel = new SupplierModel();
-            const result = await supplierModel.getSuppliers(page, 10, appliedSearchQuery, sortField, sortOrder);
-            setSuppliers(result.data);
-            setMeta(result.meta);
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
+    }
+
+    useEffect(() => {
+        requestSuppliers();
+    }, [currentPage, sortField, sortOrder, appliedSearchQuery]);
+
+    const fetchSuppliers = (page = currentPage) => {
+        setLoading(true);
+        return requestSuppliers(page);
     };
 
     const handleRefreshSuppliers = async (checkPageAfterDelete = false) => {

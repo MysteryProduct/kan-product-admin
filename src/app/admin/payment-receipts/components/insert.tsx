@@ -83,17 +83,19 @@ export default function InsertPaymentReceiptForm({
 		void loadBankAccounts();
 	}, [isOpen]);
 
-	useEffect(() => {
-		if (!isOpen || !saleOrder) {
-			return;
+	// Fill the order's total when opened or given another order (during render, so the old value never shows).
+	const saleOrderId = saleOrder?.sale_order_id;
+	const [shownFor, setShownFor] = useState<[boolean, typeof saleOrderId] | null>(null);
+	if (!shownFor || shownFor[0] !== isOpen || shownFor[1] !== saleOrderId) {
+		setShownFor([isOpen, saleOrderId]);
+		if (isOpen && saleOrder) {
+			setFormData((prev) => ({
+				...prev,
+				amount_paid: String(Number(saleOrder.sale_order_total || 0).toFixed(2)),
+			}));
+			setErrors({});
 		}
-
-		setFormData((prev) => ({
-			...prev,
-			amount_paid: String(Number(saleOrder.sale_order_total || 0).toFixed(2)),
-		}));
-		setErrors({});
-	}, [isOpen, saleOrder?.sale_order_id]);
+	}
 
 	const saleOrderCode = useMemo(() => saleOrder?.sale_order_code || '-', [saleOrder]);
 

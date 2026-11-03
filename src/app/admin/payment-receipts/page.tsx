@@ -88,52 +88,76 @@ export default function PaymentReceiptPage() {
 		message: '',
 	});
 
-	useEffect(() => {
-		void fetchSaleOrders();
-	}, [saleOrderPage, saleOrderAppliedSearch, saleOrderSortField, saleOrderSortOrder]);
-
-	useEffect(() => {
-		void fetchPaymentReceipts();
-	}, [paymentReceiptPage, paymentReceiptAppliedSearch, paymentReceiptSortField, paymentReceiptSortOrder]);
-
-	const fetchSaleOrders = async (
+	const requestSaleOrders = (
 		page = saleOrderPage,
 		search = saleOrderAppliedSearch,
 		sortField = saleOrderSortField,
 		sortOrder = saleOrderSortOrder,
-	) => {
-		try {
-			setLoading(true);
-			setSaleOrdersError(null);
-			const response = await saleOrderModel.getSaleOrders(page, 10, search, sortField, sortOrder);
-			setSaleOrders(response);
-			setSaleOrderMeta(response.meta);
-		} catch (error) {
-			console.error('Failed to fetch sale orders:', error);
-			setSaleOrdersError(loadErrorText('รายการใบสั่งขาย', error));
-		} finally {
-			setLoading(false);
-		}
-	};
+	) =>
+		saleOrderModel
+			.getSaleOrders(page, 10, search, sortField, sortOrder)
+			.then((response) => {
+				setSaleOrders(response);
+				setSaleOrderMeta(response.meta);
+			})
+			.catch((error) => {
+				console.error('Failed to fetch sale orders:', error);
+				setSaleOrdersError(loadErrorText('รายการใบสั่งขาย', error));
+			})
+			.finally(() => setLoading(false));
 
-	const fetchPaymentReceipts = async (
+	const requestPaymentReceipts = (
 		page = paymentReceiptPage,
 		search = paymentReceiptAppliedSearch,
 		sortField = paymentReceiptSortField,
 		sortOrder = paymentReceiptSortOrder,
-	) => {
-		try {
-			setLoading(true);
-			setReceiptsError(null);
-			const response = await paymentReceiptModel.getPaymentReceipts(page, 10, search, sortField, sortOrder);
-			setPaymentReceipts(response);
-			setPaymentReceiptMeta(response.meta);
-		} catch (error) {
-			console.error('Failed to fetch payment receipts:', error);
-			setReceiptsError(loadErrorText('รายการใบเสร็จรับเงิน', error));
-		} finally {
-			setLoading(false);
-		}
+	) =>
+		paymentReceiptModel
+			.getPaymentReceipts(page, 10, search, sortField, sortOrder)
+			.then((response) => {
+				setPaymentReceipts(response);
+				setPaymentReceiptMeta(response.meta);
+			})
+			.catch((error) => {
+				console.error('Failed to fetch payment receipts:', error);
+				setReceiptsError(loadErrorText('รายการใบเสร็จรับเงิน', error));
+			})
+			.finally(() => setLoading(false));
+
+	// A new query of either list shows the loading state at once (during render); the effects only send the requests.
+	const saleOrderQuery = [saleOrderPage, saleOrderAppliedSearch, saleOrderSortField, saleOrderSortOrder] as const;
+	const [saleOrdersRequested, setSaleOrdersRequested] = useState<typeof saleOrderQuery | null>(null);
+	if (!saleOrdersRequested || saleOrderQuery.some((value, index) => value !== saleOrdersRequested[index])) {
+		setSaleOrdersRequested(saleOrderQuery);
+		setLoading(true);
+		setSaleOrdersError(null);
+	}
+	const receiptQuery = [paymentReceiptPage, paymentReceiptAppliedSearch, paymentReceiptSortField, paymentReceiptSortOrder] as const;
+	const [receiptsRequested, setReceiptsRequested] = useState<typeof receiptQuery | null>(null);
+	if (!receiptsRequested || receiptQuery.some((value, index) => value !== receiptsRequested[index])) {
+		setReceiptsRequested(receiptQuery);
+		setLoading(true);
+		setReceiptsError(null);
+	}
+
+	useEffect(() => {
+		void requestSaleOrders();
+	}, [saleOrderPage, saleOrderAppliedSearch, saleOrderSortField, saleOrderSortOrder]);
+
+	useEffect(() => {
+		void requestPaymentReceipts();
+	}, [paymentReceiptPage, paymentReceiptAppliedSearch, paymentReceiptSortField, paymentReceiptSortOrder]);
+
+	const fetchSaleOrders = (...args: Parameters<typeof requestSaleOrders>) => {
+		setLoading(true);
+		setSaleOrdersError(null);
+		return requestSaleOrders(...args);
+	};
+
+	const fetchPaymentReceipts = (...args: Parameters<typeof requestPaymentReceipts>) => {
+		setLoading(true);
+		setReceiptsError(null);
+		return requestPaymentReceipts(...args);
 	};
 
 	const handleSaleOrderSortChange = (sort: { key: string; direction: 'ASC' | 'DESC' } | null) => {
