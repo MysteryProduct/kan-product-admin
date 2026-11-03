@@ -85,7 +85,8 @@ export function paymentState(order: SaleOrder, received?: number): PaymentState 
   if (status === 'cancelled') return { percent: 0, paid, due: 0, total, text: 'ยกเลิกก่อนอนุมัติ', tone: 'none' };
   if (status === 'pending') return { percent: 0, paid, due, total, text: 'ยังไม่เปิดรับชำระ', tone: 'none' };
   if (status === 'partially_returned' || status === 'returned') {
-    const text = due > 0 ? `คืนสินค้า ${formatBaht(returned)} · ค้าง ${formatBaht(due)}` : `คืนเงิน ${formatBaht(returned)}`;
+    // The refund itself is capped at what had been received, so the row names the goods' value, not a refund.
+    const text = due > 0 ? `คืนสินค้า ${formatBaht(returned)} · ค้าง ${formatBaht(due)}` : `คืนสินค้า ${formatBaht(returned)} · รับครบ`;
     return { percent, paid, due, total, text, tone: 'refund' };
   }
   if (paid <= 0) return { percent: 0, paid, due, total, text: 'ยังไม่รับชำระ', tone: 'none' };

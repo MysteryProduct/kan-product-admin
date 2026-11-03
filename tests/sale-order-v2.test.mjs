@@ -51,7 +51,13 @@ test('a returned order owes nothing more than the goods it kept (review F3)', ()
   const line = { sale_order_list_id: 'l1', product_variant_id: 'v1', sale_order_list_qty: 5, returned_qty: 1, sale_order_list_price: 200 };
   const paidThenReturned = display.paymentState(order({ sale_order_status: 'partially_returned', saleOrderLists: [line] }), 800);
   assert.deepEqual([paidThenReturned.due, paidThenReturned.total, paidThenReturned.percent, paidThenReturned.tone], [0, 800, 100, 'refund']);
-  assert.equal(paidThenReturned.text, 'คืนเงิน ฿200.00');
+  assert.equal(paidThenReturned.text, 'คืนสินค้า ฿200.00 · รับครบ');
+  // Approved, 300 paid of 1000, then 4 of 5 units (800) came back: the API refunded only 100 (capped at 300),
+  // so the row never claims an 800 refund (review F8).
+  const fourBack = { ...line, returned_qty: 4 };
+  const underPaid = display.paymentState(order({ sale_order_status: 'partially_returned', saleOrderLists: [fourBack] }), 200);
+  assert.equal(underPaid.due, 0);
+  assert.doesNotMatch(underPaid.text, /คืนเงิน/);
   // Approved with nothing paid, then the same return: 800 is still owed, and the refund was 0.
   const unpaidThenReturned = display.paymentState(order({ sale_order_status: 'partially_returned', saleOrderLists: [line] }), 0);
   assert.equal(unpaidThenReturned.due, 800);
