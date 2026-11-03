@@ -121,9 +121,9 @@
       "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
     },
     {
-      "name": "list tab all: count 91 equals the filtered total 91",
+      "name": "list tab all: count 94 equals the filtered total 94",
       "ok": true,
-      "note": "แสดง 1–10 จาก 91 ใบ"
+      "note": "แสดง 1–10 จาก 94 ใบ"
     },
     {
       "name": "list tab all: URL holds the tab",
@@ -161,9 +161,9 @@
       "note": ""
     },
     {
-      "name": "list tab paid: count 17 equals the filtered total 17",
+      "name": "list tab paid: count 18 equals the filtered total 18",
       "ok": true,
-      "note": "แสดง 1–10 จาก 17 ใบ"
+      "note": "แสดง 1–10 จาก 18 ใบ"
     },
     {
       "name": "list tab paid: URL holds the tab",
@@ -171,9 +171,9 @@
       "note": ""
     },
     {
-      "name": "list tab returns: count 7 equals the filtered total 7",
+      "name": "list tab returns: count 8 equals the filtered total 8",
       "ok": true,
-      "note": "แสดง 1–7 จาก 7 ใบ"
+      "note": "แสดง 1–8 จาก 8 ใบ"
     },
     {
       "name": "list tab returns: URL holds the tab",
@@ -181,9 +181,9 @@
       "note": ""
     },
     {
-      "name": "list tab cancelled: count 34 equals the filtered total 34",
+      "name": "list tab cancelled: count 35 equals the filtered total 35",
       "ok": true,
-      "note": "แสดง 1–10 จาก 34 ใบ"
+      "note": "แสดง 1–10 จาก 35 ใบ"
     },
     {
       "name": "list tab cancelled: URL holds the tab",
@@ -213,7 +213,7 @@
     {
       "name": "list: the summary cards show the summary figures",
       "ok": true,
-      "note": "26 / 2328.00 / 2522.00 / 1 vs 26 / 2328.00 / 2522.00 / 1"
+      "note": "26 / 2328.00 / 2842.00 / 1 vs 26 / 2328.00 / 2842.00 / 1"
     },
     {
       "name": "list: the pending card picks the pending tab",
@@ -258,7 +258,7 @@
     {
       "name": "setup: three tagged ready rows were made",
       "ok": true,
-      "note": "[\"01a1a164-e299-7491-a9fb-e57801ff76e3\",\"01a1a164-e2a7-70cd-9d35-48daa3d7c4bd\",\"01a1a164-e2b6-7b14-95e9-194f4f2cec57\"]"
+      "note": "[\"01a1a174-cad4-7163-875e-93844bb60817\",\"01a1a174-cae5-7ac7-8b32-708cc51ff4bb\",\"01a1a174-caef-7569-b013-ffe240ae9428\"]"
     },
     {
       "name": "create: ready-to-sell goods are on the list",
@@ -296,9 +296,9 @@
       "note": ""
     },
     {
-      "name": "form: a rejected save lists each problem and focuses the list",
+      "name": "form: a rejected save lists each problem and focuses the first field to fix",
       "ok": true,
-      "note": "รายการที่ 1: เกินจำนวนพร้อมขาย 4 ชิ้น / รายการที่ 1: ราคาต้องเป็นตัวเลขไม่ติดลบ ทศนิยมไม่เกิน 2 ตำแหน่ง"
+      "note": "รายการที่ 1: เกินจำนวนพร้อมขาย 4 ชิ้น / รายการที่ 1: ราคาต้องเป็นตัวเลขไม่ติดลบ ทศนิยมไม่เกิน 2 ตำแหน่ง · focus so-08fa3e2a-641b-4b1d-960a-d397e2576839-qty"
     },
     {
       "name": "form: the net total follows the lines (include VAT keeps the price)",
@@ -378,7 +378,7 @@
     {
       "name": "pay: paying the rest makes it paid in full",
       "ok": true,
-      "note": "SO202611030215\nชำระครบแล้ว\nขายจากการสั่งซื้อ"
+      "note": "SO202611030219\nชำระครบแล้ว\nขายจากการสั่งซื้อ"
     },
     {
       "name": "pay: a paid order of ready goods offers neither pay nor return (nothing goes back into stock)",
@@ -388,7 +388,7 @@
     {
       "name": "return: an order sold from stock could be made",
       "ok": true,
-      "note": "201 {\"sale_order_id\":\"01a1a165-53ab-79ff-a2a0-010db541b2dd\",\"sale_order_code\":\"SO202611030216\",\"legacy_code\":null,\"user_id\":null,\"user\":null,\"shipping_address_id\":n"
+      "note": "201 {\"sale_order_id\":\"01a1a175-35a3-7a86-a4a4-cdeb04180531\",\"sale_order_code\":\"SO202611030220\",\"legacy_code\":null,\"user_id\":null,\"user\":null,\"shipping_address_id\":n"
     },
     {
       "name": "return: a paid order sold from stock offers return",
@@ -413,7 +413,12 @@
     {
       "name": "return: the order shows a partial return",
       "ok": true,
-      "note": "SO202611030216\nคืนสินค้าบางส่วน\nขายจากการสั่งซื้อ"
+      "note": "SO202611030220\nคืนสินค้าบางส่วน\nขายจากการสั่งซื้อ"
+    },
+    {
+      "name": "return: a paid order owes nothing after a return",
+      "ok": true,
+      "note": "฿0.00"
     },
     {
       "name": "return: a negative receipt was recorded and shows in the list",
@@ -481,6 +486,26 @@
       "note": ""
     },
     {
+      "name": "form: searching in the goods picker does not save the order",
+      "ok": true,
+      "note": "0 saves, http://localhost:3011/admin/sale-orders/new?ready=01a1a175-7394-75d4-8ce9-6e9a92d82a2f,00000000-0000-4000-8000-000000000000"
+    },
+    {
+      "name": "edit: a store order keeps its type, shown read-only",
+      "ok": true,
+      "note": "หน้าร้านออนไลน์"
+    },
+    {
+      "name": "list: a link with from and to applies the custom range",
+      "ok": true,
+      "note": ""
+    },
+    {
+      "name": "phone: a cancelled order still offers print in the bottom bar",
+      "ok": true,
+      "note": ""
+    },
+    {
       "name": "320px list: no side scroll and no document scroll",
       "ok": true,
       "note": "{\"sideScroll\":0,\"docExtra\":0,\"bodySide\":0}"
@@ -538,7 +563,7 @@
     {
       "name": "cleanup: no pending test order is left",
       "ok": true,
-      "note": "left: SO202611030217:cancelled, SO202611030216:partially_returned, SO202611030215:paid, SO202611030213:cancelled, SO202611030212:partially_returned, SO202611030211:paid, SO202611030209:cancelled, SO202611030208:partially_returned, SO202611030207:paid, SO202611030205:cancelled, SO202611030204:partially_returned, SO202611030203:paid, SO202611030202:paid, SO202611030201:paid, SO202611030199:cancelled, SO202611030198:partially_returned, SO202611030197:paid, SO202611030194:cancelled, SO202611030193:partially_returned, SO202611030192:paid, SO202611030190:cancelled, SO202611030189:partially_returned, SO202611030188:paid, SO202611030186:cancelled, SO202611030185:paid, SO202611030182:approved"
+      "note": "left: SO202611030221:cancelled, SO202611030220:partially_returned, SO202611030219:paid, SO202611030217:cancelled, SO202611030216:partially_returned, SO202611030215:paid, SO202611030213:cancelled, SO202611030212:partially_returned, SO202611030211:paid, SO202611030209:cancelled, SO202611030208:partially_returned, SO202611030207:paid, SO202611030205:cancelled, SO202611030204:partially_returned, SO202611030203:paid, SO202611030202:paid, SO202611030201:paid, SO202611030199:cancelled, SO202611030198:partially_returned, SO202611030197:paid, SO202611030194:cancelled, SO202611030193:partially_returned, SO202611030192:paid, SO202611030190:cancelled, SO202611030189:partially_returned, SO202611030188:paid, SO202611030186:cancelled, SO202611030185:paid, SO202611030182:approved"
     },
     {
       "name": "no console or page errors",
@@ -551,11 +576,14 @@
     "pending": "/admin/sale-orders/01a184d4-bbbb-7beb-af80-a64e9c0208c5",
     "approved": "/admin/sale-orders/01a1a114-edfc-711d-ba46-1e4eccc03f10",
     "partial": "/admin/sale-orders/01a184de-1f4b-7ffb-9959-db614df2ab24",
-    "paid": "/admin/sale-orders/01a1a15e-4f33-78d3-989d-2460812e27f3",
-    "returns": "/admin/sale-orders/01a1a15e-96f7-74bc-9355-2ed7fe3874e3",
-    "cancelled": "/admin/sale-orders/01a1a15e-b4c9-7670-ae0e-3e32e397b35c"
+    "paid": "/admin/sale-orders/01a1a165-0b72-7cac-a6ab-213bc73f3e10",
+    "returns": "/admin/sale-orders/01a1a165-53ab-79ff-a2a0-010db541b2dd",
+    "cancelled": "/admin/sale-orders/01a1a165-74f1-7b46-803c-f09559b26365"
   },
   "leftNames": [
+    "SO202611030221:cancelled",
+    "SO202611030220:partially_returned",
+    "SO202611030219:paid",
     "SO202611030217:cancelled",
     "SO202611030216:partially_returned",
     "SO202611030215:paid",

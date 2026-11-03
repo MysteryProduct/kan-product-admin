@@ -63,6 +63,8 @@ export interface PaymentState {
   percent: number;
   paid: number;
   due: number;
+  /** What the order is worth now: the payable amount less returned goods. */
+  total: number;
   text: string;
   tone: 'none' | 'part' | 'full' | 'refund';
 }
@@ -72,19 +74,33 @@ export interface PaymentState {
  * and an order that was returned shows what was kept after the refund.
  */
 export function paymentState(order: SaleOrder, received?: number): PaymentState {
-  const total = payable(order);
   const paid = round2(Number(received ?? order.amount_paid ?? 0)) || 0;
   const status = order.sale_order_status;
+  // The API keeps the order's amount after a return and records the refund as a negative receipt, so what is
+  // still owed is measured against the value kept: the payable amount less the returned goods.
+  const returned = returnedValue(order);
+  const total = Math.max(0, round2(payable(order) - returned));
   const due = Math.max(0, round2(total - paid));
-  const percent = total > 0 ? Math.max(0, Math.min(100, Math.round((paid / total) * 100))) : 0;
-  if (status === 'cancelled') return { percent: 0, paid, due: 0, text: 'ยกเลิกก่อนอนุมัติ', tone: 'none' };
-  if (status === 'pending') return { percent: 0, paid, due, text: 'ยังไม่เปิดรับชำระ', tone: 'none' };
+  const percent = total > 0 ? Math.max(0, Math.min(100, Math.round((paid / total) * 100))) : 100;
+  if (status === 'cancelled') return { percent: 0, paid, due: 0, total, text: 'ยกเลิกก่อนอนุมัติ', tone: 'none' };
+  if (status === 'pending') return { percent: 0, paid, due, total, text: 'ยังไม่เปิดรับชำระ', tone: 'none' };
   if (status === 'partially_returned' || status === 'returned') {
-    return { percent, paid, due, text: `รับสุทธิ ${formatBaht(paid)} หลังคืนสินค้า`, tone: 'refund' };
+    const text = due > 0 ? `คืนสินค้า ${formatBaht(returned)} · ค้าง ${formatBaht(due)}` : `คืนเงิน ${formatBaht(returned)}`;
+    return { percent, paid, due, total, text, tone: 'refund' };
   }
-  if (paid <= 0) return { percent: 0, paid, due, text: 'ยังไม่รับชำระ', tone: 'none' };
-  if (due <= 0) return { percent: 100, paid, due: 0, text: 'รับครบแล้ว', tone: 'full' };
-  return { percent, paid, due, text: `รับแล้ว ${percent}% · ค้าง ${formatBaht(due)}`, tone: 'part' };
+  if (paid <= 0) return { percent: 0, paid, due, total, text: 'ยังไม่รับชำระ', tone: 'none' };
+  if (due <= 0) return { percent: 100, paid, due: 0, total, text: 'รับครบแล้ว', tone: 'full' };
+  return { percent, paid, due, total, text: `รับแล้ว ${percent}% · ค้าง ${formatBaht(due)}`, tone: 'part' };
+}
+
+/**
+ * The value of the goods that came back, as the API refunds it: quantity × price, plus VAT when the order adds
+ * VAT on top (`exclude`). The refund receipt is this amount, capped at what had been received.
+ */
+export function returnedValue(order: SaleOrder): number {
+  const base = orderLines(order).reduce((sum, line) => sum + Number(line.returned_qty ?? 0) * Number(line.sale_order_list_price ?? 0), 0);
+  const rate = Number(order.vat_rate ?? 0);
+  return round2(order.vat_type === 'exclude' ? base * (1 + rate / 100) : base);
 }
 
 const NO_DIRECT_RETURN = ['store', 'custom'];

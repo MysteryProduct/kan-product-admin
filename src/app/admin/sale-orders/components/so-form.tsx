@@ -20,7 +20,7 @@ import {
   SoLineDraft,
   useSaleOrderForm,
 } from '../hooks/useSaleOrderForm';
-import { FORM_TYPE_OPTIONS, formatBaht, formatMoney, statusLabel } from '../lib/so-display';
+import { FORM_TYPE_OPTIONS, formatBaht, formatMoney, statusLabel, typeLabel } from '../lib/so-display';
 
 const saleOrderModel = new SaleOrderModel();
 const LIST_HREF = '/admin/sale-orders';
@@ -65,7 +65,7 @@ export default function SaleOrderFormPage({ mode, source, readyIds }: Props) {
   const form = useSaleOrderForm({ mode, source, readyIds });
   const [showSummary, setShowSummary] = useState(false);
   const [picking, setPicking] = useState(false);
-  const summaryRef = useRef<HTMLDivElement>(null);
+  const saveErrorRef = useRef<HTMLDivElement>(null);
   const guard = useLeaveGuard(form.dirty && !form.saving);
 
   const editing = mode === 'edit' && source;
@@ -83,14 +83,17 @@ export default function SaleOrderFormPage({ mode, source, readyIds }: Props) {
   const save = async () => {
     const keys = Object.keys(form.validate());
     if (keys.length > 0) {
+      // Focus goes to the first field to fix (AC14); the summary above lists the rest and is announced.
       setShowSummary(true);
-      requestAnimationFrame(() => {
-        summaryRef.current?.focus();
-      });
+      requestAnimationFrame(() => focusControl(controlIdFor(keys[0])));
       return;
     }
     const saved = await form.submit();
-    if (!saved) return;
+    if (!saved) {
+      // The API's reason shows at the top; bring it into view when saving from the phone bar.
+      requestAnimationFrame(() => saveErrorRef.current?.focus());
+      return;
+    }
     const savedCode = saved.sale_order_code ?? code ?? '';
     toast({ message: editing ? `บันทึกการแก้ไข ${savedCode} แล้ว` : `สร้างใบสั่งขาย ${savedCode} แล้ว`, tone: 'success' });
     guard.replaceWith(`${LIST_HREF}/${saved.sale_order_id ?? source?.sale_order_id}`);
@@ -176,7 +179,7 @@ export default function SaleOrderFormPage({ mode, source, readyIds }: Props) {
       </div>
 
       {shownErrors.length > 0 && (
-        <div ref={summaryRef} tabIndex={-1} role="alert" className="ka-banner ka-banner--danger ka-so-errors">
+        <div role="alert" className="ka-banner ka-banner--danger ka-so-errors">
           <svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.3 3.7 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z" />
           </svg>
@@ -201,7 +204,7 @@ export default function SaleOrderFormPage({ mode, source, readyIds }: Props) {
         </div>
       )}
       {form.saveError && (
-        <div role="alert" className="ka-banner ka-banner--danger ka-so-errors">
+        <div ref={saveErrorRef} tabIndex={-1} role="alert" className="ka-banner ka-banner--danger ka-so-errors">
           <span>{form.saveError}</span>
         </div>
       )}
@@ -228,14 +231,19 @@ export default function SaleOrderFormPage({ mode, source, readyIds }: Props) {
                 {err('name')}
               </div>
               <div className="ka-field">
-                <span className="ka-label">ประเภท</span>
-                <CustomSelect
-                  id={fieldId.type}
-                  options={FORM_TYPE_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
-                  value={form.type}
-                  onChange={form.setType}
-                  aria-label="ประเภทใบสั่งขาย"
-                />
+                <span className="ka-label" id="so-type-label">ประเภท</span>
+                {FORM_TYPE_OPTIONS.some((option) => option.value === form.type) ? (
+                  <CustomSelect
+                    id={fieldId.type}
+                    options={FORM_TYPE_OPTIONS.map((option) => ({ value: option.value, label: option.label }))}
+                    value={form.type}
+                    onChange={form.setType}
+                    aria-label="ประเภทใบสั่งขาย"
+                  />
+                ) : (
+                  // A type the form cannot choose (a store order) is shown, not changed.
+                  <input id={fieldId.type} className="ka-input" value={typeLabel(form.type)} readOnly aria-labelledby="so-type-label" />
+                )}
               </div>
               <div className="ka-field">
                 <span className="ka-label" id="so-vat-label">รูปแบบ VAT</span>
@@ -511,7 +519,9 @@ function ReadyPicker({ taken, onClose, onAdd }: { taken: Set<string>; onClose: (
         className="ka-so-rsearch"
         role="search"
         onSubmit={(event) => {
+          // The picker sits in a portal under the order form; React would carry this submit up to it and save.
           event.preventDefault();
+          event.stopPropagation();
           setPage(1);
           setQuery(text.trim());
         }}

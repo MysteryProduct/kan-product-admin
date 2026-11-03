@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import PaymentReceiptModel from '@/models/payment-receipt';
 import type { PaymentReceipt } from '@/types/payment-receipt';
 import type { SaleOrder } from '@/types/sale-order';
@@ -162,6 +163,8 @@ export default function SaleOrderDetail({ saleOrder: order, onChanged, openRetur
   })();
 
   const isCustom = order.sale_order_type === 'custom';
+  // The custom payment block loads its own data, so only the copy the layout shows is mounted.
+  const wide = useMediaQuery('(min-width: 1024px)');
   const primary: { label: string; busy?: string; onClick: () => void } | null =
     canApprove && allows.approve(order)
       ? { label: 'อนุมัติ', busy: 'กำลังอนุมัติ…', onClick: () => actions.request('approve', order) }
@@ -210,7 +213,7 @@ export default function SaleOrderDetail({ saleOrder: order, onChanged, openRetur
             </div>
             <p className="ka-so-due__row">
               <span>รับแล้ว <strong>{formatBaht(pay.paid)}</strong> ({pay.percent}%)</span>
-              <span>จาก {formatBaht(payable(order))}</span>
+              <span>จาก {formatBaht(pay.total)}{pay.tone === 'refund' ? ' หลังคืนสินค้า' : ''}</span>
             </p>
           </>
         ) : (
@@ -327,7 +330,7 @@ export default function SaleOrderDetail({ saleOrder: order, onChanged, openRetur
 
       <div className="ka-so-top">
         {dueCard('')}
-        {isCustom && (
+        {isCustom && !wide && (
           <section className="ka-so-card ka-so-side ka-so-noprint" aria-label="การรับชำระงานผลิต Custom">
             <CustomPayment orderId={id} status={status} onSuccess={changed} />
           </section>
@@ -382,7 +385,7 @@ export default function SaleOrderDetail({ saleOrder: order, onChanged, openRetur
                               <span className="ka-so-tone ka-so-it__tile" data-tone={TILE_TONES[index % TILE_TONES.length]} aria-hidden="true">{initials(line.product_name)}</span>
                               <span className="ka-so-it__name">
                                 <b>{line.product_name}</b>
-                                <span className="ka-so-it__sub">{[variant, `คืนแล้ว ${returned.toLocaleString('th-TH')}`].filter(Boolean).join(' · ')}</span>
+                                <span className="ka-so-it__sub">{[variant, returned > 0 ? `คืนแล้ว ${returned.toLocaleString('th-TH')}` : ''].filter(Boolean).join(' · ')}</span>
                               </span>
                             </span>
                           </th>
@@ -459,7 +462,7 @@ export default function SaleOrderDetail({ saleOrder: order, onChanged, openRetur
 
         <aside className="ka-so-stack" aria-label="สรุปและประวัติ">
           {dueCard('ka-so-due--aside')}
-          {isCustom && (
+          {isCustom && wide && (
             <section className="ka-so-card ka-so-side ka-so-noprint ka-so-due--aside" aria-label="การรับชำระงานผลิต Custom">
               <CustomPayment orderId={id} status={status} onSuccess={changed} />
             </section>
@@ -500,25 +503,31 @@ export default function SaleOrderDetail({ saleOrder: order, onChanged, openRetur
         </aside>
       </div>
 
-      {(primary || editHref || canReturn) && (
-        <div className="ka-so-bar ka-so-noprint">
-          {canReturn && primary && (
-            <button type="button" className="ka-btn" onClick={() => setReturning(true)}>คืนสินค้า</button>
-          )}
-          {primary ? (
-            <button type="button" className="ka-btn ka-btn--primary" onClick={primary.onClick} disabled={actions.busy !== null}>
-              {primary.label}
-              {primary.label === 'รับชำระ' && pay.due > 0 ? ` ${formatBaht(pay.due)}` : ''}
-            </button>
-          ) : canReturn ? (
-            <button type="button" className="ka-btn ka-btn--primary" onClick={() => setReturning(true)}>คืนสินค้า</button>
-          ) : (
-            editHref && <Link href={editHref} className="ka-btn ka-btn--primary">แก้ไข</Link>
-          )}
-          {primary && editHref && <Link href={editHref} className="ka-btn">แก้ไข</Link>}
+      {/* The header actions are hidden on a phone, so every order gets this bar: print and the ⋯ menu stay
+          reachable even when nothing else can be done (cancelled, returned, paid in full, custom). */}
+      <div className="ka-so-bar ka-so-noprint">
+        {canReturn && primary && (
+          <button type="button" className="ka-btn" onClick={() => setReturning(true)}>คืนสินค้า</button>
+        )}
+        {primary ? (
+          <button type="button" className="ka-btn ka-btn--primary" onClick={primary.onClick} disabled={actions.busy !== null}>
+            {primary.label}
+            {primary.label === 'รับชำระ' && pay.due > 0 ? ` ${formatBaht(pay.due)}` : ''}
+          </button>
+        ) : canReturn ? (
+          <button type="button" className="ka-btn ka-btn--primary" onClick={() => setReturning(true)}>คืนสินค้า</button>
+        ) : editHref ? (
+          <Link href={editHref} className="ka-btn ka-btn--primary">แก้ไข</Link>
+        ) : (
+          <button type="button" className="ka-btn ka-so-bar__wide" onClick={print}>พิมพ์</button>
+        )}
+        {primary && editHref && <Link href={editHref} className="ka-btn">แก้ไข</Link>}
+        {primary || canReturn || editHref ? (
           <RowMenu label={`ตัวเลือกเพิ่มเติมของ ${code}`} items={moreWithPrint} triggerClassName="ka-btn ka-btn--icon ka-so-more" />
-        </div>
-      )}
+        ) : (
+          moreItems.length > 0 && <RowMenu label={`ตัวเลือกเพิ่มเติมของ ${code}`} items={moreItems} triggerClassName="ka-btn ka-btn--icon ka-so-more" />
+        )}
+      </div>
 
       {returning && (
         <ReturnDialog

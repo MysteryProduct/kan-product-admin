@@ -122,9 +122,10 @@ function SaleOrdersList() {
   const query = params?.get('q') ?? '';
   const tab = readTab(params?.get('tab') ?? null);
   const type = params?.get('type') ?? '';
-  const range = readRange(params?.get('range') ?? null);
   const customFrom = isDay(params?.get('from') ?? null) ? (params?.get('from') as string) : '';
   const customTo = isDay(params?.get('to') ?? null) ? (params?.get('to') as string) : '';
+  // A link with only `from`/`to` (the shape the Task's acceptance uses) means a custom range.
+  const range = params?.get('range') ? readRange(params.get('range')) : customFrom || customTo ? 'custom' : 'all';
   const page = Math.max(1, Number(params?.get('page')) || 1);
   const sort = readSort(params?.get('sort') ?? null);
 

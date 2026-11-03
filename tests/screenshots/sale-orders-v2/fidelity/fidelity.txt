@@ -30,23 +30,23 @@ detail  1440  code heading         0      25     0      0      174×36 24px/700 
 detail  1440  steps card           0      0      0      0      1128×128 16px/400   1128×128 16px/400
 detail  1440  items heading        0      2      0      0      103×28 19px/600   105×28 19px/600
 detail  1440  items table head     0      0      -0.5   0      734×42.5 14px/400   734×42 15px/400
-detail  1440  items first row      0      0      4      0      734×68.5 15px/400   734×72.5 15px/400
+detail  1440  items first row      0      0      0      0      734×68.5 15px/400   734×68.5 15px/400
 detail  1440  balance card         0      0      0      0      368×180 16px/400   368×180 16px/400
 detail  1440  info heading         0      0      0      0      318×28 19px/600   318×28 19px/600
 detail  834   code heading         0      25     0      0      174×36 24px/700   199×36 24px/700
 detail  834   steps card           0      0      0      22     385×162 16px/400   385×162 16px/400
 detail  834   items heading        0      2      0      26     103×28 19px/600   105×28 19px/600
 detail  834   items table head     0      0      -0.5   26     784×42.5 14px/400   784×42 15px/400
-detail  834   items first row      0      0      24     26     784×44.5 15px/400   784×68.5 15px/400
+detail  834   items first row      0      0      4      26     784×44.5 15px/400   784×48.5 15px/400
 detail  834   balance card         0      0      0      22     385×162 16px/400   385×162 16px/400
-detail  834   info heading         0      0      0      59     744×28 19px/600   744×28 19px/600
+detail  834   info heading         0      0      0      39     744×28 19px/600   744×28 19px/600
 detail  390   code heading         –      –      –      –      358×34 22px/700   missing
 detail  390   steps card           0      0      0      0      358×158 16px/400   358×158 16px/400
 detail  390   items heading        0      2      0      4      103×28 19px/600   105×28 19px/600
 detail  390   items table head     –      –      –      –      missing   missing
-detail  390   items first row      –      –      –      –      missing   356×93 15px/400
+detail  390   items first row      –      –      –      –      missing   356×73 15px/400
 detail  390   balance card         0      0      0      0      358×156 16px/400   358×156 16px/400
-detail  390   info heading         0      0      0      -181   324×28 19px/600   324×28 19px/600
+detail  390   info heading         0      0      0      -201   324×28 19px/600   324×28 19px/600
 form    1440  title h1             0      0      0      0      1128×36 24px/700   1128×36 24px/700
 form    1440  info card heading    0      0      0      0      686×28 19px/600   686×28 19px/600
 form    1440  name input           0      0      -2     0      686×42 16px/400   686×40 16px/400

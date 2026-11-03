@@ -543,7 +543,7 @@ button.ka-so-kpi:focus-visible { outline: 2px solid var(--focus); outline-offset
     background: var(--bg-surface); box-shadow: 0 -8px 20px color-mix(in srgb, var(--ink) 6%, transparent);
   }
   .ka-so-bar .ka-btn { min-height: 48px; }
-  .ka-so-bar .ka-btn--primary { flex: 1; font-size: 16px; }
+  .ka-so-bar .ka-btn--primary, .ka-so-bar .ka-so-bar__wide { flex: 1; font-size: 16px; }
   .ka-so-ret > li { grid-template-columns: minmax(0, 1fr); }
 
   .ka-so-fcard { padding: 16px; }

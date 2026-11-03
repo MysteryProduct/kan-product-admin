@@ -25,7 +25,7 @@ const order = (patch = {}) => ({
 test('payment text and percent follow the net received amount', () => {
   assert.deepEqual(
     { ...display.paymentState(order(), 0), text: undefined },
-    { percent: 0, paid: 0, due: 1000, text: undefined, tone: 'none' },
+    { percent: 0, paid: 0, due: 1000, total: 1000, text: undefined, tone: 'none' },
   );
   const part = display.paymentState(order({ sale_order_status: 'partial' }), 410);
   assert.equal(part.percent, 41);
@@ -46,10 +46,18 @@ test('the amount paid on the row is used when no receipt total is given, and nev
   assert.equal(display.paymentState(order({ amount_paid: undefined })).paid, 0);
 });
 
-test('a returned order reports what was kept after the refund', () => {
-  const state = display.paymentState(order({ sale_order_status: 'partially_returned' }), 900);
-  assert.equal(state.tone, 'refund');
-  assert.match(state.text, /รับสุทธิ ฿900\.00/);
+test('a returned order owes nothing more than the goods it kept (review F3)', () => {
+  // Paid 1000 in full, then 1 of 5 units (200) came back: the refund receipt leaves 800 received of 800 kept.
+  const line = { sale_order_list_id: 'l1', product_variant_id: 'v1', sale_order_list_qty: 5, returned_qty: 1, sale_order_list_price: 200 };
+  const paidThenReturned = display.paymentState(order({ sale_order_status: 'partially_returned', saleOrderLists: [line] }), 800);
+  assert.deepEqual([paidThenReturned.due, paidThenReturned.total, paidThenReturned.percent, paidThenReturned.tone], [0, 800, 100, 'refund']);
+  assert.equal(paidThenReturned.text, 'คืนเงิน ฿200.00');
+  // Approved with nothing paid, then the same return: 800 is still owed, and the refund was 0.
+  const unpaidThenReturned = display.paymentState(order({ sale_order_status: 'partially_returned', saleOrderLists: [line] }), 0);
+  assert.equal(unpaidThenReturned.due, 800);
+  assert.match(unpaidThenReturned.text, /คืนสินค้า ฿200\.00 · ค้าง ฿800\.00/);
+  // VAT added on top is returned too, as the API refunds it.
+  assert.equal(display.returnedValue(order({ vat_type: 'exclude', vat_rate: 7, saleOrderLists: [line] })), 214);
 });
 
 test('before-VAT is the payable amount less the stored VAT', () => {

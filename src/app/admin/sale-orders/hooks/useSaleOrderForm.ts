@@ -93,7 +93,8 @@ export function useSaleOrderForm({ mode, source, readyIds = [] }: Options) {
   const initial = useMemo(
     () => ({
       name: source?.sale_order_name ?? '',
-      type: source?.sale_order_type === 'online' ? 'online' : 'order',
+      // An edited order keeps its type (a store order stays a store order, as the old update dialog sent it).
+      type: source?.sale_order_type ?? 'order',
       vatType: (source?.vat_type ?? 'none') as VatType,
       address: source?.shipping_address_name ?? '',
       detail: source?.sale_order_detail ?? '',

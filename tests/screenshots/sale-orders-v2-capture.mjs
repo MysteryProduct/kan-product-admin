@@ -388,7 +388,8 @@ await priceInput.fill('12.345');
 await page.click('.ka-so-sum__acts button[type=submit]');
 await page.waitForSelector('.ka-so-errors', { timeout: 5000 });
 const summaryItems = await page.locator('.ka-so-errors__list li').allInnerTexts();
-check('form: a rejected save lists each problem and focuses the list', summaryItems.length >= 2 && (await page.evaluate(() => document.activeElement?.classList.contains('ka-so-errors'))), summaryItems.join(' / '));
+const focusedField = await page.evaluate(() => document.activeElement?.id ?? '');
+check('form: a rejected save lists each problem and focuses the first field to fix', summaryItems.length >= 2 && /-qty$/.test(focusedField), `${summaryItems.join(' / ')} · focus ${focusedField}`);
 await shot('form-error-1440');
 await priceInput.fill(priceText);
 await qtyInput.fill('2');
@@ -513,6 +514,9 @@ if (orderD?.sale_order_id) {
   await settle(800);
   check('return: pressing confirm twice sends one request', returnPosts === 1, String(returnPosts));
   check('return: the order shows a partial return', /คืนสินค้าบางส่วน/.test(await text('.ka-so-dh__id')), await text('.ka-so-dh__id'));
+  // Paid in full and then partly returned: nothing is owed (review F3).
+  const dueAfterReturn = await text('.ka-so-due:visible .ka-so-due__v');
+  check('return: a paid order owes nothing after a return', dueAfterReturn.replace(/[^\d.]/g, '') === '0.00' && /รับชำระครบแล้ว/.test(await text('.ka-so-due:visible .ka-so-due__k')), dueAfterReturn);
   const afterReturn = await call('GET', `/payment-receipts?sale_order_id=${orderD.sale_order_id}`);
   const refunds = (afterReturn.body.data ?? []).filter((receipt) => Number(receipt.amount_paid) < 0);
   check('return: a negative receipt was recorded and shows in the list', refunds.length === 1 && (await page.locator('.ka-so-rcp__amt[data-refund]').count()) === 1, JSON.stringify(refunds.map((r) => r.amount_paid)));
@@ -608,6 +612,30 @@ await page.locator('.ka-so-sum__acts').getByText('ยกเลิก', { exact: 
 await page.waitForTimeout(500);
 check('form: leaving a typed form asks first', /ยังไม่ได้บันทึกการแก้ไข/.test(await page.locator('[role=dialog]').allInnerTexts().then((all) => all.join(' '))));
 await page.getByText('อยู่ต่อ', { exact: true }).click();
+// Searching in the goods picker must not save the order behind it (review F1).
+const postsBeforeSearch = posts.length;
+await page.locator('#so-lines-add').click();
+await page.waitForSelector('[role=dialog] .ka-so-rsearch input', { timeout: 15000 });
+await page.fill('[role=dialog] .ka-so-rsearch input', 'test');
+await page.keyboard.press('Enter');
+await page.waitForTimeout(1500);
+check('form: searching in the goods picker does not save the order', posts.length === postsBeforeSearch && /\/new/.test(page.url()) && (await page.locator('[role=dialog] .ka-so-rsearch').count()) === 1, `${posts.length - postsBeforeSearch} saves, ${page.url()}`);
+await page.keyboard.press('Escape');
+
+// An edited store order keeps its type: the form shows it and cannot change it (review F2).
+const storePending = (await call('GET', `/sale-order?page=1&limit=1&type=store&filters=${encodeURIComponent(JSON.stringify({ sale_order_status: ['pending'] }))}`)).body?.data?.[0];
+if (storePending) {
+  await open(`/admin/sale-orders/${storePending.sale_order_id}/edit`, '.ka-so-form');
+  await settle(500);
+  const typeField = page.locator('#so-type');
+  check('edit: a store order keeps its type, shown read-only', (await typeField.getAttribute('readonly')) !== null && /หน้าร้าน/.test(await typeField.inputValue()), await typeField.inputValue());
+} else {
+  console.log('NOTE edit of a store order: no pending store order in the data, not checked');
+}
+
+// A shared link with only from/to applies the dates (review F5).
+await open('/admin/sale-orders?from=2026-10-01&to=2026-10-31', '#so-list-panel');
+check('list: a link with from and to applies the custom range', (await page.locator('.ka-so-dates input[type=date]').first().inputValue()) === '2026-10-01');
 
 // ---------------------------------------------------------------- the rest of the pages, per width
 for (const width of WIDTHS) {
@@ -622,6 +650,9 @@ for (const width of WIDTHS) {
   if (orderB) {
     await open(`/admin/sale-orders/${orderB.sale_order_id}`, '.ka-so-grid');
     await shot(`detail-cancelled-created-${width}`);
+    if (width === 390) {
+      check('phone: a cancelled order still offers print in the bottom bar', (await page.locator('.ka-so-bar:visible').getByText('พิมพ์', { exact: true }).count()) === 1);
+    }
   }
   await open('/admin/sale-orders/new', '.ka-so-form');
   await page.locator('#so-lines-add:visible, .ka-so-add--phone:visible').first().click();
