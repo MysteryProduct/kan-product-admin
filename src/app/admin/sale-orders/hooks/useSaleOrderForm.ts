@@ -17,6 +17,8 @@ export type SoFormMode = 'create' | 'edit';
 /** One line as typed: the quantity and price stay text so a half-typed number is never rewritten. */
 export interface SoLineDraft {
   key: string;
+  /** The saved line this one edits; empty for a line added in the form. The API keeps its stock link (TASK-0339). */
+  sale_order_list_id: string;
   fetch_sale_order_id: string;
   job_order_id: string;
   product_name: string;
@@ -52,6 +54,7 @@ const newKey = () => crypto.randomUUID();
 export function lineFromReady(item: FetchSaleOrder): SoLineDraft {
   return {
     key: newKey(),
+    sale_order_list_id: '',
     fetch_sale_order_id: item.fetch_sale_order_id,
     job_order_id: item.job_order_id,
     product_name: item.fetch_sale_order_name,
@@ -62,9 +65,10 @@ export function lineFromReady(item: FetchSaleOrder): SoLineDraft {
   };
 }
 
-function linesFromOrder(source: SaleOrder): SoLineDraft[] {
+export function linesFromOrder(source: SaleOrder): SoLineDraft[] {
   return (source.saleOrderLists ?? []).map((line) => ({
     key: newKey(),
+    sale_order_list_id: line.sale_order_list_id ?? '',
     fetch_sale_order_id: line.fetch_sale_order_id ?? '',
     job_order_id: line.job_order_id ?? '',
     product_name: line.product_name,
@@ -202,6 +206,7 @@ export function useSaleOrderForm({ mode, source, readyIds = [] }: Options) {
       const body = buildSaleOrderBody(
         { name, detail, address, type, vatType },
         lines.map((line) => ({
+          sale_order_list_id: line.sale_order_list_id,
           fetch_sale_order_id: line.fetch_sale_order_id,
           product_name: line.product_name,
           qty: parseQty(line.qty) ?? 0,

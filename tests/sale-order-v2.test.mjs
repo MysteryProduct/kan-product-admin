@@ -165,7 +165,7 @@ test('the save body has the old keys and the old VAT figures for every VAT type'
       assert.equal(body.sale_order_name, 'ใบทดสอบ');
       assert.deepEqual([body.sale_order_subtotal, body.sale_order_vat_amount, body.sale_order_total], [old.subtotal, old.vatAmount, old.total], `${vatType} + ${shippingFee}`);
       assert.deepEqual({ ...body.saleOrderLists[1] }, {
-        fetch_sale_order_id: 'f2', product_name: 'ป้ายชื่อ', sale_order_list_qty: 2, sale_order_list_price: 250.5,
+        sale_order_list_id: undefined, fetch_sale_order_id: 'f2', product_name: 'ป้ายชื่อ', sale_order_list_qty: 2, sale_order_list_price: 250.5,
         sale_order_list_total: 501, sale_order_list_cost: 100, job_order_id: 'j2',
       });
     }
@@ -173,4 +173,44 @@ test('the save body has the old keys and the old VAT figures for every VAT type'
   // A line typed by hand has no ready-to-sell id; the key stays out of the JSON as before.
   const free = buildSaleOrderBody({ name: 'x', detail: '', address: '', type: 'order', vatType: 'none' }, [{ ...lines[0], fetch_sale_order_id: '' }], 0, 7);
   assert.equal(free.saleOrderLists[0].fetch_sale_order_id, undefined);
+});
+
+test('an edited order sends the id of each saved line, and a ready-to-sell line sends none (TASK-0339)', () => {
+  const form = sourceLoader(
+    {
+      'js-cookie': { get: () => null },
+      '@/lib/axios': {},
+      '@/models/sale-order': class {},
+      '@/hooks/useVatRate': () => 7,
+    },
+    { crypto: globalThis.crypto },
+  )('src/app/admin/sale-orders/hooks/useSaleOrderForm.ts');
+  const { buildSaleOrderBody } = load('src/app/admin/sale-orders/lib/so-body.ts');
+  const saved = form.linesFromOrder({
+    saleOrderLists: [
+      { sale_order_list_id: 'l1', product_variant_id: 'v1', product_name: 'แก้ว', sale_order_list_qty: 2, sale_order_list_price: 100 },
+    ],
+  });
+  const ready = form.lineFromReady({
+    fetch_sale_order_id: 'f1', job_order_id: 'j1', fetch_sale_order_name: 'ป้าย', fetch_sale_order_qty: 1, fetch_sale_order_price: 50,
+  });
+  const body = buildSaleOrderBody(
+    { name: 'x', detail: '', address: '', type: 'store', vatType: 'include' },
+    [...saved, ready].map((line) => ({
+      sale_order_list_id: line.sale_order_list_id,
+      fetch_sale_order_id: line.fetch_sale_order_id,
+      product_name: line.product_name,
+      qty: Number(line.qty),
+      price: Number(line.price),
+      cost: line.cost,
+      job_order_id: line.job_order_id,
+    })),
+    0,
+    7,
+  );
+  const sent = JSON.parse(JSON.stringify(body)).saleOrderLists;
+  assert.equal(sent[0].sale_order_list_id, 'l1');
+  assert.equal('sale_order_list_id' in sent[1], false);
+  // The variant is the API's to keep; the form never sends one.
+  assert.equal(sent.some((line) => 'product_variant_id' in line), false);
 });
