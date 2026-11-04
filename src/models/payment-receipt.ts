@@ -2,7 +2,10 @@ import axiosInstance from '@/lib/axios';
 import {
   CreatePaymentReceiptDto,
   PaymentReceipt,
+  PaymentReceiptFilters,
+  PaymentReceiptListParams,
   PaymentReceiptResponse,
+  PaymentReceiptSummary,
   UpdatePaymentReceiptDto,
 } from '@/types/payment-receipt';
 
@@ -18,7 +21,44 @@ const unwrapPaymentReceipt = (payload: PaymentReceipt | SinglePaymentReceiptResp
   return payload as PaymentReceipt;
 };
 
+/** Empty values are left out, so an unset filter stays unset; a list goes as `a,b`. */
+const filterParams = ({ payment_method, payment_receipt_type, ...rest }: PaymentReceiptFilters) => ({
+  ...Object.fromEntries(Object.entries(rest).filter(([, value]) => value)),
+  ...(payment_method?.length && { payment_method: payment_method.join(',') }),
+  ...(payment_receipt_type?.length && { payment_receipt_type: payment_receipt_type.join(',') }),
+});
+
 class PaymentReceiptModel {
+  /** The list of the v2 page: filters, sort and paging together (TASK-0348). */
+  async listPaymentReceipts({
+    page = 1,
+    limit = 10,
+    sortField,
+    sortOrder,
+    sale_order_id,
+    ...filters
+  }: PaymentReceiptListParams): Promise<PaymentReceiptResponse> {
+    const response = await axiosInstance.get<PaymentReceiptResponse>('/payment-receipts', {
+      params: {
+        page,
+        limit,
+        ...(sortField && { sortField }),
+        ...(sortOrder && { sortOrder }),
+        ...(sale_order_id && { sale_order_id }),
+        ...filterParams(filters),
+      },
+    });
+    return response.data;
+  }
+
+  /** The month's numbers, tab counts and method counts; takes the list's filters. */
+  async getPaymentReceiptSummary(filters: PaymentReceiptFilters = {}): Promise<PaymentReceiptSummary> {
+    const response = await axiosInstance.get<PaymentReceiptSummary>('/payment-receipts/summary', {
+      params: filterParams(filters),
+    });
+    return response.data;
+  }
+
   /** The receipts of one sale order, newest payment first, refunds included (TASK-0335). */
   async getPaymentReceiptsBySaleOrder(saleOrderId: string, limit: number = 50): Promise<PaymentReceiptResponse> {
     const response = await axiosInstance.get<PaymentReceiptResponse>('/payment-receipts', {
