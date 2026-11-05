@@ -177,7 +177,7 @@ export function signedBaht(amount: number): string {
 }
 
 /**
- * A store or custom order's name is a label the system wrote, so the sheet's second customer line leaves it out
+ * A store or custom order's name is a label the system wrote, so the second line of the sheet's item row leaves it out
  * (D20). A custom order with no customer still shows it as the customer, on screen and on the sheet (`customerOf`, D25).
  */
 export function hasSystemName(receipt: PaymentReceipt): boolean {
@@ -254,7 +254,7 @@ export function paidBefore(
   );
 }
 
-/** What stood after this receipt, whatever came later: the page and the printed sheet must say the same (D19). */
+/** What stood after this receipt in `paidBefore` order: the page and the printed sheet must say the same (D26). */
 export function netAfter(
   receipt: PaymentReceipt,
   all: PaymentReceipt[],
