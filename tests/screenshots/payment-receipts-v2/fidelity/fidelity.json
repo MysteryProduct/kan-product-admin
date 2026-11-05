@@ -203,7 +203,7 @@
     ],
     "outside": false,
     "compared": true,
-    "font": "14px/400 ≠ 14px/500"
+    "font": null
   },
   {
     "screen": "list",
@@ -537,7 +537,7 @@
     ],
     "outside": false,
     "compared": true,
-    "font": "14px/400 ≠ 14px/500"
+    "font": null
   },
   {
     "screen": "list",
@@ -851,7 +851,7 @@
     ],
     "outside": false,
     "compared": true,
-    "font": "14px/400 ≠ 14px/500"
+    "font": null
   },
   {
     "screen": "list",

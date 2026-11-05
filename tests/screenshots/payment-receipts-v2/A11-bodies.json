@@ -1,6 +1,6 @@
 {
   "cash": {
-    "sale_order_id": "baa62bc0-4022-4a0d-8026-8699e32c551b",
+    "sale_order_id": "eb4ff307-f147-4ef5-85a5-700a4a5f6039",
     "payment_receipt_type": "partial",
     "payment_method": "cash",
     "amount_paid": 100,
@@ -10,7 +10,7 @@
     "create_by": "224b71d5-9f04-4ad4-bf54-68eb54a579e4"
   },
   "bank": {
-    "sale_order_id": "baa62bc0-4022-4a0d-8026-8699e32c551b",
+    "sale_order_id": "eb4ff307-f147-4ef5-85a5-700a4a5f6039",
     "payment_receipt_type": "deposit",
     "payment_method": "bank",
     "amount_paid": 200.5,
@@ -21,7 +21,7 @@
     "create_by": "224b71d5-9f04-4ad4-bf54-68eb54a579e4"
   },
   "patch": {
-    "payment_receipt_id": "6a4f707b-13f7-47af-bac7-ee4320108ba7",
+    "payment_receipt_id": "997f32a8-c5c3-4014-bd83-461003dfb715",
     "payment_receipt_code": "RE209911030007",
     "payment_receipt_type": "deposit",
     "payment_method": "bank",

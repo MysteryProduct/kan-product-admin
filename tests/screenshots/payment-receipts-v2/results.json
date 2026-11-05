@@ -43,7 +43,7 @@
     {
       "name": "A2 four numbers match the API",
       "ok": true,
-      "detail": "รับชำระเดือนนี้฿47,752.00▼ 1% จากเดือนก่อนยอดค้างรับ฿145,098.0046 ใบสั่งขายใบเสร็จเดือนนี้47 ใบวันนี้ 8 ใบคืนเงินเดือนนี้฿1,000.0010 รายการ"
+      "detail": "รับชำระเดือนนี้฿47,752.00▼ 3% จากเดือนก่อนยอดค้างรับ฿145,098.0046 ใบสั่งขายใบเสร็จเดือนนี้47 ใบวันนี้ 8 ใบคืนเงินเดือนนี้฿1,200.0011 รายการ"
     },
     {
       "name": "A2 no percent when last month is 0",
@@ -146,9 +146,9 @@
       "detail": "RE202610270825สุวรรณ บุญน้อยSO202610271032หน้าร้านออนไลน์บัตร · chrg_te…27 ต.ค. 2569ชำระแล้ว880.00ชำระเต็มจำนวน"
     },
     {
-      "name": "A5 RE202611050176 reads คืนเงิน / คืนเงิน",
+      "name": "A5 RE209911030012 reads คืนเงิน / คืนเงิน",
       "ok": true,
-      "detail": "RE202611050176ทดสอบ TASK-0336 คืนสินค้าSO202611050889คืนเงินคืนเงินจากการคืนสินค้า5 พ.ย. 2569คืนเงินแล้ว−100.00คืนเงิน"
+      "detail": "RE209911030012ร้านดอกไม้ริมทางSO209911030013คืนเงินคืนครั้งที่สอง1 พ.ย. 2569คืนเงินแล้ว−200.00คืนเงิน"
     },
     {
       "name": "A6 regular: view, edit, print, order, delete",
@@ -258,7 +258,7 @@
     {
       "name": "A8 the button counts before it is pressed",
       "ok": true,
-      "detail": "แสดง 73 รายการ → แสดง 38 รายการ"
+      "detail": "แสดง 76 รายการ → แสดง 39 รายการ"
     },
     {
       "name": "A8 the URL has not changed yet",
@@ -418,7 +418,7 @@
     {
       "name": "A11 bank POST: old keys and values",
       "ok": true,
-      "detail": "{\"sale_order_id\":\"baa62bc0-4022-4a0d-8026-8699e32c551b\",\"payment_receipt_type\":\"deposit\",\"payment_method\":\"bank\",\"amount_paid\":200.5,\"payment_date\":\"2026-11-05\",\"payment_receipt_remark\":\"ทดสอบ\",\"account_id\":\"2a97e169-c5ff-4751-bdb8-5585618584b6\",\"payment_status\":\"paid\",\"create_by\":\"224b71d5-9f04-4ad"
+      "detail": "{\"sale_order_id\":\"eb4ff307-f147-4ef5-85a5-700a4a5f6039\",\"payment_receipt_type\":\"deposit\",\"payment_method\":\"bank\",\"amount_paid\":200.5,\"payment_date\":\"2026-11-05\",\"payment_receipt_remark\":\"ทดสอบ\",\"account_id\":\"2a97e169-c5ff-4751-bdb8-5585618584b6\",\"payment_status\":\"paid\",\"create_by\":\"224b71d5-9f04-4ad"
     },
     {
       "name": "A11 PATCH: old keys, no sale_order_id",
@@ -453,7 +453,7 @@
     {
       "name": "A13 the exact maximum saves",
       "ok": true,
-      "detail": "{\"payment_receipt_id\":\"79a68d59-ac96-4bd7-aa0d-d20a83959ca6\",\"sale_order_id\":\"6a05b65a-fee8-4fc7-b46b-9190e4178571\",\"pay"
+      "detail": "{\"payment_receipt_id\":\"89f427f8-0cbf-4a0d-8c91-2e97a6c885c5\",\"sale_order_id\":\"00cef7e6-4057-48a8-8fa9-0f68ffdd5ecb\",\"pay"
     },
     {
       "name": "A14 unchanged: cancel does not ask",
@@ -638,7 +638,7 @@
     {
       "name": "F13 refund sheet: net amount, no balance owed, no paid-by",
       "ok": true,
-      "detail": "ใบคืนเงินREFUNDเลขที่RE202611050176วันที่5 พ.ย. 2569อ้างอิงใบสั่งขายSO202611050889คืนเงินให้ทดสอบ TASK-0336 คืนสินค้า#รายการจำนวนเงิน (บาท)1คืนเงินตามใบสั่งขาย SO202611050889ทดสอบ TASK-0336 คืนสินค้า "
+      "detail": "ใบคืนเงินREFUNDเลขที่RE209911030012วันที่1 พ.ย. 2569อ้างอิงใบสั่งขายSO209911030013คืนเงินให้ร้านดอกไม้ริมทาง#รายการจำนวนเงิน (บาท)1คืนเงินตามใบสั่งขาย SO209911030013ทดสอบ TASK-0346 คืนสองครั้ง · ยอดใบ"
     },
     {
       "name": "F14 no system label on the sheet",
@@ -648,7 +648,7 @@
     {
       "name": "A18 refund sheet",
       "ok": true,
-      "detail": "ใบคืนเงินREFUNDเลขที่RE202611050176วันที่5 พ.ย. 2569อ้างอิงใบสั่งขายSO202611050889คืนเงินให้ทดสอบ TASK-0336 คืนสินค้า#รายการจำนวนเงิน (บาท)1คืนเงินตามใบสั่งขาย SO202611050889ทดสอบ TASK-0336 คืนสินค้า "
+      "detail": "ใบคืนเงินREFUNDเลขที่RE209911030012วันที่1 พ.ย. 2569อ้างอิงใบสั่งขายSO209911030013คืนเงินให้ร้านดอกไม้ริมทาง#รายการจำนวนเงิน (บาท)1คืนเงินตามใบสั่งขาย SO209911030013ทดสอบ TASK-0346 คืนสองครั้ง · ยอดใบ"
     },
     {
       "name": "A18 no tax id: no line left for it",
@@ -708,7 +708,7 @@
     {
       "name": "A20 the skeleton keeps the layout within 8px",
       "ok": true,
-      "detail": "726.0184936523438 → 726"
+      "detail": "726.42822265625 → 726"
     },
     {
       "name": "F4 reduced motion: nothing animates",
@@ -731,12 +731,12 @@
       "detail": "0,0"
     },
     {
-      "name": "F5 320 no sideways scroll on 2-4c8c-af8b-3a06224df79a",
+      "name": "F5 320 no sideways scroll on 8-4ca3-898e-0afc32509c7b",
       "ok": true,
       "detail": "0,0"
     },
     {
-      "name": "F5 320 no sideways scroll on c-af8b-3a06224df79a/edit",
+      "name": "F5 320 no sideways scroll on 3-898e-0afc32509c7b/edit",
       "ok": true,
       "detail": "0,0"
     },
@@ -773,7 +773,7 @@
     {
       "name": "F1 the amount stays ฿600",
       "ok": true,
-      "detail": "{\"payment_receipt_id\":\"0592ed5b-350a-48af-a79e-49ca3dd31af2\",\"payment_receipt_code\":\"RE209911030008\",\"payment_receipt_type\":\"full\",\"payment_method\":\"cash\",\"amount_paid\":600,\"payment_date\":\"2026-11-04\",\"payment_receipt_remark\":\"แก้หมายเหตุอย่างเดียว\",\"payment_status\":\"paid\",\"update_by\":\"224b71d5-9f04"
+      "detail": "{\"payment_receipt_id\":\"4c7188ce-7900-4cbf-bd45-9449cb673e80\",\"payment_receipt_code\":\"RE209911030008\",\"payment_receipt_type\":\"full\",\"payment_method\":\"cash\",\"amount_paid\":600,\"payment_date\":\"2026-11-04\",\"payment_receipt_remark\":\"แก้หมายเหตุอย่างเดียว\",\"payment_status\":\"paid\",\"update_by\":\"224b71d5-9f04"
     },
     {
       "name": "F11 after saving, leaving does not ask",
@@ -827,6 +827,66 @@
     },
     {
       "name": "A9 typing finds the order past the first twenty",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F28 the result opens without waiting for the status",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F28 a press after the POST sends nothing",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "name": "F28 the status follows from the API",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F29 a custom receipt keeps a name",
+      "ok": true,
+      "detail": "ใบเสร็จรับเงิน · Custom MUG-103"
+    },
+    {
+      "name": "F31 a cancelled store order says so",
+      "ok": true,
+      "detail": "การชำระของใบสั่งขายนี้SO202610271032 · ยกเลิกชำระแล้ว฿880.00ใบสั่งขายถูกยกเลิกแล้ว รับชำระเพิ่มไม่ได้ประวัติสร้างเอกสาร27 ต.ค. 2569 08:54ดูประวัติทั้งหมด"
+    },
+    {
+      "name": "F32 the first of two refunds prints ฿900",
+      "ok": true,
+      "detail": "ยอดชำระสุทธิหลังคืนเงิน900.00คืนเงินครั้งนี้฿100.00"
+    },
+    {
+      "name": "F32 the second prints ฿700",
+      "ok": true,
+      "detail": "ยอดชำระสุทธิหลังคืนเงิน700.00คืนเงินครั้งนี้฿200.00"
+    },
+    {
+      "name": "F5 every control is 44 high: popover วิธีชำระ 700",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 every control is 44 high: popover ประเภท 700",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 every control is 44 high: popover ช่วงวันที่ 700",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 every control is 44 high: sort menu 700",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 every control is 44 high: row menu 700",
       "ok": true,
       "detail": ""
     },
@@ -933,7 +993,7 @@
     {
       "name": "A2 834 four numbers show",
       "ok": true,
-      "detail": "รับชำระเดือนนี้฿62,552.50▲ 30% จากเดือนก่อนยอดค้างรับ฿130,297.5045 ใบสั่งขายใบเสร็จเดือนนี้48 ใบวันนี้ 10 ใบคืนเงินเดือนนี้฿1,000.0010 รายการ"
+      "detail": "รับชำระเดือนนี้฿62,557.50▲ 27% จากเดือนก่อนยอดค้างรับ฿130,292.5045 ใบสั่งขายใบเสร็จเดือนนี้49 ใบวันนี้ 11 ใบคืนเงินเดือนนี้฿1,200.0011 รายการ"
     },
     {
       "name": "A3 834 the queue is the oldest three",
@@ -948,17 +1008,32 @@
     {
       "name": "A4 834 a card opens the receipt",
       "ok": true,
-      "detail": ""
+      "detail": "http://localhost:3011/admin/payment-receipts/f8f0e0b7-9d8a-4242-b9c3-be31481372fa"
     },
     {
       "name": "A7 834 the chip names the filter and leads the row",
       "ok": true,
-      "detail": ""
+      "detail": "วิธีชำระ: โอนผ่านธนาคารประเภทช่วงวันที่ล้างตัวกรองล่าสุดก่อน"
     },
     {
       "name": "A9 834 a cancelled link says why",
       "ok": true,
       "detail": ""
+    },
+    {
+      "name": "A12 834 a 400 shows the banner and keeps the input",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A12 834 a cut network keeps the banner",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A12 834 three clicks, one POST",
+      "ok": true,
+      "detail": "1"
     },
     {
       "name": "A12 834 the result names a real RE",
@@ -971,9 +1046,24 @@
       "detail": ""
     },
     {
-      "name": "A16 834 four variants open",
+      "name": "A16 834 refund block",
       "ok": true,
-      "detail": ""
+      "detail": "RE209911030012คืนเงินแล้วใบคืนเงิน · ร้านดอกไม้ริมทางพิมพ์ / PDFคืนเงินให้ลูกค้าแล้วคืนครั้งที่สอง · 1 พ.ย. 2569ยอดคืนเงิน−฿200.00ใบคืนเงินสร้างจากการคืนสินค้าเ"
+    },
+    {
+      "name": "A16 834 store block",
+      "ok": true,
+      "detail": "RE202610270825ชำระแล้วหน้าร้านออนไลน์ใบเสร็จรับเงิน · สุวรรณ บุญน้อยพิมพ์ / PDFลูกค้าชำระผ่านหน้าร้านชำระเต็มจำนวน · บัตร · 27 ต.ค. 2569 08:54ยอดรับชำระ฿880.00เ"
+    },
+    {
+      "name": "A16 834 custom block",
+      "ok": true,
+      "detail": "RE202611030001ชำระแล้วCustomใบเสร็จรับเงิน · Custom MUG-103พิมพ์ / PDFเปิดใบสั่งขาย Customรับชำระเรียบร้อยวางมัดจำ · โอนผ่านธนาคาร · 3 พ.ย. 2569ยอดรับชำระ฿50.00"
+    },
+    {
+      "name": "A16 834 cancelled block",
+      "ok": true,
+      "detail": "RE209911030003ชำระแล้วใบเสร็จรับเงิน · คุณวรรณา แก้วมณีพิมพ์ / PDFรับชำระเรียบร้อยชำระบางส่วน · เงินสด · 1 พ.ย. 2569ยอดรับชำระ฿3,000.00ข้อมูลใบเสร็จใบสั่งขายSO2"
     },
     {
       "name": "A20 834 empty queue",
@@ -983,7 +1073,7 @@
     {
       "name": "A2 390 four numbers show",
       "ok": true,
-      "detail": "รับชำระเดือนนี้฿62,562.50▲ 30% จากเดือนก่อนยอดค้างรับ฿130,287.5045 ใบสั่งขายใบเสร็จเดือนนี้49 ใบวันนี้ 11 ใบคืนเงินเดือนนี้฿1,000.0010 รายการ"
+      "detail": "รับชำระเดือนนี้฿62,567.50▲ 27% จากเดือนก่อนยอดค้างรับ฿130,282.5045 ใบสั่งขายใบเสร็จเดือนนี้50 ใบวันนี้ 12 ใบคืนเงินเดือนนี้฿1,200.0011 รายการ"
     },
     {
       "name": "A3 390 the queue is the oldest three",
@@ -998,17 +1088,32 @@
     {
       "name": "A4 390 a card opens the receipt",
       "ok": true,
-      "detail": ""
+      "detail": "http://localhost:3011/admin/payment-receipts/f8f0e0b7-9d8a-4242-b9c3-be31481372fa"
     },
     {
       "name": "A7 390 the chip names the filter and leads the row",
       "ok": true,
-      "detail": ""
+      "detail": "วิธีชำระ: โอนผ่านธนาคารประเภทช่วงวันที่ล้างตัวกรองล่าสุดก่อน"
     },
     {
       "name": "A9 390 a cancelled link says why",
       "ok": true,
       "detail": ""
+    },
+    {
+      "name": "A12 390 a 400 shows the banner and keeps the input",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A12 390 a cut network keeps the banner",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A12 390 three clicks, one POST",
+      "ok": true,
+      "detail": "1"
     },
     {
       "name": "A12 390 the result names a real RE",
@@ -1021,9 +1126,24 @@
       "detail": ""
     },
     {
-      "name": "A16 390 four variants open",
+      "name": "A16 390 refund block",
       "ok": true,
-      "detail": ""
+      "detail": "RE209911030012คืนเงินแล้วใบคืนเงิน · ร้านดอกไม้ริมทางพิมพ์ / PDFคืนเงินให้ลูกค้าแล้วคืนครั้งที่สอง · 1 พ.ย. 2569ยอดคืนเงิน−฿200.00ใบคืนเงินสร้างจากการคืนสินค้าเ"
+    },
+    {
+      "name": "A16 390 store block",
+      "ok": true,
+      "detail": "RE202610270825ชำระแล้วหน้าร้านออนไลน์ใบเสร็จรับเงิน · สุวรรณ บุญน้อยพิมพ์ / PDFลูกค้าชำระผ่านหน้าร้านชำระเต็มจำนวน · บัตร · 27 ต.ค. 2569 08:54ยอดรับชำระ฿880.00เ"
+    },
+    {
+      "name": "A16 390 custom block",
+      "ok": true,
+      "detail": "RE202611030001ชำระแล้วCustomใบเสร็จรับเงิน · Custom MUG-103พิมพ์ / PDFเปิดใบสั่งขาย Customรับชำระเรียบร้อยวางมัดจำ · โอนผ่านธนาคาร · 3 พ.ย. 2569ยอดรับชำระ฿50.00"
+    },
+    {
+      "name": "A16 390 cancelled block",
+      "ok": true,
+      "detail": "RE209911030003ชำระแล้วใบเสร็จรับเงิน · คุณวรรณา แก้วมณีพิมพ์ / PDFรับชำระเรียบร้อยชำระบางส่วน · เงินสด · 1 พ.ย. 2569ยอดรับชำระ฿3,000.00ข้อมูลใบเสร็จใบสั่งขายSO2"
     },
     {
       "name": "A20 390 empty queue",
@@ -1033,7 +1153,7 @@
     {
       "name": "A20 1440 the queue skeleton keeps the layout within 8px",
       "ok": true,
-      "detail": "726.1829833984375 → 726"
+      "detail": "726.0079345703125 → 726"
     },
     {
       "name": "A20 834 the queue skeleton keeps the layout within 8px",
@@ -1043,7 +1163,7 @@
     {
       "name": "A20 390 the queue skeleton keeps the layout within 8px",
       "ok": true,
-      "detail": "1470.1138916015625 → 1470"
+      "detail": "1470.2835693359375 → 1470"
     },
     {
       "name": "A21 no console or page errors",

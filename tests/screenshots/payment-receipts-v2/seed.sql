@@ -48,7 +48,7 @@ BEGIN
 
   -- Orders past the first twenty options of the picker (A9): the newest is SO209911030150.
   INSERT INTO sale_order (sale_order_id, sale_order_code, shipping_address_name, sale_order_name, sale_order_type, sale_order_status, vat_type, vat_rate, sale_order_vat_amount, sale_order_subtotal, sale_order_total, create_by, create_date)
-  SELECT gen_random_uuid(), 'SO2099110301' || lpad(n::text, 2, '0'), 'ลูกค้าทดสอบ', 'ทดสอบ TASK-0346 เติม ' || n, 'order', 'approved', 'none', 0, 0, 100, 100, who, now() - (n || ' seconds')::interval * -1
+  SELECT gen_random_uuid(), 'SO2099110301' || lpad(n::text, 2, '0'), 'ลูกค้าทดสอบ', 'ทดสอบ TASK-0346 เติม ' || n, 'order', 'approved', 'none', 0, 0, 150, 150, who, now() - (n || ' seconds')::interval * -1
   FROM generate_series(21, 50) AS n;
 
   -- A view-only employee: every menu the full license has, with view alone. Signs in with the demo_audit password.
