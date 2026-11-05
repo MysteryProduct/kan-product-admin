@@ -54,7 +54,7 @@ export function PageLoadError({
   return (
     <div className="ka-pr">
       <LoadErrorBanner message={message} onRetry={onRetry} />
-      <Link href={BASE} className="ka-pr-link">
+      <Link href={BASE} className="ka-pr-link ka-pr-target">
         ← กลับไปรายการใบเสร็จรับเงิน
       </Link>
     </div>
@@ -74,7 +74,7 @@ export function LockedNote({ text, href }: { text: string; href: string }) {
         <Icon name="lock" small />
         <span>{text}</span>
       </div>
-      <Link href={href} className="ka-pr-link">
+      <Link href={href} className="ka-pr-link ka-pr-target">
         ← กลับไปใบเสร็จ
       </Link>
     </div>

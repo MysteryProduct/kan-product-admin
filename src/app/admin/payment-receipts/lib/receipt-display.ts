@@ -186,7 +186,7 @@ export function customerOf(receipt: PaymentReceipt): string {
   return (
     order?.customer_name ||
     order?.shipping_address_name ||
-    (hasSystemName(receipt) ? "" : order?.sale_order_name) ||
+    (order?.sale_order_type === "store" ? "" : order?.sale_order_name) ||
     "—"
   );
 }

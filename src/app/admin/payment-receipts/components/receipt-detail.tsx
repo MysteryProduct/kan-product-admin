@@ -268,7 +268,7 @@ export default function ReceiptDetail({
         onRetry={() => setAttempt((count) => count + 1)}
       />
     </section>
-  ) : kind === "store" ? (
+  ) : kind === "store" && !cancelled ? (
     <section className="ka-pr-card ka-pr-cp">
       <h2 style={{ marginBottom: 6 }}>การชำระของใบสั่งขายนี้</h2>
       <div
@@ -354,7 +354,7 @@ export default function ReceiptDetail({
                   ) : (
                     <Link
                       href={`${BASE}/${item.payment_receipt_id}`}
-                      className="ka-pr-code ka-pr-link"
+                      className="ka-pr-code ka-pr-link ka-pr-target"
                     >
                       {item.payment_receipt_code}
                     </Link>

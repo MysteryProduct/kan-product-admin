@@ -2051,6 +2051,33 @@
       height: 44px;
     }
   }
+  .ka-pr-menu .ka-menu__sep {
+    margin: 6px 4px;
+  }
+  @media (max-width: 767px) {
+    /* Popovers still open between 640 and 767, where G7 asks for 44 as well. */
+    .ka-pr-pre,
+    .ka-pr-cal__day,
+    .ka-pr-cal__h {
+      height: 44px;
+    }
+    .ka-pr-ck {
+      min-height: 44px;
+    }
+    .ka-pr-menu .ka-menu__item {
+      height: 44px;
+      min-height: 44px;
+    }
+    .ka-popover .ka-pr-btn--sm {
+      margin: 0;
+    }
+    .ka-pr-target {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      margin: -11px 0;
+    }
+  }
   @media (max-width: 639px) {
     .ka-pr-qc--sk {
       height: 221px;

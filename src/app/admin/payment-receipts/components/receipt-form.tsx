@@ -199,6 +199,7 @@ export default function ReceiptForm({
 
   const blocked =
     form.saving ||
+    Boolean(saved) ||
     form.over ||
     Boolean(form.amountError) ||
     form.fixes.length > 0;
@@ -212,15 +213,20 @@ export default function ReceiptForm({
   const save = async () => {
     const result = await form.submit();
     if (result) {
-      // What the API decided, not a forecast: after a return the two can differ (F12).
-      const status = await saleOrderModel
+      // The dialog opens at once, so nothing is left to press twice; what the API decided follows (F12, F28).
+      setSaved(result);
+      saleOrderModel
         .getSaleOrderById(
           result.sale_order_id ?? (order?.sale_order_id as string),
         )
-        .then((loaded) => loaded?.sale_order_status)
-        .catch(() => undefined);
-      setSavedStatus(status ? statusLabel(status) : null);
-      setSaved(result);
+        .then((loaded) =>
+          setSavedStatus(
+            loaded?.sale_order_status
+              ? statusLabel(loaded.sale_order_status)
+              : null,
+          ),
+        )
+        .catch(() => setSavedStatus(null));
     } else
       window.setTimeout(
         () => bannerRef.current?.scrollIntoView({ block: "center" }),

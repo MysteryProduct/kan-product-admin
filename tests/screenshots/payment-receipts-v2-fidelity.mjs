@@ -174,7 +174,9 @@ const measure = (selectors) => {
       const element = [...document.querySelectorAll(selector)].find((node) => node.getBoundingClientRect().width > 0);
       const leaf = element && ([...element.querySelectorAll("*")].find((node) => node.childNodes.length && [...node.childNodes].some((child) => child.nodeType === 3 && child.textContent.trim())) ?? element);
       if (!leaf) return null;
-      const style = getComputedStyle(leaf);
+      // An <input> holds no text node; what the sheet draws in its place is the placeholder.
+      const box = element.querySelector("input");
+      const style = box ? getComputedStyle(box, "::placeholder") : getComputedStyle(leaf);
       return `${style.fontSize}/${style.fontWeight}`;
     }),
     boxes: selectors.map((selector) => {

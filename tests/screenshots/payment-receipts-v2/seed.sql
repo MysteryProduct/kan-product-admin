@@ -24,7 +24,8 @@ BEGIN
     ('SO209911030009', 'คุณมานพ ศรีสุข', 'ฟอร์มตรวจยอด', 'order', 'approved', 1000, 32),
     ('SO209911030010', 'คุณมานพ ศรีสุข', 'pending', 'order', 'pending', 500, 31),
     ('SO209911030011', 'ร้านดอกไม้ริมทาง', 'ใบ full ยอดไม่เท่าใบ', 'order', 'partial', 1000, 30),
-    ('SO209911030012', 'ร้านดอกไม้ริมทาง', 'โอนเป็นเงินสด', 'order', 'partial', 2000, 29)
+    ('SO209911030012', 'ร้านดอกไม้ริมทาง', 'โอนเป็นเงินสด', 'order', 'partial', 2000, 29),
+    ('SO209911030013', 'ร้านดอกไม้ริมทาง', 'คืนสองครั้ง', 'order', 'partially_returned', 1000, 28)
   ) AS seed(code, customer, label, kind, state, amount, age);
 
   INSERT INTO payment_receipts (payment_receipt_id, sale_order_id, payment_receipt_code, payment_receipt_type, payment_method, amount_paid, payment_date, payment_status, payment_receipt_remark, account_id, create_by, create_date)
@@ -38,7 +39,10 @@ BEGIN
     ('RE209911030006', 'SO209911030007', 'deposit', 'bank', 10800, 1, ''),
     ('RE209911030007', 'SO209911030008', 'deposit', 'bank', 10800, 1, ''),
     ('RE209911030008', 'SO209911030011', 'full', 'cash', 600, 1, ''),
-    ('RE209911030009', 'SO209911030012', 'partial', 'bank', 500, 1, '')
+    ('RE209911030009', 'SO209911030012', 'partial', 'bank', 500, 1, ''),
+    ('RE209911030010', 'SO209911030013', 'full', 'cash', 1000, 6, ''),
+    ('RE209911030011', 'SO209911030013', 'refund', 'refund', -100, 5, 'คืนครั้งแรก'),
+    ('RE209911030012', 'SO209911030013', 'refund', 'refund', -200, 4, 'คืนครั้งที่สอง')
   ) AS seed(code, order_code, kind, method, amount, age, remark)
   JOIN sale_order so ON so.sale_order_code = seed.order_code;
 

@@ -47,7 +47,7 @@ export default function ReceiptPrint({ receipt, receipts }: ReceiptPrintProps) {
     0,
     sumMoney([total, -before, -Number(receipt.amount_paid)]),
   );
-  const netAfter = sumMoney(receipts.map((item) => Number(item.amount_paid)));
+  const netAfter = sumMoney([before, Number(receipt.amount_paid)]);
   const taxLine = [
     shop?.tax_id && `เลขประจำตัวผู้เสียภาษี ${shop.tax_id}`,
     shop?.branch_code && `สาขา ${shop.branch_code}`,
