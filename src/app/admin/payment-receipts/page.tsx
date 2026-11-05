@@ -1,594 +1,916 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { DataTable, DataTableColumn } from '@/components/DataTable';
-import { PaginationMeta } from '@/types/pagination';
-import LoadingSkeletonProps from '@/components/LoadingSkeleton';
-import { usePermissions } from '@/hooks/usePermissions';
-import SaleOrderModel from '@/models/sale-order';
-import PaymentReceiptModel from '@/models/payment-receipt';
-import { SaleOrder, SaleOrderResponse } from '@/types/sale-order';
 import {
-	PAYMENT_METHOD_LABELS,
-	PAYMENT_RECEIPT_STATUS_LABELS,
-	PaymentReceipt,
-	PaymentReceiptResponse,
-} from '@/types/payment-receipt';
-import InsertPaymentReceiptForm from './components/insert';
-import UpdatePaymentReceiptForm from './components/update';
-import PaymentReceiptDetailModal from './components/detail';
-import ConfirmDialog from '@/components/ConfirmDialog';
-import ActionResultDialog from '@/components/ActionResultDialog';
-import { formatThaiDate } from '@/lib/date-format';
-import { PAYMENT_RECEIPT_STATUS_TONE, SALE_ORDER_STATUS_TONE } from '@/lib/status-tones';
-import StatusBadge from '@/components/StatusBadge';
-import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
-import DocumentCode from '@/components/DocumentCode';
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import DocumentCode from "@/components/DocumentCode";
+import LoadErrorBanner, { loadErrorText } from "@/components/LoadErrorBanner";
+import Pagination from "@/components/Pagination";
+import { usePermissions } from "@/hooks/usePermissions";
+import { formatThaiDate } from "@/lib/date-format";
+import { usePageCrumb } from "@/lib/page-crumb";
+import PaymentReceiptModel from "@/models/payment-receipt";
+import SaleOrderModel from "@/models/sale-order";
+import type { PaginationMeta } from "@/types/pagination";
+import type {
+  PaymentReceipt,
+  PaymentReceiptMethodFilter,
+  PaymentReceiptSummary,
+  PaymentReceiptTab,
+  PaymentReceiptType,
+} from "@/types/payment-receipt";
+import type { SaleOrder, SaleOrderSummary } from "@/types/sale-order";
+import {
+  formatBaht,
+  formatMoney,
+  paymentState,
+  payable,
+} from "@/app/admin/sale-orders/lib/so-display";
+import {
+  ReceiptMenu,
+  useReceiptDelete,
+  useRowEntries,
+} from "./components/receipt-actions";
+import {
+  FilterChips,
+  SortMenu,
+  type FilterValues,
+} from "./components/receipt-filters";
+import { Badge, Highlight, Icon, OrderBadge } from "./components/receipt-ui";
+import {
+  BASE,
+  customerOf,
+  METHODS,
+  methodView,
+  ORDERS,
+  receiptStatus,
+  signedBaht,
+  SORTS,
+  TABS,
+  TYPES,
+  typeText,
+  type ReceiptSort,
+} from "./lib/receipt-display";
 
+const receiptModel = new PaymentReceiptModel();
 const saleOrderModel = new SaleOrderModel();
-const paymentReceiptModel = new PaymentReceiptModel();
+const PAGE_SIZE = 10;
+const QUEUE_PEEK = 3;
+const QUEUE_PAGE = 12;
+const ORDERS_PER_REQUEST = 100;
 
-type SaleOrderSortField = 'sale_order_total' | null;
-type PaymentReceiptSortField = 'payment_date' | 'amount_paid' | null;
-type SortOrder = 'ASC' | 'DESC';
+const readList = <T extends string>(
+  value: string | null,
+  allowed: readonly { value: T }[],
+): T[] =>
+  (value ?? "")
+    .split(",")
+    .filter((item): item is T =>
+      allowed.some((option) => option.value === item),
+    );
+const readDay = (value: string | null) =>
+  value && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : "";
+const readTab = (value: string | null): PaymentReceiptTab =>
+  TABS.some((tab) => tab.key === value) ? (value as PaymentReceiptTab) : "all";
+const readSort = (value: string | null): ReceiptSort =>
+  value && value in SORTS ? (value as ReceiptSort) : "newest";
 
-const formatCurrency = (amount: number) =>
-	new Intl.NumberFormat('th-TH', {
-		style: 'decimal',
-		minimumFractionDigits: 2,
-		maximumFractionDigits: 2,
-	}).format(amount || 0);
+/** Every approved or part-paid order, oldest first; only those still owing stay in the queue (R5, R6). */
+async function loadQueue(): Promise<SaleOrder[]> {
+  const all: SaleOrder[] = [];
+  for (let page = 1; ; page += 1) {
+    const response = await saleOrderModel.getSaleOrders(
+      page,
+      ORDERS_PER_REQUEST,
+      undefined,
+      "create_date",
+      "ASC",
+      undefined,
+      {
+        statuses: ["approved", "partial"],
+      },
+    );
+    all.push(...(response.data ?? []));
+    if (page >= (response.meta?.last_page ?? 1)) break;
+  }
+  return all.filter((order) => paymentState(order).due > 0);
+}
 
-export default function PaymentReceiptPage() {
-	const { can } = usePermissions();
-	const canAddPaymentReceipt = can('payment_receipts', 'add');
-	const canEditPaymentReceipt = can('payment_receipts', 'edit');
-	const canDeletePaymentReceipt = can('payment_receipts', 'delete');
+function ChangeLine({
+  now,
+  before,
+}: {
+  now: number | null;
+  before: number | null;
+}) {
+  if (now === null || !before) return <>&nbsp;</>;
+  const percent = Math.round(((now - before) / before) * 100);
+  return (
+    <>
+      <span className={percent < 0 ? "ka-pr-down" : "ka-pr-up"}>
+        {percent < 0 ? "▼" : "▲"} {Math.abs(percent)}%
+      </span>{" "}
+      จากเดือนก่อน
+    </>
+  );
+}
 
-	const [saleOrderPage, setSaleOrderPage] = useState(1);
-	const [paymentReceiptPage, setPaymentReceiptPage] = useState(1);
+interface StatProps {
+  tone: "success" | "brand" | "info" | "neutral";
+  icon: "money" | "clock" | "receipt" | "refund";
+  label: string;
+  value: string | null;
+  sub: React.ReactNode;
+}
 
-	const [saleOrders, setSaleOrders] = useState<SaleOrderResponse | null>(null);
-	const [paymentReceipts, setPaymentReceipts] = useState<PaymentReceiptResponse | null>(null);
+function Stat({ tone, icon, label, value, sub }: StatProps) {
+  return (
+    <section className="ka-pr-card ka-pr-stat">
+      <span className="ka-pr-tone ka-pr-stat__ic" data-tone={tone}>
+        <Icon name={icon} />
+      </span>
+      <div style={{ minWidth: 0 }}>
+        <div className="ka-pr-cap ka-pr-cap--500">{label}</div>
+        <div className="ka-pr-sv">
+          {value ?? (
+            <span
+              className="ka-pr-sk"
+              style={{ display: "block", width: 120, height: 34 }}
+            />
+          )}
+        </div>
+        <div className="ka-pr-cap">{sub}</div>
+      </div>
+    </section>
+  );
+}
 
-	const [saleOrderMeta, setSaleOrderMeta] = useState<PaginationMeta | null>(null);
-	const [paymentReceiptMeta, setPaymentReceiptMeta] = useState<PaginationMeta | null>(null);
+function QueueCard({ order, canAdd }: { order: SaleOrder; canAdd: boolean }) {
+  const pay = paymentState(order);
+  const custom = order.sale_order_type === "custom";
+  const href = custom
+    ? `${ORDERS}/${order.sale_order_id}`
+    : `${BASE}/new?sale_order=${order.sale_order_id}`;
+  return (
+    <article className="ka-pr-qc">
+      <div className="ka-pr-row ka-pr-row--8 ka-pr-row--between ka-pr-row--top">
+        <div style={{ minWidth: 0 }}>
+          <div className="ka-pr-code ka-pr-code--600">
+            {order.sale_order_code}
+          </div>
+          <div className="ka-pr-qc__name">{order.sale_order_name}</div>
+        </div>
+        <OrderBadge status={order.sale_order_status} />
+      </div>
+      <div className="ka-pr-cap ka-pr-cap--14">
+        {order.shipping_address_name || order.sale_order_name} · ยอด{" "}
+        {formatBaht(payable(order))}
+      </div>
+      <div>
+        <div className="ka-pr-row ka-pr-row--between ka-pr-qc__line">
+          <span className="ka-pr-mut">ชำระแล้ว {pay.percent}%</span>
+          <span>
+            ค้าง <b className="ka-pr-num">{formatBaht(pay.due)}</b>
+          </span>
+        </div>
+        <div
+          className="ka-pr-meter"
+          role="img"
+          aria-label={`ชำระแล้ว ${pay.percent}%`}
+        >
+          <i data-kind="queue" style={{ width: `${pay.percent}%` }} />
+        </div>
+      </div>
+      {canAdd && (
+        <Link className="ka-pr-btn ka-pr-btn--a ka-pr-w100" href={href}>
+          <Icon name="plus" small />
+          รับชำระ
+        </Link>
+      )}
+    </article>
+  );
+}
 
-	const [loading, setLoading] = useState(false);
-	const [saleOrdersError, setSaleOrdersError] = useState<string | null>(null);
-	const [receiptsError, setReceiptsError] = useState<string | null>(null);
+function SkeletonRows() {
+  return (
+    <div aria-busy="true" aria-label="กำลังโหลดใบเสร็จ">
+      {[100, 80, 70, 90].map((width) => (
+        <div key={width} className="ka-pr-skrow">
+          {[width, 100, 70, 100, 60].map((cell, index) => (
+            <div
+              key={index}
+              className="ka-pr-sk"
+              style={{ height: 16, width: `${cell}%` }}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
 
-	const [saleOrderSortField, setSaleOrderSortField] = useState<SaleOrderSortField>(null);
-	const [saleOrderSortOrder, setSaleOrderSortOrder] = useState<SortOrder>('ASC');
+function ReceiptsList() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const { can, isLoaded } = usePermissions();
+  const canAdd = can("payment_receipts", "add");
+  const canViewOrders = can("sale_orders", "view");
 
-	const [paymentReceiptSortField, setPaymentReceiptSortField] = useState<PaymentReceiptSortField>(null);
-	const [paymentReceiptSortOrder, setPaymentReceiptSortOrder] = useState<SortOrder>('ASC');
+  usePageCrumb({ parents: ["ขายสินค้า"], current: "ใบเสร็จรับเงิน" });
 
-	const [saleOrderSearch, setSaleOrderSearch] = useState('');
-	const [saleOrderAppliedSearch, setSaleOrderAppliedSearch] = useState('');
-	const [paymentReceiptSearch, setPaymentReceiptSearch] = useState('');
-	const [paymentReceiptAppliedSearch, setPaymentReceiptAppliedSearch] = useState('');
+  // The URL holds the whole view, so back/forward, reload and a shared link keep it (R11). `search` is the
+  // older form of the link, kept for the links other pages already hold (R2).
+  const query = params?.get("q") ?? params?.get("search") ?? "";
+  const tab = readTab(params?.get("tab") ?? null);
+  const methodParam = params?.get("method") ?? null;
+  const typeParam = params?.get("type") ?? null;
+  const method = useMemo(
+    () => readList<PaymentReceiptMethodFilter>(methodParam, METHODS),
+    [methodParam],
+  );
+  const type = useMemo(
+    () => readList<PaymentReceiptType>(typeParam, TYPES),
+    [typeParam],
+  );
+  const from = readDay(params?.get("from") ?? null);
+  const to = readDay(params?.get("to") ?? null);
+  const sort = readSort(params?.get("sort") ?? null);
+  const page = Math.max(1, Number(params?.get("page")) || 1);
+  const queueAll = params?.get("queue") === "all";
+  const queuePage = queueAll
+    ? Math.max(1, Number(params?.get("qpage")) || 1)
+    : 1;
 
-	const [isInsertOpen, setIsInsertOpen] = useState(false);
-	const [isUpdateOpen, setIsUpdateOpen] = useState(false);
-	const [isDetailOpen, setIsDetailOpen] = useState(false);
-	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [searchText, setSearchText] = useState(query);
+  const [rows, setRows] = useState<PaymentReceipt[]>([]);
+  const [meta, setMeta] = useState<PaginationMeta | null>(null);
+  const [loadedKey, setLoadedKey] = useState<string | null>(null);
+  const [listError, setListError] = useState<string | null>(null);
+  const [summary, setSummary] = useState<PaymentReceiptSummary | null>(null);
+  const [orderSummary, setOrderSummary] = useState<SaleOrderSummary | null>(
+    null,
+  );
+  const [queue, setQueue] = useState<SaleOrder[] | null>(null);
+  const [queueError, setQueueError] = useState<string | null>(null);
+  const [refresh, setRefresh] = useState(0);
 
-	const [selectedSaleOrder, setSelectedSaleOrder] = useState<SaleOrder | null>(null);
-	const [selectedPaymentReceipt, setSelectedPaymentReceipt] = useState<PaymentReceipt | null>(null);
-	const [paymentReceiptToDelete, setPaymentReceiptToDelete] = useState<PaymentReceipt | null>(null);
+  const setParams = useCallback(
+    (
+      next: Record<string, string | undefined>,
+      mode: "push" | "replace" = "push",
+    ) => {
+      const merged = new URLSearchParams(params?.toString() ?? "");
+      merged.delete("search");
+      for (const [key, value] of Object.entries(next)) {
+        if (value === undefined) continue;
+        if (value === "") merged.delete(key);
+        else merged.set(key, value);
+      }
+      const href = merged.toString()
+        ? `${pathname}?${merged}`
+        : (pathname ?? BASE);
+      if (mode === "replace") router.replace(href, { scroll: false });
+      else router.push(href, { scroll: false });
+    },
+    [params, pathname, router],
+  );
 
-	const [resultDialog, setResultDialog] = useState<{
-		isOpen: boolean;
-		status: 'success' | 'error';
-		message: string;
-	}>({
-		isOpen: false,
-		status: 'success',
-		message: '',
-	});
+  // Search while typing, 300 ms after the last key; a new search starts from page 1. Only typing counts: a
+  // "clear all" on its way through the router must not be overwritten from the URL it is replacing.
+  const typing = useRef(false);
+  const typeSearch = (text: string) => {
+    typing.current = true;
+    setSearchText(text);
+  };
+  useEffect(() => {
+    const trimmed = searchText.trim();
+    if (!typing.current || trimmed === query) return;
+    const timer = window.setTimeout(() => {
+      typing.current = false;
+      setParams({ q: trimmed, page: "" }, "replace");
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [searchText, query, setParams]);
 
-	const requestSaleOrders = (
-		page = saleOrderPage,
-		search = saleOrderAppliedSearch,
-		sortField = saleOrderSortField,
-		sortOrder = saleOrderSortOrder,
-	) =>
-		saleOrderModel
-			.getSaleOrders(page, 10, search, sortField, sortOrder)
-			.then((response) => {
-				setSaleOrders(response);
-				setSaleOrderMeta(response.meta);
-			})
-			.catch((error) => {
-				console.error('Failed to fetch sale orders:', error);
-				setSaleOrdersError(loadErrorText('รายการใบสั่งขาย', error));
-			})
-			.finally(() => setLoading(false));
+  // Back/forward can change the URL's search under the box.
+  const lastQuery = useRef(query);
+  useEffect(() => {
+    if (lastQuery.current !== query && query !== searchText.trim())
+      setSearchText(query);
+    lastQuery.current = query;
+  }, [query, searchText]);
 
-	const requestPaymentReceipts = (
-		page = paymentReceiptPage,
-		search = paymentReceiptAppliedSearch,
-		sortField = paymentReceiptSortField,
-		sortOrder = paymentReceiptSortOrder,
-	) =>
-		paymentReceiptModel
-			.getPaymentReceipts(page, 10, search, sortField, sortOrder)
-			.then((response) => {
-				setPaymentReceipts(response);
-				setPaymentReceiptMeta(response.meta);
-			})
-			.catch((error) => {
-				console.error('Failed to fetch payment receipts:', error);
-				setReceiptsError(loadErrorText('รายการใบเสร็จรับเงิน', error));
-			})
-			.finally(() => setLoading(false));
+  const filters = useMemo(
+    () => ({
+      search: query,
+      payment_method: method,
+      payment_receipt_type: type,
+      date_start: from,
+      date_end: to,
+    }),
+    [query, method, type, from, to],
+  );
 
-	// A new query of either list shows the loading state at once (during render); the effects only send the requests.
-	const saleOrderQuery = [saleOrderPage, saleOrderAppliedSearch, saleOrderSortField, saleOrderSortOrder] as const;
-	const [saleOrdersRequested, setSaleOrdersRequested] = useState<typeof saleOrderQuery | null>(null);
-	if (!saleOrdersRequested || saleOrderQuery.some((value, index) => value !== saleOrdersRequested[index])) {
-		setSaleOrdersRequested(saleOrderQuery);
-		setLoading(true);
-		setSaleOrdersError(null);
-	}
-	const receiptQuery = [paymentReceiptPage, paymentReceiptAppliedSearch, paymentReceiptSortField, paymentReceiptSortOrder] as const;
-	const [receiptsRequested, setReceiptsRequested] = useState<typeof receiptQuery | null>(null);
-	if (!receiptsRequested || receiptQuery.some((value, index) => value !== receiptsRequested[index])) {
-		setReceiptsRequested(receiptQuery);
-		setLoading(true);
-		setReceiptsError(null);
-	}
+  const listKey = JSON.stringify([filters, tab, sort, page, refresh]);
+  useEffect(() => {
+    let active = true;
+    receiptModel
+      .listPaymentReceipts({
+        ...filters,
+        tab,
+        page,
+        limit: PAGE_SIZE,
+        sortField: SORTS[sort].field,
+        sortOrder: SORTS[sort].order,
+      })
+      .then((response) => {
+        if (!active) return;
+        setRows(response.data ?? []);
+        setMeta(response.meta);
+        setListError(null);
+        setLoadedKey(listKey);
+      })
+      .catch((error: unknown) => {
+        if (!active) return;
+        setListError(loadErrorText("รายการใบเสร็จรับเงิน", error));
+        setLoadedKey(listKey);
+      });
+    return () => {
+      active = false;
+    };
+  }, [filters, tab, sort, page, refresh, listKey]);
 
-	useEffect(() => {
-		void requestSaleOrders();
-	}, [saleOrderPage, saleOrderAppliedSearch, saleOrderSortField, saleOrderSortOrder]);
+  useEffect(() => {
+    let active = true;
+    receiptModel
+      .getPaymentReceiptSummary(filters)
+      .then((next) => {
+        if (active) setSummary(next);
+      })
+      .catch(() => {
+        if (active) setSummary(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [filters, refresh]);
 
-	useEffect(() => {
-		void requestPaymentReceipts();
-	}, [paymentReceiptPage, paymentReceiptAppliedSearch, paymentReceiptSortField, paymentReceiptSortOrder]);
+  useEffect(() => {
+    if (!isLoaded || !canViewOrders) return;
+    let active = true;
+    saleOrderModel
+      .getSaleOrderSummary()
+      .then((next) => {
+        if (active) setOrderSummary(next);
+      })
+      .catch(() => {
+        if (active) setOrderSummary(null);
+      });
+    loadQueue()
+      .then((next) => {
+        if (!active) return;
+        setQueue(next);
+        setQueueError(null);
+      })
+      .catch((error: unknown) => {
+        if (active) setQueueError(loadErrorText("รายการใบสั่งขาย", error));
+      });
+    return () => {
+      active = false;
+    };
+  }, [isLoaded, canViewOrders, refresh]);
 
-	const fetchSaleOrders = (...args: Parameters<typeof requestSaleOrders>) => {
-		setLoading(true);
-		setSaleOrdersError(null);
-		return requestSaleOrders(...args);
-	};
+  const reload = () => setRefresh((count) => count + 1);
+  const remove = useReceiptDelete({ onDeleted: reload });
+  const rowEntries = useRowEntries(remove.request);
 
-	const fetchPaymentReceipts = (...args: Parameters<typeof requestPaymentReceipts>) => {
-		setLoading(true);
-		setReceiptsError(null);
-		return requestPaymentReceipts(...args);
-	};
+  const loading = loadedKey !== listKey;
+  const active = method.length > 0 || type.length > 0 || Boolean(from || to);
+  const filtered = active || Boolean(query) || tab !== "all";
+  const total = meta?.total ?? 0;
+  const shop = summary?.tabs.all;
+  const clearAll = () => {
+    typing.current = false;
+    setSearchText("");
+    setParams({
+      q: "",
+      tab: "",
+      method: "",
+      type: "",
+      from: "",
+      to: "",
+      page: "",
+    });
+  };
+  const values: FilterValues = { tab, method, type, from, to };
+  const applyFilters = (next: Partial<FilterValues>) =>
+    setParams({
+      tab:
+        next.tab === undefined ? undefined : next.tab === "all" ? "" : next.tab,
+      method: next.method?.join(","),
+      type: next.type?.join(","),
+      from: next.from,
+      to: next.to,
+      page: "",
+    });
 
-	const handleSaleOrderSortChange = (sort: { key: string; direction: 'ASC' | 'DESC' } | null) => {
-		if (!sort) {
-			setSaleOrderSortField(null);
-			setSaleOrderSortOrder('ASC');
-			return;
-		}
-		const nextField = sort.key as SaleOrderSortField;
-		if (nextField !== 'sale_order_total') {
-			setSaleOrderSortField(null);
-			setSaleOrderSortOrder('ASC');
-			return;
-		}
-		setSaleOrderSortField(nextField);
-		setSaleOrderSortOrder(sort.direction);
-	};
+  const queueCount = queue?.length ?? 0;
+  const queueRows = queueAll
+    ? (queue ?? []).slice((queuePage - 1) * QUEUE_PAGE, queuePage * QUEUE_PAGE)
+    : (queue ?? []).slice(0, QUEUE_PEEK);
+  const queueMeta: PaginationMeta = {
+    total: queueCount,
+    page: queuePage,
+    limit: QUEUE_PAGE,
+    last_page: Math.max(1, Math.ceil(queueCount / QUEUE_PAGE)),
+  };
+  const received = orderSummary?.received_this_month ?? null;
+  const dash = !canViewOrders;
 
-	const handlePaymentReceiptSortChange = (sort: { key: string; direction: 'ASC' | 'DESC' } | null) => {
-		if (!sort) {
-			setPaymentReceiptSortField(null);
-			setPaymentReceiptSortOrder('ASC');
-			return;
-		}
-		const nextField = sort.key as PaymentReceiptSortField;
-		if (nextField !== 'payment_date' && nextField !== 'amount_paid') {
-			setPaymentReceiptSortField(null);
-			setPaymentReceiptSortOrder('ASC');
-			return;
-		}
-		setPaymentReceiptSortField(nextField);
-		setPaymentReceiptSortOrder(sort.direction);
-	};
+  return (
+    <div className="ka-pr">
+      <div className="ka-pr-ph">
+        <div>
+          <h1>ใบเสร็จรับเงิน</h1>
+          <p className="ka-pr-cap ka-pr-cap--14 ka-pr-p">
+            รับชำระตามใบสั่งขายที่อนุมัติแล้ว ใบสั่งขายที่ยกเลิกจะไม่แสดงที่นี่
+          </p>
+        </div>
+        {canAdd && (
+          <div className="ka-pr-row">
+            <Link className="ka-pr-btn ka-pr-btn--a" href={`${BASE}/new`}>
+              <Icon name="plus" small />
+              สร้างใบเสร็จรับเงิน
+            </Link>
+          </div>
+        )}
+      </div>
 
-	const handleDeletePaymentReceipt = async () => {
-		if (!paymentReceiptToDelete) {
-			return;
-		}
+      <div className="ka-pr-stats">
+        <Stat
+          tone="success"
+          icon="money"
+          label="รับชำระเดือนนี้"
+          value={
+            dash || (orderSummary && received === null)
+              ? "—"
+              : orderSummary
+                ? formatBaht(received ?? 0)
+                : null
+          }
+          sub={
+            <ChangeLine
+              now={received}
+              before={orderSummary?.received_last_month ?? null}
+            />
+          }
+        />
+        <Stat
+          tone="brand"
+          icon="clock"
+          label="ยอดค้างรับ"
+          value={
+            dash
+              ? "—"
+              : orderSummary
+                ? formatBaht(orderSummary.outstanding_total)
+                : null
+          }
+          sub={
+            orderSummary ? (
+              `${orderSummary.outstanding_count} ใบสั่งขาย`
+            ) : (
+              <>&nbsp;</>
+            )
+          }
+        />
+        <Stat
+          tone="info"
+          icon="receipt"
+          label="ใบเสร็จเดือนนี้"
+          value={summary ? `${summary.month.receipt_count} ใบ` : null}
+          sub={
+            summary ? (
+              `วันนี้ ${summary.month.receipt_today_count} ใบ`
+            ) : (
+              <>&nbsp;</>
+            )
+          }
+        />
+        <Stat
+          tone="neutral"
+          icon="refund"
+          label="คืนเงินเดือนนี้"
+          value={summary ? formatBaht(summary.month.refund_total) : null}
+          sub={summary ? `${summary.month.refund_count} รายการ` : <>&nbsp;</>}
+        />
+      </div>
 
-		try {
-			await paymentReceiptModel.deletePaymentReceipt(paymentReceiptToDelete.payment_receipt_id);
-			setResultDialog({
-				isOpen: true,
-				status: 'success',
-				message: 'ลบใบเสร็จรับเงินสำเร็จ',
-			});
-			setIsDeleteDialogOpen(false);
-			setPaymentReceiptToDelete(null);
+      {canViewOrders && (
+        <section
+          className="ka-pr-card ka-pr-clip"
+          aria-labelledby="ka-pr-queue-title"
+        >
+          <div className="ka-pr-chd">
+            <div>
+              <h2 id="ka-pr-queue-title">
+                รอรับชำระ{" "}
+                <span className="ka-pr-cap ka-pr-num">
+                  · {queueCount} ใบสั่งขาย
+                </span>
+              </h2>
+              <div className="ka-pr-cap">
+                อนุมัติแล้วและยังชำระไม่ครบ · ไม่รวมใบที่ยกเลิก
+              </div>
+            </div>
+            {(queueCount > QUEUE_PEEK || queueAll) && (
+              <button
+                type="button"
+                className="ka-pr-btn ka-pr-btn--gh ka-pr-btn--sm ka-pr-btn--brand"
+                onClick={() =>
+                  setParams({ queue: queueAll ? "" : "all", qpage: "" })
+                }
+              >
+                {queueAll ? "ย่อรายการ" : "ดูทั้งหมด"}
+              </button>
+            )}
+          </div>
+          {queueError ? (
+            <div className="ka-pr-cp">
+              <LoadErrorBanner message={queueError} onRetry={reload} />
+            </div>
+          ) : queue === null ? (
+            <div className="ka-pr-queue" aria-busy="true">
+              {[0, 1, 2].map((item) => (
+                <div
+                  key={item}
+                  className="ka-pr-qc ka-pr-sk"
+                  style={{ height: 217 }}
+                />
+              ))}
+            </div>
+          ) : queue.length === 0 ? (
+            <div className="ka-pr-empty">
+              <span className="ka-pr-tone ka-pr-etile" data-tone="success">
+                <Icon name="check" size={26} />
+              </span>
+              <b>ไม่มีใบสั่งขายรอรับชำระ</b>
+              <span className="ka-pr-cap ka-pr-cap--14">
+                ใบสั่งขายที่อนุมัติแล้วชำระครบทุกใบ
+              </span>
+            </div>
+          ) : (
+            <>
+              <div className="ka-pr-queue">
+                {queueRows.map((order) => (
+                  <QueueCard
+                    key={order.sale_order_id}
+                    order={order}
+                    canAdd={canAdd}
+                  />
+                ))}
+              </div>
+              {queueAll && queueMeta.last_page > 1 && (
+                <div className="ka-pr-queue__foot">
+                  <Pagination
+                    meta={queueMeta}
+                    currentPage={queuePage}
+                    onPageChange={(next) =>
+                      setParams({ qpage: next === 1 ? "" : String(next) })
+                    }
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </section>
+      )}
 
-			const nextPage =
-				paymentReceiptPage > 1 && (paymentReceipts?.data.length || 0) === 1 ? paymentReceiptPage - 1 : paymentReceiptPage;
-			if (nextPage !== paymentReceiptPage) {
-				setPaymentReceiptPage(nextPage);
-			}
+      <section
+        className="ka-pr-card ka-pr-clip"
+        aria-labelledby="ka-pr-list-title"
+      >
+        <div className="ka-pr-chd">
+          <div>
+            <h2 id="ka-pr-list-title">ใบเสร็จรับเงินทั้งหมด</h2>
+            <div className="ka-pr-cap">
+              {active || query
+                ? `พบ ${total} รายการ จากตัวกรองที่เลือก`
+                : `เรียง${SORTS[sort].label}`}
+            </div>
+          </div>
+          <div className="ka-pr-tabs" role="tablist" aria-label="สถานะใบเสร็จ">
+            {TABS.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                role="tab"
+                className="ka-pr-tab"
+                aria-selected={tab === item.key}
+                onClick={() =>
+                  setParams({
+                    tab: item.key === "all" ? "" : item.key,
+                    page: "",
+                  })
+                }
+              >
+                {item.label}
+                <span className="ka-pr-tab__n">
+                  {summary?.tabs[item.key] ?? "–"}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="ka-pr-fbar">
+          <label className="ka-pr-fs">
+            <Icon name="search" small />
+            <input
+              aria-label="ค้นหาใบเสร็จ"
+              placeholder="เลข RE, เลข SO หรือชื่อลูกค้า"
+              value={searchText}
+              onChange={(event) => typeSearch(event.target.value)}
+            />
+            {searchText && (
+              <button
+                type="button"
+                className="ka-pr-ib ka-pr-ib--sm"
+                aria-label="ล้างคำค้น"
+                onClick={() => typeSearch("")}
+              >
+                <Icon name="close" small />
+              </button>
+            )}
+          </label>
+          <FilterChips
+            values={values}
+            search={query}
+            summary={summary}
+            onChange={applyFilters}
+          />
+          {active && (
+            <button
+              type="button"
+              className="ka-pr-btn ka-pr-btn--gh ka-pr-btn--sm ka-pr-btn--brand"
+              onClick={() =>
+                setParams({ method: "", type: "", from: "", to: "", page: "" })
+              }
+            >
+              ล้างตัวกรอง
+            </button>
+          )}
+          <span className="ka-pr-sp" />
+          <SortMenu
+            sort={sort}
+            onChange={(next) =>
+              setParams({ sort: next === "newest" ? "" : next, page: "" })
+            }
+          />
+        </div>
+        {listError && (
+          <div className="ka-pr-cp">
+            <LoadErrorBanner message={listError} onRetry={reload} />
+          </div>
+        )}
+        {!listError && loading && rows.length === 0 && <SkeletonRows />}
+        {!listError &&
+          !loading &&
+          rows.length === 0 &&
+          (filtered || (shop ?? 0) > 0 ? (
+            <div className="ka-pr-empty">
+              <span className="ka-pr-tone ka-pr-etile" data-tone="neutral">
+                <Icon name="searchMinus" size={26} />
+              </span>
+              <b>
+                {query
+                  ? `ไม่พบใบเสร็จที่ตรงกับ “${query}”`
+                  : "ไม่พบใบเสร็จที่ตรงกับตัวกรอง"}
+              </b>
+              <span className="ka-pr-cap ka-pr-cap--14">
+                ลองเลขใบสั่งขายหรือชื่อลูกค้า หรือเอาตัวกรองออก
+              </span>
+              <button type="button" className="ka-pr-btn" onClick={clearAll}>
+                ล้างคำค้นและตัวกรอง
+              </button>
+            </div>
+          ) : (
+            <div className="ka-pr-empty">
+              <span className="ka-pr-tone ka-pr-etile" data-tone="brand">
+                <Icon name="receipt" size={26} />
+              </span>
+              <b>ยังไม่มีใบเสร็จรับเงิน</b>
+              <span className="ka-pr-cap ka-pr-cap--14">
+                เริ่มรับชำระจากใบสั่งขายที่อนุมัติแล้ว
+              </span>
+              {canAdd && (
+                <Link className="ka-pr-btn ka-pr-btn--a" href={`${BASE}/new`}>
+                  <Icon name="plus" small />
+                  สร้างใบเสร็จรับเงิน
+                </Link>
+              )}
+            </div>
+          ))}
+        {rows.length > 0 && !listError && (
+          <>
+            <div className="ka-pr-tw">
+              <table className="ka-pr-lt">
+                <thead>
+                  <tr>
+                    <th>ใบเสร็จรับเงิน</th>
+                    <th>ใบสั่งขาย</th>
+                    <th>วิธีชำระ</th>
+                    <th>วันที่รับชำระ</th>
+                    <th>สถานะ</th>
+                    <th className="ka-pr-r">ยอดรับชำระ (บาท)</th>
+                    <th style={{ width: 56 }}>
+                      <span className="sr-only">เมนู</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row) => {
+                    const href = `${BASE}/${row.payment_receipt_id}`;
+                    const view = methodView(row);
+                    const state = receiptStatus(row);
+                    const amount = Number(row.amount_paid);
+                    const menu = rowEntries(row);
+                    return (
+                      <tr
+                        key={row.payment_receipt_id}
+                        onClick={() => router.push(href)}
+                      >
+                        <td>
+                          <Link
+                            href={href}
+                            className="ka-pr-rowlink ka-pr-code ka-pr-code--600"
+                            onClick={(event) => event.stopPropagation()}
+                          >
+                            <DocumentCode
+                              code={
+                                <Highlight
+                                  text={row.payment_receipt_code}
+                                  term={query}
+                                />
+                              }
+                              legacyCode={row.legacy_code}
+                              search={query}
+                            />
+                          </Link>
+                          <div className="ka-pr-cap ka-pr-cap--14">
+                            <Highlight text={customerOf(row)} term={query} />
+                          </div>
+                        </td>
+                        <td>
+                          {row.saleOrder ? (
+                            <Link
+                              href={`${ORDERS}/${row.saleOrder.sale_order_id}`}
+                              className="ka-pr-sochip ka-pr-code"
+                              onClick={(event) => event.stopPropagation()}
+                            >
+                              <Highlight
+                                text={row.saleOrder.sale_order_code}
+                                term={query}
+                              />
+                            </Link>
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+                        <td>
+                          <span className="ka-pr-pm">
+                            <span
+                              className="ka-pr-tone ka-pr-pm__ic"
+                              data-tone={view.tone}
+                            >
+                              <Icon name={view.icon} small />
+                            </span>
+                            <span>
+                              <span className="ka-pr-pm__main">
+                                {view.main}
+                              </span>
+                              <span className="ka-pr-cap">{view.sub}</span>
+                            </span>
+                          </span>
+                        </td>
+                        <td className="ka-pr-num">
+                          {formatThaiDate(row.payment_date)}
+                        </td>
+                        <td>
+                          <Badge tone={state.tone}>{state.label}</Badge>
+                        </td>
+                        <td className="ka-pr-r">
+                          <div
+                            className={`ka-pr-num${amount < 0 ? " ka-pr-neg" : ""}`}
+                            style={{ fontWeight: 600 }}
+                          >
+                            {amount < 0
+                              ? `−${formatMoney(Math.abs(amount))}`
+                              : formatMoney(amount)}
+                          </div>
+                          <div className="ka-pr-cap">{typeText(row)}</div>
+                        </td>
+                        <td onClick={(event) => event.stopPropagation()}>
+                          <ReceiptMenu
+                            receipt={row}
+                            label={`ตัวเลือกของ ${row.payment_receipt_code}`}
+                            entries={menu.entries}
+                            note={menu.note}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div className="ka-pr-mlist">
+              {rows.map((row) => {
+                const view = methodView(row);
+                const state = receiptStatus(row);
+                const amount = Number(row.amount_paid);
+                const menu = rowEntries(row);
+                return (
+                  <div key={row.payment_receipt_id} className="ka-pr-mc">
+                    <span className="ka-pr-row ka-pr-row--8 ka-pr-row--between">
+                      <Link
+                        href={`${BASE}/${row.payment_receipt_id}`}
+                        className="ka-pr-mc__link ka-pr-code ka-pr-code--600"
+                      >
+                        <Highlight
+                          text={row.payment_receipt_code}
+                          term={query}
+                        />
+                      </Link>
+                      <span
+                        className={`ka-pr-num${amount < 0 ? " ka-pr-neg" : ""}`}
+                        style={{ fontWeight: 700 }}
+                      >
+                        {signedBaht(amount)}
+                      </span>
+                    </span>
+                    <span className="ka-pr-cap ka-pr-cap--14">
+                      <Highlight text={customerOf(row)} term={query} /> ·{" "}
+                      <Highlight
+                        text={row.saleOrder?.sale_order_code ?? "—"}
+                        term={query}
+                      />
+                    </span>
+                    <span className="ka-pr-row ka-pr-row--8 ka-pr-row--between">
+                      <span className="ka-pr-cap">
+                        {view.main} · {formatThaiDate(row.payment_date)}
+                      </span>
+                      <span className="ka-pr-row ka-pr-row--8">
+                        <Badge tone={state.tone}>{state.label}</Badge>
+                        <span className="ka-pr-mc__menu">
+                          <ReceiptMenu
+                            receipt={row}
+                            label={`ตัวเลือกของ ${row.payment_receipt_code}`}
+                            entries={menu.entries}
+                            note={menu.note}
+                          />
+                        </span>
+                      </span>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="ka-pr-pager">
+              <span className="ka-pr-cap">
+                {meta && meta.last_page > 1
+                  ? `แสดง ${rows.length} จาก ${total} รายการ`
+                  : `แสดงครบ ${total} รายการ`}
+              </span>
+              {meta && meta.last_page > 1 && (
+                <Pagination
+                  meta={meta}
+                  currentPage={page}
+                  onPageChange={(next) =>
+                    setParams({ page: next === 1 ? "" : String(next) })
+                  }
+                />
+              )}
+            </div>
+          </>
+        )}
+      </section>
+      {remove.dialogs}
+    </div>
+  );
+}
 
-			await Promise.all([
-				fetchPaymentReceipts(nextPage, paymentReceiptAppliedSearch, paymentReceiptSortField, paymentReceiptSortOrder),
-				fetchSaleOrders(),
-			]);
-		} catch (error) {
-			setResultDialog({
-				isOpen: true,
-				status: 'error',
-				message: error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการลบใบเสร็จรับเงิน',
-			});
-		}
-	};
-
-	const openPaymentReceiptDetail = async (paymentReceipt: PaymentReceipt) => {
-		try {
-			const detail = await paymentReceiptModel.getPaymentReceiptById(paymentReceipt.payment_receipt_id);
-			setSelectedPaymentReceipt(detail);
-			setIsDetailOpen(true);
-		} catch (error) {
-			setResultDialog({
-				isOpen: true,
-				status: 'error',
-				message: error instanceof Error ? error.message : 'ไม่สามารถโหลดรายละเอียดใบเสร็จรับเงินได้',
-			});
-		}
-	};
-
-	const openPaymentReceiptUpdate = async (paymentReceipt: PaymentReceipt) => {
-		try {
-			const detail = await paymentReceiptModel.getPaymentReceiptById(paymentReceipt.payment_receipt_id);
-			setSelectedPaymentReceipt(detail);
-			setIsUpdateOpen(true);
-		} catch (error) {
-			setResultDialog({
-				isOpen: true,
-				status: 'error',
-				message: error instanceof Error ? error.message : 'ไม่สามารถโหลดข้อมูลเพื่อแก้ไขใบเสร็จรับเงินได้',
-			});
-		}
-	};
-
-	const saleOrderColumns: DataTableColumn<SaleOrder>[] = [
-		{
-			key: 'sale_order_code',
-			label: 'รหัสใบสั่งขาย',
-			width: '200px',
-			render: (_, row) => (
-				<DocumentCode
-					code={row.sale_order_code || '-'}
-					legacyCode={row.legacy_code}
-					search={saleOrderAppliedSearch}
-				/>
-			),
-		},
-		{
-			key: 'sale_order_name',
-			label: 'ชื่อใบสั่งขาย',
-		},
-		{
-			key: 'sale_order_total',
-			label: 'ยอดรวม',
-			sortable: true,
-			render: (value) => `฿${formatCurrency(Number(value || 0))}`,
-		},
-		{
-			key: 'sale_order_status',
-			label: 'สถานะ',
-			render: (_, row) => {
-				const status = row.sale_order_status || 'unknown';
-				return (
-					<StatusBadge tone={SALE_ORDER_STATUS_TONE[status]}>{status}</StatusBadge>
-				);
-			},
-		},
-		{
-			key: 'sale_order_id',
-			label: 'สร้างใบเสร็จรับเงิน',
-			width: '190px',
-			render: (_, row) => (
-				<button
-					onClick={() => {
-						setSelectedSaleOrder(row);
-						setIsInsertOpen(true);
-					}}
-					disabled={!canAddPaymentReceipt}
-					className="ka-btn ka-btn--primary"
-					type="button"
-				>
-					สร้างใบเสร็จรับเงิน
-				</button>
-			),
-		},
-	];
-
-	const paymentReceiptColumns: DataTableColumn<PaymentReceipt>[] = [
-		{
-			key: 'payment_receipt_code',
-			label: 'เลขที่ใบเสร็จรับเงิน',
-			width: '200px',
-			render: (_, row) => (
-				<DocumentCode
-					code={row.payment_receipt_code}
-					legacyCode={row.legacy_code}
-					search={paymentReceiptAppliedSearch}
-				/>
-			),
-		},
-		{
-			key: 'sale_order_id',
-			label: 'ใบสั่งขาย',
-			render: (_, row) => row.saleOrder?.sale_order_code || '-',
-		},
-		{
-			key: 'payment_method',
-			label: 'วิธีชำระ',
-			render: (value) => PAYMENT_METHOD_LABELS[value as 'cash' | 'bank'],
-		},
-		{
-			key: 'amount_paid',
-			label: 'ยอดรับชำระ',
-			sortable: true,
-			render: (value) => `฿${formatCurrency(Number(value || 0))}`,
-		},
-		{
-			key: 'payment_date',
-			label: 'วันที่รับชำระ',
-			sortable: true,
-			render: (value) => formatThaiDate(value as Date),
-		},
-		{
-			key: 'payment_status',
-			label: 'สถานะ',
-			render: (value) => {
-				const status = value as PaymentReceipt['payment_status'];
-				return (
-					<StatusBadge tone={PAYMENT_RECEIPT_STATUS_TONE[status]}>{PAYMENT_RECEIPT_STATUS_LABELS[status] || status}</StatusBadge>
-				);
-			},
-		},
-		{
-			key: 'payment_receipt_id',
-			label: 'การจัดการ',
-			width: '180px',
-			render: (_, row) => (
-				<div className="flex items-center gap-2">
-					<button
-						onClick={() => void openPaymentReceiptDetail(row)}
-						className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--success)]"
-						type="button"
-						title="ดูรายละเอียด"
-					>
-						<svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-						</svg>
-					</button>
-
-					{canEditPaymentReceipt && row.payment_receipt_type !== 'refund' && (
-						<button
-							onClick={() => void openPaymentReceiptUpdate(row)}
-							className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--brand-ink)]"
-							type="button"
-							title="แก้ไข"
-						>
-							<svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-								<path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828zM5 12v3h3l8.293-8.293-3-3L5 12z" />
-							</svg>
-						</button>
-					)}
-
-					{canDeletePaymentReceipt && row.payment_receipt_type !== 'refund' && (
-						<button
-							onClick={() => {
-								setPaymentReceiptToDelete(row);
-								setIsDeleteDialogOpen(true);
-							}}
-							className="ka-btn ka-btn--ghost ka-btn--icon hover:text-[var(--danger)]"
-							type="button"
-							title="ลบ"
-						>
-							<svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-								<path
-									fillRule="evenodd"
-									d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-									clipRule="evenodd"
-								/>
-							</svg>
-						</button>
-					)}
-				</div>
-			),
-		},
-	];
-
-	return (
-		<div className="bg-[var(--bg-page)] p-2 sm:p-4 md:p-6 lg:p-8">
-			<LoadErrorBanner message={saleOrdersError} onRetry={() => void fetchSaleOrders()} className="mb-4" />
-			<LoadErrorBanner message={receiptsError} onRetry={() => void fetchPaymentReceipts()} className="mb-4" />
-			{loading && <LoadingSkeletonProps />}
-			<div className="space-y-6">
-				<section className="ka-card">
-					<div className="border-b border-[var(--border)] p-4">
-						<h2 className="text-lg font-semibold text-[var(--ink)]">รายการใบสั่งขาย (สำหรับสร้างใบเสร็จรับเงิน)</h2>
-						<p className="mt-1 text-sm text-[var(--ink-muted)]">เลือกใบสั่งขายจากตารางนี้ แล้วกดปุ่มสร้างใบเสร็จรับเงิน</p>
-						<div className="mt-3 flex flex-col gap-2 sm:flex-row">
-							<input
-								type="text"
-								value={saleOrderSearch}
-								onChange={(event) => setSaleOrderSearch(event.target.value)}
-								onKeyDown={(event) => {
-									if (event.key === 'Enter') {
-										event.preventDefault();
-										setSaleOrderPage(1);
-										setSaleOrderAppliedSearch(saleOrderSearch.trim());
-									}
-								}}
-								placeholder="ค้นหาใบสั่งขายด้วย keyword"
-								className="ka-input h-10 flex-1"
-							/>
-							<div className="flex gap-2">
-								<button
-									type="button"
-									onClick={() => {
-										setSaleOrderPage(1);
-										setSaleOrderAppliedSearch(saleOrderSearch.trim());
-									}}
-									className="ka-btn ka-btn--primary"
-								>
-									ค้นหา
-								</button>
-								<button
-									type="button"
-									onClick={() => {
-										setSaleOrderSearch('');
-										setSaleOrderAppliedSearch('');
-										setSaleOrderPage(1);
-									}}
-									className="ka-btn"
-								>
-									ล้าง
-								</button>
-							</div>
-						</div>
-					</div>
-					<div className="p-2">
-						<DataTable
-							data={saleOrders?.data || []}
-							columns={saleOrderColumns}
-							keyField="sale_order_id"
-							className="bg-[var(--bg-surface)]"
-							paginationMeta={saleOrderMeta}
-							currentPage={saleOrderPage}
-							onPageChange={setSaleOrderPage}
-							onSortChange={handleSaleOrderSortChange}
-						/>
-					</div>
-				</section>
-
-				<section className="ka-card">
-					<div className="border-b border-[var(--border)] p-4">
-						<h2 className="text-lg font-semibold text-[var(--ink)]">รายการใบเสร็จรับเงิน</h2>
-						<p className="mt-1 text-sm text-[var(--ink-muted)]">ตารางใบเสร็จรับเงินทั้งหมด พร้อมดูรายละเอียด แก้ไข และลบ</p>
-						<div className="mt-3 flex flex-col gap-2 sm:flex-row">
-							<input
-								type="text"
-								value={paymentReceiptSearch}
-								onChange={(event) => setPaymentReceiptSearch(event.target.value)}
-								onKeyDown={(event) => {
-									if (event.key === 'Enter') {
-										event.preventDefault();
-										setPaymentReceiptPage(1);
-										setPaymentReceiptAppliedSearch(paymentReceiptSearch.trim());
-									}
-								}}
-								placeholder="ค้นหาใบเสร็จรับเงินด้วย keyword"
-								className="ka-input h-10 flex-1"
-							/>
-							<div className="flex gap-2">
-								<button
-									type="button"
-									onClick={() => {
-										setPaymentReceiptPage(1);
-										setPaymentReceiptAppliedSearch(paymentReceiptSearch.trim());
-									}}
-									className="ka-btn ka-btn--primary"
-								>
-									ค้นหา
-								</button>
-								<button
-									type="button"
-									onClick={() => {
-										setPaymentReceiptSearch('');
-										setPaymentReceiptAppliedSearch('');
-										setPaymentReceiptPage(1);
-									}}
-									className="ka-btn"
-								>
-									ล้าง
-								</button>
-							</div>
-						</div>
-					</div>
-					<div className="p-2">
-						<DataTable
-							data={paymentReceipts?.data || []}
-							columns={paymentReceiptColumns}
-							keyField="payment_receipt_id"
-							className="bg-[var(--bg-surface)]"
-							paginationMeta={paymentReceiptMeta}
-							currentPage={paymentReceiptPage}
-							onPageChange={setPaymentReceiptPage}
-							onSortChange={handlePaymentReceiptSortChange}
-						/>
-					</div>
-				</section>
-			</div>
-
-			{canAddPaymentReceipt && (
-				<InsertPaymentReceiptForm
-					isOpen={isInsertOpen}
-					onClose={() => {
-						setIsInsertOpen(false);
-						setSelectedSaleOrder(null);
-					}}
-					onSuccess={() => {
-						void fetchPaymentReceipts();
-						void fetchSaleOrders();
-					}}
-					saleOrder={selectedSaleOrder}
-				/>
-			)}
-
-			{canEditPaymentReceipt && selectedPaymentReceipt && (
-				<UpdatePaymentReceiptForm
-					isOpen={isUpdateOpen}
-					onClose={() => {
-						setIsUpdateOpen(false);
-						setSelectedPaymentReceipt(null);
-					}}
-					onSuccess={() => {
-						void fetchPaymentReceipts();
-						void fetchSaleOrders();
-					}}
-					initialData={selectedPaymentReceipt}
-				/>
-			)}
-
-			{selectedPaymentReceipt && (
-				<PaymentReceiptDetailModal
-					isOpen={isDetailOpen}
-					onClose={() => {
-						setIsDetailOpen(false);
-						setSelectedPaymentReceipt(null);
-					}}
-					paymentReceipt={selectedPaymentReceipt}
-				/>
-			)}
-
-			<ConfirmDialog
-				isOpen={isDeleteDialogOpen}
-				title="ยืนยันการลบใบเสร็จรับเงิน"
-				message={`คุณแน่ใจหรือไม่ว่าต้องการลบใบเสร็จรับเงิน "${paymentReceiptToDelete?.payment_receipt_code || ''}" ?`}
-				onConfirm={handleDeletePaymentReceipt}
-				onCancel={() => {
-					setIsDeleteDialogOpen(false);
-					setPaymentReceiptToDelete(null);
-				}}
-			/>
-
-			<ActionResultDialog
-				isOpen={resultDialog.isOpen}
-				status={resultDialog.status}
-				action="delete"
-				message={resultDialog.message}
-				onClose={() => setResultDialog((prev) => ({ ...prev, isOpen: false }))}
-			/>
-		</div>
-	);
+export default function PaymentReceiptsPage() {
+  return (
+    <Suspense fallback={null}>
+      <ReceiptsList />
+    </Suspense>
+  );
 }

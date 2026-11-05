@@ -1,3 +1,4 @@
+import type { ComponentProps, ReactNode } from 'react';
 import Modal from '@/components/Modal';
 
 interface ConfirmDialogProps {
@@ -12,6 +13,16 @@ interface ConfirmDialogProps {
   cancelLabel?: string;
   /** `danger` (default) for deleting or cancelling; `neutral` for an ordinary confirmation. */
   tone?: 'danger' | 'neutral';
+  /** Facts under the message, such as what a deletion takes away. */
+  children?: ReactNode;
+  /** The line under the title; the default asks to check before confirming. */
+  description?: string;
+  size?: ComponentProps<typeof Modal>['size'];
+  placement?: ComponentProps<typeof Modal>['placement'];
+  /** Extra classes on the dialog panel, for a page whose design draws its own dialog. */
+  className?: string;
+  /** A status icon before the title, for a dialog that draws no icon beside its message. */
+  icon?: ReactNode;
 }
 
 export default function ConfirmDialog({
@@ -24,14 +35,24 @@ export default function ConfirmDialog({
   confirmLabel = 'ยืนยัน',
   cancelLabel = 'ยกเลิก',
   tone = 'danger',
+  children,
+  description = 'โปรดตรวจสอบข้อมูลก่อนยืนยัน',
+  size = 'compact',
+  placement,
+  className,
+  icon,
 }: ConfirmDialogProps) {
   return (
     <Modal
       isOpen={isOpen}
       onClose={onCancel}
       title={title}
-      description="โปรดตรวจสอบข้อมูลก่อนยืนยัน"
-      size="compact"
+      description={description}
+      size={size}
+      placement={placement}
+      className={className}
+      icon={icon}
+      iconTone="danger"
       footer={
         <>
           <button type="button" onClick={onCancel} className="ka-btn min-h-11">
@@ -58,6 +79,7 @@ export default function ConfirmDialog({
         </div>
         <p className="break-words pt-2 text-[var(--ink-muted)]">{message}</p>
       </div>
+      {children}
     </Modal>
   );
 }

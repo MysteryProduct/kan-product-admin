@@ -443,7 +443,7 @@ export default function SaleOrderDetail({ saleOrder: order, onChanged, openRetur
                       </svg>
                     </span>
                     <span className="ka-so-rcp__b">
-                      <Link href={`/admin/payment-receipts?search=${encodeURIComponent(receipt.payment_receipt_code)}`}>
+                      <Link href={`/admin/payment-receipts/${receipt.payment_receipt_id}`}>
                         <DocumentCode code={receipt.payment_receipt_code} legacyCode={receipt.legacy_code} />
                       </Link>
                       <span className="ka-so-cap">

@@ -69,6 +69,9 @@
 .ka-menu__item { gap: 10px; }
 .ka-menu__item svg { width: 16px; height: 16px; flex: none; }
 .ka-menu__sep { height: 1px; margin: 4px 6px; background: var(--border); }
+.ka-menu__note { display: flex; gap: 8px; margin: 0; padding: 8px 12px; color: var(--ink-muted); font: 400 13px/20px var(--ka-font); }
+.ka-menu__note svg { flex: none; width: 16px; height: 16px; margin-top: 2px; }
+.ka-menu__tick { margin-left: auto; color: var(--brand-ink); }
 .ka-modal__body .ka-menu__item { min-height: var(--touch-target); }
 .ka-chip {
   display: inline-flex; align-items: center; gap: var(--space-2); min-height: 36px; padding: 0 var(--space-3);
