@@ -395,6 +395,7 @@ export default function ReceiptDetail({
         endpoint={`/payment-receipts/${id}/history`}
         variant="timeline"
         limit={2}
+        documentLabel={receipt.payment_receipt_code || undefined}
       />
     </section>
   );
