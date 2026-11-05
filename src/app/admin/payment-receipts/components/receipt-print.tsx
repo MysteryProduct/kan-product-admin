@@ -14,6 +14,7 @@ import {
   hasSystemName,
   customerOf,
   orderOf,
+  netAfter,
   paidBefore,
   receiptKind,
   storeMethod,
@@ -47,7 +48,7 @@ export default function ReceiptPrint({ receipt, receipts }: ReceiptPrintProps) {
     0,
     sumMoney([total, -before, -Number(receipt.amount_paid)]),
   );
-  const netAfter = sumMoney([before, Number(receipt.amount_paid)]);
+  const net = netAfter(receipt, receipts);
   const taxLine = [
     shop?.tax_id && `เลขประจำตัวผู้เสียภาษี ${shop.tax_id}`,
     shop?.branch_code && `สาขา ${shop.branch_code}`,
@@ -147,7 +148,7 @@ export default function ReceiptPrint({ receipt, receipts }: ReceiptPrintProps) {
         {refund ? (
           <div>
             <span className="ka-pr-mut">ยอดชำระสุทธิหลังคืนเงิน</span>
-            <span>{formatMoney(netAfter)}</span>
+            <span>{formatMoney(net)}</span>
           </div>
         ) : (
           <>

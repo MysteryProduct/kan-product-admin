@@ -29,6 +29,7 @@ import {
   methodView,
   orderOf,
   ORDERS,
+  netAfter,
   receiptKind,
   receiptStatus,
   signedBaht,
@@ -554,7 +555,8 @@ export default function ReceiptDetail({
                 {orderCode} →
               </Link>
               <div className="ka-pr-cap" style={{ marginTop: 8 }}>
-                ยอดชำระสุทธิหลังคืนเงิน {formatBaht(pay?.paid ?? 0)}
+                ยอดชำระสุทธิหลังคืนเงิน{" "}
+                {receipts ? formatBaht(netAfter(receipt, receipts)) : "—"}
               </div>
             </section>
           ) : (

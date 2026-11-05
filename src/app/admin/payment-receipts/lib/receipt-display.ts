@@ -176,7 +176,10 @@ export function signedBaht(amount: number): string {
   return amount < 0 ? `−${formatBaht(Math.abs(amount))}` : formatBaht(amount);
 }
 
-/** A store or custom order's name is a label the system wrote, never for a customer to read (D20). */
+/**
+ * A store or custom order's name is a label the system wrote, so the printed sheet leaves it out (D20). A custom
+ * order with no customer still shows it on screen (`customerOf`, D25).
+ */
 export function hasSystemName(receipt: PaymentReceipt): boolean {
   return ["store", "custom"].includes(receipt.saleOrder?.sale_order_type ?? "");
 }
@@ -249,4 +252,12 @@ export function paidBefore(
       )
       .map((other) => Number(other.amount_paid)),
   );
+}
+
+/** What stood after this receipt, whatever came later: the page and the printed sheet must say the same (D19). */
+export function netAfter(
+  receipt: PaymentReceipt,
+  all: PaymentReceipt[],
+): number {
+  return sumMoney([paidBefore(receipt, all), Number(receipt.amount_paid)]);
 }
