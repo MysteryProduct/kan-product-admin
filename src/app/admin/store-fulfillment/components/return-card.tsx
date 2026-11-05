@@ -77,6 +77,11 @@ export default function ReturnCard({
       },
     }));
 
+  const setQuantity = (line: StoreReturns["lines"][number], value: number) =>
+    setLine(line.saleOrderListId, {
+      quantity: Math.min(line.returnableQty, Math.max(0, Math.floor(value) || 0)),
+    });
+
   async function submit() {
     if (!reason) return;
     setPending(true);
@@ -115,11 +120,11 @@ export default function ReturnCard({
   if (received.length === 0 && returns.returns.length === 0) return null;
 
   return (
-    <div className="ka-card p-4 sm:p-6">
-      <h2 className="font-medium">การคืนสินค้าหลังได้รับ</h2>
+    <section className="ka-sf-card ka-sf-card__pad">
+      <h2>การคืนสินค้าหลังได้รับ</h2>
 
       {received.length > 0 && (
-        <ul className="mt-3 grid gap-1 text-sm">
+        <ul className="ka-sf-sub m-0 grid list-none gap-1 p-0">
           {received.map((entry, index) => (
             <li key={index}>
               {entry.source === "pickup" ? "ลูกค้ารับที่ร้าน" : "ส่งพัสดุ"}{" "}
@@ -129,7 +134,7 @@ export default function ReturnCard({
         </ul>
       )}
       {allPastWindow && (
-        <p className="mt-2 text-sm text-[var(--warning)]">
+        <p className="ka-sf-warn">
           ผ่านมาเกิน {RETURN_DAYS} วันแล้ว พิจารณาตามนโยบายคืนสินค้าก่อนรับคืน
           (ระบบรู้เพียงวันส่งพัสดุ ไม่รู้วันที่พัสดุถึงมือลูกค้า)
         </p>
@@ -138,13 +143,13 @@ export default function ReturnCard({
       {returns.returns.map((record) => (
         <div
           key={record.returnId}
-          className="mt-4 border-t border-[var(--border)] pt-4 text-sm"
+          className="ka-sf-divider ka-sf-form" style={{ gap: 8 }}
         >
-          <p className="font-medium">
+          <p className="m-0 font-semibold">
             รับคืนเมื่อ {formatThaiDate(record.createdAt)} ·{" "}
             {reasonLabels[record.reason]}
           </p>
-          <ul className="mt-1 grid gap-1">
+          <ul className="ka-sf-sub m-0 grid list-none gap-1 p-0">
             {record.items.map((item, index) => (
               <li key={index}>
                 {item.productName} × {item.quantity} ·{" "}
@@ -153,7 +158,7 @@ export default function ReturnCard({
             ))}
           </ul>
           {record.note && (
-            <p className="text-[var(--color-text-secondary)]">
+            <p className="ka-sf-sub">
               หมายเหตุ: {record.note}
             </p>
           )}
@@ -166,7 +171,7 @@ export default function ReturnCard({
               onChanged={onChanged}
             />
           ) : (
-            <p className="text-[var(--color-text-secondary)]">
+            <p className="ka-sf-sub">
               ไม่มียอดเงินที่ต้องคืน
             </p>
           )}
@@ -174,9 +179,9 @@ export default function ReturnCard({
       ))}
 
       {canEdit && orderStatus === "paid" && returnable.length > 0 && (
-        <div className="mt-4 grid gap-3 border-t border-[var(--border)] pt-4 sm:max-w-2xl">
-          <h3 className="font-medium">บันทึกรับคืนสินค้า</h3>
-          <p className="text-sm text-[var(--color-text-secondary)]">
+        <div className="ka-sf-divider ka-sf-form">
+          <h3>บันทึกรับคืนสินค้า</h3>
+          <p className="ka-sf-sub">
             สำหรับลูกค้าที่เลือกรับเงินคืน ร้านเป็นผู้จัดการส่งคืนเอง
             การส่งสินค้าใหม่แทนยังไม่รองรับในระบบ
           </p>
@@ -185,35 +190,44 @@ export default function ReturnCard({
             return (
               <fieldset
                 key={line.saleOrderListId}
-                className="grid gap-2 rounded-lg bg-[var(--bg-subtle)] p-3 text-sm"
+                className="ka-sf-panel m-0 border-0"
               >
                 <legend className="sr-only">{line.productName}</legend>
-                <p className="font-medium">{line.productName}</p>
-                <p className="text-[var(--color-text-secondary)]">
+                <p className="font-semibold">{line.productName}</p>
+                <p className="ka-sf-sub">
                   ได้รับแล้ว {line.deliveredQty} · คืนแล้ว {line.returnedQty} ·
                   คืนได้อีก {line.returnableQty} · ชิ้นละ {baht(line.unitPrice)}{" "}
                   บาท
                 </p>
-                <label className="grid gap-1 sm:max-w-40">
-                  <span>จำนวนที่รับคืน</span>
+                <span className="ka-label">จำนวนที่รับคืน</span>
+                <div className="ka-step ka-sf-stepper" role="group" aria-label={`จำนวนที่รับคืนของ ${line.productName}`}>
+                  <button
+                    type="button"
+                    aria-label="ลดจำนวน"
+                    disabled={pending || (entry?.quantity ?? 0) <= 0}
+                    onClick={() => setQuantity(line, (entry?.quantity ?? 0) - 1)}
+                  >
+                    −
+                  </button>
                   <input
                     type="number"
                     min={0}
                     max={line.returnableQty}
+                    aria-label="จำนวนที่รับคืน"
                     value={entry?.quantity ?? 0}
                     disabled={pending}
-                    onChange={(e) =>
-                      setLine(line.saleOrderListId, {
-                        quantity: Math.min(
-                          line.returnableQty,
-                          Math.max(0, Math.floor(Number(e.target.value) || 0)),
-                        ),
-                      })
-                    }
-                    className="ka-input min-h-11"
+                    onChange={(e) => setQuantity(line, Number(e.target.value))}
                   />
-                </label>
-                <label className="flex min-h-11 items-center gap-2">
+                  <button
+                    type="button"
+                    aria-label="เพิ่มจำนวน"
+                    disabled={pending || (entry?.quantity ?? 0) >= line.returnableQty}
+                    onClick={() => setQuantity(line, (entry?.quantity ?? 0) + 1)}
+                  >
+                    +
+                  </button>
+                </div>
+                <label className="ka-sf-check">
                   <input
                     type="checkbox"
                     checked={entry?.restock ?? false}
@@ -229,8 +243,8 @@ export default function ReturnCard({
               </fieldset>
             );
           })}
-          <label className="grid gap-1 text-sm">
-            <span className="font-medium">เหตุผลที่รับคืน</span>
+          <label className="ka-field">
+            <span className="ka-label">เหตุผลที่รับคืน</span>
             <CustomSelect
               value={reason}
               onChange={(value) => setReason(value as StoreReturnReason)}
@@ -241,8 +255,8 @@ export default function ReturnCard({
               disabled={pending}
             />
           </label>
-          <label className="grid gap-1 text-sm">
-            <span className="font-medium">หมายเหตุ (ไม่บังคับ)</span>
+          <label className="ka-field">
+            <span className="ka-label">หมายเหตุ (ไม่บังคับ)</span>
             <textarea
               value={note}
               disabled={pending}
@@ -256,14 +270,14 @@ export default function ReturnCard({
             type="button"
             disabled={!canSubmit}
             onClick={() => setConfirming(true)}
-            className="ka-btn ka-btn--primary min-h-11 justify-self-start"
+            className="ka-btn ka-btn--primary self-start"
           >
             {pending
               ? "กำลังบันทึก..."
               : `บันทึกรับคืนและคืนเงิน ${baht(total)} บาท`}
           </button>
           {error && (
-            <p role="alert" className="text-sm text-[var(--color-error)]">
+            <p role="alert" className="ka-sf-error">
               {error}
             </p>
           )}
@@ -277,6 +291,6 @@ export default function ReturnCard({
         onConfirm={() => void submit()}
         onCancel={() => setConfirming(false)}
       />
-    </div>
+    </section>
   );
 }

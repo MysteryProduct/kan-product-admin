@@ -30,6 +30,16 @@ const refundLabels: Record<StoreRefundStatus, string> = {
   failed: 'คืนเงินไม่สำเร็จ',
 };
 
+// A transfer waits for a person, not the provider: the customer's account
+// first, then staff to send it (owner, TASK-0350 Q3).
+function refundStateLabel(refund: StoreRefund): string {
+  if (refund.reversalPending) return 'คืนเงินสำเร็จ รอกลับรายการในระบบ';
+  if (refund.refundChannel === 'manual_transfer' && refund.status !== 'confirmed') {
+    return refund.accountRequired ? 'รอลูกค้าแจ้งบัญชี' : 'รอโอนคืน';
+  }
+  return refundLabels[refund.status];
+}
+
 /**
  * The employee side of R10: decide a cancellation request, and follow the
  * refund that an approval starts.
@@ -70,23 +80,23 @@ export default function CancellationCard({
   const decidable = canEdit && cancellation.status === 'pending';
 
   return (
-    <div className="ka-card p-4 sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-medium">คำขอยกเลิกจากลูกค้า</h2>
+    <section className="ka-sf-card ka-sf-card__pad">
+      <div className="ka-sf-row ka-sf-row--wrap ka-sf-row--between">
+        <h2>คำขอยกเลิกจากลูกค้า</h2>
         <StatusBadge tone={STORE_CANCELLATION_STATUS_TONE[cancellation.status]}>{statusLabels[cancellation.status]}</StatusBadge>
       </div>
 
-      <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
-        <div className="sm:col-span-2">
-          <dt className="text-[var(--color-text-secondary)]">เหตุผลของลูกค้า</dt>
+      <dl className="ka-sf-dl">
+        <div className="ka-sf-wide">
+          <dt>เหตุผลของลูกค้า</dt>
           <dd>{cancellation.reason}</dd>
         </div>
         <div>
-          <dt className="text-[var(--color-text-secondary)]">ยื่นคำขอเมื่อ</dt>
+          <dt>ยื่นคำขอเมื่อ</dt>
           <dd>{formatThaiDate(cancellation.createdAt)}</dd>
         </div>
         <div>
-          <dt className="text-[var(--color-text-secondary)]">พิจารณาเมื่อ</dt>
+          <dt>พิจารณาเมื่อ</dt>
           <dd>
             {cancellation.decidedAt
               ? formatThaiDate(cancellation.decidedAt)
@@ -94,21 +104,15 @@ export default function CancellationCard({
           </dd>
         </div>
         {cancellation.decisionNote && (
-          <div className="sm:col-span-2">
-            <dt className="text-[var(--color-text-secondary)]">หมายเหตุการพิจารณา</dt>
+          <div className="ka-sf-wide">
+            <dt>หมายเหตุการพิจารณา</dt>
             <dd>{cancellation.decisionNote}</dd>
           </div>
         )}
       </dl>
 
-      {cancellation.status === 'pending' && (
-        <p className="mt-3 text-sm text-[var(--warning)]">
-          ระหว่างรอพิจารณา ระบบพักการบันทึกพัสดุ การจัดส่ง และการส่งมอบไว้ก่อน
-        </p>
-      )}
-
       {decidable && (
-        <div className="mt-4 grid gap-2 sm:max-w-xl">
+        <div className="ka-sf-form">
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
@@ -117,7 +121,7 @@ export default function CancellationCard({
             placeholder="หมายเหตุถึงลูกค้า (ไม่บังคับ)"
             className="ka-textarea"
           />
-          <div className="flex flex-wrap gap-2">
+          <div className="ka-sf-row ka-sf-row--wrap">
             <button
               type="button"
               disabled={pending}
@@ -129,7 +133,7 @@ export default function CancellationCard({
                   ),
                 )
               }
-              className="ka-btn ka-btn--danger min-h-11"
+              className="ka-btn ka-btn--danger"
             >
               อนุมัติยกเลิกและคืนเงินเต็มจำนวน
             </button>
@@ -144,7 +148,7 @@ export default function CancellationCard({
                   ),
                 )
               }
-              className="ka-btn min-h-11"
+              className="ka-btn"
             >
               ไม่อนุมัติและปลดการพักส่ง
             </button>
@@ -181,11 +185,11 @@ export default function CancellationCard({
       ))}
 
       {error && (
-        <p role="alert" className="mt-3 text-[var(--color-error)]">
+        <p role="alert" className="ka-sf-error">
           {error}
         </p>
       )}
-    </div>
+    </section>
   );
 }
 
@@ -242,12 +246,10 @@ export function RefundPanel({
   const attemptInFlight = refund.status === 'processing' && !retryable;
 
   return (
-    <div className="mt-4 rounded-lg bg-[var(--bg-subtle)] p-3 text-sm">
-      <p className="font-medium">
+    <div className="ka-sf-panel">
+      <p className="font-semibold">
         {title} ·{' '}
-        {refund.reversalPending
-          ? 'คืนเงินสำเร็จ รอกลับรายการในระบบ'
-          : refundLabels[refund.status]}
+        {refundStateLabel(refund)}
       </p>
       <p>
         ยอดที่ขอคืน {refund.amount.toLocaleString('th-TH')} บาท
@@ -255,23 +257,23 @@ export function RefundPanel({
           ` · คืนสำเร็จ ${refund.confirmedAmount.toLocaleString('th-TH')} บาท`}
       </p>
       {refund.gatewayRefundId && (
-        <p className="text-[var(--color-text-secondary)]">
+        <p className="ka-sf-cap">
           อ้างอิงผู้ให้บริการ {refund.gatewayRefundId}
         </p>
       )}
       {refund.failureReason && (
-        <p className="text-[var(--color-error)]">
+        <p className="ka-sf-error">
           {refund.reversalPending
             ? `กลับรายการไม่สำเร็จ: ${refund.failureReason}`
             : `สาเหตุล่าสุด: ${refund.failureReason}`}
         </p>
       )}
       {refund.reversalPending && (
-        <p className="text-[var(--warning)]">
+        <p className="ka-sf-warn">
           เงินคืนให้ลูกค้าแล้ว เหลือคืนสต็อกและปิดคำสั่งซื้อในระบบ
         </p>
       )}
-      <p className="text-[var(--color-text-secondary)]">
+      <p className="ka-sf-cap">
         พยายามแล้ว {refund.attempts} ครั้ง
       </p>
       {/* The account stays on screen after the transfer is recorded: it is
@@ -279,31 +281,31 @@ export function RefundPanel({
           refund afterwards needs to see. Only the prompt and the form
           belong to the moment before it. */}
       {refund.refundChannel === 'manual_transfer' && (
-        <div className="mt-3 grid gap-2 sm:max-w-xl">
+        <div className="ka-sf-form" style={{ gap: 8 }}>
           {refund.manualRefundRequired && (
-            <p className="text-[var(--warning)]">
+            <p className="ka-sf-warn">
               ยอดนี้ชำระด้วยพร้อมเพย์ ผู้ให้บริการคืนเงินให้ไม่ได้
               ต้องโอนคืนเข้าบัญชีลูกค้าแล้วบันทึกหลักฐานการโอนที่นี่
             </p>
           )}
           {refund.accountRequired && (
-            <p className="text-[var(--warning)]">
+            <p className="ka-sf-warn">
               ลูกค้ายังไม่ได้แจ้งบัญชีรับเงินคืน ให้ลูกค้าแจ้งผ่านหน้าติดตามคำสั่งซื้อ
               แล้วจึงโอนและบันทึกหลักฐาน
             </p>
           )}
           {transferAccount && (
-            <dl className="grid gap-1 rounded-lg bg-[var(--bg-surface)] p-3">
-              <div className="flex gap-2">
-                <dt className="text-[var(--color-text-secondary)]">ชื่อบัญชี</dt>
+            <dl className="ka-sf-dl rounded-lg bg-[var(--bg-surface)] p-3">
+              <div>
+                <dt>ชื่อบัญชี</dt>
                 <dd>{transferAccount.name ?? '-'}</dd>
               </div>
-              <div className="flex gap-2">
-                <dt className="text-[var(--color-text-secondary)]">ธนาคาร</dt>
+              <div>
+                <dt>ธนาคาร</dt>
                 <dd>{transferAccount.bank ?? '-'}</dd>
               </div>
-              <div className="flex gap-2">
-                <dt className="text-[var(--color-text-secondary)]">เลขที่บัญชี</dt>
+              <div>
+                <dt>เลขที่บัญชี</dt>
                 <dd className="font-medium">{transferAccount.number ?? '-'}</dd>
               </div>
             </dl>
@@ -317,7 +319,7 @@ export function RefundPanel({
                 }
                 maxLength={120}
                 placeholder="เลขอ้างอิงการโอน"
-                className="ka-input min-h-11"
+                className="ka-input"
               />
               <p>
                 ยอดที่ต้องโอนคืน{' '}
@@ -332,7 +334,7 @@ export function RefundPanel({
                 onChange={(e) =>
                   setTransfer({ ...transfer, transferred_at: e.target.value })
                 }
-                className="ka-input min-h-11"
+                className="ka-input"
               />
               <button
                 type="button"
@@ -358,7 +360,7 @@ export function RefundPanel({
                     ),
                   )
                 }
-                className="ka-btn ka-btn--primary min-h-11"
+                className="ka-btn ka-btn--primary"
               >
                 บันทึกว่าโอนคืนแล้ว
               </button>
@@ -368,7 +370,7 @@ export function RefundPanel({
       )}
 
       {refund.manualReference && (
-        <p className="text-[var(--color-text-secondary)]">
+        <p className="ka-sf-cap">
           โอนคืนแล้ว อ้างอิง {refund.manualReference}
           {refund.manualTransferredAt
             ? ` · ${formatThaiDate(refund.manualTransferredAt)}`
@@ -377,7 +379,7 @@ export function RefundPanel({
       )}
 
       {attemptInFlight && (
-        <p className="text-[var(--color-text-secondary)]">
+        <p className="ka-sf-cap">
           กำลังดำเนินการอยู่ ลองใหม่ได้อีกครั้งหากยังไม่มีผลภายในสองนาที
         </p>
       )}
@@ -388,7 +390,7 @@ export function RefundPanel({
           onClick={() =>
             void run(() => storeFulfillmentModel.retryRefund(refund.refundId))
           }
-          className="mt-2 ka-btn ka-btn--primary min-h-11"
+          className="ka-btn ka-btn--primary self-start"
         >
           {refund.reversalPending
             ? 'ทำการกลับรายการต่อ'
@@ -396,7 +398,7 @@ export function RefundPanel({
         </button>
       )}
       {error && (
-        <p role="alert" className="mt-2 text-[var(--color-error)]">
+        <p role="alert" className="ka-sf-error">
           {error}
         </p>
       )}

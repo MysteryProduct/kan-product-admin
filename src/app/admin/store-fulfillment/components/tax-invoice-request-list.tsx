@@ -1,26 +1,50 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { DataTable, DataTableColumn } from '@/components/DataTable';
 import Pagination from '@/components/Pagination';
+import LoadErrorBanner from '@/components/LoadErrorBanner';
+import StatusBadge from '@/components/StatusBadge';
 import StoreFulfillmentModel from '@/models/store-fulfillment';
-import { StoreTaxInvoiceRequestList } from '@/types/store-fulfillment';
+import {
+  StoreOrderListStatus,
+  StoreTaxInvoiceRequestList,
+  StoreTaxInvoiceRequestListItem,
+} from '@/types/store-fulfillment';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { formatThaiDate } from '@/lib/date-format';
+import { STORE_ORDER_STATUS_TONE } from '@/lib/status-tones';
+import { STORE_ORDER_STATUS_LABELS } from '@/lib/store-order-list';
 import { branchLabel } from './tax-invoice-card';
 
 const storeFulfillmentModel = new StoreFulfillmentModel();
 const PAGE_SIZE = 10;
 
+const orderStatus = (row: StoreTaxInvoiceRequestListItem) => {
+  const status = row.orderStatus as StoreOrderListStatus;
+  return (
+    <StatusBadge tone={STORE_ORDER_STATUS_TONE[status]}>
+      {STORE_ORDER_STATUS_LABELS[status] ?? row.orderStatus}
+    </StatusBadge>
+  );
+};
+
 /**
  * TASK-0038: every tax invoice request, newest first. A request made after
- * payment is not otherwise easy to find; choosing a row opens that order
- * above.
+ * payment is not otherwise easy to find; choosing a row opens that order.
  */
 export default function TaxInvoiceRequestList({
   onOpen,
+  refreshKey = 0,
+  onTotal,
 }: {
   onOpen: (storeOrderId: string) => void;
+  /** Changes when an order was changed on the page, so the status beside each request follows. */
+  refreshKey?: number;
+  /** Told how many requests there are, for the number on the tab. */
+  onTotal?: (total: number) => void;
 }) {
   const [page, setPage] = useState(1);
+  const [reloads, setReloads] = useState(0);
   const [result, setResult] = useState<StoreTaxInvoiceRequestList | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -33,6 +57,7 @@ export default function TaxInvoiceRequestList({
         if (!active) return;
         setResult(next);
         setError('');
+        onTotal?.(next.meta.total);
       })
       .catch((err) => {
         if (active) setError(getApiErrorMessage(err));
@@ -43,7 +68,9 @@ export default function TaxInvoiceRequestList({
     return () => {
       active = false;
     };
-  }, [page]);
+    // `onTotal` only reports; a new function from the parent is no reason to read the list again.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, reloads, refreshKey]);
 
   // Loading starts with the page change itself, not inside the effect.
   const changePage = (next: number) => {
@@ -52,71 +79,88 @@ export default function TaxInvoiceRequestList({
     setPage(next);
   };
 
-  return (
-    <section
-      aria-labelledby="tax-invoice-requests-heading"
-      className="mt-4 ka-card p-4 sm:p-6"
+  const openButton = (row: StoreTaxInvoiceRequestListItem) => (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.stopPropagation();
+        onOpen(row.storeOrderId);
+      }}
+      className="ka-sf-open"
     >
-      <h2 id="tax-invoice-requests-heading" className="font-medium">
-        คำขอใบกำกับภาษี
-      </h2>
-      {error && (
-        <p role="alert" className="mt-3 text-sm text-[var(--color-error)]">
-          {error}
-        </p>
-      )}
-      {!error && loading && !result && (
-        <p className="mt-3 text-sm text-[var(--color-text-secondary)]">กำลังโหลด...</p>
-      )}
-      {!error && result && result.data.length === 0 && (
-        <p className="mt-3 text-sm text-[var(--color-text-secondary)]">
-          ยังไม่มีคำขอใบกำกับภาษี
-        </p>
-      )}
+      เปิดคำสั่งซื้อ
+    </button>
+  );
+
+  const columns: DataTableColumn<StoreTaxInvoiceRequestListItem>[] = [
+    {
+      key: 'requestedAt',
+      label: 'วันที่ขอ',
+      render: (value) => <span className="whitespace-nowrap">{formatThaiDate(value as string)}</span>,
+    },
+    {
+      key: 'buyerName',
+      label: 'ชื่อบุคคลหรือบริษัท',
+      render: (value) => <span className="break-words">{value as string}</span>,
+    },
+    {
+      key: 'branchType',
+      label: 'สาขา',
+      render: (_, row) => <span className="whitespace-nowrap">{branchLabel(row)}</span>,
+    },
+    { key: 'orderStatus', label: 'สถานะคำสั่งซื้อ', render: (_, row) => orderStatus(row) },
+    {
+      key: 'storeOrderId',
+      label: 'เปิดคำสั่งซื้อ',
+      card: 'hide',
+      render: (_, row) => openButton(row),
+    },
+  ];
+
+  return (
+    <div className="ka-sf-flat">
       {/* A page that failed to load shows only its error, never the rows of
           the page before it; the pagination stays so staff can move on. */}
-      {!error && result && result.data.length > 0 && (
-          <div className="mt-3 overflow-x-auto">
-            <table className="w-full min-w-[40rem] text-sm">
-              <thead>
-                <tr className="border-b border-[var(--color-border)] text-left text-[var(--color-text-secondary)]">
-                  <th className="py-2 pr-3 font-normal">วันที่ขอ</th>
-                  <th className="py-2 pr-3 font-normal">ชื่อบุคคลหรือบริษัท</th>
-                  <th className="py-2 pr-3 font-normal">สาขา</th>
-                  <th className="py-2 font-normal">
-                    <span className="sr-only">เปิดคำสั่งซื้อ</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.data.map((row) => (
-                  <tr
-                    key={row.storeOrderId}
-                    className="border-b border-[var(--border)]"
-                  >
-                    <td className="py-2 pr-3 whitespace-nowrap">
-                      {formatThaiDate(row.requestedAt)}
-                    </td>
-                    <td className="py-2 pr-3 break-words">{row.buyerName}</td>
-                    <td className="py-2 pr-3 whitespace-nowrap">{branchLabel(row)}</td>
-                    <td className="py-2 text-right">
-                      <button
-                        type="button"
-                        onClick={() => onOpen(row.storeOrderId)}
-                        className="ka-btn ka-btn--ghost min-h-11 text-[var(--brand-ink)]"
-                      >
-                        เปิดคำสั่งซื้อ
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      <LoadErrorBanner
+        message={error ? `โหลดคำขอใบกำกับภาษีไม่สำเร็จ: ${error}` : null}
+        onRetry={() => {
+          setLoading(true);
+          setReloads((count) => count + 1);
+        }}
+        className="m-4"
+      />
+      {error ? (
+        <div className="ka-sf-pager">
+          <Pagination meta={result?.meta ?? null} currentPage={page} onPageChange={changePage} />
+        </div>
+      ) : (
+        <DataTable
+          data={result?.data ?? []}
+          columns={columns}
+          keyField="storeOrderId"
+          pageSize={PAGE_SIZE}
+          loading={loading && !result}
+          disabled={loading}
+          onRowClick={(row) => onOpen(row.storeOrderId)}
+          paginationMeta={result?.meta ?? null}
+          currentPage={page}
+          onPageChange={changePage}
+          cardTitleKey="buyerName"
+          emptyHint="ยังไม่มีคำขอใบกำกับภาษี"
+          renderCard={(row) => (
+            <div className="ka-sf-rowcard">
+              <div className="ka-sf-row ka-sf-row--between">
+                <strong className="min-w-0 break-words font-semibold">{row.buyerName}</strong>
+                {orderStatus(row)}
+              </div>
+              <p className="ka-sf-cap">
+                {branchLabel(row)} · {formatThaiDate(row.requestedAt)}
+              </p>
+              {openButton(row)}
+            </div>
+          )}
+        />
       )}
-      {result && result.meta.total > 0 && (
-        <Pagination meta={result.meta} currentPage={page} onPageChange={changePage} />
-      )}
-    </section>
+    </div>
   );
 }

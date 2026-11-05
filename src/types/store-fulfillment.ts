@@ -42,6 +42,7 @@ export interface StoreParcel {
   returnReason?: string | null;
   returnContactOutcome?: 'reached' | 'unreachable' | 'other' | null;
   returnContactNote?: string | null;
+  voidReason?: string | null;
   items: StoreParcelItem[];
 }
 
@@ -254,11 +255,20 @@ export interface StoreOrderList {
   meta: { total: number; page: number; limit: number; last_page: number };
 }
 
+export type StoreOrderQueue =
+  | 'to_ship'
+  | 'to_pickup'
+  | 'to_review'
+  | 'cancellations_to_decide'
+  | 'refunds_unfinished';
+
 // What staff chose; an empty string is "not chosen" and is never sent.
 export interface StoreOrderListFilters {
   search: string;
   status: StoreOrderListStatus | '';
   fulfillmentMethod: 'delivery' | 'pickup' | '';
+  // TASK-0351: one work queue, or none.
+  queue: StoreOrderQueue | '';
   // Calendar days as `YYYY-MM-DD`, both included.
   dateFrom: string;
   dateTo: string;
@@ -312,6 +322,13 @@ export interface CreateStoreReturnDto {
 
 export interface StoreOrderWithParcels {
   storeOrderId: string;
+  createdAt: string;
+  // The order total, shipping at checkout included.
+  total: number;
+  // TASK-0352: who it is for, as the order list names them. Staff only.
+  customerName: string | null;
+  customerPhone: string | null;
+  customerType: 'member' | 'guest';
   // The sale order's code, what the order is called on screen (ADR-0001).
   saleOrderCode: string;
   status: string;

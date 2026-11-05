@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import LoadErrorBanner from "@/components/LoadErrorBanner";
 import Modal from "@/components/Modal";
+import { refreshPendingWork } from "@/hooks/usePendingWork";
 import { getApiErrorMessage } from "@/lib/api-error";
 import StoreFulfillmentModel from "@/models/store-fulfillment";
 import { StoreOrderWithParcels } from "@/types/store-fulfillment";
@@ -63,9 +64,11 @@ export default function StoreOrderModal({
       )}
       {order && (
         <StoreOrderFulfillment
+          embedded
           order={order}
           onChanged={() => {
             onChanged();
+            refreshPendingWork();
             setReloads((count) => count + 1);
           }}
         />

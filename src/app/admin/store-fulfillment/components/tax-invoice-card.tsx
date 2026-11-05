@@ -32,35 +32,35 @@ export default function TaxInvoiceCard({
   request: StoreTaxInvoiceRequest;
 }) {
   return (
-    <div className="ka-card p-4 sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-medium">คำขอใบกำกับภาษีเต็มรูป</h2>
+    <section className="ka-sf-card ka-sf-card__pad">
+      <div className="ka-sf-row ka-sf-row--wrap ka-sf-row--between">
+        <h3>คำขอใบกำกับภาษีเต็มรูป</h3>
         <StatusBadge tone="info">{stageLabels[request.requestedStage]}</StatusBadge>
       </div>
-      <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-        <div className="sm:col-span-2">
-          <dt className="text-[var(--color-text-secondary)]">ชื่อบุคคลหรือบริษัท</dt>
-          <dd className="break-words font-medium">{request.buyerName}</dd>
+      <dl className="ka-sf-dl ka-sf-dl--one">
+        <div>
+          <dt>ชื่อบุคคลหรือบริษัท</dt>
+          <dd>{request.buyerName}</dd>
         </div>
-        <div className="sm:col-span-2">
-          <dt className="text-[var(--color-text-secondary)]">ที่อยู่</dt>
-          <dd className="whitespace-pre-line break-words">
+        <div>
+          <dt>ที่อยู่</dt>
+          <dd className="whitespace-pre-line">
             {request.buyerAddress ?? '-'}
           </dd>
         </div>
         <div>
-          <dt className="text-[var(--color-text-secondary)]">เลขประจำตัวผู้เสียภาษี</dt>
-          <dd className="font-mono">{formatTaxId(request.buyerTaxId)}</dd>
+          <dt>เลขประจำตัวผู้เสียภาษี</dt>
+          <dd className="ka-sf-code-text">{formatTaxId(request.buyerTaxId)}</dd>
         </div>
         <div>
-          <dt className="text-[var(--color-text-secondary)]">สำนักงานใหญ่/สาขา</dt>
+          <dt>สำนักงานใหญ่/สาขา</dt>
           <dd>{branchLabel(request)}</dd>
         </div>
         <div>
-          <dt className="text-[var(--color-text-secondary)]">วันที่ขอ</dt>
+          <dt>วันที่ขอ</dt>
           <dd>{formatThaiDate(request.requestedAt)}</dd>
         </div>
       </dl>
-    </div>
+    </section>
   );
 }

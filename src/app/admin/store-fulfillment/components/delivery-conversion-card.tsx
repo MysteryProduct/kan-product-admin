@@ -32,7 +32,7 @@ const chargeReasonLabels = {
   return: 'ส่งใหม่หลังพัสดุตีกลับ',
 };
 
-const inputClass = 'ka-input min-h-11';
+const inputClass = 'ka-input';
 
 const emptyForm: Required<ConvertToDeliveryDto> = {
   recipient_name: '',
@@ -148,24 +148,24 @@ export default function DeliveryConversionCard({
   }
 
   return (
-    <div className="ka-card p-4 sm:p-6">
+    <section className="ka-sf-card ka-sf-card__pad">
       {/* A delivery order from checkout reaches this card only through a
           returned parcel's charge, so it is titled for what it shows. */}
-      <h2 className="font-medium">
+      <h3>
         {order.conversion || convertible ? 'เปลี่ยนเป็นการจัดส่ง' : 'ค่าจัดส่งเพิ่มเติม'}
-      </h2>
+      </h3>
 
       {order.conversion ? (
-        <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+        <p className="ka-sf-sub">
           เปลี่ยนจากรับที่ร้านเมื่อ {formatThaiDate(order.conversion.convertedAt)}
           {order.conversion.note ? ` · ${order.conversion.note}` : ''}
         </p>
       ) : !convertible ? (
-        <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+        <p className="ka-sf-sub">
           พัสดุตีกลับต้องเรียกเก็บค่าจัดส่งก่อนส่งใหม่ทุกครั้ง
         </p>
       ) : (
-        <p className="mt-2 text-sm text-[var(--color-text-secondary)]">
+        <p className="ka-sf-sub">
           ลูกค้าพลาดนัดรับครั้งที่สอง ติดต่อลูกค้าแล้วกรอกชื่อ เบอร์โทร และที่อยู่
           เพื่อส่งสินค้าให้แทน ไม่มีการริบเงิน ยอดสินค้าต่ำกว่า 300 บาท
           ลูกค้าต้องชำระค่าจัดส่งก่อนจึงจะสร้างพัสดุได้
@@ -173,7 +173,7 @@ export default function DeliveryConversionCard({
       )}
 
       {result && (
-        <p role="status" className="mt-3 text-sm text-[var(--success)]">
+        <p role="status" className="ka-sf-sub text-[var(--success)]">
           {result}
         </p>
       )}
@@ -182,7 +182,7 @@ export default function DeliveryConversionCard({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="mt-4 ka-btn ka-btn--primary min-h-11"
+          className="ka-btn ka-btn--primary"
         >
           เปลี่ยนเป็นจัดส่ง
         </button>
@@ -194,14 +194,14 @@ export default function DeliveryConversionCard({
             e.preventDefault();
             void submit();
           }}
-          className="mt-4 grid gap-3 border-t border-[var(--color-border)] pt-4 sm:grid-cols-2"
+          className="ka-sf-form2 ka-sf-divider"
         >
           {addressFields.map((field) => (
             <label
               key={field.key}
-              className={`grid gap-1 text-sm ${field.wide ? 'sm:col-span-2' : ''}`}
+              className={`ka-field ${field.wide ? 'ka-sf-wide' : ''}`}
             >
-              <span>{field.label}</span>
+              <span className="ka-label">{field.label}</span>
               <input
                 required={!field.optional}
                 value={form[field.key]}
@@ -212,18 +212,18 @@ export default function DeliveryConversionCard({
               />
             </label>
           ))}
-          <div className="flex flex-wrap gap-2 sm:col-span-2">
+          <div className="ka-sf-row ka-sf-row--wrap ka-sf-wide">
             <button
               type="submit"
               disabled={pending || !requiredFilled}
-              className="ka-btn ka-btn--primary min-h-11"
+              className="ka-btn ka-btn--primary"
             >
               {pending ? 'กำลังบันทึก...' : 'ยืนยันเปลี่ยนเป็นจัดส่ง'}
             </button>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="ka-btn min-h-11"
+              className="ka-btn"
             >
               ยกเลิก
             </button>
@@ -232,19 +232,19 @@ export default function DeliveryConversionCard({
       )}
 
       {error && (
-        <p role="alert" className="mt-3 text-sm text-[var(--color-error)]">
+        <p role="alert" className="ka-sf-error">
           {error}
         </p>
       )}
 
       {order.shippingCharges.length > 0 && (
-        <div className="mt-4 border-t border-[var(--color-border)] pt-4">
-          <h3 className="text-sm font-medium">ค่าจัดส่งที่เรียกเก็บ</h3>
-          <ul className="mt-2 grid gap-2 text-sm">
+        <div className="ka-sf-divider">
+          <h3>ค่าจัดส่งที่เรียกเก็บ</h3>
+          <ul className="m-0 mt-2 grid list-none gap-2 p-0">
             {order.shippingCharges.map((charge) => (
               <li
                 key={charge.shippingChargeId}
-                className="flex flex-wrap items-center justify-between gap-2"
+                className="ka-sf-row ka-sf-row--wrap ka-sf-row--between ka-sf-sub"
               >
                 <span>
                   {chargeReasonLabels[charge.reason]} · {charge.amount} บาท ·
@@ -263,16 +263,16 @@ export default function DeliveryConversionCard({
       )}
 
       {payments.length > 0 && (
-        <div className="mt-4 border-t border-[var(--color-border)] pt-4">
-          <h3 className="text-sm font-medium">การชำระค่าจัดส่ง</h3>
-          <ul className="mt-2 grid gap-3 text-sm">
+        <div className="ka-sf-divider">
+          <h3>การชำระค่าจัดส่ง</h3>
+          <ul className="m-0 mt-2 grid list-none gap-3 p-0">
             {payments.map((payment) => (
               <li key={payment.gatewayChargeId} className="grid gap-2">
-                <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="ka-sf-row ka-sf-row--wrap ka-sf-row--between ka-sf-sub">
                   <span>
                     {payment.amount} บาท · {methodLabels[payment.paymentMethod]}
                     {payment.paidAt ? ` · ${formatThaiDate(payment.paidAt)}` : ''}
-                    <span className="text-[var(--color-text-secondary)]">
+                    <span>
                       {' '}
                       · {payment.gatewayChargeId}
                     </span>
@@ -282,8 +282,8 @@ export default function DeliveryConversionCard({
                   )}
                 </div>
                 {payment.excess && !payment.refund && (
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-[var(--warning)]">
+                  <div className="ka-sf-form" style={{ gap: 8 }}>
+                    <p className="ka-sf-warn">
                       ลูกค้าชำระค่าจัดส่งนี้เกินจากที่ต้องชำระ
                       {payment.paymentMethod === 'promptpay'
                         ? ' ต้องโอนคืนและบันทึกหลักฐานการโอน'
@@ -294,7 +294,7 @@ export default function DeliveryConversionCard({
                         type="button"
                         disabled={pending}
                         onClick={() => void refundExcess(payment.gatewayChargeId)}
-                        className="ka-btn ka-btn--danger min-h-11"
+                        className="ka-btn ka-btn--danger"
                       >
                         คืนเงินส่วนเกิน
                       </button>
@@ -315,6 +315,6 @@ export default function DeliveryConversionCard({
           </ul>
         </div>
       )}
-    </div>
+    </section>
   );
 }

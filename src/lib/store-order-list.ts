@@ -1,6 +1,7 @@
 import type {
   StoreOrderListFilters,
   StoreOrderListStatus,
+  StorePickupStatus,
 } from '@/types/store-fulfillment';
 
 // TASK-0088. One Thai word for each status the API can send, in the order the
@@ -11,6 +12,15 @@ export const STORE_ORDER_STATUS_LABELS: Record<StoreOrderListStatus, string> = {
   expired: 'หมดเวลา',
   awaiting_review: 'กำลังตรวจสอบ',
   cancelled: 'ยกเลิกแล้ว',
+};
+
+export const STORE_PICKUP_STATUS_LABELS: Record<StorePickupStatus, string> = {
+  awaiting_ready: 'ยังไม่ได้แจ้งพร้อมรับ',
+  ready: 'พร้อมรับ',
+  rescheduled: 'นัดรับครั้งที่สอง',
+  overdue: 'เกินกำหนดรับ',
+  pending_review: 'รอพิจารณากรณีไม่รับสินค้า',
+  picked_up: 'รับสินค้าแล้ว',
 };
 
 export const STORE_ORDER_METHOD_LABELS = {
@@ -42,6 +52,7 @@ export function storeOrderListParams(
   if (filters.fulfillmentMethod) {
     params.fulfillment_method = filters.fulfillmentMethod;
   }
+  if (filters.queue) params.queue = filters.queue;
   if (filters.dateFrom) params.date_from = filters.dateFrom;
   if (filters.dateTo) params.date_to = filters.dateTo;
   return params;

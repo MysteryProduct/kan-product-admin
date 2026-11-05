@@ -53,7 +53,7 @@ test('both ways of receiving, and both kinds of buyer, are said in Thai', () => 
   assert.ok(STORE_CUSTOMER_TYPE_LABELS.guest);
 });
 
-const none = { search: '', status: '', fulfillmentMethod: '', dateFrom: '', dateTo: '' };
+const none = { search: '', status: '', fulfillmentMethod: '', queue: '', dateFrom: '', dateTo: '' };
 
 test('with no filter only the page is asked for', () => {
   assert.deepEqual(plain(storeOrderListParams(none, 1, 20)), {
@@ -98,4 +98,75 @@ test('each filter reaches the API under the name it expects', () => {
 
 test('the search box stops where the API refuses', () => {
   assert.equal(STORE_ORDER_SEARCH_MAX_LENGTH, 100);
+});
+
+test('a work queue is sent only when one is chosen (TASK-0351)', () => {
+  assert.equal('queue' in plain(storeOrderListParams(none, 1, 20)), false);
+  assert.equal(plain(storeOrderListParams({ ...none, queue: 'to_ship' }, 1, 20)).queue, 'to_ship');
+});
+
+const { storeOrderSteps } = load('src/lib/store-order-steps.ts');
+const line = (purchasedQty, shippedQty) => ({
+  purchasedQty,
+  shippedQty,
+  remainingUnshipped: purchasedQty - shippedQty,
+});
+const parcel = (status, quantity) => ({ status, items: [{ quantity }] });
+const order = (set = {}) => ({
+  status: 'paid',
+  fulfillmentMethod: 'delivery',
+  pickup: null,
+  cancellation: null,
+  items: [line(3, 0)],
+  parcels: [],
+  ...set,
+});
+const states = (value) => plain(storeOrderSteps(value)).map((step) => step.state);
+
+test('an order not paid yet goes no further than payment', () => {
+  assert.deepEqual(states(order({ status: 'awaiting_payment' })), ['now', 'idle', 'idle']);
+  assert.deepEqual(states(order({ status: 'expired' })), ['warn', 'idle', 'idle']);
+  assert.deepEqual(states(order({ status: 'cancelled', fulfillmentMethod: 'pickup' })), ['warn', 'idle', 'idle']);
+});
+
+test('a delivery is complete only when every parcel left the shop', () => {
+  assert.deepEqual(states(order()), ['done', 'now', 'idle']);
+  const partly = order({ items: [line(3, 2)], parcels: [parcel('shipped', 1), parcel('preparing', 1)] });
+  assert.deepEqual(states(partly), ['done', 'done', 'now']);
+  assert.equal(plain(storeOrderSteps(partly))[2].sub, 'จัดส่งแล้ว 1 จาก 3 ชิ้น');
+  const recorded = order({ items: [line(2, 2)], parcels: [parcel('preparing', 2)] });
+  assert.deepEqual(states(recorded), ['done', 'done', 'now']);
+  const sent = order({ items: [line(2, 2)], parcels: [parcel('shipped', 2), parcel('voided', 2)] });
+  assert.deepEqual(states(sent), ['done', 'done', 'done']);
+  assert.equal(plain(storeOrderSteps(sent))[1].sub, '1 พัสดุ');
+});
+
+test('a pickup follows its own status', () => {
+  const pickup = (status, set = {}) =>
+    order({ fulfillmentMethod: 'pickup', pickup: { status, readyAt: null, pickedUpAt: null, ...set } });
+  assert.deepEqual(states(pickup('awaiting_ready')), ['done', 'now', 'idle']);
+  assert.deepEqual(states(pickup('ready')), ['done', 'done', 'now']);
+  assert.deepEqual(states(pickup('overdue')), ['done', 'done', 'warn']);
+  assert.deepEqual(states(pickup('picked_up')), ['done', 'done', 'done']);
+});
+
+test('a cancellation request takes the order over until it is decided', () => {
+  const asked = order({ cancellation: { status: 'pending', createdAt: '2026-11-01T00:00:00Z' } });
+  assert.deepEqual(states(asked), ['done', 'warn', 'idle']);
+  const approved = order({ cancellation: { status: 'approved', createdAt: '2026-11-01T00:00:00Z' } });
+  assert.deepEqual(states(approved), ['done', 'done', 'now']);
+  const rejected = order({ cancellation: { status: 'rejected', createdAt: '2026-11-01T00:00:00Z' } });
+  assert.deepEqual(states(rejected), ['done', 'now', 'idle']);
+});
+
+const { retryAfterMs } = load('src/lib/retry-after.ts');
+
+test('only a 503 asks again, after the time the API names, within limits', () => {
+  const shed = (value) => ({ response: { status: 503, headers: { 'retry-after': value } } });
+  assert.equal(retryAfterMs(shed('3')), 3000);
+  assert.equal(retryAfterMs(shed('600')), 30000);
+  assert.equal(retryAfterMs(shed('nonsense')), 5000);
+  assert.equal(retryAfterMs({ response: { status: 503, headers: {} } }), 5000);
+  assert.equal(retryAfterMs({ response: { status: 500, headers: {} } }), null);
+  assert.equal(retryAfterMs(new Error('offline')), null);
 });

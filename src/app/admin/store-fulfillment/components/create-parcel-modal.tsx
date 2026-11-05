@@ -10,7 +10,7 @@ import { getApiErrorMessage } from '@/lib/api-error';
 
 const storeFulfillmentModel = new StoreFulfillmentModel();
 
-const inputClass = 'ka-input min-h-11';
+const inputClass = 'ka-input';
 
 interface CreateParcelModalProps {
   isOpen: boolean;
@@ -47,6 +47,14 @@ export default function CreateParcelModal({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
 
+  // Whole pieces, from none up to what is still unshipped.
+  function setQuantity(line: StoreOrderLine, value: number) {
+    setQuantities((prev) => ({
+      ...prev,
+      [line.saleOrderListId]: Math.max(0, Math.min(line.remainingUnshipped, Math.floor(value) || 0)),
+    }));
+  }
+
   async function handleSubmit() {
     const items = Object.entries(quantities)
       .filter(([, quantity]) => quantity > 0)
@@ -82,17 +90,25 @@ export default function CreateParcelModal({
   }
 
   return (
-    <Modal guardUnsaved
+    <Modal
+      guardUnsaved={!pending}
+      className="ka-sf-modal ka-sf-modal--wide"
+      closeOnBackdrop={!pending}
+      closeOnEscape={!pending}
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => {
+        // Not while saving: the parcel may already exist, and a failure needs this dialog to appear in.
+        if (!pending) onClose();
+      }}
       title="บันทึกพัสดุใหม่"
-      size="lg"
+      size="wide"
       footer={
         <>
           <button
             type="button"
+            disabled={pending}
             onClick={onClose}
-            className="ka-btn min-h-11"
+            className="ka-btn"
           >
             ยกเลิก
           </button>
@@ -100,16 +116,17 @@ export default function CreateParcelModal({
             type="button"
             onClick={() => void handleSubmit()}
             disabled={pending}
-            className="ka-btn ka-btn--primary min-h-11"
+            className="ka-btn ka-btn--primary"
           >
             {pending ? 'กำลังบันทึก...' : 'บันทึกพัสดุ'}
           </button>
         </>
       }
     >
-      <div className="grid gap-4 text-[var(--color-text-primary)]">
-        <label className="grid gap-1 text-sm">
-          <span className="font-medium">ขนส่ง</span>
+      <div className="ka-sf-form">
+        <div className="ka-sf-form2">
+        <label className="ka-field">
+          <span className="ka-label">ขนส่ง</span>
           <input
             value={carrierName}
             onChange={(e) => setCarrierName(e.target.value)}
@@ -117,8 +134,8 @@ export default function CreateParcelModal({
             className={inputClass}
           />
         </label>
-        <label className="grid gap-1 text-sm">
-          <span className="font-medium">เลขพัสดุ</span>
+        <label className="ka-field">
+          <span className="ka-label">เลขพัสดุ</span>
           <input
             value={trackingNumber}
             onChange={(e) => setTrackingNumber(e.target.value)}
@@ -126,46 +143,70 @@ export default function CreateParcelModal({
             className={inputClass}
           />
         </label>
+        </div>
 
-        <div className="grid gap-2">
-          <span className="text-sm font-medium">รายการสินค้า (คงเหลือยังไม่ส่ง)</span>
+        <div>
+          <span className="ka-label">รายการสินค้า (คงเหลือยังไม่ส่ง)</span>
           {shippable.length === 0 && (
-            <p className="text-sm text-[var(--color-text-secondary)]">
+            <p className="ka-sf-sub">
               ไม่มีรายการที่ยังไม่ได้ส่ง
             </p>
           )}
           {shippable.map((line) => (
             <div
               key={line.saleOrderListId}
-              className="flex items-center justify-between gap-3 rounded-lg border border-[var(--color-border)] px-3 py-2"
+              className="ka-sf-qline"
             >
-              <div className="text-sm">
+              <div className="min-w-0">
                 <p>{line.productName}</p>
-                <p className="text-[var(--color-text-secondary)]">
+                <p className="ka-sf-cap">
                   คงเหลือ {line.remainingUnshipped} จาก {line.purchasedQty}
                 </p>
               </div>
-              <input
-                type="number"
-                min={0}
-                max={line.remainingUnshipped}
-                value={quantities[line.saleOrderListId] ?? 0}
-                onChange={(e) =>
-                  setQuantities((prev) => ({
-                    ...prev,
-                    [line.saleOrderListId]: Math.max(
-                      0,
-                      Math.min(line.remainingUnshipped, Number(e.target.value)),
-                    ),
-                  }))
-                }
-                className="ka-input min-h-11 w-20 text-right"
-              />
+              <div className="ka-step ka-sf-stepper" role="group" aria-label={`จำนวนของ ${line.productName} ในพัสดุนี้`}>
+                <button
+                  type="button"
+                  aria-label="ลดจำนวน"
+                  disabled={(quantities[line.saleOrderListId] ?? 0) <= 0}
+                  onClick={() => setQuantity(line, (quantities[line.saleOrderListId] ?? 0) - 1)}
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  min={0}
+                  max={line.remainingUnshipped}
+                  aria-label={`จำนวนของ ${line.productName}`}
+                  value={quantities[line.saleOrderListId] ?? 0}
+                  onChange={(e) => setQuantity(line, Number(e.target.value))}
+                />
+                <button
+                  type="button"
+                  aria-label="เพิ่มจำนวน"
+                  disabled={(quantities[line.saleOrderListId] ?? 0) >= line.remainingUnshipped}
+                  onClick={() => setQuantity(line, (quantities[line.saleOrderListId] ?? 0) + 1)}
+                >
+                  +
+                </button>
+              </div>
             </div>
           ))}
         </div>
 
-        <label className="flex min-h-11 items-center gap-2 text-sm">
+        {!overrideAddress && defaultAddress?.addressLine1 && (
+          <div className="ka-sf-panel">
+            <p>
+              {defaultAddress.recipientName} · {defaultAddress.recipientPhone}
+            </p>
+            <p className="ka-sf-cap">
+              {[defaultAddress.addressLine1, defaultAddress.addressLine2, defaultAddress.district, defaultAddress.province, defaultAddress.postalCode]
+                .filter(Boolean)
+                .join(' ')}
+            </p>
+          </div>
+        )}
+
+        <label className="ka-sf-check">
           <input
             type="checkbox"
             checked={overrideAddress}
@@ -174,9 +215,9 @@ export default function CreateParcelModal({
           <span>ใช้ที่อยู่อื่นสำหรับพัสดุนี้ (ค่าเริ่มต้นคือที่อยู่ของคำสั่งซื้อ)</span>
         </label>
         {overrideAddress && (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <label className="grid gap-1 text-sm">
-              <span>ชื่อผู้รับ</span>
+          <div className="ka-sf-form2">
+            <label className="ka-field">
+              <span className="ka-label">ชื่อผู้รับ</span>
               <input
                 value={address.recipient_name}
                 onChange={(e) =>
@@ -185,8 +226,8 @@ export default function CreateParcelModal({
                 className={inputClass}
               />
             </label>
-            <label className="grid gap-1 text-sm">
-              <span>เบอร์โทรผู้รับ</span>
+            <label className="ka-field">
+              <span className="ka-label">เบอร์โทรผู้รับ</span>
               <input
                 value={address.recipient_phone}
                 onChange={(e) =>
@@ -195,8 +236,8 @@ export default function CreateParcelModal({
                 className={inputClass}
               />
             </label>
-            <label className="grid gap-1 text-sm sm:col-span-2">
-              <span>ที่อยู่ บรรทัดที่ 1</span>
+            <label className="ka-field ka-sf-wide">
+              <span className="ka-label">ที่อยู่ บรรทัดที่ 1</span>
               <input
                 value={address.address_line1}
                 onChange={(e) =>
@@ -205,8 +246,8 @@ export default function CreateParcelModal({
                 className={inputClass}
               />
             </label>
-            <label className="grid gap-1 text-sm sm:col-span-2">
-              <span>ที่อยู่ บรรทัดที่ 2 (ไม่บังคับ)</span>
+            <label className="ka-field ka-sf-wide">
+              <span className="ka-label">ที่อยู่ บรรทัดที่ 2 (ไม่บังคับ)</span>
               <input
                 value={address.address_line2}
                 onChange={(e) =>
@@ -215,8 +256,8 @@ export default function CreateParcelModal({
                 className={inputClass}
               />
             </label>
-            <label className="grid gap-1 text-sm">
-              <span>อำเภอ/เขต</span>
+            <label className="ka-field">
+              <span className="ka-label">อำเภอ/เขต</span>
               <input
                 value={address.district}
                 onChange={(e) =>
@@ -225,8 +266,8 @@ export default function CreateParcelModal({
                 className={inputClass}
               />
             </label>
-            <label className="grid gap-1 text-sm">
-              <span>จังหวัด</span>
+            <label className="ka-field">
+              <span className="ka-label">จังหวัด</span>
               <input
                 value={address.province}
                 onChange={(e) =>
@@ -235,8 +276,8 @@ export default function CreateParcelModal({
                 className={inputClass}
               />
             </label>
-            <label className="grid gap-1 text-sm">
-              <span>รหัสไปรษณีย์</span>
+            <label className="ka-field">
+              <span className="ka-label">รหัสไปรษณีย์</span>
               <input
                 value={address.postal_code}
                 onChange={(e) =>
@@ -249,7 +290,7 @@ export default function CreateParcelModal({
         )}
 
         {error && (
-          <p role="alert" className="text-sm text-[var(--color-error)]">
+          <p role="alert" className="ka-sf-error">
             {error}
           </p>
         )}
