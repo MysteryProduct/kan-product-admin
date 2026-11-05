@@ -177,8 +177,8 @@ export function signedBaht(amount: number): string {
 }
 
 /**
- * A store or custom order's name is a label the system wrote, so the printed sheet leaves it out (D20). A custom
- * order with no customer still shows it on screen (`customerOf`, D25).
+ * A store or custom order's name is a label the system wrote, so the sheet's second customer line leaves it out
+ * (D20). A custom order with no customer still shows it as the customer, on screen and on the sheet (`customerOf`, D25).
  */
 export function hasSystemName(receipt: PaymentReceipt): boolean {
   return ["store", "custom"].includes(receipt.saleOrder?.sale_order_type ?? "");

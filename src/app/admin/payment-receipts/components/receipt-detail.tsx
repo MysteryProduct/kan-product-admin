@@ -554,10 +554,19 @@ export default function ReceiptDetail({
               <Link className="ka-pr-sochip ka-pr-code" href={orderHref}>
                 {orderCode} →
               </Link>
-              <div className="ka-pr-cap" style={{ marginTop: 8 }}>
-                ยอดชำระสุทธิหลังคืนเงิน{" "}
-                {receipts ? formatBaht(netAfter(receipt, receipts)) : "—"}
-              </div>
+              {receiptsError ? (
+                <div style={{ marginTop: 12 }}>
+                  <SectionError
+                    message={receiptsError}
+                    onRetry={() => setAttempt((count) => count + 1)}
+                  />
+                </div>
+              ) : (
+                <div className="ka-pr-cap" style={{ marginTop: 8 }}>
+                  ยอดชำระสุทธิหลังคืนเงิน{" "}
+                  {receipts ? formatBaht(netAfter(receipt, receipts)) : "—"}
+                </div>
+              )}
             </section>
           ) : (
             paymentCard
@@ -565,7 +574,8 @@ export default function ReceiptDetail({
           {historyCard}
         </div>
       </div>
-      <ReceiptPrint receipt={receipt} receipts={receipts ?? [receipt]} />
+      {/* Without the order's receipts every sum on the sheet would be false, Ctrl+P included. */}
+      {receipts ? <ReceiptPrint receipt={receipt} receipts={receipts} /> : null}
       {remove.dialogs}
     </div>
   );
