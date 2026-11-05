@@ -116,7 +116,7 @@ export function useReceiptDelete({ onDeleted }: Options): {
           }
           errorIcon={<Icon name="alert" size={28} />}
           confirmText={result?.ok ? "ตกลง" : "ปิด"}
-          className="ka-pr-res"
+          className={`ka-pr-res${result?.ok ? "" : " ka-pr-res--error"}`}
           onClose={() => {
             const ok = result?.ok;
             setResult(null);

@@ -16,13 +16,15 @@ BEGIN
     ('SO209911030001', 'ร้านกาแฟบ้านสวน', 'approved ไม่มีใบเสร็จ', 'order', 'approved', 18400, 40),
     ('SO209911030002', 'คุณมานพ ศรีสุข', 'partial มัดจำ', 'order', 'partial', 36000, 39),
     ('SO209911030003', 'ร้านดอกไม้ริมทาง', 'paid', 'order', 'paid', 7450, 38),
-    ('SO209911030004', 'คุณวรรณา แก้วมณี', 'ยกเลิกภายหลัง', 'order', 'cancelled', 7500, 37),
+    ('SO209911030004', 'คุณวรรณา แก้วมณี', 'ยกเลิกภายหลัง', 'order', 'cancelled', 6000, 37),
     ('SO209911030005', 'บริษัท สยามเทรดดิ้ง จำกัด', 'สองใบเสร็จ', 'order', 'partial', 85500, 36),
     ('SO209911030006', 'คุณพิมพ์ชนก ทองดี', 'ยกเลิกเอง', 'order', 'cancelled', 1200, 35),
     ('SO209911030007', 'ร้านกาแฟบ้านสวน', 'ลบใบเสร็จ', 'order', 'partial', 36000, 34),
     ('SO209911030008', 'ร้านกาแฟบ้านสวน', 'แก้ไขใบ deposit', 'order', 'partial', 36000, 33),
     ('SO209911030009', 'คุณมานพ ศรีสุข', 'ฟอร์มตรวจยอด', 'order', 'approved', 1000, 32),
-    ('SO209911030010', 'คุณมานพ ศรีสุข', 'pending', 'order', 'pending', 500, 31)
+    ('SO209911030010', 'คุณมานพ ศรีสุข', 'pending', 'order', 'pending', 500, 31),
+    ('SO209911030011', 'ร้านดอกไม้ริมทาง', 'ใบ full ยอดไม่เท่าใบ', 'order', 'partial', 1000, 30),
+    ('SO209911030012', 'ร้านดอกไม้ริมทาง', 'โอนเป็นเงินสด', 'order', 'partial', 2000, 29)
   ) AS seed(code, customer, label, kind, state, amount, age);
 
   INSERT INTO payment_receipts (payment_receipt_id, sale_order_id, payment_receipt_code, payment_receipt_type, payment_method, amount_paid, payment_date, payment_status, payment_receipt_remark, account_id, create_by, create_date)
@@ -34,9 +36,16 @@ BEGIN
     ('RE209911030004', 'SO209911030005', 'deposit', 'bank', 20000, 6, ''),
     ('RE209911030005', 'SO209911030005', 'partial', 'cash', 22750, 5, ''),
     ('RE209911030006', 'SO209911030007', 'deposit', 'bank', 10800, 1, ''),
-    ('RE209911030007', 'SO209911030008', 'deposit', 'bank', 10800, 1, '')
+    ('RE209911030007', 'SO209911030008', 'deposit', 'bank', 10800, 1, ''),
+    ('RE209911030008', 'SO209911030011', 'full', 'cash', 600, 1, ''),
+    ('RE209911030009', 'SO209911030012', 'partial', 'bank', 500, 1, '')
   ) AS seed(code, order_code, kind, method, amount, age, remark)
   JOIN sale_order so ON so.sale_order_code = seed.order_code;
+
+  -- Orders past the first twenty options of the picker (A9): the newest is SO209911030150.
+  INSERT INTO sale_order (sale_order_id, sale_order_code, shipping_address_name, sale_order_name, sale_order_type, sale_order_status, vat_type, vat_rate, sale_order_vat_amount, sale_order_subtotal, sale_order_total, create_by, create_date)
+  SELECT gen_random_uuid(), 'SO2099110301' || lpad(n::text, 2, '0'), 'ลูกค้าทดสอบ', 'ทดสอบ TASK-0346 เติม ' || n, 'order', 'approved', 'none', 0, 0, 100, 100, who, now() - (n || ' seconds')::interval * -1
+  FROM generate_series(21, 50) AS n;
 
   -- A view-only employee: every menu the full license has, with view alone. Signs in with the demo_audit password.
   SELECT license_id INTO view_license FROM employee_license WHERE license_name = 'TASK-0346 view only';

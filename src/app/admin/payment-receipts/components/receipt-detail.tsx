@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DocumentHistoryPanel from "@/components/document-history/DocumentHistoryPanel";
 import DocumentCode from "@/components/DocumentCode";
+import { loadErrorText } from "@/components/LoadErrorBanner";
 import { useToast } from "@/components/Toast";
 import { usePermissions } from "@/hooks/usePermissions";
 import { formatThaiDate } from "@/lib/date-format";
@@ -24,7 +25,7 @@ import {
   canDeleteReceipt,
   canEditReceipt,
   customerOf,
-  lockNote,
+  pageLockNote,
   methodView,
   orderOf,
   ORDERS,
@@ -42,7 +43,7 @@ import {
   type MenuEntry,
 } from "./receipt-actions";
 import ReceiptPrint from "./receipt-print";
-import { Badge, Icon } from "./receipt-ui";
+import { Badge, Icon, SectionError } from "./receipt-ui";
 
 const receiptModel = new PaymentReceiptModel();
 
@@ -138,6 +139,8 @@ export default function ReceiptDetail({
   });
 
   const [receipts, setReceipts] = useState<PaymentReceipt[] | null>(null);
+  const [receiptsError, setReceiptsError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
   const [fullOrder, setFullOrder] = useState<SaleOrder | null>(null);
 
   useEffect(() => {
@@ -145,15 +148,18 @@ export default function ReceiptDetail({
     receiptModel
       .getPaymentReceiptsBySaleOrder(orderId, 200)
       .then((response) => {
-        if (active) setReceipts(response.data ?? []);
+        if (!active) return;
+        setReceipts(response.data ?? []);
+        setReceiptsError(null);
       })
-      .catch(() => {
-        if (active) setReceipts([receipt]);
+      .catch((error: unknown) => {
+        if (active)
+          setReceiptsError(loadErrorText("การชำระของใบสั่งขาย", error));
       });
     return () => {
       active = false;
     };
-  }, [orderId, receipt]);
+  }, [orderId, attempt]);
 
   useEffect(() => {
     if (!canViewOrders) return;
@@ -209,6 +215,12 @@ export default function ReceiptDetail({
   );
   const pay = order ? paymentState(order, received) : null;
   const percent = pay?.percent ?? 0;
+  // `paymentState` says 0 for a cancelled order; the bar still shows what had been received.
+  const orderTotal = order ? payable(order) : 0;
+  const shownPercent =
+    cancelled && orderTotal > 0
+      ? Math.min(100, Math.round(((pay?.paid ?? 0) / orderTotal) * 100))
+      : percent;
   const canReceive =
     canAdd &&
     Boolean(pay && pay.due > 0) &&
@@ -216,7 +228,7 @@ export default function ReceiptDetail({
     receipt.saleOrder?.sale_order_type !== "custom";
   const editable = canEdit && canEditReceipt(receipt);
   const state = receiptStatus(receipt);
-  const note = lockNote(receipt);
+  const note = pageLockNote(receipt);
 
   const moreEntries: MenuEntry[] = [
     {
@@ -248,7 +260,35 @@ export default function ReceiptDetail({
       ? `ใบคืนเงิน · ${customerOf(receipt)}`
       : `ใบเสร็จรับเงิน · ${customerOf(receipt)}`;
 
-  const paymentCard = (
+  const paymentCard = receiptsError ? (
+    <section className="ka-pr-card ka-pr-cp">
+      <h2 style={{ marginBottom: 12 }}>การชำระของใบสั่งขายนี้</h2>
+      <SectionError
+        message={receiptsError}
+        onRetry={() => setAttempt((count) => count + 1)}
+      />
+    </section>
+  ) : kind === "store" ? (
+    <section className="ka-pr-card ka-pr-cp">
+      <h2 style={{ marginBottom: 6 }}>การชำระของใบสั่งขายนี้</h2>
+      <div
+        className="ka-pr-row ka-pr-row--between"
+        style={{ fontSize: 14, marginBottom: 6 }}
+      >
+        <span className="ka-pr-mut">
+          {pay && pay.due <= 0 ? "ชำระครบ" : `ชำระแล้ว ${percent}%`}
+        </span>
+        <b className="ka-pr-num">{`${formatBaht(pay?.paid ?? 0)} / ${formatBaht(pay?.total ?? 0)}`}</b>
+      </div>
+      <div
+        className="ka-pr-meter"
+        role="img"
+        aria-label={`ชำระแล้ว ${percent}%`}
+      >
+        <i style={{ width: `${percent}%` }} />
+      </div>
+    </section>
+  ) : (
     <section className="ka-pr-card ka-pr-cp">
       <h2 style={{ marginBottom: 4 }}>การชำระของใบสั่งขายนี้</h2>
       <div className="ka-pr-cap" style={{ marginBottom: 12 }}>
@@ -285,11 +325,11 @@ export default function ReceiptDetail({
       <div
         className="ka-pr-meter"
         role="img"
-        aria-label={`ชำระแล้ว ${percent}%`}
+        aria-label={`ชำระแล้ว ${shownPercent}%`}
       >
         <i
           data-kind={cancelled ? "muted" : undefined}
-          style={{ width: `${cancelled ? 40 : percent}%` }}
+          style={{ width: `${shownPercent}%` }}
         />
       </div>
       {cancelled ? (
@@ -379,6 +419,7 @@ export default function ReceiptDetail({
           <button
             type="button"
             className="ka-pr-btn"
+            disabled={!ready}
             onClick={() => window.print()}
           >
             <Icon name="print" small />

@@ -98,3 +98,32 @@ export function Highlight({ text, term }: { text: string; term: string }) {
     </>
   );
 }
+
+/** The load error drawn on `States`: icon, sentence and a plain retry button (D22; R35 named LoadErrorBanner). */
+export function SectionError({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) {
+  return (
+    <div
+      className="ka-pr-banner ka-pr-tone"
+      style={{ display: "flex" }}
+      data-tone="danger"
+      data-plain
+      role="alert"
+    >
+      <Icon name="alert" />
+      <div className="ka-pr-banner__text">{message}</div>
+      <button
+        type="button"
+        className="ka-pr-btn ka-pr-btn--sm ka-pr-btn--line"
+        onClick={onRetry}
+      >
+        ลองอีกครั้ง
+      </button>
+    </div>
+  );
+}

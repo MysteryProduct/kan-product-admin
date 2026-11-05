@@ -10,7 +10,7 @@
 // answers its API calls from a browser-side fixture with the sheets' own lengths of text (V4); it proves layout
 // only. Behaviour is checked against the real API by payment-receipts-v2-capture.mjs.
 import { createRequire } from 'node:module';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import net from 'node:net';
@@ -158,16 +158,29 @@ const SECTIONS = [
 ];
 
 const measure = (selectors) => {
-  const h1 = document.querySelector('h1').getBoundingClientRect();
+  const h1 = document.querySelector("h1").getBoundingClientRect();
   const top = h1.y + window.scrollY;
+  const round = (value) => Math.round(value * 10) / 10;
+  const root = document.querySelector(".content, .ka-pr");
   return {
-    h1y: Math.round(top * 10) / 10,
-    font: getComputedStyle(document.body).fontFamily,
+    h1y: round(top),
+    // V4: the sections in order, by their tag and child count; and the size and weight of each heading.
+    sections: [...root.children].filter((node) => node.getClientRects().length && !/pg/.test(node.className)).length,
+    type: [...root.querySelectorAll("h1, h2")].filter((node) => node.getClientRects().length).map((node) => {
+      const style = getComputedStyle(node);
+      return `${style.fontSize}/${style.fontWeight}`;
+    }),
+    fonts: selectors.map((selector) => {
+      const element = [...document.querySelectorAll(selector)].find((node) => node.getBoundingClientRect().width > 0);
+      const leaf = element && ([...element.querySelectorAll("*")].find((node) => node.childNodes.length && [...node.childNodes].some((child) => child.nodeType === 3 && child.textContent.trim())) ?? element);
+      if (!leaf) return null;
+      const style = getComputedStyle(leaf);
+      return `${style.fontSize}/${style.fontWeight}`;
+    }),
     boxes: selectors.map((selector) => {
       const element = [...document.querySelectorAll(selector)].find((node) => node.getBoundingClientRect().width > 0);
       if (!element) return null;
       const rect = element.getBoundingClientRect();
-      const round = (value) => Math.round(value * 10) / 10;
       return [round(rect.x), round(rect.y + window.scrollY - top), round(rect.width), round(rect.height)];
     }),
   };
@@ -326,6 +339,12 @@ for (const screen of ['list', 'form', 'detail', 'edit']) {
       await appPage.screenshot({ path: join(out, `app-${screen}-${width}.png`), fullPage: true });
     }
     lines.push(`# ${screen} ${width}: h1 y design ${design.h1y} app ${app?.h1y ?? '—'}`);
+    if (app) {
+      const sameType = design.type.join() === app.type.join();
+      lines.push(`${design.sections === app.sections ? "ok  " : "OUT "} ${screen} ${width} จำนวนส่วน | design ${design.sections} | app ${app.sections}`);
+      lines.push(`${sameType ? "ok  " : "OUT "} ${screen} ${width} หัวข้อ | design ${design.type} | app ${app.type}`);
+      rows.push({ screen, width, name: "จำนวนส่วน", outside: design.sections !== app.sections, compared: true }, { screen, width, name: "หัวข้อ", outside: !sameType, compared: true });
+    }
     sections.forEach((section, index) => {
       const reference = section[{ 1440: 3, 834: 4, 390: 5 }[width]];
       const d = design.boxes[index];
@@ -333,8 +352,9 @@ for (const screen of ['list', 'form', 'detail', 'edit']) {
       const box = appPage ? a : d;
       const delta = reference && box ? reference.map((value, at) => (value == null ? 0 : Math.round((box[at] - value) * 10) / 10)) : null;
       const outside = Boolean(reference) !== Boolean(box) || (delta ? !near(delta) : false);
-      rows.push({ screen, width, name: section[1], reference, design: d, app: a, delta, outside });
-      lines.push(`${outside ? 'OUT ' : 'ok  '} ${screen} ${width} ${section[1]} | ref ${reference ?? '—'} | design ${d ?? '—'} | app ${a ?? '—'} | Δ ${delta ?? '—'}`);
+      const fontOff = Boolean(app && reference && design.fonts[index] !== app.fonts[index]);
+      rows.push({ screen, width, name: section[1], reference, design: d, app: a, delta, outside, compared: Boolean(reference), font: fontOff ? `${design.fonts[index]} ≠ ${app.fonts[index]}` : null });
+      lines.push(`${outside ? 'OUT ' : 'ok  '} ${screen} ${width} ${section[1]} | ref ${reference ?? '—'} | design ${d ?? '—'} | app ${a ?? '—'} | Δ ${delta ?? '—'}${fontOff ? ` | font ${design.fonts[index]} ≠ ${app.fonts[index]}` : ''}`);
     });
   }
 }
@@ -371,7 +391,7 @@ if (appPage) {
   PRINT.forEach(([name, , , reference], index) => {
     const delta = reference.map((value, at) => (value == null ? 0 : Math.round((app[index][at] - value) * 10) / 10));
     const outside = !near(delta);
-    rows.push({ screen: 'print', width: 794, name, reference, design: design[index], app: app[index], delta, outside });
+    rows.push({ screen: 'print', width: 794, name, reference, design: design[index], app: app[index], delta, outside, compared: true });
     lines.push(`${outside ? 'OUT ' : 'ok  '} print 794 ${name} | ref ${reference} | design ${design[index]} | app ${app[index]} | Δ ${delta}`);
   });
 }
@@ -386,6 +406,10 @@ for (const [file, width] of [['Actions', 1440], ['DetailVariants', 1440], ['Stat
 writeFileSync(join(out, 'fidelity.json'), JSON.stringify(rows, null, 2));
 writeFileSync(join(out, 'fidelity.txt'), `${lines.join('\n')}\n`);
 console.log(lines.join('\n'));
-console.log(`rows ${rows.length}, outside ±2px ${rows.filter((row) => row.outside).length}`);
+const compared = rows.filter((row) => row.compared);
+const summary = `compared ${compared.length}, outside ${compared.filter((row) => row.outside).length}, font differs ${rows.filter((row) => row.font).length}, no reference ${rows.length - compared.length}`;
+appendFileSync(join(out, 'fidelity.txt'), `${summary}
+`);
+console.log(summary);
 await browser.close();
 process.exit(0);

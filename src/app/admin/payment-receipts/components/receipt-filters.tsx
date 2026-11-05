@@ -689,31 +689,56 @@ export function FilterChips({
         ?.scrollIntoView({ block: "start" });
   }, [sheet]);
 
+  const chips = [
+    {
+      on: values.method.length > 0,
+      node: (
+        <CheckFilter
+          key="method"
+          label="วิธีชำระ"
+          heading="วิธีชำระ"
+          options={METHODS}
+          selected={values.method}
+          counts={summary?.facets.method}
+          onApply={(method) => onChange({ method })}
+          onOpenSheet={openSheet("method")}
+        />
+      ),
+    },
+    {
+      on: values.type.length > 0,
+      node: (
+        <CheckFilter
+          key="type"
+          label="ประเภท"
+          heading="ประเภทการชำระ"
+          options={TYPES}
+          selected={values.type}
+          onApply={(type) => onChange({ type })}
+          onOpenSheet={openSheet("type")}
+        />
+      ),
+    },
+    {
+      on: Boolean(values.from || values.to),
+      node: (
+        <DateFilter
+          key="date"
+          from={values.from}
+          to={values.to}
+          onApply={(from, to) => onChange({ from, to })}
+          onOpenSheet={openSheet("date")}
+        />
+      ),
+    },
+  ];
+
   return (
     <>
-      <CheckFilter
-        label="วิธีชำระ"
-        heading="วิธีชำระ"
-        options={METHODS}
-        selected={values.method}
-        counts={summary?.facets.method}
-        onApply={(method) => onChange({ method })}
-        onOpenSheet={openSheet("method")}
-      />
-      <CheckFilter
-        label="ประเภท"
-        heading="ประเภทการชำระ"
-        options={TYPES}
-        selected={values.type}
-        onApply={(type) => onChange({ type })}
-        onOpenSheet={openSheet("type")}
-      />
-      <DateFilter
-        from={values.from}
-        to={values.to}
-        onApply={(from, to) => onChange({ from, to })}
-        onOpenSheet={openSheet("date")}
-      />
+      {[
+        ...chips.filter((chip) => chip.on),
+        ...chips.filter((chip) => !chip.on),
+      ].map((chip) => chip.node)}
       <FilterSheet
         open={Boolean(sheet)}
         values={values}

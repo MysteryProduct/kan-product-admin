@@ -9,11 +9,13 @@ import LoadErrorBanner from "@/components/LoadErrorBanner";
 import { usePageCrumb } from "@/lib/page-crumb";
 import type { PaymentReceipt } from "@/types/payment-receipt";
 import type { SaleOrder } from "@/types/sale-order";
+import SaleOrderModel from "@/models/sale-order";
 import { useLeaveGuard } from "../../purchase-orders/hooks/useLeaveGuard";
 import {
   formatBaht,
   paymentState,
   payable,
+  statusLabel,
 } from "@/app/admin/sale-orders/lib/so-display";
 import {
   useReceiptForm,
@@ -27,6 +29,8 @@ import {
   receiptStatus,
 } from "../lib/receipt-display";
 import { Badge, Icon, OrderBadge } from "./receipt-ui";
+
+const saleOrderModel = new SaleOrderModel();
 
 interface RadioOption<T extends string> {
   value: T;
@@ -181,8 +185,9 @@ export default function ReceiptForm({
 }: ReceiptFormProps) {
   const form = useReceiptForm({ mode, receipt, presetOrderId });
   const editing = mode === "edit";
-  const guard = useLeaveGuard(editing && form.dirty && !form.saving);
   const [saved, setSaved] = useState<PaymentReceipt | null>(null);
+  const [savedStatus, setSavedStatus] = useState<string | null>(null);
+  const guard = useLeaveGuard(editing && form.dirty && !form.saving && !saved);
   const bannerRef = useRef<HTMLDivElement>(null);
   const order = form.order;
   const code = receipt?.payment_receipt_code;
@@ -206,8 +211,17 @@ export default function ReceiptForm({
 
   const save = async () => {
     const result = await form.submit();
-    if (result) setSaved(result);
-    else
+    if (result) {
+      // What the API decided, not a forecast: after a return the two can differ (F12).
+      const status = await saleOrderModel
+        .getSaleOrderById(
+          result.sale_order_id ?? (order?.sale_order_id as string),
+        )
+        .then((loaded) => loaded?.sale_order_status)
+        .catch(() => undefined);
+      setSavedStatus(status ? statusLabel(status) : null);
+      setSaved(result);
+    } else
       window.setTimeout(
         () => bannerRef.current?.scrollIntoView({ block: "center" }),
         0,
@@ -236,6 +250,11 @@ export default function ReceiptForm({
       return { tone: "danger", text: "ยอดรับเกินยอดค้าง แก้ก่อนบันทึก" };
     if (!form.amount)
       return { tone: "neutral", text: "ยังไม่ได้ใส่ยอดรับชำระ" };
+    if (order && form.pay && form.pay.total !== payable(order))
+      return {
+        tone: "neutral",
+        text: `คงค้างหลังบันทึก ${formatBaht(form.after ?? 0)}`,
+      };
     if (form.after === 0)
       return {
         tone: "success",
@@ -253,7 +272,7 @@ export default function ReceiptForm({
       type="button"
       className={`ka-pr-btn ka-pr-btn--a ${extra}`}
       aria-busy={form.saving || undefined}
-      disabled={blocked}
+      disabled={blocked && !form.saving}
       onClick={() => void save()}
     >
       {form.saving ? (
@@ -689,8 +708,7 @@ export default function ReceiptForm({
             </span>
             <span className="ka-pr-code">{saved?.payment_receipt_code}</span> ·{" "}
             {formatBaht(Number(saved?.amount_paid ?? form.amount))}
-            {"\n"}ใบสั่งขายเป็น “
-            {form.after === 0 ? "ชำระครบแล้ว" : "ชำระบางส่วน"}”
+            {savedStatus && `\nใบสั่งขายเป็น “${savedStatus}”`}
           </>
         }
         onClose={() =>

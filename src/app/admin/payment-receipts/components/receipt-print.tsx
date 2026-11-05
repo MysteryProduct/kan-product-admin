@@ -11,6 +11,7 @@ import {
 } from "@/app/admin/sale-orders/lib/so-display";
 import {
   accountText,
+  hasSystemName,
   customerOf,
   orderOf,
   paidBefore,
@@ -46,6 +47,7 @@ export default function ReceiptPrint({ receipt, receipts }: ReceiptPrintProps) {
     0,
     sumMoney([total, -before, -Number(receipt.amount_paid)]),
   );
+  const netAfter = sumMoney(receipts.map((item) => Number(item.amount_paid)));
   const taxLine = [
     shop?.tax_id && `เลขประจำตัวผู้เสียภาษี ${shop.tax_id}`,
     shop?.branch_code && `สาขา ${shop.branch_code}`,
@@ -115,9 +117,9 @@ export default function ReceiptPrint({ receipt, receipts }: ReceiptPrintProps) {
       <table>
         <thead>
           <tr>
-            <th style={{ width: 44 }}>#</th>
+            <th style={{ width: 64 }}>#</th>
             <th>รายการ</th>
-            <th className="ka-pr-r" style={{ width: 160 }}>
+            <th className="ka-pr-r" style={{ width: 180 }}>
               จำนวนเงิน (บาท)
             </th>
           </tr>
@@ -130,8 +132,10 @@ export default function ReceiptPrint({ receipt, receipts }: ReceiptPrintProps) {
                 {itemText} {orderCode}
               </div>
               <div className="ka-pr-mut">
-                {receipt.saleOrder?.sale_order_name} · ยอดใบสั่งขาย{" "}
-                {formatBaht(total)}
+                {hasSystemName(receipt)
+                  ? ""
+                  : `${receipt.saleOrder?.sale_order_name} · `}
+                ยอดใบสั่งขาย {formatBaht(total)}
               </div>
             </td>
             <td className="ka-pr-r ka-pr-num">{formatMoney(amount)}</td>
@@ -140,14 +144,23 @@ export default function ReceiptPrint({ receipt, receipts }: ReceiptPrintProps) {
       </table>
 
       <div className="ka-pr-pg__tot">
-        <div>
-          <span className="ka-pr-mut">ชำระก่อนหน้านี้</span>
-          <span>{formatMoney(before)}</span>
-        </div>
-        <div>
-          <span className="ka-pr-mut">คงค้างหลังรับชำระ</span>
-          <span>{formatMoney(remaining)}</span>
-        </div>
+        {refund ? (
+          <div>
+            <span className="ka-pr-mut">ยอดชำระสุทธิหลังคืนเงิน</span>
+            <span>{formatMoney(netAfter)}</span>
+          </div>
+        ) : (
+          <>
+            <div>
+              <span className="ka-pr-mut">ชำระก่อนหน้านี้</span>
+              <span>{formatMoney(before)}</span>
+            </div>
+            <div>
+              <span className="ka-pr-mut">คงค้างหลังรับชำระ</span>
+              <span>{formatMoney(remaining)}</span>
+            </div>
+          </>
+        )}
         <div className="ka-pr-pg__g">
           <span>{refund ? "คืนเงินครั้งนี้" : "รับชำระครั้งนี้"}</span>
           <span>{formatBaht(amount)}</span>
@@ -156,30 +169,34 @@ export default function ReceiptPrint({ receipt, receipts }: ReceiptPrintProps) {
 
       <div className="ka-pr-pg__words">({thaiBahtText(amount)})</div>
 
-      <div>
-        <div className="ka-pr-pg__lb">ชำระโดย</div>
-        {kind === "store" ? (
-          <span>
-            {storeMethod(receipt)} · เลขอ้างอิง{" "}
-            <span className="ka-pr-code">{receipt.gateway_reference}</span>
-          </span>
-        ) : (
-          <>
-            <span className="ka-pr-pg__cb">
-              <i>{receipt.payment_method === "cash" ? "✓" : ""}</i>เงินสด
+      {!refund && (
+        <div>
+          <div className="ka-pr-pg__lb">ชำระโดย</div>
+          {kind === "store" ? (
+            <span>
+              {storeMethod(receipt)} · เลขอ้างอิง{" "}
+              <span className="ka-pr-code">{receipt.gateway_reference}</span>
             </span>
-            <span className="ka-pr-pg__cb">
-              <i>{receipt.payment_method === "bank" ? "✓" : ""}</i>โอนผ่านธนาคาร
-              {receipt.payment_method === "bank" && ` ${accountText(receipt)}`}
-            </span>
-            {receipt.payment_method === "bank" && (
-              <span className="ka-pr-mut">
-                วันที่โอน {formatThaiDate(receipt.payment_date)}
+          ) : (
+            <>
+              <span className="ka-pr-pg__cb">
+                <i>{receipt.payment_method === "cash" ? "✓" : ""}</i>เงินสด
               </span>
-            )}
-          </>
-        )}
-      </div>
+              <span className="ka-pr-pg__cb">
+                <i>{receipt.payment_method === "bank" ? "✓" : ""}</i>
+                โอนผ่านธนาคาร
+                {receipt.payment_method === "bank" &&
+                  ` ${accountText(receipt)}`}
+              </span>
+              {receipt.payment_method === "bank" && (
+                <span className="ka-pr-mut">
+                  วันที่โอน {formatThaiDate(receipt.payment_date)}
+                </span>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {receipt.payment_receipt_remark && (
         <div>

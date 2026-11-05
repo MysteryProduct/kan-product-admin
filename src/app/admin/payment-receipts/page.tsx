@@ -11,7 +11,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import DocumentCode from "@/components/DocumentCode";
-import LoadErrorBanner, { loadErrorText } from "@/components/LoadErrorBanner";
+import { loadErrorText } from "@/components/LoadErrorBanner";
 import Pagination from "@/components/Pagination";
 import { usePermissions } from "@/hooks/usePermissions";
 import { formatThaiDate } from "@/lib/date-format";
@@ -43,7 +43,13 @@ import {
   SortMenu,
   type FilterValues,
 } from "./components/receipt-filters";
-import { Badge, Highlight, Icon, OrderBadge } from "./components/receipt-ui";
+import {
+  Badge,
+  Highlight,
+  Icon,
+  OrderBadge,
+  SectionError,
+} from "./components/receipt-ui";
 import {
   BASE,
   customerOf,
@@ -260,6 +266,8 @@ function ReceiptsList() {
   );
   const [queue, setQueue] = useState<SaleOrder[] | null>(null);
   const [queueError, setQueueError] = useState<string | null>(null);
+  const [summaryFailed, setSummaryFailed] = useState(false);
+  const [orderSummaryFailed, setOrderSummaryFailed] = useState(false);
   const [refresh, setRefresh] = useState(0);
 
   const setParams = useCallback(
@@ -351,17 +359,21 @@ function ReceiptsList() {
   useEffect(() => {
     let active = true;
     receiptModel
-      .getPaymentReceiptSummary(filters)
+      .getPaymentReceiptSummary({ ...filters, tab })
       .then((next) => {
-        if (active) setSummary(next);
+        if (!active) return;
+        setSummary(next);
+        setSummaryFailed(false);
       })
       .catch(() => {
-        if (active) setSummary(null);
+        if (!active) return;
+        setSummary(null);
+        setSummaryFailed(true);
       });
     return () => {
       active = false;
     };
-  }, [filters, refresh]);
+  }, [filters, tab, refresh]);
 
   useEffect(() => {
     if (!isLoaded || !canViewOrders) return;
@@ -369,10 +381,14 @@ function ReceiptsList() {
     saleOrderModel
       .getSaleOrderSummary()
       .then((next) => {
-        if (active) setOrderSummary(next);
+        if (!active) return;
+        setOrderSummary(next);
+        setOrderSummaryFailed(false);
       })
       .catch(() => {
-        if (active) setOrderSummary(null);
+        if (!active) return;
+        setOrderSummary(null);
+        setOrderSummaryFailed(true);
       });
     loadQueue()
       .then((next) => {
@@ -393,6 +409,11 @@ function ReceiptsList() {
   const rowEntries = useRowEntries(remove.request);
 
   const loading = loadedKey !== listKey;
+  useEffect(() => {
+    if (loading || listError || rows.length > 0 || page <= 1) return;
+    const last = meta?.last_page ?? 1;
+    setParams({ page: last > 1 ? String(last) : "" }, "replace");
+  }, [loading, listError, rows.length, page, meta, setParams]);
   const active = method.length > 0 || type.length > 0 || Boolean(from || to);
   const filtered = active || Boolean(query) || tab !== "all";
   const total = meta?.total ?? 0;
@@ -433,7 +454,8 @@ function ReceiptsList() {
     last_page: Math.max(1, Math.ceil(queueCount / QUEUE_PAGE)),
   };
   const received = orderSummary?.received_this_month ?? null;
-  const dash = !canViewOrders;
+  const dash = !canViewOrders || orderSummaryFailed;
+  const dashMonth = summaryFailed;
 
   return (
     <div className="ka-pr">
@@ -454,6 +476,12 @@ function ReceiptsList() {
         )}
       </div>
 
+      {(summaryFailed || orderSummaryFailed) && (
+        <SectionError
+          message="โหลดตัวเลขสรุปไม่สำเร็จ เชื่อมต่อเซิร์ฟเวอร์ไม่ได้"
+          onRetry={reload}
+        />
+      )}
       <div className="ka-pr-stats">
         <Stat
           tone="success"
@@ -496,7 +524,13 @@ function ReceiptsList() {
           tone="info"
           icon="receipt"
           label="ใบเสร็จเดือนนี้"
-          value={summary ? `${summary.month.receipt_count} ใบ` : null}
+          value={
+            dashMonth
+              ? "—"
+              : summary
+                ? `${summary.month.receipt_count} ใบ`
+                : null
+          }
           sub={
             summary ? (
               `วันนี้ ${summary.month.receipt_today_count} ใบ`
@@ -509,7 +543,13 @@ function ReceiptsList() {
           tone="neutral"
           icon="refund"
           label="คืนเงินเดือนนี้"
-          value={summary ? formatBaht(summary.month.refund_total) : null}
+          value={
+            dashMonth
+              ? "—"
+              : summary
+                ? formatBaht(summary.month.refund_total)
+                : null
+          }
           sub={summary ? `${summary.month.refund_count} รายการ` : <>&nbsp;</>}
         />
       </div>
@@ -524,7 +564,7 @@ function ReceiptsList() {
               <h2 id="ka-pr-queue-title">
                 รอรับชำระ{" "}
                 <span className="ka-pr-cap ka-pr-num">
-                  · {queueCount} ใบสั่งขาย
+                  {queue ? `· ${queueCount} ใบสั่งขาย` : ""}
                 </span>
               </h2>
               <div className="ka-pr-cap">
@@ -545,16 +585,12 @@ function ReceiptsList() {
           </div>
           {queueError ? (
             <div className="ka-pr-cp">
-              <LoadErrorBanner message={queueError} onRetry={reload} />
+              <SectionError message={queueError} onRetry={reload} />
             </div>
           ) : queue === null ? (
             <div className="ka-pr-queue" aria-busy="true">
               {[0, 1, 2].map((item) => (
-                <div
-                  key={item}
-                  className="ka-pr-qc ka-pr-sk"
-                  style={{ height: 217 }}
-                />
+                <div key={item} className="ka-pr-qc ka-pr-qc--sk ka-pr-sk" />
               ))}
             </div>
           ) : queue.length === 0 ? (
@@ -677,7 +713,7 @@ function ReceiptsList() {
         </div>
         {listError && (
           <div className="ka-pr-cp">
-            <LoadErrorBanner message={listError} onRetry={reload} />
+            <SectionError message={listError} onRetry={reload} />
           </div>
         )}
         {!listError && loading && rows.length === 0 && <SkeletonRows />}
@@ -844,9 +880,15 @@ function ReceiptsList() {
                         href={`${BASE}/${row.payment_receipt_id}`}
                         className="ka-pr-mc__link ka-pr-code ka-pr-code--600"
                       >
-                        <Highlight
-                          text={row.payment_receipt_code}
-                          term={query}
+                        <DocumentCode
+                          code={
+                            <Highlight
+                              text={row.payment_receipt_code}
+                              term={query}
+                            />
+                          }
+                          legacyCode={row.legacy_code}
+                          search={query}
                         />
                       </Link>
                       <span

@@ -86,12 +86,24 @@ export function canDeleteReceipt(receipt: PaymentReceipt): boolean {
 /** Why a receipt offers no edit or delete; the same words stand in its menu and on its page. */
 export function lockNote(receipt: PaymentReceipt): string | undefined {
   const kind = receiptKind(receipt);
+  if (kind === "refund" && receipt.gateway_reference)
+    return "ใบจากหน้าร้านออนไลน์ดูและพิมพ์ได้เท่านั้น";
   if (kind === "refund")
     return "ใบคืนเงินสร้างจากการคืนสินค้า จึงแก้ไขหรือลบไม่ได้";
   if (kind === "custom")
     return "ใบนี้ผูกกับคำขอ Custom จึงแก้ไขหรือลบที่นี่ไม่ได้ จัดการที่ใบสั่งขาย Custom";
   if (kind === "store") return "ใบจากหน้าร้านออนไลน์ดูและพิมพ์ได้เท่านั้น";
   return undefined;
+}
+
+/** The longer words of `DetailVariants`, for the note on a receipt's own page. */
+export function pageLockNote(receipt: PaymentReceipt): string | undefined {
+  const kind = receiptKind(receipt);
+  if (kind === "refund" && !receipt.gateway_reference)
+    return "ใบคืนเงินสร้างจากการคืนสินค้าเท่านั้น จึงแก้ไขหรือลบที่นี่ไม่ได้ ถ้าต้องแก้ ให้ทำที่การคืนสินค้าของใบสั่งขาย";
+  if (kind === "custom")
+    return "ใบนี้ผูกกับคำขอ Custom จึงแก้ไขหรือลบที่นี่ไม่ได้ บันทึกมัดจำหรือยอดคงเหลือผ่านใบสั่งขาย Custom";
+  return lockNote(receipt);
 }
 
 /** What the edit page says in place of the form (R24). */
@@ -119,7 +131,8 @@ export interface MethodView {
 /** "กสิกรไทย ·· 4821"; an account number is never shown whole. */
 export function accountText(receipt: PaymentReceipt): string {
   const account = receipt.bankAccount;
-  if (!account) return "—";
+  // A receipt changed from transfer to cash keeps its old account in the API; it is no longer this receipt's (D21).
+  if (!account || receipt.payment_method !== "bank") return "—";
   const tail = String(account.account_number ?? "")
     .replace(/\D/g, "")
     .slice(-4);
@@ -163,12 +176,17 @@ export function signedBaht(amount: number): string {
   return amount < 0 ? `−${formatBaht(Math.abs(amount))}` : formatBaht(amount);
 }
 
+/** A store or custom order's name is a label the system wrote, never for a customer to read (D20). */
+export function hasSystemName(receipt: PaymentReceipt): boolean {
+  return ["store", "custom"].includes(receipt.saleOrder?.sale_order_type ?? "");
+}
+
 export function customerOf(receipt: PaymentReceipt): string {
   const order = receipt.saleOrder;
   return (
     order?.customer_name ||
     order?.shipping_address_name ||
-    order?.sale_order_name ||
+    (hasSystemName(receipt) ? "" : order?.sale_order_name) ||
     "—"
   );
 }

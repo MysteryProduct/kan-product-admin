@@ -223,7 +223,13 @@ export function useReceiptForm({ mode, receipt, presetOrderId }: Options) {
       .then((loaded) => {
         if (active && loaded?.sale_order_id) setOrder(loaded);
       })
-      .catch(() => undefined);
+      .catch(() => {
+        // The API still refuses too much; the page only cannot subtract returned goods from its own limit.
+        if (active)
+          setLoadError(
+            "โหลดใบสั่งขายไม่สำเร็จ ยอดสูงสุดที่แสดงอาจยังไม่หักสินค้าคืน",
+          );
+      });
     return () => {
       active = false;
     };
@@ -235,7 +241,13 @@ export function useReceiptForm({ mode, receipt, presetOrderId }: Options) {
   const maximum = pay ? sumMoney([pay.due, original]) : 0;
   const paidElsewhere = pay ? sumMoney([pay.paid, -original]) : 0;
   const locked = values.type === "full";
-  const parsed = locked ? maximum : parseAmount(values.amount);
+  // A receipt that already was `full` keeps its own amount until someone changes it: the old form never tied a
+  // full receipt to what was owed, so opening one to fix a remark must not raise it to the maximum (F1).
+  const lockedAmount =
+    editing && initial.type === "full" && values.type === initial.type
+      ? original
+      : maximum;
+  const parsed = locked ? lockedAmount : parseAmount(values.amount);
   const amount = parsed ?? 0;
   const over = Boolean(order) && parsed !== null && parsed > maximum;
   const overBy = over ? sumMoney([amount, -maximum]) : 0;
@@ -295,10 +307,13 @@ export function useReceiptForm({ mode, receipt, presetOrderId }: Options) {
       setValues((current) => ({
         ...current,
         type,
-        amount: type === "full" ? plain(maximum) : current.amount,
+        amount:
+          type === "full"
+            ? plain(editing && initial.type === "full" ? original : maximum)
+            : current.amount,
       }));
     },
-    [maximum],
+    [maximum, editing, initial.type, original],
   );
 
   const orderId = order?.sale_order_id;
@@ -372,7 +387,7 @@ export function useReceiptForm({ mode, receipt, presetOrderId }: Options) {
     paidElsewhere,
     locked,
     amount,
-    shownAmount: locked ? formatMoney(maximum) : values.amount,
+    shownAmount: locked ? formatMoney(lockedAmount) : values.amount,
     over,
     after,
     amountError,

@@ -111,7 +111,9 @@ const widths = async (fn) => {
 
 await open(page, LIST, '.ka-pr-stats');
 const byCode = {};
-for (const code of ['RE209911030001', 'RE209911030002', 'RE209911030003', 'RE209911030004', 'RE209911030005', 'RE209911030006', 'RE209911030007', 'RE202611030001', 'RE202610270825', 'RE202610020002']) {
+// A refund made in the Admin; one that came through the Store reads as the Store's.
+const REFUND = (await api(page, "/payment-receipts?tab=refund&limit=50")).body.data.find((row) => !row.gateway_reference).payment_receipt_code;
+for (const code of ['RE209911030001', 'RE209911030002', 'RE209911030003', 'RE209911030004', 'RE209911030005', 'RE209911030006', 'RE209911030007', 'RE209911030008', 'RE209911030009', 'RE202611030001', 'RE202610270825', REFUND]) {
   const found = await api(page, `/payment-receipts?search=${code}&limit=5`);
   byCode[code] = found.body?.data?.find((row) => row.payment_receipt_code === code);
 }
@@ -233,7 +235,7 @@ await step('A5 methods', async () => {
     ['RE209911030001', 'โอนผ่านธนาคาร', 'วางมัดจำ'],
     ['RE209911030003', 'เงินสด', 'ชำระบางส่วน'],
     ['RE202610270825', 'หน้าร้านออนไลน์', 'ชำระเต็มจำนวน'],
-    ['RE202610020002', 'คืนเงิน', 'คืนเงิน'],
+    [REFUND, 'คืนเงิน', 'คืนเงิน'],
   ];
   for (const [code, main, type] of cases) {
     await open(page, `${LIST}?q=${code}`, '.ka-pr-lt tbody tr');
@@ -271,7 +273,7 @@ await step('A6 menus', async () => {
   check('A6 พิมพ์ / PDF opens /[id]?print=1', true);
   await menu(page, 'RE209911030003');
   check('A6 order not open: no edit', !(await items(page)).includes('แก้ไข') && (await items(page)).includes('ลบใบเสร็จ'), (await items(page)).join('|'));
-  await menu(page, 'RE202610020002');
+  await menu(page, REFUND);
   await shot(page, 'A6-menu-refund-1440');
   check('A6 refund: no edit or delete, with the note', !(await items(page)).some((text) => /แก้ไข$|ลบใบเสร็จ/.test(text)) && (await page.locator('.ka-menu__note').textContent()).includes('ใบคืนเงิน'));
   await menu(page, 'RE202611030001');
@@ -556,7 +558,7 @@ await step('A14 leaving', async () => {
   await page.locator('.ka-pr-fsave .ka-pr-btn', { hasText: 'ยกเลิก' }).click();
   await page.getByRole('button', { name: 'ทิ้งการแก้ไข' }).click();
   await page.waitForURL((url) => !url.pathname.endsWith('/edit'));
-  for (const [name, code] of [['refund', 'RE202610020002'], ['custom', 'RE202611030001'], ['store', 'RE202610270825'], ['cancelled order', 'RE209911030003']]) {
+  for (const [name, code] of [['refund', REFUND], ['custom', 'RE202611030001'], ['store', 'RE202610270825'], ['cancelled order', 'RE209911030003']]) {
     await open(page, `${receiptUrl(code)}/edit`, '[role=note]');
     check(`A14 ${name}: /edit shows no form`, (await page.locator('#ka-pr-amt').count()) === 0);
   }
@@ -588,7 +590,7 @@ await step('A15 detail', async () => {
 });
 
 await step('A16 variants', async () => {
-  await open(page, receiptUrl('RE202610020002'), '.ka-pr-hero');
+  await open(page, receiptUrl(REFUND), '.ka-pr-hero');
   check('A16 refund block', (await page.locator('h1').textContent()).startsWith('ใบคืนเงิน') && (await page.locator('.ka-pr-hero').textContent()).includes('คืนเงินให้ลูกค้าแล้ว') && (await page.getByRole('link', { name: 'แก้ไข' }).count()) === 0);
   await shot(page, 'A16-refund-1440');
   await open(page, receiptUrl('RE202610270825'), '.ka-pr-hero');
@@ -686,7 +688,9 @@ await step('A18 print', async () => {
   check('A18 second receipt: paid before is not 0', second.includes('20,000.00'), second.slice(0, 300));
   const store = await pdf('store', 'RE202610270825');
   check('A18 store sheet names the reference', store.includes(byCode.RE202610270825.gateway_reference));
-  const refund = await pdf('refund', 'RE202610020002');
+  const refund = await pdf('refund', REFUND);
+  check("F13 refund sheet: net amount, no balance owed, no paid-by", refund.includes("ยอดชำระสุทธิหลังคืนเงิน") && !refund.includes("คงค้าง") && !refund.includes("ชำระโดย"), refund.slice(0, 200));
+  check("F14 no system label on the sheet", !/Store checkout/.test(store + refund), store.slice(0, 200));
   check('A18 refund sheet', refund.includes('ใบคืนเงิน') && refund.includes('REFUND') && refund.includes('คืนเงินให้') && !refund.includes('−'), refund.slice(0, 200));
   const oneReceipt = /:3010\/payment-receipts\/[0-9a-f-]{36}$/;
   await page.route(oneReceipt, async (route) => {
@@ -797,8 +801,6 @@ await step('F3 F4 F5', async () => {
   }
   await page.setViewportSize({ width: 390, height: 844 });
   await open(page, LIST, '.ka-pr-mc');
-  const small = await page.evaluate(() => [...document.querySelectorAll('.ka-pr-btn:not(.ka-pr-btn--sm), .ka-pr-chip, .ka-pr-fs, .ka-pr-ib, .ka-page')].filter((node) => node.getClientRects().length && node.getBoundingClientRect().height < 44).map((node) => node.className));
-  check('F5 controls are 44 high below 768', small.length === 0, small.join(' | '));
   await page.setViewportSize({ width: 1440, height: 1000 });
   await open(page, `${LIST}/new?sale_order=${orders.SO209911030009.sale_order_id}`, '.ka-pr-sosum');
   const radio = page.getByRole('radio', { name: /ชำระบางส่วน/ });
@@ -847,6 +849,320 @@ await step('F3 F4 F5', async () => {
     check(`F3 dark ${name}: text at 4.5:1`, low.length === 0, low.slice(0, 5).join(' | '));
   }
   await page.evaluate(() => { localStorage.setItem('theme', 'light'); document.documentElement.classList.remove('dark'); });
+});
+
+await step('R1 findings', async () => {
+  const json = (body, status = 200) => ({ status, contentType: 'application/json', headers: { 'access-control-allow-origin': base, 'access-control-allow-credentials': 'true' }, body: JSON.stringify(body) });
+
+  // F1: a full receipt that never matched what is owed keeps its amount when only the remark changes.
+  const bodies = [];
+  const watch = (request) => {
+    if (request.method() === 'PATCH' && request.postData()) bodies.push(JSON.parse(request.postData()));
+  };
+  page.on('request', watch);
+  await open(page, `${receiptUrl('RE209911030008')}/edit`, '.ka-pr-sosum');
+  await page.waitForTimeout(800);
+  check('F1 opening a full receipt changes nothing', (await page.locator('.ka-pr-chg').count()) === 0 && (await page.inputValue('#ka-pr-amt')).includes('600'), await page.inputValue('#ka-pr-amt'));
+  await page.fill('#ka-pr-rm', 'แก้หมายเหตุอย่างเดียว');
+  await page.locator('.ka-pr-fsave .ka-pr-btn--a').click();
+  await page.waitForSelector('.ka-pr-res');
+  check('F1 the amount stays ฿600', bodies[0]?.amount_paid === 600, JSON.stringify(bodies[0]));
+  // F11: the save is done, so nothing is left to protect.
+  const asks = await page.evaluate(() => {
+    const event = new Event('beforeunload', { cancelable: true });
+    window.dispatchEvent(event);
+    return event.defaultPrevented;
+  });
+  check('F11 after saving, leaving does not ask', !asks);
+  await page.getByRole('button', { name: 'ดูใบเสร็จ' }).click();
+  await page.waitForURL((url) => !url.pathname.endsWith('/edit'));
+
+  // F19: from transfer to cash, the account no longer shows.
+  await open(page, `${receiptUrl('RE209911030009')}/edit`, '.ka-pr-sosum');
+  await page.waitForFunction(() => document.querySelector('#ka-pr-amt')?.value);
+  await page.getByRole('radio', { name: /เงินสด/ }).click();
+  await page.locator('.ka-pr-fsave .ka-pr-btn--a').click();
+  await page.waitForSelector('.ka-pr-res');
+  await page.getByRole('button', { name: 'ดูใบเสร็จ' }).click();
+  await page.waitForURL((url) => !url.pathname.endsWith('/edit'));
+  await page.waitForSelector('.ka-pr-dl');
+  const account = await page.locator('.ka-pr-dl > div', { hasText: 'บัญชีที่รับเงิน' }).locator('dd').textContent();
+  check('F19 a receipt changed to cash shows no bank account', account === '—', account);
+  page.off('request', watch);
+
+  // F5: without the order's receipts there is nothing true to print.
+  await page.addInitScript(() => { window.__printed = 0; window.print = () => { window.__printed += 1; }; });
+  await page.route(/:3010\/payment-receipts\?/, (route) => route.abort());
+  await open(page, `${receiptUrl('RE209911030005')}?print=1`, '.ka-pr-hero');
+  await page.getByRole('button', { name: 'ลองอีกครั้ง' }).waitFor();
+  await page.waitForTimeout(700);
+  check('F5 no print while the payments are missing', (await page.evaluate(() => window.__printed)) === 0 && (await page.getByRole('button', { name: 'พิมพ์ / PDF' }).isDisabled()));
+  await page.unroute(/:3010\/payment-receipts\?/);
+
+  // F6: the bar of a cancelled order follows the money.
+  await open(page, receiptUrl('RE209911030003'), '.ka-pr-hero');
+  await page.waitForTimeout(600);
+  const bar = await page.locator('.ka-pr-aside .ka-pr-meter i').evaluate((node) => node.style.width);
+  check('F6 cancelled bar is 3,000 of 6,000', bar === '50%', bar);
+
+  // F7: the method counts follow the tab.
+  const asked = [];
+  const listen = (request) => { if (request.url().includes('/payment-receipts/summary')) asked.push(request.url()); };
+  page.on('request', listen);
+  await open(page, `${LIST}?tab=refund`, '.ka-pr-stats');
+  await page.waitForTimeout(500);
+  page.off('request', listen);
+  check('F7 the summary asks for the tab', asked.some((url) => url.includes('tab=refund')), asked.join(' '));
+
+  // F8: a summary that fails says so and offers a retry.
+  await page.route(/:3010\/payment-receipts\/summary/, (route) => route.abort());
+  await page.route(/:3010\/sale-order\/summary/, (route) => route.abort());
+  await open(page, LIST, '.ka-pr-stats');
+  await page.getByText('โหลดตัวเลขสรุปไม่สำเร็จ').waitFor();
+  const skeletons = await page.locator('.ka-pr-stat .ka-pr-sk').count();
+  check('F8 no stat card stays a skeleton', skeletons === 0, skeletons);
+  await shot(page, 'F8-summary-down-1440');
+  await page.unroute(/:3010\/payment-receipts\/summary/);
+  await page.unroute(/:3010\/sale-order\/summary/);
+  await page.route(/:3010\/sale-order\?/, (route) => route.abort());
+  await open(page, LIST, '.ka-pr-stats');
+  await page.getByText('ลองอีกครั้ง').first().waitFor();
+  const head = await page.locator('#ka-pr-queue-title').textContent();
+  check('F8 a failed queue does not say 0 orders', !head.includes('0 ใบสั่งขาย'), head);
+  await page.unroute(/:3010\/sale-order\?/);
+
+  // F9: a page past the end goes to the last page there is.
+  await open(page, `${LIST}?page=999`, '.ka-pr-stats');
+  await page.waitForSelector('.ka-pr-lt tbody tr');
+  check('F9 ?page past the end lands on real rows', !page.url().includes('page=999'), page.url());
+
+  // F3a: a failed delete closes with a plain button.
+  await page.route(/:3010\/payment-receipts\/[0-9a-f-]{36}$/, (route) => (route.request().method() === 'DELETE' ? route.fulfill(json({ message: 'ลบไม่ได้' }, 409)) : route.fallback()));
+  await open(page, `${LIST}?q=RE209911030004`, '.ka-pr-lt tbody tr');
+  await page.getByRole('button', { name: 'ตัวเลือกของ RE209911030004' }).click();
+  await page.getByRole('menuitem', { name: 'ลบใบเสร็จ' }).click();
+  await page.waitForSelector('.ka-pr-dlg');
+  await page.getByRole('button', { name: 'ลบใบเสร็จ' }).last().click();
+  await page.waitForSelector('.ka-pr-res');
+  await page.waitForTimeout(350);
+  const close = await page.getByRole('button', { name: 'ปิด', exact: true }).first().evaluate((node) => { const style = getComputedStyle(node); return [style.backgroundColor, getComputedStyle(document.querySelector('.ka-pr-res')).backgroundColor]; });
+  check('F3 the failed result closes with a plain button', close[0] === close[1], close.join(' / '));
+  await page.getByRole('button', { name: 'ปิด', exact: true }).first().click();
+  await page.unroute(/:3010\/payment-receipts\/[0-9a-f-]{36}$/);
+
+  // F18: an order past the first twenty options is found by typing.
+  await open(page, `${LIST}/new`, '#ka-pr-so');
+  await page.locator('#ka-pr-so').click();
+  await page.waitForTimeout(300);
+  const first = await page.locator('[role=option]').allTextContents();
+  check('A9 the far order is not among the first options', !first.some((text) => text.includes('SO209911030150')), first.length);
+  await page.getByRole('searchbox').fill('SO209911030150');
+  await page.locator('[role=option]', { hasText: 'SO209911030150' }).waitFor();
+  check('A9 typing finds the order past the first twenty', true);
+  await page.keyboard.press('Escape');
+});
+
+const small = async (target, where) => {
+  const under = await target.evaluate(() =>
+    [...document.querySelectorAll('.ka-pr a, .ka-pr button, .ka-pr input, .ka-pr select, .ka-pr textarea, .ka-pr [role=combobox], .ka-pr-filter button, .ka-pr-filter input:not([type=checkbox])')]
+      .filter((node) => node.getClientRects().length && !node.closest('.ka-pr-pg'))
+      // Inline links in a sentence are exempt (WCAG 2.5.8); a chip link carries its target in ::after.
+      .filter((node) => !node.classList.contains('ka-pr-link') && !node.classList.contains('ka-pr-sochip') && !node.classList.contains('ka-pr-rowlink') && !node.classList.contains('ka-pr-mc__link'))
+      // The search box's input sits inside a 44px field.
+      .filter((node) => !node.closest('.ka-pr-fs') || node.tagName === 'BUTTON')
+      .filter((node) => Math.round(node.getBoundingClientRect().height) < 44)
+      .map((node) => `${node.tagName}.${String(node.className).slice(0, 40)} ${Math.round(node.getBoundingClientRect().height)}`),
+  );
+  check(`F5 every control is 44 high: ${where}`, under.length === 0, under.slice(0, 6).join(' | '));
+};
+
+await step('F5 F4 all pages', async () => {
+  const pages = [
+    ['list', LIST, '.ka-pr-pager'],
+    ['form', `${LIST}/new?sale_order=${orders.SO209911030009.sale_order_id}`, '.ka-pr-sosum'],
+    ['detail', receiptUrl('RE209911030005'), '.ka-pr-hero'],
+    ['edit', `${receiptUrl('RE209911030004')}/edit`, '.ka-pr-sosum'],
+  ];
+  for (const width of [390, 767]) {
+    await page.setViewportSize({ width, height: 844 });
+    for (const [name, path, ready] of pages) {
+      await open(page, path, ready);
+      await page.waitForTimeout(500);
+      await small(page, `${name} ${width}`);
+    }
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await open(page, LIST, '.ka-pr-mc');
+  await page.getByRole('button', { name: 'วิธีชำระ' }).click();
+  await page.waitForSelector('.ka-pr-filter');
+  await page.waitForTimeout(450);
+  await small(page, 'filter sheet 390');
+  await page.getByRole('button', { name: 'ปิดตัวกรอง' }).click();
+  await page.waitForTimeout(300);
+  check('F5 the filter sheet gives focus back', (await page.evaluate(() => document.activeElement?.textContent ?? '')).includes('วิธีชำระ'));
+  const trigger = page.getByRole('button', { name: /ตัวเลือกของ/ }).locator('visible=true').first();
+  await trigger.focus();
+  await page.keyboard.press('Enter');
+  await page.waitForSelector('.ka-pr-bsi');
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(350);
+  check('F5 the row sheet gives focus back to ⋯', (await page.evaluate(() => document.activeElement?.getAttribute('aria-label') ?? '')).startsWith('ตัวเลือกของ'));
+  await page.setViewportSize({ width: 1440, height: 1000 });
+
+  for (const [name, path, ready] of pages) {
+    await open(page, path, ready);
+    await page.waitForTimeout(400);
+    let stops = 0;
+    let hidden = '';
+    for (let press = 0; press < 60; press += 1) {
+      await page.keyboard.press('Tab');
+      const seen = await page.evaluate(() => {
+        const active = document.activeElement;
+        if (!active?.closest?.('.ka-pr')) return null;
+        const style = getComputedStyle(active.closest('.ka-pr-fs') ?? active.closest('.ka-pr-amt') ?? active);
+        return style.outlineStyle !== 'none' && parseFloat(style.outlineWidth) >= 2 ? '' : active.outerHTML.slice(0, 90);
+      });
+      if (seen === null) continue;
+      stops += 1;
+      if (seen) { hidden = seen; break; }
+    }
+    check(`F5 Tab through ${name}: focus shows at every stop`, stops > 3 && !hidden, `${stops} ${hidden}`);
+  }
+  await open(page, `${LIST}?q=RE209911030004`, '.ka-pr-lt tbody tr');
+  const menu = page.getByRole('button', { name: 'ตัวเลือกของ RE209911030004' });
+  await menu.click();
+  await page.getByRole('menuitem', { name: 'ลบใบเสร็จ' }).click();
+  await page.waitForSelector('.ka-pr-dlg');
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(350);
+  const back = await page.evaluate(() => document.activeElement?.getAttribute('aria-label') ?? document.activeElement?.tagName);
+  check('F5 the delete dialog gives focus back to ⋯', String(back).startsWith('ตัวเลือกของ'), back);
+
+  const timing = (target) => target.evaluate(() => document.getAnimations().map((item) => [item.animationName, item.effect?.getTiming().duration, item.effect?.getTiming().delay]));
+  await page.goto(`${base}${LIST}`, { waitUntil: 'commit' });
+  await page.waitForSelector('.ka-pr-stats');
+  const rises = (await timing(page)).filter(([name]) => name === 'ka-pr-rise').map(([, , delay]) => delay);
+  check('F4 the sections stagger 0/40/80/120', [40, 80, 120].every((delay) => rises.includes(delay)), rises.join());
+  await page.waitForSelector('.ka-pr-meter i', { state: 'attached' });
+  const grow = (await timing(page)).find(([name]) => name === 'ka-pr-grow');
+  check('F4 a meter grows over 600ms', grow?.[1] === 600, JSON.stringify(grow));
+  await page.goto(`${base}${receiptUrl('RE209911030002')}`, { waitUntil: 'commit' });
+  await page.waitForSelector('.ka-pr-ring path');
+  const draw = (await timing(page)).find(([name]) => name === 'ka-pr-draw');
+  check('F4 the tick draws over 450ms after 200ms', draw?.[1] === 450 && draw?.[2] === 200, JSON.stringify(draw));
+  await page.setViewportSize({ width: 390, height: 844 });
+  await open(page, LIST, '.ka-pr-mc');
+  await page.getByRole('button', { name: /ตัวเลือกของ/ }).locator('visible=true').first().click();
+  await page.waitForSelector('.ka-pr-bsi');
+  const up = (await timing(page)).find(([name]) => name === 'ka-pr-up');
+  check('F4 a sheet rises over 320ms', up?.[1] === 320, JSON.stringify(up));
+  await page.keyboard.press('Escape');
+  await page.setViewportSize({ width: 1440, height: 1000 });
+});
+
+await step('Widths', async () => {
+  for (const [width, height] of [[834, 1112], [390, 844]]) {
+    await page.setViewportSize({ width, height });
+    await open(page, LIST, '.ka-pr-stat');
+    await page.waitForTimeout(600);
+    const stats = await page.locator('.ka-pr-stats').textContent();
+    check(`A2 ${width} four numbers show`, /฿/.test(stats) && /ใบ/.test(stats) && !/undefined/.test(stats), stats);
+    await shot(page, `A2-stats-${width}`);
+    const queue = await page.locator('.ka-pr-qc .ka-pr-code').allTextContents();
+    check(`A3 ${width} the queue is the oldest three`, queue.length === 3 && !queue.includes('SO209911030006'), queue.join());
+    await shot(page, `A3-queue-${width}`);
+
+    await page.fill('.ka-pr-fs input', 'SO209911030005');
+    await page.waitForFunction(() => document.querySelectorAll('.ka-pr-mc').length === 2);
+    check(`A4 ${width} search finds the cards and tints the match`, (await page.locator('.ka-pr-mc mark').count()) > 0);
+    await shot(page, `A4-search-${width}`);
+    await page.locator('.ka-pr-mc__link').first().click();
+    await page.waitForURL(/payment-receipts\/[0-9a-f-]{36}/);
+    check(`A4 ${width} a card opens the receipt`, true);
+
+    await open(page, LIST, '.ka-pr-mc');
+    await page.getByRole('button', { name: 'วิธีชำระ' }).click();
+    if (width === 390) {
+      await page.waitForSelector('.ka-pr-filter');
+      await page.locator('.ka-pr-filter').getByLabel('โอนผ่านธนาคาร').check();
+      await page.locator('.ka-pr-filter .ka-pr-btn--a').click();
+    } else {
+      await page.getByLabel('โอนผ่านธนาคาร').check();
+      await page.getByRole('button', { name: 'ใช้ตัวกรอง' }).click();
+    }
+    await page.waitForFunction(() => location.search.includes('method=bank'));
+    await page.waitForSelector('.ka-pr-chipon');
+    check(`A7 ${width} the chip names the filter and leads the row`, (await page.locator('.ka-pr-fbar > .ka-pr-chipon').first().textContent()).includes('โอนผ่านธนาคาร'));
+    await shot(page, `A7-filtered-${width}`);
+
+    await open(page, `${LIST}/new?sale_order=${orders.SO209911030006.sale_order_id}`, '.ka-pr-banner');
+    check(`A9 ${width} a cancelled link says why`, (await page.locator('.ka-pr-banner').textContent()).includes('ถูกยกเลิกแล้ว'));
+    await shot(page, `A9-cancelled-${width}`);
+
+    await open(page, `${LIST}/new?sale_order=${orders.SO209911030009.sale_order_id}`, '.ka-pr-sosum');
+    await page.waitForFunction(() => document.querySelector('#ka-pr-amt')?.value);
+    await page.fill('#ka-pr-amt', '10');
+    await page.getByRole('radio', { name: /เงินสด/ }).click();
+    const save = page.locator(width === 390 ? '.ka-pr-savebar .ka-pr-btn--a' : '.ka-pr-fsave .ka-pr-btn--a');
+    await save.click();
+    await page.waitForSelector('.ka-pr-res');
+    await shot(page, `A12-result-${width}`);
+    check(`A12 ${width} the result names a real RE`, /RE\d{12}/.test(await page.locator('.ka-pr-res').textContent()));
+    await page.getByRole('button', { name: 'ดูใบเสร็จ' }).click();
+    await page.waitForURL(/payment-receipts\/[0-9a-f-]{36}/);
+
+    await open(page, `${receiptUrl('RE209911030002')}/edit`, '.ka-pr-sosum');
+    await page.waitForFunction(() => document.querySelector('#ka-pr-amt')?.value);
+    await page.fill('#ka-pr-rm', 'แก้แล้ว');
+    await page.goBack({ waitUntil: 'commit' }).catch(() => {});
+    await page.getByRole('dialog', { name: 'ออกจากหน้านี้?' }).waitFor();
+    await shot(page, `A14-leave-${width}`);
+    check(`A14 ${width} back asks`, true);
+    await page.getByRole('button', { name: 'ทิ้งการแก้ไข' }).click();
+    await page.waitForTimeout(600);
+
+    for (const [name, code] of [['refund', REFUND], ['store', 'RE202610270825'], ['custom', 'RE202611030001'], ['cancelled', 'RE209911030003']]) {
+      await open(page, receiptUrl(code), '.ka-pr-hero');
+      await page.waitForTimeout(500);
+      await shot(page, `A16-${name}-${width}`);
+    }
+    check(`A16 ${width} four variants open`, true);
+
+    const none = { data: [], meta: { total: 0, page: 1, last_page: 1, limit: 100 } };
+    await page.route(/:3010\/sale-order\?/, (route) => route.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': base, 'access-control-allow-credentials': 'true' }, body: JSON.stringify(none) }));
+    await open(page, LIST, '.ka-pr-stats');
+    await page.getByText('ไม่มีใบสั่งขายรอรับชำระ').waitFor();
+    await shot(page, `A20-empty-queue-${width}`);
+    await page.unroute(/:3010\/sale-order\?/);
+    check(`A20 ${width} empty queue`, true);
+  }
+  await page.setViewportSize({ width: 1440, height: 1000 });
+
+  // F10: the skeleton and the cards take the same room at every size, measured across the queue's arrival.
+  for (const [width, height] of [[1440, 1000], [834, 1112], [390, 844]]) {
+    await page.setViewportSize({ width, height });
+    // With the sheet's lengths of text (V4): a longer order name wraps and adds its line to the real card.
+    const NAMES = ['แก้วเก็บความเย็นสกรีนโลโก้ 120 ใบ', 'ชุดของขวัญปีใหม่ 40 ชุด', 'กระบอกน้ำเลเซอร์โลโก้ 300 ใบ'];
+    await page.route(/:3010\/sale-order\?/, async (route) => {
+      if (route.request().method() !== 'GET') return route.fallback();
+      const response = await route.fetch();
+      const body = await response.json();
+      body.data.forEach((order, index) => {
+        order.sale_order_name = NAMES[index % 3];
+      });
+      await new Promise((done) => setTimeout(done, 1500));
+      await route.fulfill({ response, json: body });
+    });
+    await page.goto(`${base}${LIST}`, { waitUntil: 'commit' });
+    await page.waitForSelector('.ka-pr-qc--sk');
+    const before = await page.locator('.ka-pr-fbar').evaluate((node) => node.getBoundingClientRect().top);
+    await page.waitForSelector('.ka-pr-qc:not(.ka-pr-qc--sk)');
+    await page.waitForTimeout(300);
+    const after = await page.locator('.ka-pr-fbar').evaluate((node) => node.getBoundingClientRect().top);
+    await page.unroute(/:3010\/sale-order\?/);
+    check(`A20 ${width} the queue skeleton keeps the layout within 8px`, Math.abs(after - before) <= 8, `${before} → ${after}`);
+  }
+  await page.setViewportSize({ width: 1440, height: 1000 });
 });
 
 const failed = results.filter((item) => !item.ok);
