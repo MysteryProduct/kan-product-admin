@@ -1,0 +1,2884 @@
+[
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "จำนวนส่วน",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "หัวข้อ",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "ปุ่มสร้าง",
+    "reference": [
+      1244,
+      16,
+      164,
+      40
+    ],
+    "design": [
+      1243.7,
+      16,
+      164.3,
+      40
+    ],
+    "app": [
+      1243.7,
+      16,
+      164.3,
+      40
+    ],
+    "delta": [
+      -0.3,
+      0,
+      0.3,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "การ์ดสถิติ 1",
+    "reference": [
+      296,
+      76,
+      266,
+      112
+    ],
+    "design": [
+      296,
+      76,
+      266,
+      112
+    ],
+    "app": [
+      296,
+      76,
+      266,
+      112
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "การ์ดคิว 1",
+    "reference": [
+      313,
+      304,
+      351,
+      217
+    ],
+    "design": [
+      313,
+      304,
+      351.3,
+      217
+    ],
+    "app": [
+      313,
+      304,
+      351.3,
+      217
+    ],
+    "delta": [
+      0,
+      0,
+      0.3,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "ปุ่มรับชำระ",
+    "reference": [
+      330,
+      466,
+      317,
+      40
+    ],
+    "design": [
+      330,
+      466,
+      317.3,
+      40
+    ],
+    "app": [
+      330,
+      466,
+      317.3,
+      40
+    ],
+    "delta": [
+      0,
+      0,
+      0.3,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "แท็บ",
+    "reference": [
+      1076,
+      577,
+      307,
+      42
+    ],
+    "design": [
+      1075.8,
+      577,
+      307.2,
+      42
+    ],
+    "app": [
+      1075.8,
+      577,
+      307.2,
+      42
+    ],
+    "delta": [
+      -0.2,
+      0,
+      0.2,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "แถบตัวกรอง",
+    "reference": [
+      297,
+      638,
+      1110,
+      65
+    ],
+    "design": [
+      297,
+      638,
+      1110,
+      65
+    ],
+    "app": [
+      297,
+      638,
+      1110,
+      65
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "ช่องค้นหา",
+    "reference": [
+      313,
+      650,
+      380,
+      40
+    ],
+    "design": [
+      313,
+      650,
+      380,
+      40
+    ],
+    "app": [
+      313,
+      650,
+      380,
+      40
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "หัวตาราง",
+    "reference": [
+      297,
+      703,
+      1110,
+      41
+    ],
+    "design": [
+      297,
+      703,
+      1110,
+      40.5
+    ],
+    "app": [
+      297,
+      703,
+      1110,
+      40.5
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      -0.5
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "แถว/การ์ดแรก",
+    "reference": [
+      297,
+      744,
+      1110,
+      62
+    ],
+    "design": [
+      297,
+      743.5,
+      1110,
+      75
+    ],
+    "app": [
+      297,
+      743.5,
+      1110,
+      75
+    ],
+    "delta": [
+      0,
+      -0.5,
+      0,
+      13
+    ],
+    "outside": true,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 1440,
+    "name": "แถบหน้า",
+    "reference": [
+      297,
+      805,
+      1110,
+      59
+    ],
+    "design": [
+      297,
+      1118,
+      1110,
+      59
+    ],
+    "app": [
+      297,
+      1118,
+      1110,
+      59
+    ],
+    "delta": [
+      0,
+      313,
+      0,
+      0
+    ],
+    "outside": true,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "จำนวนส่วน",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "หัวข้อ",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "ปุ่มสร้าง",
+    "reference": [
+      638,
+      16,
+      164,
+      40
+    ],
+    "design": [
+      637.7,
+      16,
+      164.3,
+      40
+    ],
+    "app": [
+      637.7,
+      16,
+      164.3,
+      40
+    ],
+    "delta": [
+      -0.3,
+      0,
+      0.3,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "การ์ดสถิติ 1",
+    "reference": [
+      32,
+      76,
+      377,
+      112
+    ],
+    "design": [
+      32,
+      76,
+      377,
+      112
+    ],
+    "app": [
+      32,
+      76,
+      377,
+      112
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "การ์ดคิว 1",
+    "reference": [
+      49,
+      432,
+      362,
+      194
+    ],
+    "design": [
+      49,
+      432,
+      362,
+      194
+    ],
+    "app": [
+      49,
+      432,
+      362,
+      194
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "ปุ่มรับชำระ",
+    "reference": [
+      66,
+      571,
+      328,
+      40
+    ],
+    "design": [
+      66,
+      571,
+      328,
+      40
+    ],
+    "app": [
+      66,
+      571,
+      328,
+      40
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "แท็บ",
+    "reference": [
+      470,
+      888,
+      307,
+      42
+    ],
+    "design": [
+      469.8,
+      888,
+      307.2,
+      42
+    ],
+    "app": [
+      469.8,
+      888,
+      307.2,
+      42
+    ],
+    "delta": [
+      -0.2,
+      0,
+      0.2,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "แถบตัวกรอง",
+    "reference": [
+      33,
+      949,
+      768,
+      65
+    ],
+    "design": [
+      33,
+      949,
+      768,
+      65
+    ],
+    "app": [
+      33,
+      949,
+      768,
+      65
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "ช่องค้นหา",
+    "reference": [
+      49,
+      961,
+      300,
+      40
+    ],
+    "design": [
+      49,
+      961,
+      300.5,
+      40
+    ],
+    "app": [
+      49,
+      961,
+      289.5,
+      40
+    ],
+    "delta": [
+      0,
+      0,
+      -10.5,
+      0
+    ],
+    "outside": true,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "หัวตาราง",
+    "reference": null,
+    "design": null,
+    "app": null,
+    "delta": null,
+    "outside": false,
+    "compared": false,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "แถว/การ์ดแรก",
+    "reference": [
+      33,
+      1014,
+      768,
+      109
+    ],
+    "design": [
+      33,
+      1014,
+      768,
+      109
+    ],
+    "app": [
+      33,
+      1014,
+      768,
+      109
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 834,
+    "name": "แถบหน้า",
+    "reference": [
+      33,
+      1558,
+      768,
+      59
+    ],
+    "design": [
+      33,
+      1558,
+      768,
+      59
+    ],
+    "app": [
+      33,
+      1558,
+      768,
+      59
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "จำนวนส่วน",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "หัวข้อ",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "ปุ่มสร้าง",
+    "reference": [
+      16,
+      64,
+      358,
+      44
+    ],
+    "design": [
+      16,
+      64,
+      358,
+      44
+    ],
+    "app": [
+      16,
+      64,
+      358,
+      44
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "การ์ดสถิติ 1",
+    "reference": [
+      16,
+      124,
+      174,
+      144
+    ],
+    "design": [
+      16,
+      124,
+      174,
+      144
+    ],
+    "app": [
+      16,
+      124,
+      174,
+      144
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "การ์ดคิว 1",
+    "reference": [
+      29,
+      576,
+      332,
+      221
+    ],
+    "design": [
+      29,
+      576,
+      332,
+      221
+    ],
+    "app": [
+      29,
+      576,
+      332,
+      221
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "ปุ่มรับชำระ",
+    "reference": [
+      46,
+      738,
+      298,
+      44
+    ],
+    "design": [
+      46,
+      738,
+      298,
+      44
+    ],
+    "app": [
+      46,
+      738,
+      298,
+      44
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "แท็บ",
+    "reference": [
+      33,
+      1321,
+      324,
+      52
+    ],
+    "design": [
+      33,
+      1321,
+      324,
+      52
+    ],
+    "app": [
+      33,
+      1321,
+      324,
+      52
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "แถบตัวกรอง",
+    "reference": [
+      17,
+      1390,
+      356,
+      173
+    ],
+    "design": [
+      17,
+      1390,
+      356,
+      173
+    ],
+    "app": [
+      17,
+      1390,
+      356,
+      173
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "ช่องค้นหา",
+    "reference": [
+      33,
+      1402,
+      324,
+      44
+    ],
+    "design": [
+      33,
+      1402,
+      324,
+      44
+    ],
+    "app": [
+      33,
+      1402,
+      324,
+      44
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "หัวตาราง",
+    "reference": null,
+    "design": null,
+    "app": null,
+    "delta": null,
+    "outside": false,
+    "compared": false,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "แถว/การ์ดแรก",
+    "reference": [
+      17,
+      1563,
+      356,
+      109
+    ],
+    "design": [
+      17,
+      1563,
+      356,
+      109
+    ],
+    "app": [
+      17,
+      1563,
+      356,
+      109
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "list",
+    "width": 390,
+    "name": "แถบหน้า",
+    "reference": [
+      17,
+      2107,
+      356,
+      59
+    ],
+    "design": [
+      17,
+      2107,
+      356,
+      59
+    ],
+    "app": [
+      17,
+      2107,
+      356,
+      69
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      10
+    ],
+    "outside": true,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 1440,
+    "name": "จำนวนส่วน",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "form",
+    "width": 1440,
+    "name": "หัวข้อ",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "form",
+    "width": 1440,
+    "name": "ตัวเลือกใบสั่งขาย",
+    "reference": [
+      321,
+      204,
+      682,
+      40
+    ],
+    "design": [
+      321,
+      204,
+      682,
+      40
+    ],
+    "app": [
+      321,
+      204,
+      682,
+      40
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 1440,
+    "name": "กล่องสรุปใบ",
+    "reference": [
+      321,
+      258,
+      682,
+      108
+    ],
+    "design": [
+      321,
+      258,
+      682,
+      108
+    ],
+    "app": [
+      321,
+      258,
+      682,
+      108
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 1440,
+    "name": "radio ประเภท",
+    "reference": [
+      321,
+      515,
+      682,
+      74
+    ],
+    "design": [
+      321,
+      515,
+      682,
+      74
+    ],
+    "app": [
+      321,
+      515,
+      682,
+      74
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 1440,
+    "name": "ช่องยอด",
+    "reference": [
+      321,
+      635,
+      682,
+      52
+    ],
+    "design": [
+      321,
+      635,
+      682,
+      52
+    ],
+    "app": [
+      321,
+      635,
+      682,
+      52
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 1440,
+    "name": "บัญชีที่รับเงิน",
+    "reference": [
+      321,
+      883,
+      333,
+      40
+    ],
+    "design": [
+      321,
+      883,
+      333,
+      40
+    ],
+    "app": [
+      321,
+      883,
+      333,
+      40
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 1440,
+    "name": "หมายเหตุ",
+    "reference": [
+      321,
+      995,
+      682,
+      76
+    ],
+    "design": [
+      321,
+      995,
+      682,
+      76
+    ],
+    "app": [
+      321,
+      995,
+      682,
+      76
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 1440,
+    "name": "การ์ดสรุป",
+    "reference": [
+      1048,
+      76,
+      360,
+      434
+    ],
+    "design": [
+      1048,
+      76,
+      360,
+      434
+    ],
+    "app": [
+      1048,
+      76,
+      360,
+      434
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 1440,
+    "name": "ปุ่มบันทึก",
+    "reference": [
+      1073,
+      401,
+      310,
+      40
+    ],
+    "design": [
+      1073,
+      401,
+      310,
+      40
+    ],
+    "app": [
+      1073,
+      401,
+      310,
+      40
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 1440,
+    "name": "savebar",
+    "reference": null,
+    "design": null,
+    "app": null,
+    "delta": null,
+    "outside": false,
+    "compared": false,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 834,
+    "name": "จำนวนส่วน",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "form",
+    "width": 834,
+    "name": "หัวข้อ",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "form",
+    "width": 834,
+    "name": "ตัวเลือกใบสั่งขาย",
+    "reference": [
+      57,
+      204,
+      720,
+      40
+    ],
+    "design": [
+      57,
+      204,
+      720,
+      40
+    ],
+    "app": [
+      57,
+      204,
+      720,
+      40
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 834,
+    "name": "กล่องสรุปใบ",
+    "reference": [
+      57,
+      258,
+      720,
+      108
+    ],
+    "design": [
+      57,
+      258,
+      720,
+      108
+    ],
+    "app": [
+      57,
+      258,
+      720,
+      108
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 834,
+    "name": "radio ประเภท",
+    "reference": [
+      57,
+      515,
+      720,
+      74
+    ],
+    "design": [
+      57,
+      515,
+      720,
+      74
+    ],
+    "app": [
+      57,
+      515,
+      720,
+      74
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 834,
+    "name": "ช่องยอด",
+    "reference": [
+      57,
+      635,
+      720,
+      52
+    ],
+    "design": [
+      57,
+      635,
+      720,
+      52
+    ],
+    "app": [
+      57,
+      635,
+      720,
+      52
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 834,
+    "name": "บัญชีที่รับเงิน",
+    "reference": [
+      57,
+      883,
+      352,
+      40
+    ],
+    "design": [
+      57,
+      883,
+      352,
+      40
+    ],
+    "app": [
+      57,
+      883,
+      352,
+      40
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 834,
+    "name": "หมายเหตุ",
+    "reference": [
+      57,
+      995,
+      720,
+      76
+    ],
+    "design": [
+      57,
+      995,
+      720,
+      76
+    ],
+    "app": [
+      57,
+      995,
+      720,
+      76
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 834,
+    "name": "การ์ดสรุป",
+    "reference": [
+      32,
+      1112,
+      377,
+      434
+    ],
+    "design": [
+      32,
+      1112,
+      377,
+      434
+    ],
+    "app": [
+      32,
+      1112,
+      377,
+      434
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 834,
+    "name": "ปุ่มบันทึก",
+    "reference": [
+      57,
+      1437,
+      327,
+      40
+    ],
+    "design": [
+      57,
+      1437,
+      327,
+      40
+    ],
+    "app": [
+      57,
+      1437,
+      327,
+      40
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 834,
+    "name": "savebar",
+    "reference": null,
+    "design": null,
+    "app": null,
+    "delta": null,
+    "outside": false,
+    "compared": false,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 390,
+    "name": "จำนวนส่วน",
+    "outside": true,
+    "compared": true
+  },
+  {
+    "screen": "form",
+    "width": 390,
+    "name": "หัวข้อ",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "form",
+    "width": 390,
+    "name": "ตัวเลือกใบสั่งขาย",
+    "reference": [
+      33,
+      216,
+      324,
+      44
+    ],
+    "design": [
+      33,
+      216,
+      324,
+      44
+    ],
+    "app": [
+      33,
+      216,
+      324,
+      44
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 390,
+    "name": "กล่องสรุปใบ",
+    "reference": [
+      33,
+      274,
+      324,
+      166
+    ],
+    "design": [
+      33,
+      274,
+      324,
+      166
+    ],
+    "app": [
+      33,
+      274,
+      324,
+      166
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 390,
+    "name": "radio ประเภท",
+    "reference": [
+      33,
+      589,
+      324,
+      238
+    ],
+    "design": [
+      33,
+      589,
+      324,
+      238
+    ],
+    "app": [
+      33,
+      589,
+      324,
+      238
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 390,
+    "name": "ช่องยอด",
+    "reference": [
+      33,
+      873,
+      324,
+      52
+    ],
+    "design": [
+      33,
+      873,
+      324,
+      52
+    ],
+    "app": [
+      33,
+      873,
+      324,
+      52
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 390,
+    "name": "บัญชีที่รับเงิน",
+    "reference": [
+      33,
+      1121,
+      324,
+      44
+    ],
+    "design": [
+      33,
+      1121,
+      324,
+      44
+    ],
+    "app": [
+      33,
+      1121,
+      324,
+      44
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 390,
+    "name": "หมายเหตุ",
+    "reference": [
+      33,
+      1325,
+      324,
+      76
+    ],
+    "design": [
+      33,
+      1325,
+      324,
+      76
+    ],
+    "app": [
+      33,
+      1325,
+      324,
+      76
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 390,
+    "name": "การ์ดสรุป",
+    "reference": [
+      16,
+      1442,
+      358,
+      330
+    ],
+    "design": [
+      16,
+      1442,
+      358,
+      442
+    ],
+    "app": [
+      16,
+      1442,
+      358,
+      330
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 390,
+    "name": "ปุ่มบันทึก",
+    "reference": null,
+    "design": [
+      33,
+      1767,
+      324,
+      44
+    ],
+    "app": null,
+    "delta": null,
+    "outside": false,
+    "compared": false,
+    "font": null
+  },
+  {
+    "screen": "form",
+    "width": 390,
+    "name": "savebar",
+    "reference": [
+      null,
+      null,
+      null,
+      74
+    ],
+    "design": [
+      0,
+      690,
+      390,
+      74
+    ],
+    "app": [
+      0,
+      690,
+      390,
+      74
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "detail",
+    "width": 1440,
+    "name": "จำนวนส่วน",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "detail",
+    "width": 1440,
+    "name": "หัวข้อ",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "detail",
+    "width": 1440,
+    "name": "ปุ่มพิมพ์",
+    "reference": [
+      1138,
+      -4,
+      126,
+      40
+    ],
+    "design": [
+      1138.2,
+      -4,
+      126.3,
+      40
+    ],
+    "app": [
+      1138.2,
+      -4,
+      126.3,
+      40
+    ],
+    "delta": [
+      0.2,
+      0,
+      0.3,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "detail",
+    "width": 1440,
+    "name": "การ์ดยอด",
+    "reference": [
+      296,
+      56,
+      732,
+      108
+    ],
+    "design": [
+      296,
+      56,
+      732,
+      108
+    ],
+    "app": [
+      296,
+      56,
+      732,
+      108
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "detail",
+    "width": 1440,
+    "name": "ข้อมูล dl",
+    "reference": [
+      321,
+      264,
+      682,
+      172
+    ],
+    "design": [
+      321,
+      264,
+      682,
+      172
+    ],
+    "app": [
+      321,
+      264,
+      682,
+      172
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "detail",
+    "width": 1440,
+    "name": "การ์ดการชำระ",
+    "reference": [
+      1048,
+      56,
+      360,
+      287
+    ],
+    "design": [
+      1048,
+      56,
+      360,
+      287
+    ],
+    "app": [
+      1048,
+      56,
+      360,
+      287
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "detail",
+    "width": 834,
+    "name": "จำนวนส่วน",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "detail",
+    "width": 834,
+    "name": "หัวข้อ",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "detail",
+    "width": 834,
+    "name": "ปุ่มพิมพ์",
+    "reference": [
+      532,
+      -4,
+      126,
+      40
+    ],
+    "design": [
+      532.2,
+      -4,
+      126.3,
+      40
+    ],
+    "app": [
+      532.2,
+      -4,
+      126.3,
+      40
+    ],
+    "delta": [
+      0.2,
+      0,
+      0.3,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "detail",
+    "width": 834,
+    "name": "การ์ดยอด",
+    "reference": [
+      32,
+      56,
+      770,
+      108
+    ],
+    "design": [
+      32,
+      56,
+      770,
+      108
+    ],
+    "app": [
+      32,
+      56,
+      770,
+      108
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "detail",
+    "width": 834,
+    "name": "ข้อมูล dl",
+    "reference": [
+      57,
+      264,
+      720,
+      296
+    ],
+    "design": [
+      57,
+      264,
+      720,
+      296
+    ],
+    "app": [
+      57,
+      264,
+      720,
+      296
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "detail",
+    "width": 834,
+    "name": "การ์ดการชำระ",
+    "reference": [
+      32,
+      601,
+      377,
+      287
+    ],
+    "design": [
+      32,
+      601,
+      377,
+      287
+    ],
+    "app": [
+      32,
+      601,
+      377,
+      287
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "detail",
+    "width": 390,
+    "name": "จำนวนส่วน",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "detail",
+    "width": 390,
+    "name": "หัวข้อ",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "detail",
+    "width": 390,
+    "name": "ปุ่มพิมพ์",
+    "reference": [
+      16,
+      44,
+      149,
+      44
+    ],
+    "design": [
+      16,
+      44,
+      149,
+      44
+    ],
+    "app": [
+      16,
+      44,
+      149,
+      44
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "detail",
+    "width": 390,
+    "name": "การ์ดยอด",
+    "reference": [
+      16,
+      104,
+      358,
+      168
+    ],
+    "design": [
+      16,
+      104,
+      358,
+      168
+    ],
+    "app": [
+      16,
+      104,
+      358,
+      168
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "detail",
+    "width": 390,
+    "name": "ข้อมูล dl",
+    "reference": [
+      33,
+      372,
+      324,
+      296
+    ],
+    "design": [
+      33,
+      372,
+      324,
+      296
+    ],
+    "app": [
+      33,
+      372,
+      324,
+      296
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "detail",
+    "width": 390,
+    "name": "การ์ดการชำระ",
+    "reference": [
+      16,
+      709,
+      358,
+      291
+    ],
+    "design": [
+      16,
+      709,
+      358,
+      291
+    ],
+    "app": [
+      16,
+      709,
+      358,
+      291
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "edit",
+    "width": 1440,
+    "name": "จำนวนส่วน",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "edit",
+    "width": 1440,
+    "name": "หัวข้อ",
+    "outside": true,
+    "compared": true
+  },
+  {
+    "screen": "edit",
+    "width": 1440,
+    "name": "banner",
+    "reference": [
+      296,
+      76,
+      1112,
+      54
+    ],
+    "design": [
+      296,
+      76,
+      1112,
+      54
+    ],
+    "app": [
+      296,
+      76,
+      1112,
+      54
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "edit",
+    "width": 1440,
+    "name": "กล่องสรุปใบ",
+    "reference": [
+      321,
+      230,
+      682,
+      108
+    ],
+    "design": [
+      321,
+      230,
+      682,
+      108
+    ],
+    "app": [
+      321,
+      230,
+      682,
+      108
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "edit",
+    "width": 1440,
+    "name": "ช่องยอด",
+    "reference": [
+      321,
+      607,
+      682,
+      52
+    ],
+    "design": [
+      321,
+      607,
+      682,
+      52
+    ],
+    "app": [
+      321,
+      607,
+      682,
+      52
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "edit",
+    "width": 1440,
+    "name": "การ์ดสรุป",
+    "reference": [
+      1048,
+      150,
+      360,
+      428
+    ],
+    "design": [
+      1048,
+      150,
+      360,
+      428
+    ],
+    "app": [
+      1048,
+      150,
+      360,
+      428
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "edit",
+    "width": 834,
+    "name": "จำนวนส่วน",
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "edit",
+    "width": 834,
+    "name": "หัวข้อ",
+    "outside": true,
+    "compared": true
+  },
+  {
+    "screen": "edit",
+    "width": 834,
+    "name": "banner",
+    "reference": [
+      32,
+      76,
+      770,
+      54
+    ],
+    "design": [
+      32,
+      76,
+      770,
+      54
+    ],
+    "app": [
+      32,
+      76,
+      770,
+      54
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "edit",
+    "width": 834,
+    "name": "กล่องสรุปใบ",
+    "reference": [
+      57,
+      230,
+      720,
+      108
+    ],
+    "design": [
+      57,
+      230,
+      720,
+      108
+    ],
+    "app": [
+      57,
+      230,
+      720,
+      108
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "edit",
+    "width": 834,
+    "name": "ช่องยอด",
+    "reference": [
+      57,
+      607,
+      720,
+      52
+    ],
+    "design": [
+      57,
+      607,
+      720,
+      52
+    ],
+    "app": [
+      57,
+      607,
+      720,
+      52
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "edit",
+    "width": 834,
+    "name": "การ์ดสรุป",
+    "reference": [
+      32,
+      1084,
+      377,
+      428
+    ],
+    "design": [
+      32,
+      1084,
+      377,
+      428
+    ],
+    "app": [
+      32,
+      1085,
+      377,
+      428
+    ],
+    "delta": [
+      0,
+      1,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "edit",
+    "width": 390,
+    "name": "จำนวนส่วน",
+    "outside": true,
+    "compared": true
+  },
+  {
+    "screen": "edit",
+    "width": 390,
+    "name": "หัวข้อ",
+    "outside": true,
+    "compared": true
+  },
+  {
+    "screen": "edit",
+    "width": 390,
+    "name": "banner",
+    "reference": [
+      16,
+      68,
+      358,
+      102
+    ],
+    "design": [
+      16,
+      68,
+      358,
+      102
+    ],
+    "app": [
+      16,
+      68,
+      358,
+      102
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "edit",
+    "width": 390,
+    "name": "กล่องสรุปใบ",
+    "reference": [
+      33,
+      266,
+      324,
+      166
+    ],
+    "design": [
+      33,
+      266,
+      324,
+      166
+    ],
+    "app": [
+      33,
+      266,
+      324,
+      166
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "edit",
+    "width": 390,
+    "name": "ช่องยอด",
+    "reference": [
+      33,
+      865,
+      324,
+      52
+    ],
+    "design": [
+      33,
+      865,
+      324,
+      52
+    ],
+    "app": [
+      33,
+      865,
+      324,
+      52
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "edit",
+    "width": 390,
+    "name": "การ์ดสรุป",
+    "reference": [
+      16,
+      1480,
+      358,
+      324
+    ],
+    "design": [
+      16,
+      1480,
+      358,
+      436
+    ],
+    "app": [
+      16,
+      1479,
+      358,
+      324
+    ],
+    "delta": [
+      0,
+      -1,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true,
+    "font": null
+  },
+  {
+    "screen": "print",
+    "width": 794,
+    "name": "หัว",
+    "reference": [
+      60,
+      56,
+      674,
+      157
+    ],
+    "design": [
+      60,
+      56,
+      674,
+      157
+    ],
+    "app": [
+      60,
+      56,
+      674,
+      157
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "print",
+    "width": 794,
+    "name": "กล่องลูกค้า",
+    "reference": [
+      null,
+      237,
+      null,
+      null
+    ],
+    "design": [
+      60,
+      237,
+      674,
+      100
+    ],
+    "app": [
+      60,
+      237,
+      674,
+      100
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "print",
+    "width": 794,
+    "name": "ตาราง",
+    "reference": [
+      null,
+      361,
+      null,
+      null
+    ],
+    "design": [
+      60,
+      361,
+      674,
+      108
+    ],
+    "app": [
+      60,
+      361,
+      674,
+      108
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "print",
+    "width": 794,
+    "name": "สรุป",
+    "reference": [
+      434,
+      493,
+      300,
+      null
+    ],
+    "design": [
+      434,
+      493,
+      300,
+      88
+    ],
+    "app": [
+      434,
+      493,
+      300,
+      88
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "print",
+    "width": 794,
+    "name": "ตัวอักษร",
+    "reference": [
+      null,
+      605,
+      null,
+      null
+    ],
+    "design": [
+      60,
+      605,
+      674,
+      42
+    ],
+    "app": [
+      60,
+      605,
+      674,
+      42
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "print",
+    "width": 794,
+    "name": "ลงชื่อ",
+    "reference": [
+      null,
+      887,
+      null,
+      null
+    ],
+    "design": [
+      60,
+      887,
+      674,
+      123
+    ],
+    "app": [
+      60,
+      887,
+      674,
+      123
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true
+  },
+  {
+    "screen": "print",
+    "width": 794,
+    "name": "ท้ายกระดาษ",
+    "reference": [
+      null,
+      1034,
+      null,
+      null
+    ],
+    "design": [
+      60,
+      1034,
+      674,
+      33
+    ],
+    "app": [
+      60,
+      1034,
+      674,
+      33
+    ],
+    "delta": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "outside": false,
+    "compared": true
+  }
+]

@@ -4,14 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ContactRequestModel from "@/models/contact-request";
 import InvoiceSupplierModel from "@/models/invoice-supplier";
-import PaymentReceiptModel from "@/models/payment-receipt";
 import SupplierModel from "@/models/supplier";
 import ContactRequestDetailModal from "@/app/admin/contact-requests/components/detail";
 import InvoiceSupplierDetailModal from "@/app/admin/invoice-supplier/components/detail";
 import JobOrderDetailModal from "@/app/admin/job-orders/components/detail";
 import MaterialDetailModal from "@/app/admin/materials/components/detail";
 import ProductDetailModal from "@/app/admin/products/components/detail";
-import PaymentReceiptDetailModal from "@/app/admin/payment-receipts/components/detail";
 import StoreOrderModal from "@/app/admin/store-fulfillment/components/store-order-modal";
 import { getApiErrorMessage } from "@/lib/api-error";
 import axiosInstance from "@/lib/axios";
@@ -20,10 +18,8 @@ import type { InvoiceSupplierRow } from "@/types/invoice-supplier";
 import type { JobOrder } from "@/types/job-order";
 import type { Material } from "@/types/material";
 import type { Product } from "@/types/product";
-import type { PaymentReceipt } from "@/types/payment-receipt";
 import type { DashboardListKind } from "@/types/dashboard";
 
-const paymentReceiptModel = new PaymentReceiptModel();
 const contactRequestModel = new ContactRequestModel();
 const invoiceSupplierModel = new InvoiceSupplierModel();
 const supplierModel = new SupplierModel();
@@ -56,7 +52,6 @@ export const OPENABLE_KINDS: DashboardListKind[] = [
 ];
 
 type Loaded =
-  | { kind: "payment_receipt"; record: PaymentReceipt }
   | { kind: "contact_request"; record: ContactRequest }
   | { kind: "product_variant"; record: Product }
   | { kind: "material"; record: Material }
@@ -103,13 +98,14 @@ export default function RecordDetail({
       onClose();
       return;
     }
+    // So does a payment receipt (TASK-0346).
+    if (kind === "payment_receipt") {
+      router.push(`/admin/payment-receipts/${id}`);
+      onClose();
+      return;
+    }
     let cancelled = false;
     const load = async (): Promise<Loaded> => {
-      if (kind === "payment_receipt")
-        return {
-          kind,
-          record: await paymentReceiptModel.getPaymentReceiptById(id),
-        };
       if (kind === "contact_request")
         return {
           kind,
@@ -183,15 +179,6 @@ export default function RecordDetail({
     onChanged();
   };
 
-  if (loaded.kind === "payment_receipt") {
-    return (
-      <PaymentReceiptDetailModal
-        isOpen
-        onClose={onClose}
-        paymentReceipt={loaded.record}
-      />
-    );
-  }
   if (loaded.kind === "contact_request") {
     return (
       <ContactRequestDetailModal

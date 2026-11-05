@@ -457,15 +457,16 @@ check('approve: the balance card shows the whole amount due', /฿/.test(await t
 await shot('detail-approved-created-1440');
 
 const pay = async (amount) => {
+  // Payment has its own page since TASK-0346: it starts on bank transfer, which needs an account; cash needs none.
+  const orderUrl = page.url();
   await page.locator('.ka-so-dh__acts').getByText('รับชำระ', { exact: true }).click();
-  await page.waitForSelector('#payment-receipts-insert-form', { timeout: 20000 });
-  // The dialog starts on bank transfer, which needs a receiving account; cash needs none.
-  await page.getByLabel('วิธีชำระเงิน').click();
-  await page.getByRole('option', { name: 'เงินสด' }).click();
-  await page.fill('#payment-receipts-insert-form input[type=number]', String(amount));
-  await page.click('button[form=payment-receipts-insert-form]');
-  await settle(800);
-  await dismissResult();
+  await page.waitForSelector('.ka-pr-sosum', { timeout: 20000 });
+  await page.getByRole('radio', { name: /เงินสด/ }).click();
+  await page.fill('#ka-pr-amt', String(amount));
+  await page.locator('.ka-pr-fsave .ka-pr-btn--a').click();
+  await page.waitForSelector('.ka-pr-res', { timeout: 20000 });
+  await page.goto(orderUrl, { waitUntil: 'commit' });
+  await page.waitForSelector('.ka-so-dh__id', { timeout: 30000 });
   await settle(900);
 };
 await pay(50);

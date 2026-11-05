@@ -15,6 +15,10 @@ const ICONS = {
   cancel: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM6 6l12 12',
   key: 'M15 7a2 2 0 0 1 2 2m4 0a6 6 0 0 1-7.7 5.7L11 17H9v2H7v2H4a1 1 0 0 1-1-1v-2.6a1 1 0 0 1 .3-.7l6-6A6 6 0 1 1 21 9z',
   logout: 'M15 16l4-4-4-4M19 12H9M12 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6',
+  print: 'M7 9V3h10v6M7 17H5v-6h14v6h-2M7 14h10v7H7z',
+  document: 'M7 3h7l4 4v14H7zM14 3v4h4',
+  check: 'M5 12.5l4.5 4.5L19 7',
+  lock: 'M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5z',
 } as const;
 
 export interface RowMenuItem {
@@ -24,6 +28,8 @@ export interface RowMenuItem {
   tone?: 'danger';
   disabled?: boolean;
   icon?: keyof typeof ICONS;
+  /** The choice in force, for a menu that picks one of several: a tick at the end of the line. */
+  current?: boolean;
 }
 
 interface RowMenuProps {
@@ -33,6 +39,12 @@ interface RowMenuProps {
   /** Replaces the "⋯" icon, e.g. the employee card at the foot of the sidebar; `triggerClassName` styles it. */
   trigger?: ReactNode;
   triggerClassName?: string;
+  /** Text under the commands, after a divider: why a document offers no more than these. */
+  note?: string;
+  /** The panel's width; 220 unless a page's design says otherwise. */
+  width?: number;
+  /** Extra classes on the list of commands, for a page whose design sizes them itself. */
+  menuClassName?: string;
 }
 
 const ITEM = 'button[role="menuitem"]:not(:disabled)';
@@ -41,7 +53,7 @@ const ITEM = 'button[role="menuitem"]:not(:disabled)';
  * The "⋯" menu at the end of a table row. Arrow keys move, Enter picks, Esc closes.
  * On phones it opens as an action sheet (Popover's bottom sheet).
  */
-export default function RowMenu({ label, items, trigger, triggerClassName }: RowMenuProps) {
+export default function RowMenu({ label, items, trigger, triggerClassName, note, width = 220, menuClassName = '' }: RowMenuProps) {
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLButtonElement>(null);
 
@@ -78,13 +90,13 @@ export default function RowMenu({ label, items, trigger, triggerClassName }: Row
           </svg>
         )}
       </button>
-      <Popover open={open} onClose={() => setOpen(false)} anchorRef={anchorRef} title={label} align="end" width={220} role="menu">
+      <Popover open={open} onClose={() => setOpen(false)} anchorRef={anchorRef} title={label} align="end" width={width} role="menu">
         <div
           ref={(node) => {
             // Focus the first item as the menu appears, for keyboard users.
             if (node && !node.contains(document.activeElement)) node.querySelector<HTMLButtonElement>(ITEM)?.focus();
           }}
-          className="ka-menu"
+          className={`ka-menu ${menuClassName}`}
           onKeyDown={onKeyDown}
         >
           {items.map((item, index) => (
@@ -108,9 +120,25 @@ export default function RowMenu({ label, items, trigger, triggerClassName }: Row
                 </svg>
               )}
               {item.label}
+              {item.current && (
+                <svg className="ka-menu__tick" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d={ICONS.check} />
+                </svg>
+              )}
             </button>
             </Fragment>
           ))}
+          {note && (
+            <>
+              <div className="ka-menu__sep" role="separator" />
+              <p className="ka-menu__note">
+                <svg fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d={ICONS.lock} />
+                </svg>
+                <span>{note}</span>
+              </p>
+            </>
+          )}
         </div>
       </Popover>
     </>

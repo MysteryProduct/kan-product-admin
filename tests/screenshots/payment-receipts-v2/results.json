@@ -1,0 +1,1175 @@
+{
+  "results": [
+    {
+      "name": "seed: every receipt and order the run needs exists",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "A1 /new opens and survives a reload",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A1 /[id] survives a reload",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A1 pay on an approved order opens /new with the order chosen",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A1 a receipt row of an order opens /[id]",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A1 ?search= still filters",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A1 view-only: /new shows no form",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A1 view-only: /edit shows no form",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A2 four numbers match the API",
+      "ok": true,
+      "detail": "รับชำระเดือนนี้฿47,752.00▼ 3% จากเดือนก่อนยอดค้างรับ฿145,098.0046 ใบสั่งขายใบเสร็จเดือนนี้47 ใบวันนี้ 8 ใบคืนเงินเดือนนี้฿1,200.0011 รายการ"
+    },
+    {
+      "name": "A2 no percent when last month is 0",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A2 a fall shows ▼",
+      "ok": true,
+      "detail": "รับชำระเดือนนี้฿500.00▼ 50% จากเดือนก่อน"
+    },
+    {
+      "name": "A2 null received shows —",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "G6 no sale_orders:view: no queue",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "G6 no sale_orders:view: outstanding reads —",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A3 ดูทั้งหมด puts queue=all in the URL",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A3 approved and partial are in the queue",
+      "ok": true,
+      "detail": "SO209911030001,SO209911030002,SO209911030005,SO209911030007,SO209911030008,SO209911030009,SO209911030011,SO209911030012,SO202610150024,SO202610150025,SO202610150029,SO202610240004"
+    },
+    {
+      "name": "A3 cancelled, pending and paid are not",
+      "ok": true,
+      "detail": "SO209911030001,SO209911030002,SO209911030005,SO209911030007,SO209911030008,SO209911030009,SO209911030011,SO209911030012,SO202610150024,SO202610150025,SO202610150029,SO202610240004"
+    },
+    {
+      "name": "A3 the card owes ฿25,200.00",
+      "ok": true,
+      "detail": "SO209911030002ทดสอบ TASK-0346 partial มัดจำชำระบางส่วนคุณมานพ ศรีสุข · ยอด ฿36,000.00ชำระแล้ว 30%ค้าง ฿25,200.00รับชำระ"
+    },
+    {
+      "name": "A3 a custom card goes to the sale order",
+      "ok": true,
+      "detail": "/admin/sale-orders/01a16d28-3099-7d32-a8a6-80c0cf64ea76"
+    },
+    {
+      "name": "A3 ย่อรายการ takes it back to three",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A4 a receipt of a cancelled order stays in the table",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A4 the match is tinted",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A4 search by SO finds both receipts",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A4 search by customer finds the receipt",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A4 the chip opens the order, not the row",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A4 a click on the row opens the receipt",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A5 RE209911030001 reads โอนผ่านธนาคาร / วางมัดจำ",
+      "ok": true,
+      "detail": "RE209911030001คุณมานพ ศรีสุขSO209911030002โอนผ่านธนาคารธนาคารทดสอบ (dev) ·· 00003 พ.ย. 2569ชำระแล้ว10,800.00วางมัดจำ"
+    },
+    {
+      "name": "A5 RE209911030003 reads เงินสด / ชำระบางส่วน",
+      "ok": true,
+      "detail": "RE209911030003คุณวรรณา แก้วมณีSO209911030004เงินสดรับที่ร้าน1 พ.ย. 2569ชำระแล้ว3,000.00ชำระบางส่วน"
+    },
+    {
+      "name": "A5 RE202610270825 reads หน้าร้านออนไลน์ / ชำระเต็มจำนวน",
+      "ok": true,
+      "detail": "RE202610270825สุวรรณ บุญน้อยSO202610271032หน้าร้านออนไลน์บัตร · chrg_te…27 ต.ค. 2569ชำระแล้ว880.00ชำระเต็มจำนวน"
+    },
+    {
+      "name": "A5 RE209911030012 reads คืนเงิน / คืนเงิน",
+      "ok": true,
+      "detail": "RE209911030012ร้านดอกไม้ริมทางSO209911030013คืนเงินคืนครั้งที่สอง1 พ.ย. 2569คืนเงินแล้ว−200.00คืนเงิน"
+    },
+    {
+      "name": "A6 regular: view, edit, print, order, delete",
+      "ok": true,
+      "detail": "ดูรายละเอียด|แก้ไข|พิมพ์ / PDF|ไปที่ใบสั่งขาย|ลบใบเสร็จ"
+    },
+    {
+      "name": "A6 the menu is 260 wide",
+      "ok": true,
+      "detail": "260"
+    },
+    {
+      "name": "A6 an item is 40 high",
+      "ok": true,
+      "detail": "40"
+    },
+    {
+      "name": "A6 ArrowDown moves",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A6 Esc returns focus to ⋯",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A6 พิมพ์ / PDF opens /[id]?print=1",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A6 order not open: no edit",
+      "ok": true,
+      "detail": "ดูรายละเอียด|พิมพ์ / PDF|ไปที่ใบสั่งขาย|ลบใบเสร็จ"
+    },
+    {
+      "name": "A6 refund: no edit or delete, with the note",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A6 custom: no edit or delete, with the note",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A6 store: the Q5 note",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A6 view-only: no edit or delete",
+      "ok": true,
+      "detail": "ดูรายละเอียด|พิมพ์ / PDF|ไปที่ใบสั่งขาย"
+    },
+    {
+      "name": "A6 at 390 a sheet with the receipt on top",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A7 the popover is 320 wide",
+      "ok": true,
+      "detail": "320"
+    },
+    {
+      "name": "A7 only bank rows",
+      "ok": true,
+      "detail": "8"
+    },
+    {
+      "name": "A7 the chips name the filters",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A7 a reload keeps the view",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A7 back restores the step before",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A7 × removes one filter",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A7 the calendar counts Buddhist years",
+      "ok": true,
+      "detail": "พฤศจิกายน 2569"
+    },
+    {
+      "name": "A7 the calendar moves a month",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A7 a backwards range is put in order",
+      "ok": true,
+      "detail": "2026-10-05 2026-11-20"
+    },
+    {
+      "name": "A8 the button counts before it is pressed",
+      "ok": true,
+      "detail": "แสดง 76 รายการ → แสดง 39 รายการ"
+    },
+    {
+      "name": "A8 the URL has not changed yet",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A8 the button applies",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A9 no cancelled or custom order offered",
+      "ok": true,
+      "detail": "17"
+    },
+    {
+      "name": "A9 cancelled link says why",
+      "ok": true,
+      "detail": "ใบสั่งขายนี้รับชำระไม่ได้ SO209911030006 ถูกยกเลิกแล้ว เลือกใบสั่งขายอื่นด้านล่าง"
+    },
+    {
+      "name": "A9 cancelled link leaves the picker empty",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A9 pending link says why",
+      "ok": true,
+      "detail": "ใบสั่งขายนี้รับชำระไม่ได้ SO209911030010 ไม่อยู่ในสถานะที่รับชำระได้ เลือกใบสั่งขายอื่นด้านล่าง"
+    },
+    {
+      "name": "A9 pending link leaves the picker empty",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A9 missing link says why",
+      "ok": true,
+      "detail": "ใบสั่งขายนี้รับชำระไม่ได้ ไม่พบใบสั่งขายตามลิงก์ เลือกใบสั่งขายอื่นด้านล่าง"
+    },
+    {
+      "name": "A9 missing link leaves the picker empty",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A9 custom link points to the order",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A9 no POST went out",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "A10 the amount starts at what is owed",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A10 exact amount reads success",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A10 0.01 over is an error",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A10 and it cannot be saved",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A10 three decimals are refused",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A10 1e3 is refused, not read as 13",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A10 zero is refused",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A10 bank with no account shows the error",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A10 the meter parts match the amount",
+      "ok": true,
+      "detail": "0%,40%"
+    },
+    {
+      "name": "A10 full locks the amount",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A10 another order changes amount and summary",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A10 cash hides the account",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A12 a 400 shows the banner and keeps the input",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A12 a cut network shows the banner",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A12 the button says it is saving",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A12 three clicks, one POST",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "name": "A12 the result is 300 wide",
+      "ok": true,
+      "detail": "300"
+    },
+    {
+      "name": "A12 the result names a real RE",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A11 cash POST: old keys, no account_id",
+      "ok": true,
+      "detail": "amount_paid,create_by,payment_date,payment_method,payment_receipt_remark,payment_receipt_type,payment_status,sale_order_id"
+    },
+    {
+      "name": "A12 ดูใบเสร็จ opens /[id]",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A11 bank POST: old keys and values",
+      "ok": true,
+      "detail": "{\"sale_order_id\":\"eb4ff307-f147-4ef5-85a5-700a4a5f6039\",\"payment_receipt_type\":\"deposit\",\"payment_method\":\"bank\",\"amount_paid\":200.5,\"payment_date\":\"2026-11-05\",\"payment_receipt_remark\":\"ทดสอบ\",\"account_id\":\"2a97e169-c5ff-4751-bdb8-5585618584b6\",\"payment_status\":\"paid\",\"create_by\":\"224b71d5-9f04-4ad"
+    },
+    {
+      "name": "A11 PATCH: old keys, no sale_order_id",
+      "ok": true,
+      "detail": "account_id,amount_paid,payment_date,payment_method,payment_receipt_code,payment_receipt_id,payment_receipt_remark,payment_receipt_type,payment_status,update_by"
+    },
+    {
+      "name": "A13 1440 over reads as the sheet",
+      "ok": true,
+      "detail": "เกินยอดที่รับได้ ฿2,000.00 ใบนี้รับได้สูงสุด ฿36,000.00 (รวมยอดเดิม ฿10,800.00)"
+    },
+    {
+      "name": "A13 834 over reads as the sheet",
+      "ok": true,
+      "detail": "เกินยอดที่รับได้ ฿2,000.00 ใบนี้รับได้สูงสุด ฿36,000.00 (รวมยอดเดิม ฿10,800.00)"
+    },
+    {
+      "name": "A13 390 over reads as the sheet",
+      "ok": true,
+      "detail": "เกินยอดที่รับได้ ฿2,000.00 ใบนี้รับได้สูงสุด ฿36,000.00 (รวมยอดเดิม ฿10,800.00)"
+    },
+    {
+      "name": "A13 390 savebar reads the same",
+      "ok": true,
+      "detail": "แก้ 1 ช่องก่อนบันทึก฿38,000.00บันทึกการแก้ไข"
+    },
+    {
+      "name": "A13 ใส่ยอดสูงสุด gives ฿36,000",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A13 the exact maximum saves",
+      "ok": true,
+      "detail": "{\"payment_receipt_id\":\"89f427f8-0cbf-4a0d-8c91-2e97a6c885c5\",\"sale_order_id\":\"00cef7e6-4057-48a8-8fa9-0f68ffdd5ecb\",\"pay"
+    },
+    {
+      "name": "A14 unchanged: cancel does not ask",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A14 the dirty tag shows",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A14 cancel asks",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A14 back asks",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A14 closing the tab asks (beforeunload is prevented)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A14 refund: /edit shows no form",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A14 custom: /edit shows no form",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A14 store: /edit shows no form",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A14 cancelled order: /edit shows no form",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A15 deposit share",
+      "ok": true,
+      "detail": "ใบสั่งขายSO209911030007 →ลูกค้าร้านกาแฟบ้านสวนวันที่รับชำระ4 พ.ย. 2569ประเภทการชำระวางมัดจำ 30%วิธีชำระโอนผ่านธนาคารบัญชีที่รับเงินธนาคารทดสอบ (dev) ·· 0000ผู้บันทึกDemo Auditหมายเหตุ—"
+    },
+    {
+      "name": "A15 eight fields",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A15 the remaining button shows",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A15 both receipts listed, the current one bold",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A15 paid order: no remaining button",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A15 view-only: no remaining button",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A15 the full history opens",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A16 refund block",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A16 copy puts the whole reference on the clipboard",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A16 store block",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A16 store menu: order only",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A16 custom block",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A16 cancelled order block",
+      "ok": true,
+      "detail": "การชำระของใบสั่งขายนี้SO209911030004 · ยกเลิกชำระแล้ว฿3,000.00ใบสั่งขายถูกยกเลิกแล้ว รับชำระเพิ่มไม่ได้ประวัติยังไม่มีประวัติดูประวัติทั้งหมด"
+    },
+    {
+      "name": "A17 the dialog is 480 wide",
+      "ok": true,
+      "detail": "480"
+    },
+    {
+      "name": "A17 facts read ฿10,800 and ฿0 of ฿36,000",
+      "ok": true,
+      "detail": "ใบสั่งขายSO209911030007ยอดที่จะถูกหักออก฿10,800.00ชำระแล้วหลังลบ฿0.00 จาก ฿36,000.00"
+    },
+    {
+      "name": "A17 cancel sends no DELETE",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A17 a 409 shows the error result",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A17 the row is gone",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A17 the order is reworked",
+      "ok": true,
+      "detail": "0 approved"
+    },
+    {
+      "name": "A18 deposit: one page, no app parts, 794 wide",
+      "ok": true,
+      "detail": "pages 1 hidden true 794,1123"
+    },
+    {
+      "name": "A18 deposit words",
+      "ok": true,
+      "detail": "ใบเสร็จรับเงินRECEIPTเลขที่RE209911030001วันที่3 พ.ย. 2569อ้างอิงใบสั่งขายSO209911030002ได้รับเงินจากคุณมานพ ศรีสุข#รายการจำนวนเงิน (บาท)1รับชำระมัดจำ ตามใบสั่งขาย SO209911030002ทดสอบ TASK-0346 partia"
+    },
+    {
+      "name": "A18 full: one page, no app parts, 794 wide",
+      "ok": true,
+      "detail": "pages 1 hidden true 794,1123"
+    },
+    {
+      "name": "A18 second: one page, no app parts, 794 wide",
+      "ok": true,
+      "detail": "pages 1 hidden true 794,1123"
+    },
+    {
+      "name": "A18 second receipt: paid before is not 0",
+      "ok": true,
+      "detail": "ใบเสร็จรับเงินRECEIPTเลขที่RE209911030005วันที่31 ต.ค. 2569อ้างอิงใบสั่งขายSO209911030005ได้รับเงินจากบริษัท สยามเทรดดิ้ง จำกัด#รายการจำนวนเงิน (บาท)1รับชำระบางส่วน ตามใบสั่งขาย SO209911030005ทดสอบ TASK-0346 สองใบเสร็จ · ยอดใบสั่งขาย ฿85,500.0022,750.00ชำระก่อนหน้านี้20,000.00คงค้างหลังรับชำระ42,750"
+    },
+    {
+      "name": "A18 store: one page, no app parts, 794 wide",
+      "ok": true,
+      "detail": "pages 1 hidden true 794,1123"
+    },
+    {
+      "name": "A18 store sheet names the reference",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A18 refund: one page, no app parts, 794 wide",
+      "ok": true,
+      "detail": "pages 1 hidden true 794,1123"
+    },
+    {
+      "name": "F13 refund sheet: net amount, no balance owed, no paid-by",
+      "ok": true,
+      "detail": "ใบคืนเงินREFUNDเลขที่RE209911030012วันที่1 พ.ย. 2569อ้างอิงใบสั่งขายSO209911030013คืนเงินให้ร้านดอกไม้ริมทาง#รายการจำนวนเงิน (บาท)1คืนเงินตามใบสั่งขาย SO209911030013ทดสอบ TASK-0346 คืนสองครั้ง · ยอดใบ"
+    },
+    {
+      "name": "F14 no system label on the sheet",
+      "ok": true,
+      "detail": "ใบเสร็จรับเงินRECEIPTเลขที่RE202610270825วันที่27 ต.ค. 2569อ้างอิงใบสั่งขายSO202610271032ได้รับเงินจากสุวรรณ บุญน้อย#รายการจำนวนเงิน (บาท)1รับชำระผ่านหน้าร้าน ตามใบสั่งขาย SO202610271032ยอดใบสั่งขาย ฿"
+    },
+    {
+      "name": "A18 refund sheet",
+      "ok": true,
+      "detail": "ใบคืนเงินREFUNDเลขที่RE209911030012วันที่1 พ.ย. 2569อ้างอิงใบสั่งขายSO209911030013คืนเงินให้ร้านดอกไม้ริมทาง#รายการจำนวนเงิน (บาท)1คืนเงินตามใบสั่งขาย SO209911030013ทดสอบ TASK-0346 คืนสองครั้ง · ยอดใบ"
+    },
+    {
+      "name": "A18 no tax id: no line left for it",
+      "ok": true,
+      "detail": "ใบเสร็จรับเงินRECEIPTเลขที่RE209911030002วันที่2 พ.ย. 2569อ้างอิงใบสั่งขายSO209911030003"
+    },
+    {
+      "name": "A18 dark theme lifts for print",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A18 ?print=1 opens the print window after the data",
+      "ok": true,
+      "detail": "1,true"
+    },
+    {
+      "name": "A20 empty queue",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A20 form with nothing to pay",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A20 no receipts yet",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A20 search finds nothing",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A20 clear empties the URL",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A20 orders down: the receipts table still works",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A20 receipts down: the queue still works",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A20 an id that does not exist",
+      "ok": true,
+      "detail": "ไม่พบใบเสร็จนี้ อาจถูกลบไปแล้ว ลองอีกครั้ง"
+    },
+    {
+      "name": "A20 the skeleton keeps the layout within 8px",
+      "ok": true,
+      "detail": "726.42822265625 → 726"
+    },
+    {
+      "name": "F4 reduced motion: nothing animates",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "F4 sections rise over 320ms with a stagger",
+      "ok": true,
+      "detail": "[[\"ka-pr-rise\",320,0],[\"ka-pr-rise\",320,40],[\"ka-pr-rise\",320,80],[\"ka-pr-grow\",600,0],[\"ka-pr-grow\",600,0]]"
+    },
+    {
+      "name": "F5 320 no sideways scroll on /admin/payment-receipts",
+      "ok": true,
+      "detail": "0,0"
+    },
+    {
+      "name": "F5 320 no sideways scroll on min/payment-receipts/new",
+      "ok": true,
+      "detail": "0,0"
+    },
+    {
+      "name": "F5 320 no sideways scroll on 8-4ca3-898e-0afc32509c7b",
+      "ok": true,
+      "detail": "0,0"
+    },
+    {
+      "name": "F5 320 no sideways scroll on 3-898e-0afc32509c7b/edit",
+      "ok": true,
+      "detail": "0,0"
+    },
+    {
+      "name": "F5 arrow keys move the radio",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 Tab reaches the page with visible focus",
+      "ok": true,
+      "detail": "26"
+    },
+    {
+      "name": "F3 dark list: text at 4.5:1",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F3 dark form: text at 4.5:1",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F3 dark detail: text at 4.5:1",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F1 opening a full receipt changes nothing",
+      "ok": true,
+      "detail": "600.00"
+    },
+    {
+      "name": "F1 the amount stays ฿600",
+      "ok": true,
+      "detail": "{\"payment_receipt_id\":\"4c7188ce-7900-4cbf-bd45-9449cb673e80\",\"payment_receipt_code\":\"RE209911030008\",\"payment_receipt_type\":\"full\",\"payment_method\":\"cash\",\"amount_paid\":600,\"payment_date\":\"2026-11-04\",\"payment_receipt_remark\":\"แก้หมายเหตุอย่างเดียว\",\"payment_status\":\"paid\",\"update_by\":\"224b71d5-9f04"
+    },
+    {
+      "name": "F11 after saving, leaving does not ask",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F19 a receipt changed to cash shows no bank account",
+      "ok": true,
+      "detail": "—"
+    },
+    {
+      "name": "F5 no print while the payments are missing",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F6 cancelled bar is 3,000 of 6,000",
+      "ok": true,
+      "detail": "50%"
+    },
+    {
+      "name": "F7 the summary asks for the tab",
+      "ok": true,
+      "detail": "http://localhost:3010/payment-receipts/summary?tab=refund http://localhost:3010/payment-receipts/summary?tab=refund"
+    },
+    {
+      "name": "F8 no stat card stays a skeleton",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "F8 a failed queue does not say 0 orders",
+      "ok": true,
+      "detail": "รอรับชำระ "
+    },
+    {
+      "name": "F9 ?page past the end lands on real rows",
+      "ok": true,
+      "detail": "http://localhost:3011/admin/payment-receipts?page=8"
+    },
+    {
+      "name": "F3 the failed result closes with a plain button",
+      "ok": true,
+      "detail": "rgb(255, 255, 255) / rgb(255, 255, 255)"
+    },
+    {
+      "name": "A9 the far order is not among the first options",
+      "ok": true,
+      "detail": "17"
+    },
+    {
+      "name": "A9 typing finds the order past the first twenty",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F28 the result opens without waiting for the status",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F28 a press after the POST sends nothing",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "name": "F28 the status follows from the API",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F29 a custom receipt keeps a name",
+      "ok": true,
+      "detail": "ใบเสร็จรับเงิน · Custom MUG-103"
+    },
+    {
+      "name": "F31 a cancelled store order says so",
+      "ok": true,
+      "detail": "การชำระของใบสั่งขายนี้SO202610271032 · ยกเลิกชำระแล้ว฿880.00ใบสั่งขายถูกยกเลิกแล้ว รับชำระเพิ่มไม่ได้ประวัติสร้างเอกสาร27 ต.ค. 2569 08:54ดูประวัติทั้งหมด"
+    },
+    {
+      "name": "F32 the first of two refunds prints ฿900",
+      "ok": true,
+      "detail": "ยอดชำระสุทธิหลังคืนเงิน900.00คืนเงินครั้งนี้฿100.00"
+    },
+    {
+      "name": "F32 the second prints ฿700",
+      "ok": true,
+      "detail": "ยอดชำระสุทธิหลังคืนเงิน700.00คืนเงินครั้งนี้฿200.00"
+    },
+    {
+      "name": "F5 every control is 44 high: popover วิธีชำระ 700",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 every control is 44 high: popover ประเภท 700",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 every control is 44 high: popover ช่วงวันที่ 700",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 every control is 44 high: sort menu 700",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 every control is 44 high: row menu 700",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 every control is 44 high: list 390",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 every control is 44 high: form 390",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 every control is 44 high: detail 390",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 every control is 44 high: edit 390",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 every control is 44 high: list 767",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 every control is 44 high: form 767",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 every control is 44 high: detail 767",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 every control is 44 high: edit 767",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 every control is 44 high: filter sheet 390",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 the filter sheet gives focus back",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 the row sheet gives focus back to ⋯",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "F5 Tab through list: focus shows at every stop",
+      "ok": true,
+      "detail": "46 "
+    },
+    {
+      "name": "F5 Tab through form: focus shows at every stop",
+      "ok": true,
+      "detail": "28 "
+    },
+    {
+      "name": "F5 Tab through detail: focus shows at every stop",
+      "ok": true,
+      "detail": "14 "
+    },
+    {
+      "name": "F5 Tab through edit: focus shows at every stop",
+      "ok": true,
+      "detail": "26 "
+    },
+    {
+      "name": "F5 the delete dialog gives focus back to ⋯",
+      "ok": true,
+      "detail": "ตัวเลือกของ RE209911030004"
+    },
+    {
+      "name": "F4 the sections stagger 0/40/80/120",
+      "ok": true,
+      "detail": "0,40,80,120"
+    },
+    {
+      "name": "F4 a meter grows over 600ms",
+      "ok": true,
+      "detail": "[\"ka-pr-grow\",600,0]"
+    },
+    {
+      "name": "F4 the tick draws over 450ms after 200ms",
+      "ok": true,
+      "detail": "[\"ka-pr-draw\",450,200]"
+    },
+    {
+      "name": "F4 a sheet rises over 320ms",
+      "ok": true,
+      "detail": "[\"ka-pr-up\",320,0]"
+    },
+    {
+      "name": "A2 834 four numbers show",
+      "ok": true,
+      "detail": "รับชำระเดือนนี้฿62,557.50▲ 27% จากเดือนก่อนยอดค้างรับ฿130,292.5045 ใบสั่งขายใบเสร็จเดือนนี้49 ใบวันนี้ 11 ใบคืนเงินเดือนนี้฿1,200.0011 รายการ"
+    },
+    {
+      "name": "A3 834 the queue is the oldest three",
+      "ok": true,
+      "detail": "SO209911030001,SO209911030005,SO209911030007"
+    },
+    {
+      "name": "A4 834 search finds the cards and tints the match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A4 834 a card opens the receipt",
+      "ok": true,
+      "detail": "http://localhost:3011/admin/payment-receipts/f8f0e0b7-9d8a-4242-b9c3-be31481372fa"
+    },
+    {
+      "name": "A7 834 the chip names the filter and leads the row",
+      "ok": true,
+      "detail": "วิธีชำระ: โอนผ่านธนาคารประเภทช่วงวันที่ล้างตัวกรองล่าสุดก่อน"
+    },
+    {
+      "name": "A9 834 a cancelled link says why",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A12 834 a 400 shows the banner and keeps the input",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A12 834 a cut network keeps the banner",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A12 834 three clicks, one POST",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "name": "A12 834 the result names a real RE",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A14 834 back asks",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A16 834 refund block",
+      "ok": true,
+      "detail": "RE209911030012คืนเงินแล้วใบคืนเงิน · ร้านดอกไม้ริมทางพิมพ์ / PDFคืนเงินให้ลูกค้าแล้วคืนครั้งที่สอง · 1 พ.ย. 2569ยอดคืนเงิน−฿200.00ใบคืนเงินสร้างจากการคืนสินค้าเ"
+    },
+    {
+      "name": "A16 834 store block",
+      "ok": true,
+      "detail": "RE202610270825ชำระแล้วหน้าร้านออนไลน์ใบเสร็จรับเงิน · สุวรรณ บุญน้อยพิมพ์ / PDFลูกค้าชำระผ่านหน้าร้านชำระเต็มจำนวน · บัตร · 27 ต.ค. 2569 08:54ยอดรับชำระ฿880.00เ"
+    },
+    {
+      "name": "A16 834 custom block",
+      "ok": true,
+      "detail": "RE202611030001ชำระแล้วCustomใบเสร็จรับเงิน · Custom MUG-103พิมพ์ / PDFเปิดใบสั่งขาย Customรับชำระเรียบร้อยวางมัดจำ · โอนผ่านธนาคาร · 3 พ.ย. 2569ยอดรับชำระ฿50.00"
+    },
+    {
+      "name": "A16 834 cancelled block",
+      "ok": true,
+      "detail": "RE209911030003ชำระแล้วใบเสร็จรับเงิน · คุณวรรณา แก้วมณีพิมพ์ / PDFรับชำระเรียบร้อยชำระบางส่วน · เงินสด · 1 พ.ย. 2569ยอดรับชำระ฿3,000.00ข้อมูลใบเสร็จใบสั่งขายSO2"
+    },
+    {
+      "name": "A20 834 empty queue",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A2 390 four numbers show",
+      "ok": true,
+      "detail": "รับชำระเดือนนี้฿62,567.50▲ 27% จากเดือนก่อนยอดค้างรับ฿130,282.5045 ใบสั่งขายใบเสร็จเดือนนี้50 ใบวันนี้ 12 ใบคืนเงินเดือนนี้฿1,200.0011 รายการ"
+    },
+    {
+      "name": "A3 390 the queue is the oldest three",
+      "ok": true,
+      "detail": "SO209911030001,SO209911030005,SO209911030007"
+    },
+    {
+      "name": "A4 390 search finds the cards and tints the match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A4 390 a card opens the receipt",
+      "ok": true,
+      "detail": "http://localhost:3011/admin/payment-receipts/f8f0e0b7-9d8a-4242-b9c3-be31481372fa"
+    },
+    {
+      "name": "A7 390 the chip names the filter and leads the row",
+      "ok": true,
+      "detail": "วิธีชำระ: โอนผ่านธนาคารประเภทช่วงวันที่ล้างตัวกรองล่าสุดก่อน"
+    },
+    {
+      "name": "A9 390 a cancelled link says why",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A12 390 a 400 shows the banner and keeps the input",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A12 390 a cut network keeps the banner",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A12 390 three clicks, one POST",
+      "ok": true,
+      "detail": "1"
+    },
+    {
+      "name": "A12 390 the result names a real RE",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A14 390 back asks",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A16 390 refund block",
+      "ok": true,
+      "detail": "RE209911030012คืนเงินแล้วใบคืนเงิน · ร้านดอกไม้ริมทางพิมพ์ / PDFคืนเงินให้ลูกค้าแล้วคืนครั้งที่สอง · 1 พ.ย. 2569ยอดคืนเงิน−฿200.00ใบคืนเงินสร้างจากการคืนสินค้าเ"
+    },
+    {
+      "name": "A16 390 store block",
+      "ok": true,
+      "detail": "RE202610270825ชำระแล้วหน้าร้านออนไลน์ใบเสร็จรับเงิน · สุวรรณ บุญน้อยพิมพ์ / PDFลูกค้าชำระผ่านหน้าร้านชำระเต็มจำนวน · บัตร · 27 ต.ค. 2569 08:54ยอดรับชำระ฿880.00เ"
+    },
+    {
+      "name": "A16 390 custom block",
+      "ok": true,
+      "detail": "RE202611030001ชำระแล้วCustomใบเสร็จรับเงิน · Custom MUG-103พิมพ์ / PDFเปิดใบสั่งขาย Customรับชำระเรียบร้อยวางมัดจำ · โอนผ่านธนาคาร · 3 พ.ย. 2569ยอดรับชำระ฿50.00"
+    },
+    {
+      "name": "A16 390 cancelled block",
+      "ok": true,
+      "detail": "RE209911030003ชำระแล้วใบเสร็จรับเงิน · คุณวรรณา แก้วมณีพิมพ์ / PDFรับชำระเรียบร้อยชำระบางส่วน · เงินสด · 1 พ.ย. 2569ยอดรับชำระ฿3,000.00ข้อมูลใบเสร็จใบสั่งขายSO2"
+    },
+    {
+      "name": "A20 390 empty queue",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A20 1440 the queue skeleton keeps the layout within 8px",
+      "ok": true,
+      "detail": "726.0079345703125 → 726"
+    },
+    {
+      "name": "A20 834 the queue skeleton keeps the layout within 8px",
+      "ok": true,
+      "detail": "1037.0673828125 → 1037"
+    },
+    {
+      "name": "A20 390 the queue skeleton keeps the layout within 8px",
+      "ok": true,
+      "detail": "1470.2835693359375 → 1470"
+    },
+    {
+      "name": "A21 no console or page errors",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "problems": []
+}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState, type ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import axiosInstance from '@/lib/axios';
 import SaleOrderModel from '@/models/sale-order';
@@ -9,7 +10,6 @@ import { getApiErrorMessage } from '@/lib/api-error';
 import CancellationDialog from '@/components/CancellationDialog';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { useToast } from '@/components/Toast';
-import InsertPaymentReceiptForm from '@/app/admin/payment-receipts/components/insert';
 import { formatBaht, payable } from '../lib/so-display';
 
 const saleOrderModel = new SaleOrderModel();
@@ -33,10 +33,18 @@ export function useOrderActions({ onChanged, onDeleted }: Options): {
   dialogs: ReactNode;
 } {
   const toast = useToast();
+  const router = useRouter();
   const [pending, setPending] = useState<{ action: OrderAction; order: SaleOrder } | null>(null);
   const [busy, setBusy] = useState<OrderAction | null>(null);
 
-  const request = useCallback((action: OrderAction, order: SaleOrder) => setPending({ action, order }), []);
+  // Receiving a payment has its own page; the rest are dialogs over the page that asked (TASK-0346 R2).
+  const request = useCallback(
+    (action: OrderAction, order: SaleOrder) => {
+      if (action === 'pay') router.push(`/admin/payment-receipts/new?sale_order=${order.sale_order_id}`);
+      else setPending({ action, order });
+    },
+    [router],
+  );
   const close = () => setPending(null);
 
   const label = (order: SaleOrder) => order.sale_order_code ?? order.sale_order_name;
@@ -108,12 +116,6 @@ export function useOrderActions({ onChanged, onDeleted }: Options): {
             }}
           />
         )}
-        <InsertPaymentReceiptForm
-          isOpen={pending?.action === 'pay'}
-          saleOrder={pending?.action === 'pay' ? order : null}
-          onClose={close}
-          onSuccess={onChanged}
-        />
       </>
     ),
   };
