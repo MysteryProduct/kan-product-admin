@@ -1,0 +1,26 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/app/admin/payment-receipts/payment-receipts.css"
+        ],
+        "createdAt": "2026-11-05T03:06:49.337Z",
+        "reason": "owner's Receipt Redesign canvas: rc.css .hero::after is a 4px bottom bar, required by TASK-0346 R25"
+      },
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "src/app/admin/payment-receipts/payment-receipts.css"
+        ],
+        "createdAt": "2026-11-05T03:06:49.633Z",
+        "reason": "owner's Receipt Redesign canvas: Print .hd border-bottom 3px on an unrounded print header, TASK-0346 R31"
+      }
+    ]
+  }
+}
