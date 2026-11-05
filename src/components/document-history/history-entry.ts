@@ -46,6 +46,8 @@ export const LABELS: Record<string, string> = { purchase_order_name: 'ชื่�
 const INVOICE_STATUSES: Record<string, string> = { pending: 'รอชำระ', partial: 'ชำระบางส่วน', paid: 'ชำระแล้ว' };
 // A sale order's partial and paid are about payment, not received goods (the words its own pages use).
 const SALE_ORDER_STATUSES: Record<string, string> = { partial: 'ชำระบางส่วน', paid: 'ชำระครบแล้ว' };
+// The words the receipt pages use (`typeText`); a store payment reads as paid in full there too.
+const PAYMENT_RECEIPT_TYPES: Record<string, string> = { full: 'ชำระเต็มจำนวน', partial: 'ชำระบางส่วน', deposit: 'วางมัดจำ', online_gateway: 'ชำระเต็มจำนวน', refund: 'คืนเงิน' };
 const SALE_ORDER_TYPES: Record<string, string> = { order: 'ขายจากการสั่งซื้อ', online: 'ขายบนเว็บไซต์', store: 'หน้าร้านออนไลน์', custom: 'งานผลิต Custom' };
 
 // ---------------------------------------------------------------- actions (D7)
@@ -181,6 +183,7 @@ export function displayValue(value: unknown, key: string, entry: Pick<HistoryEnt
   if (key === 'supplier_id') return entry.supplier_names?.[String(value)] ?? null;
   if (key === 'purchase_order_id') return entry.purchase_order_codes?.[String(value)] ?? null;
   if (key === 'sale_order_type') return SALE_ORDER_TYPES[String(value)] ?? String(value);
+  if (key === 'payment_receipt_type') return PAYMENT_RECEIPT_TYPES[String(value)] ?? String(value);
   if (key === 'sale_order_status') return SALE_ORDER_STATUSES[String(value)] ?? STATUSES[String(value)] ?? String(value);
   if (key.endsWith('_status')) return STATUSES[String(value)] ?? String(value);
   if (key === 'vat_type') return ({ none: 'ไม่มี VAT', include: 'รวม VAT', exclude: 'แยก VAT' } as Record<string, string>)[String(value)] ?? String(value);

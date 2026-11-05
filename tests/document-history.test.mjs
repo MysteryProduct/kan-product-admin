@@ -156,3 +156,13 @@ test('who and when are told only once every entry is loaded (AC2, D3)', () => {
   const part = history.summarize(entries, 9, 2, 1);
   assert.deepEqual([part.allLoaded, part.loaded, part.total], [false, 4, 9]);
 });
+
+test('a payment receipt type reads in the words of the receipt pages; an unknown one keeps its value', () => {
+  const text = (value) => history.displayValue(value, 'payment_receipt_type', entry());
+  assert.equal(text('partial'), 'ชำระบางส่วน');
+  assert.equal(text('full'), 'ชำระเต็มจำนวน');
+  assert.equal(text('deposit'), 'วางมัดจำ');
+  assert.equal(text('online_gateway'), 'ชำระเต็มจำนวน');
+  assert.equal(text('refund'), 'คืนเงิน');
+  assert.equal(text('other'), 'other');
+});
