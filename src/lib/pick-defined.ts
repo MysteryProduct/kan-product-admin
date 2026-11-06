@@ -4,6 +4,7 @@
  * state or list row passed in whole never reaches the request (an empty string
  * or null is a value and is kept).
  */
+// @rule strict-write-body
 export function pickDefined<T extends object, K extends keyof T>(
     source: T,
     keys: readonly K[],
