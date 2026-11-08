@@ -13,6 +13,8 @@ export interface AdminMenuItem {
   title: string;
   icon: ReactNode;
   href?: string;
+  /** A single link shown when the employee can view at least one of these menus. */
+  anyMenu?: string[];
   subItems?: AdminMenuLeaf[];
 }
 
@@ -56,6 +58,12 @@ export const adminMenu: AdminMenuSection[] = [
         ],
       },
       {
+        title: 'สต็อก',
+        icon: icon('M4 7l8-4 8 4-8 4-8-4zm0 5l8 4 8-4M4 17l8 4 8-4'),
+        href: '/admin/stock',
+        anyMenu: ['stock_material', 'stock_product', 'store_fulfillment'],
+      },
+      {
         title: 'จัดซื้อ',
         icon: icon('M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4'),
         subItems: [
@@ -79,7 +87,6 @@ export const adminMenu: AdminMenuSection[] = [
           { title: 'คำขอติดต่อกลับ', menu_name: 'contact_requests', href: '/admin/contact-requests', pending: ['contact_requests_new'] },
           { title: 'จัดส่งพัสดุ', menu_name: 'store_fulfillment', href: '/admin/store-fulfillment',
             pending: ['store_orders_to_review', 'store_cancellations_to_decide', 'store_orders_to_ship', 'store_orders_to_pickup', 'store_refunds_unfinished'] },
-          { title: 'เปิดล็อตขาย', menu_name: 'store_fulfillment', href: '/admin/store-lots' },
         ],
       },
       {
@@ -105,7 +112,7 @@ export const adminMenu: AdminMenuSection[] = [
 
 /** "/" redirects to the dashboard at "/admin", so both count as Dashboard. */
 export function isMenuHrefActive(href: string, pathname: string): boolean {
-  return pathname === href || (href === '/' && pathname === '/admin');
+  return pathname === href || (href === '/' && pathname === '/admin') || (href !== '/' && pathname.startsWith(`${href}/`));
 }
 
 /** The menu path to the current page, for the header breadcrumb: [group, page] or [page]. */

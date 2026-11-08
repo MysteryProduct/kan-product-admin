@@ -206,7 +206,7 @@ export default function JobOrdersPage() {
 			setSelectedJobOrder(job);
 			setIsDetailOpen(true);
 		},
-		openCreate: () => openCreate(null),
+		openCreate: (productVariantId) => openCreate(productVariantId ? { product_variant_id: productVariantId } : null),
 		onError: (message) => setResultDialog({ isOpen: true, status: 'error', message }),
 	});
 

@@ -7,7 +7,9 @@ import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { usePendingWork } from '@/hooks/usePendingWork';
+import { useStockPending } from '@/hooks/useStockPending';
 import { adminMenu, isMenuHrefActive, pendingCount, type AdminMenuItem } from '@/lib/admin-menu';
+import { canOpenStock } from '@/lib/permission-routes';
 import SidebarUser from '@/components/layout/SidebarUser';
 
 const isLeafActive = (href: string, pathname: string) => pathname === href || pathname.startsWith(`${href}/`);
@@ -30,6 +32,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { can } = usePermissions();
   const pendingWork = usePendingWork(true);
+  const stockPending = useStockPending();
   // The group holding the current page starts open.
   const [expandedItems, setExpandedItems] = useState<string[]>(() =>
     adminMenu.flatMap((section) => section.items)
@@ -77,6 +80,7 @@ export default function Sidebar() {
 
   const renderMenuItem = (item: AdminMenuItem) => {
     if (!item.subItems?.length) {
+      if (item.anyMenu && !canOpenStock(can)) return null;
       return (
         <Link
           key={item.title}
@@ -87,6 +91,7 @@ export default function Sidebar() {
         >
           {item.icon}
           {item.title}
+          {item.anyMenu && <PendingBadge value={stockPending?.total} />}
         </Link>
       );
     }

@@ -7,7 +7,7 @@ import { SidebarProvider } from "@/contexts/SidebarContext";
 import Sidebar from "@/components/layout/Sidebar";
 import Header from "@/components/layout/Header";
 import { usePermissions } from "@/hooks/usePermissions";
-import { getMenuNameFromPath } from "@/lib/permission-routes";
+import { canOpenStock, getMenuNamesFromPath, STOCK_MENUS } from "@/lib/permission-routes";
 
 export default function DashboardLayout({
   children,
@@ -19,8 +19,11 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const { can, isLoaded: isPermissionLoaded } = usePermissions();
 
-  const requiredMenuName = getMenuNameFromPath(pathname);
-  const canViewPage = !requiredMenuName || can(requiredMenuName, 'view');
+  const requiredMenus = getMenuNamesFromPath(pathname);
+  const canViewPage =
+    requiredMenus === STOCK_MENUS
+      ? canOpenStock(can)
+      : requiredMenus.length === 0 || requiredMenus.some((menu) => can(menu, 'view'));
 
   useEffect(() => {
     // ถ้าโหลดเสร็จแล้ว และไม่ได้ login ให้เด้งไปหน้า login
