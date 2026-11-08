@@ -151,7 +151,7 @@ export default function StockOverview({ reloadToken, onOpen, onState }: StockOve
             ))}
           </ul>
           <p className="ka-panel__note ka-stock__note">
-            {overview.threshold === 0 ? "ปิดสถานะเหลือน้อย (เกณฑ์ 0)" : `เหลือน้อย = คงเหลือ 1–${count(overview.threshold)} ชิ้น`}
+            {overview.threshold === 0 ? "ปิดสถานะเหลือน้อย (เกณฑ์ 0)" : `เหลือน้อย = ถึงจุดเตือนของแต่ละรายการ (ค่ากลาง 1–${count(overview.threshold)} ชิ้น)`}
           </p>
           {overview.variants === 0 && !isLoading && <p className="ka-panel__note">ยังไม่มีแบบสินค้าในระบบ</p>}
           {needsCare > 0 && (

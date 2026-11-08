@@ -231,14 +231,26 @@ export default function CreateJobOrderDrawer({ isOpen, onClose, onSuccess, initi
 
   const touch = () => setDirty(true);
 
-  const pickVariant = (choice: VariantChoice) => {
-    touch();
+  const fillFromVariant = (choice: VariantChoice) => {
     setVariantId(choice.value);
     setName(`${choice.productName} · ${choice.colorName}`);
     setSizeId(choice.sizeId ? String(choice.sizeId) : '');
     setColorId(choice.colorId ? String(choice.colorId) : '');
     setPrice(choice.price !== undefined && choice.price !== null ? String(choice.price) : '0');
     if (choice.materials.length > 0) setRows(choice.materials.map((item) => ({ id: crypto.randomUUID(), ...item })));
+  };
+
+  // A seed with only a variant (the stock menu's "สั่งผลิต") fills like picking it, once the list has it,
+  // and leaves the form clean. A copied job carries its own name and values, so it is left as seeded.
+  const [filledSeed, setFilledSeed] = useState<typeof initialData>(null);
+  if (isOpen && chosen && initialData?.product_variant_id && !initialData.job_order_name && filledSeed !== initialData) {
+    setFilledSeed(initialData);
+    fillFromVariant(chosen);
+  }
+
+  const pickVariant = (choice: VariantChoice) => {
+    touch();
+    fillFromVariant(choice);
     setPickerOpen(false);
     setPickerQuery('');
   };

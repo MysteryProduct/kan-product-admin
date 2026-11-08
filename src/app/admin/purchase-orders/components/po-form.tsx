@@ -8,6 +8,7 @@ import { useToast } from '@/components/Toast';
 import { formatThaiDate } from '@/lib/date-format';
 import { usePageCrumb } from '@/lib/page-crumb';
 import { VAT_TYPE_LABELS, VAT_TYPE_OPTIONS, VatType } from '@/lib/vat';
+import type { Material } from '@/types/material';
 import type { PurchaseOrder } from '@/types/purchase-order';
 import {
   cleanNumberInput,
@@ -52,12 +53,13 @@ function focusControl(id: string) {
 interface Props {
   mode: PoFormMode;
   source?: PurchaseOrder | null;
+  seedMaterial?: Material | null;
 }
 
 /** The create and edit pages: one form, different starting values and save call. */
-export default function PurchaseOrderFormPage({ mode, source }: Props) {
+export default function PurchaseOrderFormPage({ mode, source, seedMaterial }: Props) {
   const toast = useToast();
-  const form = usePurchaseOrderForm({ mode, source });
+  const form = usePurchaseOrderForm({ mode, source, seedMaterial });
   // The error summary appears after a rejected save and lists what is still wrong.
   const [showSummary, setShowSummary] = useState(false);
   const summaryRef = useRef<HTMLDivElement>(null);

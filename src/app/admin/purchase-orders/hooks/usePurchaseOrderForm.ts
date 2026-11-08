@@ -42,6 +42,8 @@ interface Options {
   mode: PoFormMode;
   /** The order being edited, or the order to copy for "สั่งซ้ำ". */
   source?: PurchaseOrder | null;
+  /** Starts the first line with this material (the stock menu's "สั่งซื้อ"); the user still saves. */
+  seedMaterial?: Material | null;
 }
 
 const newLine = (): PoLineDraft => ({
@@ -96,7 +98,7 @@ function sourceLines(source: PurchaseOrder | null | undefined): PoLineDraft[] {
 export type PoFieldErrors = Record<string, string>;
 
 /** State, lookups, totals, validation and saving shared by the create and edit pages. */
-export function usePurchaseOrderForm({ mode, source }: Options) {
+export function usePurchaseOrderForm({ mode, source, seedMaterial }: Options) {
   const vatRate = useVatRate();
   const copying = mode === 'create' && Boolean(source);
 
@@ -106,7 +108,11 @@ export function usePurchaseOrderForm({ mode, source }: Options) {
   const [vatType, setVatTypeState] = useState<VatType>(() => source?.vat_type || 'none');
   // A VAT the user picked, or one an existing order already has, is never replaced by the supplier default.
   const [vatChosen, setVatChosen] = useState(Boolean(source));
-  const [lines, setLines] = useState<PoLineDraft[]>(() => sourceLines(source));
+  const [lines, setLines] = useState<PoLineDraft[]>(() => {
+    if (!seedMaterial) return sourceLines(source);
+    const price = Number(seedMaterial.material_price);
+    return [{ ...newLine(), material_id: seedMaterial.material_id, price: price > 0 ? String(price) : '' }];
+  });
   const [dirty, setDirty] = useState(false);
   const [errors, setErrors] = useState<PoFieldErrors>({});
   const [saving, setSaving] = useState(false);
@@ -157,9 +163,10 @@ export function usePurchaseOrderForm({ mode, source }: Options) {
   const knownMaterials = useMemo(() => {
     const byId = new Map<string, { material_id: string; material_name: string; material_price: number }>();
     (source ? orderLines(source) : []).forEach((line) => line.material && byId.set(line.material_id, line.material));
+    if (seedMaterial) byId.set(seedMaterial.material_id, seedMaterial);
     materials.forEach((material) => byId.set(material.material_id, material));
     return byId;
-  }, [materials, source]);
+  }, [materials, source, seedMaterial]);
 
   const knownUnits = useMemo(() => {
     const byId = new Map<string, ProductUnitOption>();

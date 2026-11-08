@@ -4,6 +4,7 @@ import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePermissions } from '@/hooks/usePermissions';
 import { adminMenu } from '@/lib/admin-menu';
+import { canOpenStock } from '@/lib/permission-routes';
 
 const SearchIcon = () => (
   <svg fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24" aria-hidden="true">
@@ -36,7 +37,10 @@ export default function HeaderSearch() {
     () =>
       adminMenu.flatMap((section) =>
         section.items.flatMap((item): PageEntry[] => {
-          if (item.href) return [{ title: item.title, href: item.href }];
+          if (item.href) {
+            if (item.anyMenu && !canOpenStock(can)) return [];
+            return [{ title: item.title, href: item.href }];
+          }
           return (item.subItems ?? [])
             .filter((sub) => can(sub.menu_name, 'view'))
             .map((sub) => ({ title: sub.title, group: item.title, href: sub.href }));

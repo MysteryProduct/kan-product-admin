@@ -5,6 +5,7 @@ import StoreLotModel from '@/models/store-lot';
 import { ReleasedStoreLot, StoreLot } from '@/types/store-lot';
 import { getApiErrorMessage } from '@/lib/api-error';
 import { formatThaiDate } from '@/lib/date-format';
+import { Icon } from './icons';
 
 const storeLotModel = new StoreLotModel();
 
@@ -12,6 +13,12 @@ interface ReleaseLotModalProps {
   lot: StoreLot;
   onClose: () => void;
   onReleased: (released: ReleasedStoreLot) => void;
+}
+
+/** Whole days a lot has waited since production finished. */
+export function waitedLabel(producedAt: string) {
+  const days = Math.floor((Date.now() - new Date(producedAt).getTime()) / 86_400_000);
+  return days < 1 ? 'วันนี้' : `${days.toLocaleString('th-TH')} วัน`;
 }
 
 export function variantLabel(lot: StoreLot) {
@@ -44,18 +51,19 @@ export default function ReleaseLotModal({
 
   return (
     <Modal
+      className="ka-stock-modal"
       isOpen
       onClose={pending ? () => undefined : onClose}
       title="เปิดขายล็อตนี้บนหน้าร้าน"
-      description={lot.productName}
-      size="md"
+      description={`${lot.productName} / ${variantLabel(lot)}`}
+      size="standard"
       footer={
         <>
           <button
             type="button"
             onClick={onClose}
             disabled={pending}
-            className="ka-btn min-h-11"
+            className="ka-btn"
           >
             ยกเลิก
           </button>
@@ -63,48 +71,37 @@ export default function ReleaseLotModal({
             type="button"
             onClick={() => void handleRelease()}
             disabled={pending}
-            className="ka-btn ka-btn--primary min-h-11"
+            className="ka-btn ka-btn--primary"
           >
             {pending ? 'กำลังเปิดขาย...' : 'ยืนยันเปิดขายทั้งล็อต'}
           </button>
         </>
       }
     >
-      <div className="grid gap-4 text-[var(--color-text-primary)]">
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-          <dt className="text-[var(--color-text-secondary)]">สี / ขนาด</dt>
-          <dd>{variantLabel(lot)}</dd>
-          <dt className="text-[var(--color-text-secondary)]">งานผลิตที่มา</dt>
-          <dd className="break-words">{lot.sourceName || '-'}</dd>
-          <dt className="text-[var(--color-text-secondary)]">วันที่ผลิต</dt>
-          <dd>{formatThaiDate(lot.producedAt)}</dd>
-          <dt className="text-[var(--color-text-secondary)]">จำนวนคงเหลือ</dt>
-          <dd>{lot.remainingQty.toLocaleString('th-TH')}</dd>
+      <div className="ka-stock-form">
+        <dl className="dl">
+          <div><dt>จำนวนทั้งล็อต</dt><dd className="num strong">{lot.remainingQty.toLocaleString('th-TH')}</dd></div>
+          <div><dt>จากงานผลิต</dt><dd>{lot.sourceName || '-'}</dd></div>
+          <div><dt>ผลิตเสร็จ</dt><dd>{formatThaiDate(lot.producedAt)}</dd></div>
+          <div><dt>รอมาแล้ว</dt><dd>{waitedLabel(lot.producedAt)}</dd></div>
         </dl>
-
-        <p className="text-sm text-[var(--color-text-secondary)]">
-          เปิดได้ทั้งล็อตเท่านั้น และย้อนกลับไม่ได้ หลังเปิด
-          สินค้าจากล็อตนี้ซื้อออนไลน์และใช้ในใบขายได้ทันที
-          ตรวจสินค้าให้ผ่านก่อนยืนยัน
-        </p>
-
-        <label className="grid gap-1 text-sm">
-          <span className="font-medium">หมายเหตุการตรวจ (ไม่บังคับ)</span>
+        <div className="ban inf">
+          <Icon name="info" />
+          <span>เปิดแล้วลูกค้าซื้อได้ทันที และย้อนกลับไม่ได้ ตรวจของก่อนกดยืนยัน</span>
+        </div>
+        <label className="f">
+          <span className="lbl">หมายเหตุ (ถ้ามี)</span>
           <textarea
+            className="ka-textarea"
             value={note}
             disabled={pending}
             onChange={(e) => setNote(e.target.value)}
             rows={3}
             maxLength={2000}
-            className="ka-textarea"
+            placeholder="เช่น ตรวจแล้ว 120 ใบ ไม่มีตำหนิ"
           />
         </label>
-
-        {error && (
-          <p role="alert" className="text-sm text-[var(--color-error)]">
-            {error}
-          </p>
-        )}
+        {error && <p className="field-error" role="alert">{error}</p>}
       </div>
     </Modal>
   );

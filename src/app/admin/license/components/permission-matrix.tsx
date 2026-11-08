@@ -35,7 +35,11 @@ const licenseModel = new EmployeeLicenseModel();
 const SIDEBAR_LEAVES = adminMenu.flatMap((section) => section.items.flatMap((item) => item.subItems ?? []));
 
 // Thai page titles from the sidebar; menus without a page keep their API name.
-const MENU_TITLES = new Map(SIDEBAR_LEAVES.map((leaf) => [leaf.menu_name, leaf.title] as const));
+const MENU_TITLES = new Map<string, string>([
+  ...SIDEBAR_LEAVES.map((leaf) => [leaf.menu_name, leaf.title] as const),
+  ['stock_material', 'สต็อกวัตถุดิบ'],
+  ['stock_product', 'สต็อกสินค้าสำเร็จรูป'],
+]);
 
 // The Admin pages a menu actually controls: its sidebar link and the routes gated on it. The
 // menu_url column is not used: `license` stores /admin/license, but that page checks
