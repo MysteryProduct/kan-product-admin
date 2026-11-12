@@ -7,6 +7,7 @@ const ROUTE_MENU_MAP: Record<string, string> = {
   '/admin/invoice-supplier': 'invoice_supplier',
   '/admin/materials': 'materials',
   '/admin/job-orders': 'job_orders',
+  '/admin/custom-review': 'job_orders',
   '/admin/products': 'products',
   '/admin/custom-templates': 'products',
   '/admin/colors': 'colors',

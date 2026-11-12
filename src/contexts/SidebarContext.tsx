@@ -7,12 +7,16 @@ interface SidebarContextType {
   toggleSidebar: () => void;
   closeSidebar: () => void;
   openSidebar: () => void;
+  /** A page asked for the 72px icon rail at 1024–1279px (TASK-0210 v2 split view). */
+  compact: boolean;
+  setCompact: (compact: boolean) => void;
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [compact, setCompact] = useState(false);
   const wasDesktop = useRef<boolean | null>(null);
 
   useEffect(() => {
@@ -37,10 +41,19 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const openSidebar = () => setIsOpen(true);
 
   return (
-    <SidebarContext.Provider value={{ isOpen, toggleSidebar, closeSidebar, openSidebar }}>
+    <SidebarContext.Provider value={{ isOpen, toggleSidebar, closeSidebar, openSidebar, compact, setCompact }}>
       {children}
     </SidebarContext.Provider>
   );
+}
+
+/** While the calling page is mounted, the sidebar is a 72px icon rail at 1024–1279px. */
+export function useCompactSidebar() {
+  const { setCompact } = useSidebar();
+  useEffect(() => {
+    setCompact(true);
+    return () => setCompact(false);
+  }, [setCompact]);
 }
 
 export function useSidebar() {

@@ -108,6 +108,16 @@
     "type_code": "string",
     "type_name": "string"
   },
+  "POST /custom-request/:id/review/approve": {
+    "revision": "number"
+  },
+  "POST /custom-request/:id/review/needs-changes": {
+    "reason": "string",
+    "revision": "number"
+  },
+  "POST /custom-request/:id/review/received": {
+    "revision": "number"
+  },
   "POST /employee": {
     "employee_address": "string",
     "employee_email": "string",

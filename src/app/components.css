@@ -369,6 +369,25 @@ a.ka-card:hover, .ka-card--link:hover { transform: translateY(-2px); box-shadow:
   .ka-drawer-scrim { display: none; }
 }
 @keyframes ka-drawer { from { transform: translateX(-100%); } }
+/* The 72px icon rail a split-view page asks for at 1024–1279px (TASK-0210 v2), and the full
+   menu it opens over the page ("peek"). Sidebar.tsx sets these classes only in that range. */
+.ka-sidebar--rail { width: 72px; }
+.ka-sidebar--rail .ka-sidebar__brand { justify-content: center; padding: 0; }
+.ka-sidebar--rail .ka-sidebar__name, .ka-sidebar--rail .ka-nav__heading, .ka-sidebar--rail .ka-nav__label,
+.ka-sidebar--rail .ka-chev, .ka-sidebar--rail .ka-count, .ka-sidebar--rail .ka-subnav, .ka-sidebar--rail .ka-me__text { display: none; }
+.ka-sidebar--rail .ka-nav { padding: var(--space-3) var(--space-2); }
+.ka-sidebar--rail .ka-nav__heading + div { margin-top: var(--space-2); }
+.ka-sidebar--rail .ka-nav-item, .ka-sidebar--rail .ka-nav-group > summary { justify-content: center; padding: 8px 0; }
+.ka-sidebar--rail .ka-nav-item::before, .ka-sidebar--rail .ka-nav-group > summary::before { left: -8px; }
+.ka-sidebar--rail .ka-nav-group:has([aria-current="page"]) > summary { background: var(--bg-sidebar-hover); color: var(--ink-on-sidebar-active); }
+.ka-sidebar--rail .ka-nav-group:has([aria-current="page"]) > summary::before {
+  content: ""; position: absolute; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: var(--brand);
+}
+.ka-sidebar--rail .ka-sidebar__me { padding: var(--space-3) var(--space-2); }
+.ka-sidebar--rail .ka-me { justify-content: center; padding: 10px 0; }
+.ka-sidebar--peek.ka-sidebar--app { position: fixed; inset: 0 auto 0 0; z-index: 60; box-shadow: var(--shadow-overlay); animation: ka-drawer var(--ka-slow) var(--ka-ease); }
+.ka-rail-spacer { flex: none; width: 72px; }
+.ka-rail-scrim { position: fixed; inset: 0; z-index: 55; background: var(--scrim); animation: ka-fade var(--ka-base) var(--ka-ease); }
 }
 
 /* Selects and checkbox rows are tapped as often as buttons, so they get the same 44px target on small screens. */

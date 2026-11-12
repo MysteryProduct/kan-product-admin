@@ -8,6 +8,7 @@ import { useSidebar } from '@/contexts/SidebarContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { usePendingWork } from '@/hooks/usePendingWork';
 import { useStockPending } from '@/hooks/useStockPending';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { adminMenu, isMenuHrefActive, pendingCount, type AdminMenuItem } from '@/lib/admin-menu';
 import { canOpenStock } from '@/lib/permission-routes';
 import SidebarUser from '@/components/layout/SidebarUser';
@@ -28,7 +29,21 @@ function PendingBadge({ value }: { value: number | undefined }) {
 }
 
 export default function Sidebar() {
-  const { isOpen, closeSidebar } = useSidebar();
+  const { isOpen, closeSidebar, compact } = useSidebar();
+  // TASK-0210 v2: a page in split view asks for the 72px icon rail at 1024–1279px. A group
+  // icon there opens the full menu over the page ("peek"); choosing a page closes it.
+  const railWidth = useMediaQuery('(min-width: 1024px) and (max-width: 1279px)');
+  const [peek, setPeek] = useState(false);
+  const rail = compact && railWidth && !peek;
+  const peeking = compact && railWidth && peek;
+  useEffect(() => {
+    if (!peeking) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !document.querySelector('[role="dialog"][aria-modal="true"]')) setPeek(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [peeking]);
   const pathname = usePathname();
   const { can } = usePermissions();
   const pendingWork = usePendingWork(true);
@@ -73,9 +88,10 @@ export default function Sidebar() {
     };
   }, [isOpen]);
 
-  // Close the drawer after navigating on mobile and tablet.
+  // Close the drawer after navigating on mobile and tablet, and the menu opened over the rail.
   const closeOnSmallScreen = () => {
     if (window.innerWidth < 1024) closeSidebar();
+    setPeek(false);
   };
 
   const renderMenuItem = (item: AdminMenuItem) => {
@@ -88,9 +104,11 @@ export default function Sidebar() {
           onClick={closeOnSmallScreen}
           className="ka-nav-item"
           aria-current={item.href && isMenuHrefActive(item.href, pathname) ? 'page' : undefined}
+          aria-label={rail ? item.title : undefined}
+          title={rail ? item.title : undefined}
         >
           {item.icon}
-          {item.title}
+          <span className="ka-nav__label">{item.title}</span>
           {item.anyMenu && <PendingBadge value={stockPending?.total} />}
         </Link>
       );
@@ -103,9 +121,18 @@ export default function Sidebar() {
         open={expandedItems.includes(item.title)}
         onToggle={(event) => setExpanded(item.title, event.currentTarget.open)}
       >
-        <summary>
+        <summary
+          aria-label={rail ? `${item.title} เปิดเมนู` : undefined}
+          title={rail ? item.title : undefined}
+          onClick={(event) => {
+            if (!rail) return;
+            event.preventDefault();
+            setExpanded(item.title, true);
+            setPeek(true);
+          }}
+        >
           {item.icon}
-          {item.title}
+          <span className="ka-nav__label">{item.title}</span>
           <PendingBadge
             value={item.subItems
               .filter((sub) => can(sub.menu_name, 'view'))
@@ -142,7 +169,16 @@ export default function Sidebar() {
   return (
     <>
       <div className="ka-drawer-scrim" onClick={closeSidebar} aria-hidden="true" />
-      <aside className="ka-sidebar ka-sidebar--app" aria-label="เมนูหลัก">
+      {peeking && (
+        <>
+          <div className="ka-rail-spacer" aria-hidden="true" />
+          <div className="ka-rail-scrim" onClick={() => setPeek(false)} aria-hidden="true" />
+        </>
+      )}
+      <aside
+        className={`ka-sidebar ka-sidebar--app${rail ? ' ka-sidebar--rail' : ''}${peeking ? ' ka-sidebar--peek' : ''}`}
+        aria-label="เมนูหลัก"
+      >
         <div className="ka-sidebar__brand">
           <span className="ka-logo-plate">
             <Image src="/kan-product-mark.png" alt="" width={32} height={32} />

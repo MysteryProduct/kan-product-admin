@@ -17,14 +17,26 @@ export const BACK_TINT = '#0f766e';
 
 interface Props {
   bytes: ArrayBuffer;
-  frontMesh: string;
-  backMesh: string;
-  bodyMesh: string;
+  frontMesh?: string;
+  backMesh?: string;
+  bodyMesh?: string;
   /** `#rrggbb` of the colour option being previewed, or '' for the file's own colour. */
-  colorHex: string;
-  /** The file could not be shown; the page keeps working without the preview. */
-  onFailed: (message: string) => void;
+  colorHex?: string;
+  /**
+   * The file could not be shown; the page keeps working without the preview.
+   * `cause`: `webgl` = this browser or device cannot draw 3D (no WebGL, or the
+   * context was lost), `file` = the bytes are not a readable glTF, `other` = anything else.
+   */
+  onFailed: (message: string, cause: 'webgl' | 'file' | 'other') => void;
+  /** The model is drawn. */
+  onReady?: () => void;
+  /** `review` (TASK-0210 v2): 280px (220 on phones), reset and zoom buttons, a gesture hint. */
+  variant?: 'template' | 'review';
+  /** What the picture shows, for screen readers. */
+  label?: string;
 }
+
+const NO_WEBGL = 'เบราว์เซอร์นี้แสดงโมเดล 3D ไม่ได้ (ไม่รองรับ WebGL) — ยังอัปโหลดและเลือก mesh จากรายการได้';
 
 type Tintable = Material & { color?: { set: (v: string) => void; getHexString: () => string }; emissive?: { set: (v: string) => void; getHexString: () => string }; emissiveIntensity?: number };
 interface Part {
@@ -40,6 +52,8 @@ interface Live {
   parts: Part[];
   render: () => void;
   reset: () => void;
+  /** Moves the camera toward (factor < 1) or away from the model, within the zoom limits. */
+  zoom: (factor: number) => void;
   dispose: () => void;
 }
 
@@ -48,13 +62,25 @@ interface Live {
  * the bytes it is given; nothing it draws is saved. A bad file reports through
  * `onFailed` and leaves the form usable.
  */
-export default function ModelViewer({ bytes, frontMesh, backMesh, bodyMesh, colorHex, onFailed }: Props) {
+export default function ModelViewer({
+  bytes,
+  frontMesh = '',
+  backMesh = '',
+  bodyMesh = '',
+  colorHex = '',
+  onFailed,
+  onReady,
+  variant = 'template',
+  label = 'ตัวอย่างโมเดล 3D ที่อัปโหลด ลากเพื่อหมุน เลื่อนล้อเมาส์เพื่อซูม',
+}: Props) {
   const host = useRef<HTMLDivElement>(null);
   const live = useRef<Live | null>(null);
   const [ready, setReady] = useState(false);
   const failed = useRef(onFailed);
+  const readied = useRef(onReady);
   useEffect(() => {
     failed.current = onFailed;
+    readied.current = onReady;
   });
 
   useEffect(() => {
@@ -70,9 +96,13 @@ export default function ModelViewer({ bytes, frontMesh, backMesh, bodyMesh, colo
       try {
         renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       } catch {
-        if (!cancelled) failed.current('เบราว์เซอร์นี้แสดงโมเดล 3D ไม่ได้ (ไม่รองรับ WebGL) — ยังอัปโหลดและเลือก mesh จากรายการได้');
+        if (!cancelled) failed.current(NO_WEBGL, 'webgl');
         return;
       }
+      // Teardown forces a context loss too; only a loss while shown is a failure.
+      renderer.domElement.addEventListener('webglcontextlost', () => {
+        if (!cancelled) failed.current(NO_WEBGL, 'webgl');
+      });
       const [{ GLTFLoader }, { OrbitControls }, { RoomEnvironment }] = await Promise.all([
         import('three/examples/jsm/loaders/GLTFLoader.js'),
         import('three/examples/jsm/controls/OrbitControls.js'),
@@ -186,15 +216,23 @@ export default function ModelViewer({ bytes, frontMesh, backMesh, bodyMesh, colo
         camera.far = d * 100;
         controls.maxDistance = d * 4;
         controls.minDistance = d * 0.25;
-        live.current = { parts, render, reset, dispose: teardown! };
+        const zoom = (factor: number) => {
+          const offset = camera.position.clone().sub(controls.target);
+          const distance = Math.min(controls.maxDistance, Math.max(controls.minDistance, offset.length() * factor));
+          camera.position.copy(controls.target).add(offset.setLength(distance));
+          controls.update();
+          render();
+        };
+        live.current = { parts, render, reset, zoom, dispose: teardown! };
         resize();
         reset();
         setReady(true);
+        readied.current?.();
       } catch {
-        if (!cancelled) failed.current('อ่านไฟล์โมเดลไม่ได้ จึงแสดงตัวอย่างไม่ได้ — ลองอัปโหลดไฟล์ใหม่');
+        if (!cancelled) failed.current('อ่านไฟล์โมเดลไม่ได้ จึงแสดงตัวอย่างไม่ได้ — ลองอัปโหลดไฟล์ใหม่', 'file');
       }
     })().catch(() => {
-      if (!cancelled) failed.current('แสดงตัวอย่างโมเดลไม่สำเร็จ');
+      if (!cancelled) failed.current('แสดงตัวอย่างโมเดลไม่สำเร็จ', 'other');
     });
 
     return () => {
@@ -225,6 +263,37 @@ export default function ModelViewer({ bytes, frontMesh, backMesh, bodyMesh, colo
   }, [ready, frontMesh, backMesh, bodyMesh, colorHex]);
 
   const reset = useCallback(() => live.current?.reset(), []);
+  const zoom = useCallback((factor: number) => live.current?.zoom(factor), []);
+
+  if (variant === 'review') {
+    return (
+      <div className="ka-cr-vp">
+        <div ref={host} role="img" aria-label={label} className="ka-cr-vp__canvas" />
+        {!ready && (
+          <p className="ka-cr-vp__wait" role="status">
+            <span className="ka-cr-spin" aria-hidden="true" />
+            กำลังเปิดแบบ 3D…
+          </p>
+        )}
+        {ready && (
+          <>
+            <div className="ka-cr-vp__tools">
+              <button type="button" className="ka-cr-ib" aria-label="รีเซ็ตมุมมอง" onClick={reset}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v6h6M5 15a8 8 0 1 0 2-8.5L4 10" /></svg>
+              </button>
+              <button type="button" className="ka-cr-ib" aria-label="ซูมเข้า" onClick={() => zoom(0.8)}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+              </button>
+              <button type="button" className="ka-cr-ib" aria-label="ซูมออก" onClick={() => zoom(1.25)}>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg>
+              </button>
+            </div>
+            <span className="ka-cr-vp__hint">ลากเพื่อหมุน · เลื่อนล้อหรือบีบนิ้วเพื่อซูม</span>
+          </>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="relative">

@@ -113,6 +113,10 @@ const ADDRESS = { recipient_name: 'สมชาย', recipient_phone: '080000000
 const EMPLOYEE = { employee_firstname: 'สมชาย', employee_lastname: 'ใจดี', employee_address: '1 ถนน', employee_phone: '0800000000', employee_email: 'a@b.test' };
 const LINE = { sale_order_list_id: 'L1', quantity: 2, name: 'สินค้า', remaining: 5 };
 const CASES = [
+  // TASK-0210: only the revision looked at (and the reason) is sent; the reviewer comes from the session.
+  ['custom-review', 'custom review received', m => m('custom-review').received('R1', 1)],
+  ['custom-review', 'custom review needs changes', m => m('custom-review').needsChanges('R1', 1, 'ZIP เปิดไม่ได้')],
+  ['custom-review', 'custom review approve', m => m('custom-review').approve('R1', 1)],
   ['category', 'category create', m => m('category').createCategory('เสื้อ', [1, 2])],
   ['category', 'category update from a full list row', m => m('category').updateCategory({ category_id: 7, category_name: 'เสื้อ', size_ids: [4], categorySize: [{ id: 1, size_id: 4, size: SIZE_ROW }], sizes: [SIZE_ROW], extra: true })],
   ['color', 'color create', m => m('color').createColor({ color_name: 'แดง', color_hex: '#FF0000', color_id: 9, extra: true })],

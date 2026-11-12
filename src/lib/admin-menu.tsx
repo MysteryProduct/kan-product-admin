@@ -55,6 +55,8 @@ export const adminMenu: AdminMenuSection[] = [
           { title: 'สินค้า', menu_name: 'products', href: '/admin/products' },
           { title: 'แบบสินค้า Custom', menu_name: 'products', href: '/admin/custom-templates' },
           { title: 'ผลิตสินค้า', menu_name: 'job_orders', href: '/admin/job-orders' },
+          // TASK-0210 D2: the review shares the job_orders menu (no new permission).
+          { title: 'ตรวจไฟล์ Custom', menu_name: 'job_orders', href: '/admin/custom-review' },
         ],
       },
       {
