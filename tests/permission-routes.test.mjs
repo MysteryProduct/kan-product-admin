@@ -27,8 +27,9 @@ test('every sidebar page is guarded by the menu it is listed under', () => {
   }
 });
 
-// Menus the API checks that have no sidebar entry of their own.
-const MENUS_WITHOUT_SIDEBAR_ENTRY = ['employee_permissions'];
+// Menus the API checks that have no sidebar entry of their own. The two stock
+// menus gate the single "สต็อก" entry through `anyMenu` (TASK-0365 Q3).
+const MENUS_WITHOUT_SIDEBAR_ENTRY = ['employee_permissions', 'stock_material', 'stock_product'];
 
 const sourceRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),

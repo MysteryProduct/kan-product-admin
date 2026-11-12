@@ -63,6 +63,12 @@
     "product_ids": "array",
     "published": "boolean"
   },
+  "PATCH /stock-level/material/:id/threshold": {
+    "threshold": "number"
+  },
+  "PATCH /stock-level/product/:id/threshold": {
+    "threshold": "number"
+  },
   "PATCH /store/account/addresses/:addressId": {
     "address_line1": "string",
     "address_line2": "string",
@@ -211,6 +217,42 @@
     "amount": "number",
     "kind": "string",
     "reference": "string"
+  },
+  "POST /stock-adjustment/material": {
+    "detail": "string",
+    "direction": "string",
+    "lotId": "string",
+    "qty": "number",
+    "reason": "string"
+  },
+  "POST /stock-adjustment/material/:id/reject": {
+    "reason": "string"
+  },
+  "POST /stock-adjustment/product": {
+    "detail": "string",
+    "direction": "string",
+    "lotId": "string",
+    "qty": "number",
+    "reason": "string"
+  },
+  "POST /stock-adjustment/product/:id/reject": {
+    "reason": "string"
+  },
+  "POST /stock-count/material": {
+    "hideSystemQty": "boolean",
+    "itemIds": "array",
+    "scope": "string"
+  },
+  "POST /stock-count/material/:id/recount": {
+    "itemIds": "array"
+  },
+  "POST /stock-count/product": {
+    "hideSystemQty": "boolean",
+    "itemIds": "array",
+    "scope": "string"
+  },
+  "POST /stock-count/product/:id/recount": {
+    "itemIds": "array"
   },
   "POST /store-lots/:id/release": {
     "note": "string"
@@ -429,5 +471,19 @@
   },
   "PUT /employee-permission/license/:licenseId": {
     "permissions": "array"
+  },
+  "PUT /stock-count/material/:id/items/:itemId/count": {
+    "countedQty": "number"
+  },
+  "PUT /stock-count/material/:id/items/:itemId/reason": {
+    "detail": "string",
+    "reason": "string"
+  },
+  "PUT /stock-count/product/:id/items/:itemId/count": {
+    "countedQty": "number"
+  },
+  "PUT /stock-count/product/:id/items/:itemId/reason": {
+    "detail": "string",
+    "reason": "string"
   }
 }
