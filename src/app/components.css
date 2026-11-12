@@ -245,6 +245,10 @@ a.ka-card:hover, .ka-card--link:hover { transform: translateY(-2px); box-shadow:
 .ka-check-draw { stroke-dasharray: 24; stroke-dashoffset: 24; animation: ka-draw 420ms var(--ka-ease) 260ms forwards; }
 @keyframes ka-fade { from { opacity: 0; } }
 @keyframes ka-rise { from { opacity: 0; transform: translateY(16px) scale(0.98); } }
+/* A confirm answers a click on the form behind it: a plain quick fade, no rise, no icon bump, no blur. */
+.ka-modal--confirm { animation: ka-fade var(--ka-fast) var(--ka-ease); }
+.ka-scrim:has(> .ka-modal--confirm) { animation-duration: var(--ka-fast); backdrop-filter: none; }
+.ka-dialog__icon--still { animation: none; }
 /* Opt in only on a newly mounted region, never every row or render. */
 .ka-motion-enter { animation: ka-fade var(--ka-motion-state) var(--ka-ease); }
 .ka-motion-state { transition: opacity var(--ka-motion-state) var(--ka-ease), background-color var(--ka-motion-control) var(--ka-ease), border-color var(--ka-motion-control) var(--ka-ease); }

@@ -50,7 +50,7 @@ export default function ConfirmDialog({
       description={description}
       size={size}
       placement={placement}
-      className={className}
+      className={`ka-modal--confirm ${className ?? ''}`}
       icon={icon}
       iconTone="danger"
       footer={
@@ -72,7 +72,7 @@ export default function ConfirmDialog({
       }
     >
       <div className="flex gap-4">
-        <div className={`ka-dialog__icon ${tone === 'danger' ? '' : 'ka-dialog__icon--warning'} h-11 w-11 shrink-0`} aria-hidden="true">
+        <div className={`ka-dialog__icon ka-dialog__icon--still ${tone === 'danger' ? '' : 'ka-dialog__icon--warning'} h-11 w-11 shrink-0`} aria-hidden="true">
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v4m0 4h.01M10.3 3.7 2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z" />
           </svg>
