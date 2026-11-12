@@ -40,6 +40,20 @@ class CustomReviewModel {
     const response = await axiosInstance.post<ReviewDetail>(`/custom-request/${id}/review/approve`, { revision });
     return response.data;
   }
+
+  /** TASK-0211: the signed-in employee is the one who makes the job. */
+  async createJob(id: string, revision: number, employeeId: string) {
+    const response = await axiosInstance.post<ReviewDetail>(`/custom-request/${id}/job-order`, {
+      revision,
+      employee_id: employeeId,
+    });
+    return response.data;
+  }
+
+  async cancelJob(id: string, reason: string) {
+    const response = await axiosInstance.post<ReviewDetail>(`/custom-request/${id}/job-order/cancel`, { reason });
+    return response.data;
+  }
 }
 
 export default CustomReviewModel;

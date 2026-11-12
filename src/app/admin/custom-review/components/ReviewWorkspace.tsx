@@ -21,6 +21,7 @@ import {
 import type { ReviewDetail } from '@/types/custom-review';
 import GlbOpener from './GlbOpener';
 import ApproveDialog from './ApproveDialog';
+import JobPanel, { type JobAct } from './JobPanel';
 
 export type ReviewAct = 'received' | 'needs_changes' | 'approved';
 
@@ -51,18 +52,22 @@ export default function ReviewWorkspace({
   can,
   canSeeSaleOrder,
   busy,
+  jobBusy,
   conflict,
   onAct,
+  onJob,
   onReload,
   onClearConflict,
 }: {
   detail: ReviewDetail;
   backHref: string;
-  can: { received: boolean; needsChanges: boolean; approve: boolean };
+  can: { received: boolean; needsChanges: boolean; approve: boolean; createJob: boolean; cancelJob: boolean };
   canSeeSaleOrder: boolean;
   busy: ReviewAct | null;
+  jobBusy: JobAct | null;
   conflict: string | null;
   onAct: (act: ReviewAct, reason?: string) => Promise<boolean>;
+  onJob: (act: JobAct, reason?: string) => Promise<boolean>;
   onReload: () => void;
   onClearConflict: () => void;
 }) {
@@ -407,13 +412,16 @@ export default function ReviewWorkspace({
             </div>
           </>
         ) : approved ? (
-          <p className="ka-cr-okline">
-            <svg className="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8 12l3 3 5-6" /></svg>
-            <span>
-              <b>อนุมัติฉบับ {detail.approvedRevision ?? detail.revision} ให้ผลิตแล้ว</b>
-              {approval && ` · ${approval.reviewer ?? 'ไม่ทราบชื่อผู้ตรวจ'} · ${formatAt(approval.reviewedAt)}`} · ย้อนผลไม่ได้
-            </span>
-          </p>
+          <>
+            <p className="ka-cr-okline">
+              <svg className="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM8 12l3 3 5-6" /></svg>
+              <span>
+                <b>อนุมัติฉบับ {detail.approvedRevision ?? detail.revision} ให้ผลิตแล้ว</b>
+                {approval && ` · ${approval.reviewer ?? 'ไม่ทราบชื่อผู้ตรวจ'} · ${formatAt(approval.reviewedAt)}`} · ย้อนผลไม่ได้
+              </span>
+            </p>
+            <JobPanel detail={detail} canCreate={can.createJob} canCancel={can.cancelJob} busy={jobBusy} onJob={onJob} />
+          </>
         ) : form ? (
           <div className="ka-cr-form">
             <label htmlFor="ka-cr-reason">

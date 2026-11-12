@@ -117,6 +117,8 @@ const CASES = [
   ['custom-review', 'custom review received', m => m('custom-review').received('R1', 1)],
   ['custom-review', 'custom review needs changes', m => m('custom-review').needsChanges('R1', 1, 'ZIP เปิดไม่ได้')],
   ['custom-review', 'custom review approve', m => m('custom-review').approve('R1', 1)],
+  ['custom-review', 'custom review create job', m => m('custom-review').createJob('R1', 1, '11111111-1111-4111-8111-111111111111')],
+  ['custom-review', 'custom review cancel job', m => m('custom-review').cancelJob('R1', 'ลูกค้าเลื่อน')],
   // TASK-0371: stock writes (TASK-0362..0364). Bodies are what the pages hand the model; an empty detail is dropped.
   ['stock', 'stock set threshold', m => m('stock').setThreshold('material', 'M1', 20)],
   ['stock', 'stock reset threshold to the default', m => m('stock').setThreshold('product', 'P1', null)],

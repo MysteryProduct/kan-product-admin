@@ -102,5 +102,9 @@ export interface ReviewDetail {
   saleOrderId: string;
   approvedRevision: number | null;
   hasJobOrder: boolean;
+  /** TASK-0211: the Job Order made from this request, if any. */
+  jobOrder: { id: string; code: string | null; status: 'pending' | 'in_progress' | 'completed' | 'cancelled' | string | null } | null;
+  /** Deposit rows cover what the revision asked (TASK-0218). */
+  depositCovered: boolean;
   reviews: ReviewHistoryEntry[];
 }

@@ -114,6 +114,14 @@
     "type_code": "string",
     "type_name": "string"
   },
+  "POST /custom-request/:id/job-order": {
+    "employee_id": "string",
+    "revision": "number",
+    "target_date": "string"
+  },
+  "POST /custom-request/:id/job-order/cancel": {
+    "reason": "string"
+  },
   "POST /custom-request/:id/review/approve": {
     "revision": "number"
   },

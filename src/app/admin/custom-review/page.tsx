@@ -1,5 +1,6 @@
 'use client';
 
+import Cookies from 'js-cookie';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
@@ -13,6 +14,7 @@ import { customReviewModel } from '@/models/custom-review';
 import type { ReviewDetail } from '@/types/custom-review';
 import QueueRail from './components/QueueRail';
 import ReviewWorkspace, { type ReviewAct } from './components/ReviewWorkspace';
+import type { JobAct } from './components/JobPanel';
 import { useReviewQueue } from './use-review-queue';
 import './custom-review.css';
 
@@ -26,6 +28,16 @@ const DONE: Record<ReviewAct, (revision: number) => string> = {
 
 /** Shown in the approve dialog for a 409: someone else changed the record first. */
 const CONFLICT = 'สถานะคำขอนี้เปลี่ยนไปแล้ว อาจมีพนักงานอื่นบันทึกผลก่อน';
+
+/** The job's maker is the signed-in employee, as on the Job Order create form. */
+const signedInEmployeeId = () => {
+  try {
+    const raw = Cookies.get('user');
+    return raw ? ((JSON.parse(raw) as { employee_id?: string }).employee_id ?? null) : null;
+  } catch {
+    return null;
+  }
+};
 
 function CustomReviewPage() {
   const router = useRouter();
@@ -57,6 +69,7 @@ function CustomReviewPage() {
   // Writes in flight, by request: the buttons of one request never show another one's write.
   const [pending, setPending] = useState<Record<string, ReviewAct>>({});
   const [conflict, setConflict] = useState<string | null>(null);
+  const [jobPending, setJobPending] = useState<Record<string, JobAct>>({});
 
   const hrefFor = useCallback((rowId: string) => `${pathname}?id=${rowId}`, [pathname]);
 
@@ -133,6 +146,45 @@ function CustomReviewPage() {
     }
   };
 
+  /** TASK-0211: create the job of an approved request, or give it up before it starts. */
+  const jobAct = async (action: JobAct, reason?: string): Promise<boolean> => {
+    if (!detail || jobPending[detail.requestId]) return false;
+    const { requestId, code, revision } = detail;
+    const employeeId = signedInEmployeeId();
+    if (action === 'create' && !employeeId) {
+      toast({ message: `${code} · ไม่พบผู้ใช้ที่เข้าสู่ระบบ กรุณาเข้าสู่ระบบใหม่`, tone: 'danger' });
+      return false;
+    }
+    setJobPending((p) => ({ ...p, [requestId]: action }));
+    try {
+      const next =
+        action === 'create'
+          ? await customReviewModel.createJob(requestId, detail.approvedRevision ?? revision, employeeId as string)
+          : await customReviewModel.cancelJob(requestId, reason ?? '');
+      if (selectedId.current === requestId) setLoaded((prev) => ({ key: prev.key, detail: next, error: null }));
+      queue.reload();
+      toast({
+        message: `${code} · ${action === 'create' ? 'สร้างงานผลิตแล้ว · จองวัตถุดิบแล้ว' : 'ยกเลิกงานผลิตแล้ว · คืนวัตถุดิบที่จองไว้'}`,
+        tone: 'success',
+      });
+      return true;
+    } catch (err) {
+      const status = axios.isAxiosError(err) ? err.response?.status : undefined;
+      toast({
+        message: `${code} · ${getApiErrorMessage(err)}${status === 409 ? ' · โหลดข้อมูลล่าสุดแล้ว' : ''}`,
+        tone: 'danger',
+      });
+      if (status === 409 && selectedId.current === requestId) reloadDetail();
+      return false;
+    } finally {
+      setJobPending((p) => {
+        const rest = { ...p };
+        delete rest[requestId];
+        return rest;
+      });
+    }
+  };
+
   const pane = id ? 'review' : 'queue';
 
   return (
@@ -151,11 +203,15 @@ function CustomReviewPage() {
               received: can('job_orders', 'edit'),
               needsChanges: can('job_orders', 'reject'),
               approve: can('job_orders', 'approve'),
+              createJob: can('job_orders', 'add'),
+              cancelJob: can('job_orders', 'edit'),
             }}
             canSeeSaleOrder={can('sale_orders', 'view')}
             busy={pending[detail.requestId] ?? null}
+            jobBusy={jobPending[detail.requestId] ?? null}
             conflict={conflict}
             onAct={act}
+            onJob={jobAct}
             onReload={reloadDetail}
             onClearConflict={() => setConflict(null)}
           />

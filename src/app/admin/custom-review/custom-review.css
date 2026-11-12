@@ -208,6 +208,9 @@ textarea.ka-cr-in { height: auto; min-height: 88px; padding: 8px 12px; line-heig
 .ka-cr-acts { display: flex; flex-wrap: wrap; gap: 8px; }
 .ka-cr-bar > .ka-cr-note { flex: 1 1 320px; }
 .ka-cr-bar > .ka-cr-okline { font-size: 15px; line-height: 24px; }
+/* TASK-0211: the job that follows approval; wraps under the "approved" line on a narrow bar. */
+.ka-cr-job { display: flex; flex: 1 1 320px; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; min-width: 0; }
+.ka-cr-job__l { flex: 1 1 220px; margin: 0; font: 400 14px/22px var(--ka-font); overflow-wrap: anywhere; }
 .ka-cr-form { display: flex; flex: 1 1 100%; flex-direction: column; gap: 10px; }
 .ka-cr-form > label { font: 500 14px/22px var(--ka-font); }
 .ka-cr-req { color: var(--danger); }
