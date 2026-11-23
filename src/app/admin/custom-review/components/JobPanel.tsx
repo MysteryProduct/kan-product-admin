@@ -71,7 +71,8 @@ export default function JobPanel({
           <p className="ka-cr-job__l">
             <b>งานผลิต {job.code ?? ''}</b> · {JOB_LABEL[job.status ?? ''] ?? job.status}
             {' · '}
-            <Link href="/admin/job-orders">เปิดหน้าใบผลิต</Link>
+            {/* Opens this job itself: the job page lists by target date, which may be outside the month it shows. */}
+            <Link href={`/admin/job-orders?jobId=${encodeURIComponent(job.id)}`}>เปิดหน้าใบผลิต</Link>
           </p>
           {job.status === 'pending' && approvedHere && canCancel && (
             <Button variant="ghost" onClick={() => setDialog('cancel')}>ยกเลิกงานผลิต</Button>
