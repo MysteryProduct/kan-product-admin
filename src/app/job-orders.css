@@ -1,6 +1,24 @@
 /* Job order page v2 (TASK-0323): board, list and calendar from the "ผลิตสินค้า v2" artboards.
    Tokens only; rules are scoped under .ka-jo so the shared ka-* classes keep their look elsewhere. */
 
+/* ---------- Approved Custom design in the job dialog (TASK-0219) ----------
+   Not under .ka-jo: the dialog is portalled to <body>, and the dashboard opens it too. */
+.ka-jo-design { min-width: 0; }
+.ka-jo-design__item { display: grid; gap: var(--space-2); min-width: 0; padding: var(--space-3) var(--space-4); border: 1px solid var(--border); border-radius: var(--radius-control); }
+.ka-jo-design__item + .ka-jo-design__item { margin-top: var(--space-2); }
+.ka-jo-design__head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px var(--space-3); font: 400 15px/24px var(--ka-font); }
+.ka-jo-design__head b { min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.ka-jo-design__opts { margin: 0; color: var(--ink-muted); font: 400 14px/22px var(--ka-font); overflow-wrap: anywhere; }
+.ka-jo-design__layers { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.ka-jo-design__layers li { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 0 var(--space-3); align-items: baseline; font: 400 15px/24px var(--ka-font); }
+.ka-jo-design__layers .k { color: var(--ink-muted); font-size: 13px; }
+.ka-jo-design__layers .v { min-width: 0; overflow-wrap: anywhere; white-space: pre-line; }
+.ka-jo-design__layers .p { grid-column: 2; color: var(--ink-muted); font-size: 13px; line-height: 20px; overflow-wrap: anywhere; }
+@media (max-width: 639px) {
+  .ka-jo-design__layers li { grid-template-columns: minmax(0, 1fr); }
+  .ka-jo-design__layers .p { grid-column: 1; }
+}
+
 /* ---------- Job card (C) ---------- */
 .ka-jo .ka-jo-card { min-width: 0; gap: var(--space-2); cursor: default; }
 .ka-jo .ka-jo-card.ka-kc--grab { cursor: grab; }

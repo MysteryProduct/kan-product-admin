@@ -57,6 +57,12 @@ export default function ListView({ isLoading, jobs, statusTab, canEdit, actions 
 									<button type="button" className="ka-jo-row__title" onClick={() => actions.onView(job)}>{title}</button>
 									<div className="ka-kc__meta">
 										<span className="numeric">{job.job_order_code}</span>
+										{job.custom_request && (
+											<>
+												<span className="numeric">{job.custom_request.code}</span>
+												<span className="numeric">{job.custom_request.sale_order_code}</span>
+											</>
+										)}
 										{pills.map((pill) => <span key={pill} className="ka-jo-pill">{pill}</span>)}
 									</div>
 								</div>

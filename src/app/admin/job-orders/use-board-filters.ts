@@ -29,6 +29,9 @@ export function useBoardFilters(jobOrders: JobOrder[], deferredSearchText: strin
 				[
 					job.job_order_code || '',
 					job.job_order_name || '',
+					// A Custom job is also found by its request (CU) and sale order (SO) codes.
+					job.custom_request?.code || '',
+					job.custom_request?.sale_order_code || '',
 					job.productVariant?.product?.product_name || '',
 					...getVariantLabel(job).pills,
 					getAssigneeName(job),

@@ -98,6 +98,12 @@ const JobCard = memo(function JobCard({
 			)}
 			<div className="ka-kc__meta">
 				<span className="numeric">{job.job_order_code}</span>
+				{job.custom_request && (
+					<>
+						<span className="numeric">{job.custom_request.code}</span>
+						<span className="numeric">{job.custom_request.sale_order_code}</span>
+					</>
+				)}
 				<span>
 					<svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3l8 4.5v9L12 21l-8-4.5v-9z" /></svg>
 					<span className="numeric">{count(job.job_order_qty ?? 0)} ชิ้น</span>

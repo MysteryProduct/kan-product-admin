@@ -56,7 +56,7 @@ export default function FilterBar({ isLoading, hasLoaded, viewMode, searchOpen, 
 			<p role="status" className="sr-only">{isLoading && hasLoaded ? 'กำลังโหลดงานผลิต' : ''}</p>
 			<div className="ka-input-wrap ka-jo-fbar__search" data-open={searchOpen || searchText ? true : undefined}>
 				<svg fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-				<input id="jo-search" type="search" className="ka-input" aria-label="ค้นหางานผลิต" placeholder="ชื่องาน สินค้า หรือเลข JO" value={searchText} onChange={(e) => setSearchText(e.target.value)} />
+				<input id="jo-search" type="search" className="ka-input" aria-label="ค้นหางานผลิต" placeholder="ชื่องาน สินค้า เลข JO หรือรหัส CU/SO" value={searchText} onChange={(e) => setSearchText(e.target.value)} />
 			</div>
 			<div className="ka-jo-fbar__chips">
 				{viewMode !== 'calendar' && (

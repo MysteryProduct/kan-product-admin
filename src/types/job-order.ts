@@ -16,7 +16,46 @@ export interface JobOrderMaterial {
   };
 }
 
+/** One layer of an approved Custom design, as the people who make it need it: no ids and no file address. */
+export interface JobOrderDesignLayer {
+  no: number;
+  kind: 'image' | 'text' | 'other';
+  text: string | null;
+  file_name: string | null;
+  width: number | null;
+  height: number | null;
+  side: string | null;
+  /** Position and size as fractions (0–1) of the face, as the Store Studio stored them. */
+  x: number | null;
+  y: number | null;
+  scale: number | null;
+  /** Degrees, -180 to 180. */
+  rotation: number | null;
+}
+
+export interface JobOrderDesignItem {
+  item_no: number;
+  template_name: string;
+  quantity: number;
+  sale_unit: string;
+  options: { group: string; value: string }[];
+  layers: JobOrderDesignLayer[];
+}
+
+/**
+ * TASK-0219: the Custom request behind a Custom job. Lists and the board carry the two codes; a single
+ * job (`GET /job-order/:id`) also carries the approved revision and its design.
+ */
+export interface JobOrderCustomRequest {
+  code: string;
+  sale_order_code: string;
+  approved_revision?: number | null;
+  items?: JobOrderDesignItem[];
+}
+
 export interface JobOrder {
+  /** Null or absent for a job no Custom request points at. */
+  custom_request?: JobOrderCustomRequest | null;
   job_order_id: string;
   // ADR-0001: JO + Bangkok day + number, issued by the API on create.
   job_order_code: string;

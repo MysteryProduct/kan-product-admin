@@ -7,6 +7,7 @@ import DocumentHistoryPanel from '@/components/document-history/DocumentHistoryP
 import Modal from '@/components/Modal';
 import StatusBadge, { type BadgeTone } from '@/components/StatusBadge';
 import Button from '@/components/Button';
+import ApprovedDesign from './approved-design';
 
 interface JobOrderDetailModalProps {
   isOpen: boolean;
@@ -143,6 +144,12 @@ export default function JobOrderDetailModal({
           <Field label="ผู้รับผิดชอบ">{assignee}</Field>
           <Field label="ราคาสินค้า"><span className="numeric">{baht(Number(jobOrder.job_order_price ?? 0))}</span></Field>
           <Field label="สร้างเมื่อ"><span className="numeric">{formatThaiDate(jobOrder.create_date)}</span></Field>
+          {jobOrder.custom_request && (
+            <>
+              <Field label="คำขอ Custom"><span className="numeric">{jobOrder.custom_request.code}</span></Field>
+              <Field label="ใบสั่งขาย"><span className="numeric">{jobOrder.custom_request.sale_order_code}</span></Field>
+            </>
+          )}
         </dl>
 
         {jobOrder.job_order_description && (
@@ -151,6 +158,8 @@ export default function JobOrderDetailModal({
             <p className="m-0 whitespace-pre-wrap">{jobOrder.job_order_description}</p>
           </div>
         )}
+
+        {jobOrder.custom_request && <ApprovedDesign job={jobOrder} />}
 
         <div>
           <p className="ka-label mb-2">วัตถุดิบที่ใช้</p>

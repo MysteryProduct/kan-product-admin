@@ -41,11 +41,12 @@ class CustomReviewModel {
     return response.data;
   }
 
-  /** TASK-0211: the signed-in employee is the one who makes the job. */
-  async createJob(id: string, revision: number, employeeId: string) {
+  /** TASK-0211: the signed-in employee is the one who makes the job. `targetDate` is YYYY-MM-DD (TASK-0219 D4). */
+  async createJob(id: string, revision: number, employeeId: string, targetDate: string) {
     const response = await axiosInstance.post<ReviewDetail>(`/custom-request/${id}/job-order`, {
       revision,
       employee_id: employeeId,
+      target_date: targetDate,
     });
     return response.data;
   }

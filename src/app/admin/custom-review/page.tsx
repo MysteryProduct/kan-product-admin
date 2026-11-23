@@ -147,7 +147,8 @@ function CustomReviewPage() {
   };
 
   /** TASK-0211: create the job of an approved request, or give it up before it starts. */
-  const jobAct = async (action: JobAct, reason?: string): Promise<boolean> => {
+  // `text` is the target date (YYYY-MM-DD) for create and the reason for cancel.
+  const jobAct = async (action: JobAct, text?: string): Promise<boolean> => {
     if (!detail || jobPending[detail.requestId]) return false;
     const { requestId, code, revision } = detail;
     const employeeId = signedInEmployeeId();
@@ -159,8 +160,8 @@ function CustomReviewPage() {
     try {
       const next =
         action === 'create'
-          ? await customReviewModel.createJob(requestId, detail.approvedRevision ?? revision, employeeId as string)
-          : await customReviewModel.cancelJob(requestId, reason ?? '');
+          ? await customReviewModel.createJob(requestId, detail.approvedRevision ?? revision, employeeId as string, text ?? '')
+          : await customReviewModel.cancelJob(requestId, text ?? '');
       if (selectedId.current === requestId) setLoaded((prev) => ({ key: prev.key, detail: next, error: null }));
       queue.reload();
       toast({

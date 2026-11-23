@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import Modal from '@/components/Modal';
 import Button from '@/components/Button';
+import { todayLocalIso } from '@/lib/date-format';
 import type { ReviewDetail } from '@/types/custom-review';
 
 const JOB_LABEL: Record<string, string> = {
@@ -31,11 +32,14 @@ export default function JobPanel({
   canCreate: boolean;
   canCancel: boolean;
   busy: JobAct | null;
-  onJob: (act: JobAct, reason?: string) => Promise<boolean>;
+  /** `text` is the target date (YYYY-MM-DD) for create and the reason for cancel. */
+  onJob: (act: JobAct, text?: string) => Promise<boolean>;
 }) {
   const [dialog, setDialog] = useState<JobAct | null>(null);
   const [reason, setReason] = useState('');
   const [reasonErr, setReasonErr] = useState(false);
+  const [targetDate, setTargetDate] = useState('');
+  const [dateErr, setDateErr] = useState(false);
   const job = detail.jobOrder;
   const approvedHere = detail.status === 'approved_for_production';
 
@@ -43,6 +47,14 @@ export default function JobPanel({
     setDialog(null);
     setReason('');
     setReasonErr(false);
+    setDateErr(false);
+  };
+  const confirmCreate = async () => {
+    if (!targetDate) {
+      setDateErr(true);
+      return;
+    }
+    if (await onJob('create', targetDate)) close();
   };
   const confirmCancel = async () => {
     if (!reason.trim()) {
@@ -74,7 +86,15 @@ export default function JobPanel({
               : ' · ยังรับมัดจำไม่ครบ สร้างงานผลิตไม่ได้'}
           </p>
           {canCreate ? (
-            <Button variant="action" disabled={!detail.depositCovered} onClick={() => setDialog('create')}>
+            <Button
+              variant="action"
+              disabled={!detail.depositCovered}
+              onClick={() => {
+                // Like the ordinary job form: today, for staff to move.
+                setTargetDate(todayLocalIso());
+                setDialog('create');
+              }}
+            >
               สร้างงานผลิต
             </Button>
           ) : (
@@ -96,13 +116,7 @@ export default function JobPanel({
         footer={
           <>
             <Button onClick={close} disabled={busy !== null}>กลับ</Button>
-            <Button
-              variant="action"
-              loading={busy === 'create'}
-              onClick={async () => {
-                if (await onJob('create')) close();
-              }}
-            >
+            <Button variant="action" loading={busy === 'create'} onClick={confirmCreate}>
               สร้างงานผลิต
             </Button>
           </>
@@ -112,6 +126,28 @@ export default function JobPanel({
           ระบบจะสร้างใบผลิตชนิด Custom จากแบบฉบับ {detail.approvedRevision ?? detail.revision} และ<b>จองวัตถุดิบทันที</b>{' '}
           ถ้าวัตถุดิบไม่พอจะไม่สร้างงานและไม่จองอะไร · ผู้รับงานคือคุณ
         </p>
+        <label htmlFor="ka-cr-job-date">
+          วันเป้าหมาย <span className="ka-cr-req" aria-hidden="true">*</span>
+        </label>
+        <input
+          id="ka-cr-job-date"
+          type="date"
+          className="ka-cr-in"
+          required
+          disabled={busy !== null}
+          aria-invalid={dateErr || undefined}
+          aria-describedby={dateErr ? 'ka-cr-job-date-err' : undefined}
+          value={targetDate}
+          onChange={(e) => {
+            setTargetDate(e.target.value);
+            if (dateErr) setDateErr(false);
+          }}
+        />
+        {dateErr && (
+          <span id="ka-cr-job-date-err" className="ka-cr-ferr">
+            เลือกวันเป้าหมายก่อนสร้างงานผลิต งานจะแสดงในหน้าใบผลิตตามวันนี้
+          </span>
+        )}
       </Modal>
 
       <Modal
