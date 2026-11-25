@@ -248,6 +248,8 @@ export interface StoreOrderListItem {
   status: StoreOrderListStatus;
   // The order total, shipping included.
   total: number;
+  // The Custom request (CU code) the order was opened from; null for a Store order.
+  customRequestCode: string | null;
 }
 
 export interface StoreOrderList {
@@ -342,6 +344,9 @@ export interface StoreOrderWithParcels {
   cancellation: StoreCancellation | null;
   returns: StoreReturns;
   taxInvoice: StoreTaxInvoiceRequest | null;
+  // Set when the order ships a Custom request; the API then refuses goods
+  // returns and cancellation here, and a returned parcel owes no shipping.
+  custom: { requestCode: string; requestId: string; saleOrderId: string } | null;
   items: StoreOrderLine[];
   parcels: StoreParcel[];
   defaultAddress: StoreOrderDefaultAddress | null;

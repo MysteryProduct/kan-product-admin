@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
+import Link from "next/link";
 import StatusBadge from "@/components/StatusBadge";
 import { usePermissions } from "@/hooks/usePermissions";
 import { STORE_ORDER_STATUS_TONE } from "@/lib/status-tones";
@@ -50,6 +51,8 @@ export default function StoreOrderFulfillment({
   const { can } = usePermissions();
   const canAdd = can("store_fulfillment", "add");
   const canEdit = can("store_fulfillment", "edit");
+  const canViewSaleOrder = can("sale_orders", "view");
+  const reasonId = useId();
   const [showCreateParcel, setShowCreateParcel] = useState(false);
   const pickupAction = usePickupAction(onChanged);
 
@@ -88,6 +91,9 @@ export default function StoreOrderFulfillment({
             <div className="min-w-0">
               <p className="ka-sf-sub">คำสั่งซื้อ</p>
               <Heading className="ka-sf-code ka-sf-num">{order.saleOrderCode}</Heading>
+              {order.custom && (
+                <p className="ka-sf-sub ka-sf-num break-words">คำขอ {order.custom.requestCode}</p>
+              )}
               <div className="ka-sf-row ka-sf-row--wrap mt-1.5">
                 <StatusBadge tone={STORE_ORDER_STATUS_TONE[order.status as StoreOrderListStatus]}>
                   {statusLabels[order.status] ?? order.status}
@@ -96,6 +102,7 @@ export default function StoreOrderFulfillment({
                   <SfIcon name={isDelivery ? "truck" : "store"} small />
                   {isDelivery ? "จัดส่ง" : "รับที่ร้าน"}
                 </span>
+                {order.custom && <StatusBadge tone="brand">Custom</StatusBadge>}
                 {order.cancellation?.status === "pending" && (
                   <StatusBadge tone="warning" live>
                     รอพิจารณาคำขอยกเลิก
@@ -118,13 +125,23 @@ export default function StoreOrderFulfillment({
                   type="button"
                   onClick={() => setShowCreateParcel(true)}
                   disabled={!hasRemaining || !!unpaidShipping}
+                  aria-describedby={
+                    [!hasRemaining && `${reasonId}-done`, unpaidShipping && `${reasonId}-unpaid`]
+                      .filter(Boolean)
+                      .join(" ") || undefined
+                  }
                   className="ka-btn ka-btn--primary"
                 >
                   <SfIcon name="plus" small />
                   บันทึกพัสดุใหม่
                 </button>
+                {!hasRemaining && (
+                  <p id={`${reasonId}-done`} className="ka-sf-sub">
+                    ลงพัสดุครบทั้ง {purchased} ชิ้นแล้ว ไม่มีสินค้าคงเหลือให้บันทึก
+                  </p>
+                )}
                 {unpaidShipping && (
-                  <p className="ka-sf-warn">
+                  <p id={`${reasonId}-unpaid`} className="ka-sf-warn">
                     รอลูกค้าชำระค่าจัดส่ง {unpaidShipping.amount} บาท จึงจะบันทึกพัสดุได้
                   </p>
                 )}
@@ -143,6 +160,24 @@ export default function StoreOrderFulfillment({
             ))}
           </ol>
         </section>
+
+        {order.custom && (
+          <p className="ka-sf-ban ka-sf-tone--info" role="status">
+            <SfIcon name="info" />
+            <span>
+              งานสั่งผลิต (Custom) · คำขอ {order.custom.requestCode} — สร้าง พัก และส่งพัสดุได้ตามปกติ การยกเลิก
+              คืนเงิน และรับคืนสินค้าไม่ทำในหน้านี้{" "}
+              {canViewSaleOrder && (
+                <Link
+                  className="ka-sf-open"
+                  href={`/admin/sale-orders/${encodeURIComponent(order.custom.saleOrderId)}`}
+                >
+                  เปิดใบสั่งขาย
+                </Link>
+              )}
+            </span>
+          </p>
+        )}
 
         {order.cancellation?.status === "pending" && (
           <p className="ka-sf-ban ka-sf-tone--warning" role="status">
@@ -234,13 +269,15 @@ export default function StoreOrderFulfillment({
                     key={parcel.parcelId}
                     parcel={parcel}
                     canEdit={canEdit}
+                    isCustom={!!order.custom}
                     onChanged={() => onChanged()}
                   />
                 ))}
               </section>
             )}
 
-            {order.returns && (
+            {/* Not for a Custom order: the API refuses a goods return there. */}
+            {order.returns && !order.custom && (
               <ReturnCard
                 storeOrderId={order.storeOrderId}
                 orderStatus={order.status}

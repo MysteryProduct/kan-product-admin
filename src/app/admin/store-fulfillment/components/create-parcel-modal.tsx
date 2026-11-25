@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import Modal from '@/components/Modal';
 import StoreFulfillmentModel from '@/models/store-fulfillment';
 import {
@@ -7,6 +7,7 @@ import {
   StoreOrderLine,
 } from '@/types/store-fulfillment';
 import { getApiErrorMessage } from '@/lib/api-error';
+import SfIcon from './sf-icon';
 
 const storeFulfillmentModel = new StoreFulfillmentModel();
 
@@ -46,16 +47,38 @@ export default function CreateParcelModal({
   });
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
+  // A quantity is judged once its field was left or a save was tried, not while it is first typed.
+  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [tried, setTried] = useState(false);
+  const fieldId = useId();
 
-  // Whole pieces, from none up to what is still unshipped.
+  const quantityOf = (line: StoreOrderLine) => quantities[line.saleOrderListId] ?? 0;
+  const isOver = (line: StoreOrderLine) => quantityOf(line) > line.remainingUnshipped;
+  const inputId = (line: StoreOrderLine) => `${fieldId}-${line.saleOrderListId}`;
+
+  // Whole pieces, none or more. A typed number above what is still unshipped
+  // stays as typed and is refused at its field, never lowered silently.
   function setQuantity(line: StoreOrderLine, value: number) {
     setQuantities((prev) => ({
       ...prev,
-      [line.saleOrderListId]: Math.max(0, Math.min(line.remainingUnshipped, Math.floor(value) || 0)),
+      [line.saleOrderListId]: Math.max(0, Math.floor(value) || 0),
     }));
   }
 
+  // The − and + buttons stay within what can be shipped.
+  function stepQuantity(line: StoreOrderLine, by: number) {
+    setQuantity(line, Math.min(line.remainingUnshipped, quantityOf(line) + by));
+  }
+
   async function handleSubmit() {
+    setTried(true);
+    const over = shippable.find(isOver);
+    if (over) {
+      // The reason is beside that field; the line below is for the rest of the form.
+      setError('');
+      document.getElementById(inputId(over))?.focus();
+      return;
+    }
     const items = Object.entries(quantities)
       .filter(([, quantity]) => quantity > 0)
       .map(([sale_order_list_id, quantity]) => ({
@@ -152,7 +175,9 @@ export default function CreateParcelModal({
               ไม่มีรายการที่ยังไม่ได้ส่ง
             </p>
           )}
-          {shippable.map((line) => (
+          {shippable.map((line) => {
+            const invalid = isOver(line) && (tried || !!checked[line.saleOrderListId]);
+            return (
             <div
               key={line.saleOrderListId}
               className="ka-sf-qline"
@@ -163,34 +188,47 @@ export default function CreateParcelModal({
                   คงเหลือ {line.remainingUnshipped} จาก {line.purchasedQty}
                 </p>
               </div>
+              <div className="ka-sf-qend">
               <div className="ka-step ka-sf-stepper" role="group" aria-label={`จำนวนของ ${line.productName} ในพัสดุนี้`}>
                 <button
                   type="button"
                   aria-label="ลดจำนวน"
-                  disabled={(quantities[line.saleOrderListId] ?? 0) <= 0}
-                  onClick={() => setQuantity(line, (quantities[line.saleOrderListId] ?? 0) - 1)}
+                  disabled={quantityOf(line) <= 0}
+                  onClick={() => stepQuantity(line, -1)}
                 >
                   −
                 </button>
                 <input
+                  id={inputId(line)}
                   type="number"
                   min={0}
                   max={line.remainingUnshipped}
                   aria-label={`จำนวนของ ${line.productName}`}
-                  value={quantities[line.saleOrderListId] ?? 0}
+                  aria-invalid={invalid || undefined}
+                  aria-describedby={invalid ? `${inputId(line)}-error` : undefined}
+                  value={quantityOf(line)}
                   onChange={(e) => setQuantity(line, Number(e.target.value))}
+                  onBlur={() => setChecked((prev) => ({ ...prev, [line.saleOrderListId]: true }))}
                 />
                 <button
                   type="button"
                   aria-label="เพิ่มจำนวน"
-                  disabled={(quantities[line.saleOrderListId] ?? 0) >= line.remainingUnshipped}
-                  onClick={() => setQuantity(line, (quantities[line.saleOrderListId] ?? 0) + 1)}
+                  disabled={quantityOf(line) >= line.remainingUnshipped}
+                  onClick={() => stepQuantity(line, 1)}
                 >
                   +
                 </button>
               </div>
+              {invalid && (
+                <p id={`${inputId(line)}-error`} role="alert" className="ka-error">
+                  <SfIcon name="alert" small />
+                  <span>จำนวนที่ส่งเกินยอดคงเหลือ</span>
+                </p>
+              )}
+              </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {!overrideAddress && defaultAddress?.addressLine1 && (

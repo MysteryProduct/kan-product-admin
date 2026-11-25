@@ -71,10 +71,13 @@ const parcelAddress = (parcel: StoreParcel) => ({
 export default function ParcelCard({
   parcel,
   canEdit,
+  isCustom = false,
   onChanged,
 }: {
   parcel: StoreParcel;
   canEdit: boolean;
+  /** The order ships a Custom request: a returned parcel owes no shipping. */
+  isCustom?: boolean;
   onChanged: () => void;
 }) {
   const [pending, setPending] = useState(false);
@@ -446,11 +449,21 @@ export default function ParcelCard({
             );
           }}
         >
-          <p className="ka-sf-ban ka-sf-tone--warning">
-            <SfIcon name="warn" />
-            จำนวนสินค้าจะกลับไปเป็นยอดที่ยังไม่ได้ส่ง และระบบจะเรียกเก็บค่าจัดส่ง
-            50 บาทก่อนส่งใหม่ แม้รอบแรกจะส่งฟรี
-          </p>
+          {isCustom ? (
+            <p className="ka-sf-ban ka-sf-tone--info">
+              <SfIcon name="info" />
+              <span>
+                งานสั่งผลิต (Custom): ระบบไม่เรียกเก็บค่าจัดส่งซ้ำ
+                เมื่อบันทึกแล้วสร้างพัสดุใหม่เพื่อส่งอีกครั้งได้ทันที
+              </span>
+            </p>
+          ) : (
+            <p className="ka-sf-ban ka-sf-tone--warning">
+              <SfIcon name="warn" />
+              จำนวนสินค้าจะกลับไปเป็นยอดที่ยังไม่ได้ส่ง และระบบจะเรียกเก็บค่าจัดส่ง
+              50 บาทก่อนส่งใหม่ แม้รอบแรกจะส่งฟรี
+            </p>
+          )}
           <label className="ka-field">
             <span className="ka-label">เหตุผลที่ตีกลับ</span>
             <input

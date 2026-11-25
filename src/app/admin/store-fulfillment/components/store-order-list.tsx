@@ -170,25 +170,38 @@ export default function StoreOrderList({
   // sale order (ADR-0001): the id is only what the click passes on.
   const orderCode = (row: StoreOrderListItem) => {
     const code = row.saleOrderCode ?? '-';
+    const open = (
+      <button
+        type="button"
+        onClick={(event) => {
+          // The row opens the order too; once is enough.
+          event.stopPropagation();
+          onOpen(row.storeOrderId);
+        }}
+        aria-label={`เปิดคำสั่งซื้อ ${code}`}
+        className="ka-sf-link whitespace-nowrap"
+      >
+        {code}
+      </button>
+    );
+    if (!row.customRequestCode) {
+      return <DocumentCode code={open} legacyCode={row.legacySaleOrderCode} search={filters.search} />;
+    }
+    // A Custom order says so beside its code and names its request under it.
     return (
-      <DocumentCode
-        code={
-          <button
-            type="button"
-            onClick={(event) => {
-              // The row opens the order too; once is enough.
-              event.stopPropagation();
-              onOpen(row.storeOrderId);
-            }}
-            aria-label={`เปิดคำสั่งซื้อ ${code}`}
-            className="ka-sf-link whitespace-nowrap"
-          >
-            {code}
-          </button>
-        }
-        legacyCode={row.legacySaleOrderCode}
-        search={filters.search}
-      />
+      <span className="block min-w-0">
+        <DocumentCode
+          code={
+            <span className="ka-sf-row ka-sf-row--wrap">
+              {open}
+              <StatusBadge tone="brand">Custom</StatusBadge>
+            </span>
+          }
+          legacyCode={row.legacySaleOrderCode}
+          search={filters.search}
+        />
+        <span className="ka-sf-cap ka-sf-num block break-words">คำขอ {row.customRequestCode}</span>
+      </span>
     );
   };
 
@@ -259,7 +272,7 @@ export default function StoreOrderList({
             value={searchDraft}
             onChange={(event) => setSearchDraft(event.target.value)}
             maxLength={STORE_ORDER_SEARCH_MAX_LENGTH}
-            placeholder="เบอร์โทร ชื่อ อีเมลสมาชิก หรือเลขคำสั่งซื้อ"
+            placeholder="เบอร์โทร ชื่อ อีเมลสมาชิก เลขคำสั่งซื้อ หรือรหัสคำขอ Custom"
             className="ka-input"
           />
         </label>

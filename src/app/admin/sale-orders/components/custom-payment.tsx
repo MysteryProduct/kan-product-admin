@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { isAxiosError } from "axios";
 import axios from "@/lib/axios";
+import { refreshPendingWork } from "@/hooks/usePendingWork";
 import { usePermissions } from "@/hooks/usePermissions";
 import type { BankAccount } from "@/types/bank-account";
 import CustomSelect from '@/components/CustomSelect';
@@ -18,6 +20,17 @@ type Info = {
   receivingAccount: BankAccount | null;
 };
 
+// The request statuses that come before production is finished.
+const BEFORE_PRODUCED = [
+  "awaiting_deposit",
+  "awaiting_line_files",
+  "reviewing",
+  "needs_changes",
+  "approved_for_production",
+  "in_production",
+];
+const PRODUCED = ["produced", "awaiting_balance"];
+
 export default function CustomPayment({
   orderId,
   status,
@@ -30,6 +43,7 @@ export default function CustomPayment({
   const { can } = usePermissions();
   const allowed =
     can("sale_orders", "approve") && can("payment_receipts", "add");
+  const canSend = can("store_fulfillment", "add");
   const [info, setInfo] = useState<Info | null>(null);
   const [accounts, setAccounts] = useState<BankAccount[]>([]);
   const [account, setAccount] = useState("");
@@ -40,6 +54,10 @@ export default function CustomPayment({
   const [reload, setReload] = useState(0);
   // Retried submissions keep their reference, including a timeout after commit.
   const attempt = useRef<{ payload: string; reference: string } | null>(null);
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
+  // A second click lands before the disabled button is drawn.
+  const sendingNow = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -114,6 +132,45 @@ export default function CustomPayment({
     }
   }
 
+  // Opens the order in the parcel page. The API answers the same for a repeat.
+  async function sendToFulfillment() {
+    if (!info || sendingNow.current) return;
+    sendingNow.current = true;
+    setSending(true);
+    setSendError("");
+    try {
+      const response = await axios.post<{ storeOrderId: string }>(
+        `/fulfillment/custom/${orderId}/ready`,
+      );
+      const { storeOrderId } = response.data;
+      setInfo((current) => (current ? { ...current, storeOrderId } : current));
+      // The request's status changed with it; the order joined the to-ship queue.
+      setReload((n) => n + 1);
+      refreshPendingWork();
+      onSuccess?.();
+    } catch (e) {
+      const refused =
+        isAxiosError<{ message?: unknown }>(e) &&
+        !!e.response &&
+        (e.response.status === 401 ||
+          e.response.status === 403 ||
+          !!e.response.data?.message);
+      setSendError(
+        refused && e.message
+          ? e.message
+          : "ส่งเข้าหน้าจัดส่งไม่สำเร็จ กรุณาลองใหม่",
+      );
+    } finally {
+      sendingNow.current = false;
+      setSending(false);
+    }
+  }
+
+  const sent = !!info?.storeOrderId;
+  const produced = !!info && PRODUCED.includes(info.status);
+  const open = !!info && !sent && status !== "cancelled";
+  const readyToSend = open && produced && info.outstanding <= 0;
+
   return (
     <section
       className="mb-6 space-y-4"
@@ -183,6 +240,11 @@ export default function CustomPayment({
             !["produced", "awaiting_balance"].includes(info.status) && (
               <p>บันทึกรับยอดคงเหลือได้หลังผลิตเสร็จแล้ว</p>
             )}
+          {open && BEFORE_PRODUCED.includes(info.status) && (
+            <p className="text-sm text-[var(--ink-muted)]">
+              ส่งเข้าหน้าจัดส่งได้เมื่อผลิตเสร็จและชำระครบแล้ว
+            </p>
+          )}
           {allowed &&
             info.outstanding > 0 &&
             status !== "cancelled" &&
@@ -235,6 +297,45 @@ export default function CustomPayment({
                 </button>
               </form>
             )}
+          {open && produced && info.outstanding > 0 && (
+            <p className="text-sm text-[var(--ink-muted)]">
+              ชำระยอดคงเหลือให้ครบก่อน จึงส่งเข้าหน้าจัดส่งได้
+            </p>
+          )}
+          {readyToSend && <p role="status">ชำระครบและผลิตเสร็จแล้ว</p>}
+          {readyToSend && canSend && (
+            <div className="flex flex-col items-start gap-2">
+              <button
+                type="button"
+                className="ka-btn ka-btn--primary"
+                disabled={sending}
+                aria-busy={sending || undefined}
+                onClick={() => void sendToFulfillment()}
+              >
+                {sending ? "กำลังส่งเข้าหน้าจัดส่ง…" : "ส่งเข้าหน้าจัดส่ง"}
+              </button>
+              {sendError ? (
+                <p role="alert" className="text-[var(--danger)]">
+                  {sendError}
+                </p>
+              ) : (
+                <p className="text-sm text-[var(--ink-muted)]">
+                  ระบบจะเปิดคำสั่งซื้อนี้ในหน้าจัดส่งพัสดุ โดยใช้ชื่อ ที่อยู่
+                  และเบอร์ผู้รับจากคำขอ
+                </p>
+              )}
+            </div>
+          )}
+          {readyToSend && !canSend && (
+            <p className="text-sm text-[var(--ink-muted)]">
+              ต้องมีสิทธิ์เพิ่มในเมนูจัดส่งพัสดุจึงจะส่งเข้าหน้าจัดส่งได้
+            </p>
+          )}
+          {sent && (
+            <p className="ka-so-ok" role="status">
+              ส่งเข้าหน้าจัดส่งแล้ว
+            </p>
+          )}
         </>
       )}
     </section>

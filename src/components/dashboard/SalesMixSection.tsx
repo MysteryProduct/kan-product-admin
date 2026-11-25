@@ -20,6 +20,7 @@ const CHANNELS: Record<string, string> = {
   online: 'ขายบนเว็บไซต์',
   website: 'ขายบนเว็บไซต์',
   order: 'หลังร้าน (ขายจากการสั่งซื้อ)',
+  custom: 'งานสั่งผลิต (Custom)',
 };
 
 const count = (value: number) => new Intl.NumberFormat('th-TH').format(value);
