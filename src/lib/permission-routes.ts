@@ -18,6 +18,7 @@ const ROUTE_MENU_MAP: Record<string, string> = {
   '/admin/bank-account': 'bank_accounts',
   '/admin/settings': 'settings',
   '/admin/sale-orders': 'sale_orders',
+  '/admin/custom-post-production': 'sale_orders',
   '/admin/payment-receipts': 'payment_receipts',
   '/admin/contact-requests': 'contact_requests',
   '/admin/store-fulfillment': 'store_fulfillment',

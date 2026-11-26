@@ -13,11 +13,14 @@ import type { AccessLogEntry, AccessLogResponse, AccessLogType } from '@/types/a
 const accessLogModel = new AccessLogModel();
 const PAGE_SIZE = 20;
 
-// Thai page titles from the sidebar; menus without a page keep their API name.
+// Thai page titles from the sidebar; menus without a page keep their API name. A menu that
+// opens several pages is named by its first one (reversed, so the first entry is set last).
 const MENU_TITLES = new Map(
-  adminMenu.flatMap((section) =>
-    section.items.flatMap((item) => (item.subItems ?? []).map((leaf) => [leaf.menu_name, leaf.title] as const)),
-  ),
+  adminMenu
+    .flatMap((section) =>
+      section.items.flatMap((item) => (item.subItems ?? []).map((leaf) => [leaf.menu_name, leaf.title] as const)),
+    )
+    .reverse(),
 );
 const menuTitle = (menuName: string) => MENU_TITLES.get(menuName) ?? menuName;
 

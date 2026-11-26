@@ -80,6 +80,7 @@ export const adminMenu: AdminMenuSection[] = [
         subItems: [
           { title: 'ใบสั่งขาย', menu_name: 'sale_orders', href: '/admin/sale-orders', pending: ['sale_orders_to_approve'] },
           { title: 'ใบเสร็จรับเงิน', menu_name: 'payment_receipts', href: '/admin/payment-receipts' },
+          { title: 'งาน Custom หลังผลิต', menu_name: 'sale_orders', href: '/admin/custom-post-production' },
         ],
       },
       {

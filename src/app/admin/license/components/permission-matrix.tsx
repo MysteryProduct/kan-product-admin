@@ -34,9 +34,10 @@ const licenseModel = new EmployeeLicenseModel();
 
 const SIDEBAR_LEAVES = adminMenu.flatMap((section) => section.items.flatMap((item) => item.subItems ?? []));
 
-// Thai page titles from the sidebar; menus without a page keep their API name.
+// Thai page titles from the sidebar; menus without a page keep their API name. A menu that
+// opens several pages is named by its first one (reversed, so the first entry is set last).
 const MENU_TITLES = new Map<string, string>([
-  ...SIDEBAR_LEAVES.map((leaf) => [leaf.menu_name, leaf.title] as const),
+  ...SIDEBAR_LEAVES.map((leaf) => [leaf.menu_name, leaf.title] as const).reverse(),
   ['stock_material', 'สต็อกวัตถุดิบ'],
   ['stock_product', 'สต็อกสินค้าสำเร็จรูป'],
 ]);

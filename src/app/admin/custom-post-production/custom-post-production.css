@@ -1,0 +1,52 @@
+/* งาน Custom หลังผลิต (TASK-0212). The page reuses the parcel page's `.ka-sf*` tiles, search bar and
+   card; only what its list adds is here. Read from the artboard "งาน Custom หลังผลิต": six columns from
+   1280px, four below it (the total and the link move into their neighbours), cards below 640px. */
+@layer components {
+  .ka-cp-code { display: block; color: var(--ink); font: 600 14px/22px var(--font-mono), ui-monospace, Consolas, monospace; white-space: nowrap; }
+  .ka-cp-zero { color: var(--ink-muted); }
+  .ka-cp-note { margin-top: 4px; }
+  .ka-cp-warn { display: flex; align-items: flex-start; gap: 6px; margin: 4px 0 0; color: var(--warning); font: 500 14px/22px var(--ka-font); }
+  .ka-cp-warn > .ka-sf-icon { margin-top: 3px; }
+  .ka-cp-list td .ka-cp-warn { white-space: nowrap; }
+  .ka-cp-go { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; text-decoration: none; }
+  @media (min-width: 768px) { .ka-cp-go { min-height: 24px; } }
+  /* The footer under the list takes the divider colour, not the text colour of its line. */
+  .ka-cp-list > .w-full > :not(.ka-card) { border-color: var(--border) !important; }
+  .ka-cp-none { position: relative; color: var(--ink-muted); }
+  .ka-cp-tilenum { width: 48px; height: 20px; margin: 8px 0; }
+  .ka-cp-narrow { display: none; }
+
+  /* `!important`: DataTable sets alignment as Tailwind utilities, which outrank this layer. */
+  .ka-cp-list td { vertical-align: top !important; }
+  .ka-cp-list th:nth-child(3), .ka-cp-list th:nth-child(4) { text-align: right !important; }
+  /* A column name stays on one line; the customer column gives up the room. */
+  .ka-cp-list th { white-space: nowrap; }
+  /* DataTable lays a header out as a flex row, so `text-align` alone leaves a money header on the left. */
+  .ka-cp-list th:nth-child(3) .flex, .ka-cp-list th:nth-child(4) .flex { justify-content: flex-end !important; }
+
+  /* Phone card */
+  .ka-cp-card p { margin: 0; }
+  .ka-cp-money { display: grid; gap: 4px; margin: 0; padding: 8px 0 0; border-top: 1px solid var(--border); }
+  .ka-cp-money > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .ka-cp-money dt { color: var(--ink-muted); font: 400 14px/22px var(--ka-font); }
+  .ka-cp-money dd { margin: 0; font: 400 15px/24px var(--ka-font); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ka-cp-money dd.font-semibold { font-weight: 600; }
+  .ka-cp-foot { display: flex; border-top: 1px solid var(--border); }
+  .ka-cp-foot > .ka-cp-go { flex: 1; justify-content: space-between; }
+
+  @media (max-width: 1279px) {
+    .ka-cp-list th:nth-child(3), .ka-cp-list td:nth-child(3),
+    .ka-cp-list th:nth-child(6), .ka-cp-list td:nth-child(6) { display: none; }
+    span.ka-cp-narrow { display: block; }
+    a.ka-cp-narrow { display: inline-flex; margin-top: 4px; }
+  }
+  /* Three tiles fit a phone side by side, so all three counts show without the parcel page's sideways strip. */
+  @media (max-width: 767px) {
+    .ka-cp-tiles { display: grid; grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding: 0; overflow: visible; }
+    .ka-cp-tiles .ka-sf-tile { flex: none; }
+    .ka-cp .ka-sf-found { margin-right: auto; margin-left: 0; }
+  }
+  @media (max-width: 639px) {
+    .ka-cp-tiles .ka-sf-tile__icon { display: none; }
+  }
+}
