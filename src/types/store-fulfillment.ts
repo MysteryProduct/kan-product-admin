@@ -293,8 +293,12 @@ export interface StoreReturnLine {
 
 export interface StoreReturnRecord {
   returnId: string;
+  // A Custom return is stored as 'defective' or, for goods not made as the
+  // approved design, 'wrong_item' (TASK-0217).
   reason: StoreReturnReason;
   note: string | null;
+  // Custom only: whether the goods came back. Null for a Store return.
+  goodsReturned?: boolean | null;
   createdBy: string;
   createdAt: string;
   items: {
@@ -308,6 +312,9 @@ export interface StoreReturnRecord {
 }
 
 export interface StoreReturns {
+  // TASK-0217: set for a Custom order. The whole order is returned once and
+  // everything received is refunded by a transfer the shop makes.
+  custom?: { canReturn: boolean; returned: boolean; refundAmount: number } | null;
   lines: StoreReturnLine[];
   // When goods reached the customer, as far as the system knows: a parcel's
   // dispatch date or the pickup handover. Staff judge the 30 days by these.
@@ -320,6 +327,21 @@ export interface CreateStoreReturnDto {
   reason: StoreReturnReason;
   note?: string;
   items: { sale_order_list_id: string; quantity: number; restock: boolean }[];
+}
+
+// TASK-0217: a Custom order returned after delivery. No lines and no amount:
+// the API returns the whole order and works the refund out.
+export type CustomReturnReason = 'defective' | 'not_as_approved';
+
+export interface CreateCustomReturnDto {
+  return_reference: string;
+  reason: CustomReturnReason;
+  note?: string;
+  goods_returned: boolean;
+  // The customer's account for the transfer: all three or none.
+  refund_account_name?: string;
+  refund_account_bank?: string;
+  refund_account_number?: string;
 }
 
 export interface StoreOrderWithParcels {
@@ -344,8 +366,9 @@ export interface StoreOrderWithParcels {
   cancellation: StoreCancellation | null;
   returns: StoreReturns;
   taxInvoice: StoreTaxInvoiceRequest | null;
-  // Set when the order ships a Custom request; the API then refuses goods
-  // returns and cancellation here, and a returned parcel owes no shipping.
+  // Set when the order ships a Custom request; the API then refuses
+  // cancellation here, takes a goods return only through the Custom route
+  // (TASK-0217), and a returned parcel owes no shipping.
   custom: { requestCode: string; requestId: string; saleOrderId: string } | null;
   items: StoreOrderLine[];
   parcels: StoreParcel[];

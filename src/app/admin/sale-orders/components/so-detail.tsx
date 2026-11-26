@@ -33,6 +33,7 @@ import {
   variantText,
   vatAmount,
 } from '../lib/so-display';
+import CustomCancellation from './custom-cancellation';
 import CustomPayment from './custom-payment';
 import ReturnDialog from './return-dialog';
 
@@ -85,6 +86,12 @@ export default function SaleOrderDetail({ saleOrder: order, onChanged, openRetur
     setHistoryKey((key) => key + 1);
     onChanged();
   }, [onChanged]);
+  // A cancellation changes what the custom payment block loaded for itself, so it is mounted again.
+  const [customKey, setCustomKey] = useState(0);
+  const cancellationChanged = useCallback(() => {
+    setCustomKey((key) => key + 1);
+    changed();
+  }, [changed]);
 
   const actions = useOrderActions({
     onChanged: changed,
@@ -332,7 +339,8 @@ export default function SaleOrderDetail({ saleOrder: order, onChanged, openRetur
         {dueCard('')}
         {isCustom && !wide && (
           <section className="ka-so-card ka-so-side ka-so-noprint" aria-label="การรับชำระงานผลิต Custom">
-            <CustomPayment orderId={id} status={status} onSuccess={changed} />
+            <CustomPayment key={customKey} orderId={id} status={status} onSuccess={changed} />
+            <CustomCancellation orderId={id} onSuccess={cancellationChanged} />
           </section>
         )}
         {status !== 'cancelled' && (
@@ -464,7 +472,8 @@ export default function SaleOrderDetail({ saleOrder: order, onChanged, openRetur
           {dueCard('ka-so-due--aside')}
           {isCustom && wide && (
             <section className="ka-so-card ka-so-side ka-so-noprint ka-so-due--aside" aria-label="การรับชำระงานผลิต Custom">
-              <CustomPayment orderId={id} status={status} onSuccess={changed} />
+              <CustomPayment key={customKey} orderId={id} status={status} onSuccess={changed} />
+              <CustomCancellation orderId={id} onSuccess={cancellationChanged} />
             </section>
           )}
 

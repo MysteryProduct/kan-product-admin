@@ -165,8 +165,8 @@ export default function StoreOrderFulfillment({
           <p className="ka-sf-ban ka-sf-tone--info" role="status">
             <SfIcon name="info" />
             <span>
-              งานสั่งผลิต (Custom) · คำขอ {order.custom.requestCode} — สร้าง พัก และส่งพัสดุได้ตามปกติ การยกเลิก
-              คืนเงิน และรับคืนสินค้าไม่ทำในหน้านี้{" "}
+              งานสั่งผลิต (Custom) · คำขอ {order.custom.requestCode} — สร้าง พัก และส่งพัสดุได้ตามปกติ ผลิตเสร็จแล้วจึงยกเลิกไม่ได้
+              รับคืนได้เฉพาะสินค้าชำรุดหรือผลิตไม่ตรงแบบ{" "}
               {canViewSaleOrder && (
                 <Link
                   className="ka-sf-open"
@@ -276,8 +276,8 @@ export default function StoreOrderFulfillment({
               </section>
             )}
 
-            {/* Not for a Custom order: the API refuses a goods return there. */}
-            {order.returns && !order.custom && (
+            {/* A Custom order too: its card records the whole order coming back (TASK-0217). */}
+            {order.returns && (
               <ReturnCard
                 storeOrderId={order.storeOrderId}
                 orderStatus={order.status}

@@ -1,8 +1,12 @@
 "use client";
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useNow } from "@/hooks/useNow";
 import StoreFulfillmentModel from "@/models/store-fulfillment";
-import { StoreReturnReason, StoreReturns } from "@/types/store-fulfillment";
+import {
+  CustomReturnReason,
+  StoreReturnReason,
+  StoreReturns,
+} from "@/types/store-fulfillment";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { formatThaiDate } from "@/lib/date-format";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -20,6 +24,26 @@ const reasonLabels: Record<StoreReturnReason, string> = {
   incomplete: "สินค้าไม่สมบูรณ์",
   wrong_item: "สินค้าไม่ตรงตามที่สั่ง",
 };
+
+// TASK-0217: a Custom order comes back only for these two reasons; the second
+// is stored as 'wrong_item'.
+const customReasonLabels: Record<CustomReturnReason, string> = {
+  defective: "สินค้าชำรุด",
+  not_as_approved: "ผลิตไม่ตรงแบบที่อนุมัติ",
+};
+const customStoredReasonLabels: Record<StoreReturnReason, string> = {
+  ...reasonLabels,
+  wrong_item: customReasonLabels.not_as_approved,
+};
+
+// The API stores a Custom return's note as its reason, then ": " and what
+// staff typed. The reason is already the record's heading, so only the typed
+// part is shown.
+function customNote(reason: StoreReturnReason, note: string | null) {
+  const label = customStoredReasonLabels[reason];
+  if (!note || note === label) return null;
+  return note.startsWith(`${label}: `) ? note.slice(label.length + 2) : note;
+}
 
 type Draft = Record<string, { quantity: number; restock: boolean }>;
 
@@ -44,6 +68,7 @@ export default function ReturnCard({
   canEdit: boolean;
   onChanged: () => void;
 }) {
+  const custom = returns.custom ?? null;
   const returnable = returns.lines.filter((line) => line.returnableQty > 0);
   const [draft, setDraft] = useState<Draft>({});
   const [reason, setReason] = useState<StoreReturnReason | "">("");
@@ -133,42 +158,58 @@ export default function ReturnCard({
           ))}
         </ul>
       )}
-      {allPastWindow && (
+      {custom && (
+        <p className="ka-sf-sub border-l-[3px] border-[var(--border-control)] pl-3">
+          งานสั่งผลิตรับคืนได้เฉพาะสินค้าชำรุด หรือผลิตไม่ตรงแบบที่อนุมัติ
+        </p>
+      )}
+      {!custom && allPastWindow && (
         <p className="ka-sf-warn">
           ผ่านมาเกิน {RETURN_DAYS} วันแล้ว พิจารณาตามนโยบายคืนสินค้าก่อนรับคืน
           (ระบบรู้เพียงวันส่งพัสดุ ไม่รู้วันที่พัสดุถึงมือลูกค้า)
         </p>
       )}
 
-      {returns.returns.map((record) => (
+      {returns.returns.map((record) => {
+        const note = custom
+          ? customNote(record.reason, record.note)
+          : record.note;
+        return (
         <div
           key={record.returnId}
           className="ka-sf-divider ka-sf-form" style={{ gap: 8 }}
         >
           <p className="m-0 font-semibold">
             รับคืนเมื่อ {formatThaiDate(record.createdAt)} ·{" "}
-            {reasonLabels[record.reason]}
+            {(custom ? customStoredReasonLabels : reasonLabels)[record.reason]}
           </p>
           <ul className="ka-sf-sub m-0 grid list-none gap-1 p-0">
             {record.items.map((item, index) => (
               <li key={index}>
                 {item.productName} × {item.quantity} ·{" "}
+                {custom &&
+                  `${record.goodsReturned ? "ได้รับของกลับแล้ว" : "ยังไม่ได้รับของกลับ"} · `}
                 {item.restocked ? "นำกลับเข้าสต็อกแล้ว" : "ไม่นำกลับเข้าสต็อก"}
               </li>
             ))}
           </ul>
-          {record.note && (
+          {note && (
             <p className="ka-sf-sub">
-              หมายเหตุ: {record.note}
+              หมายเหตุ: {note}
             </p>
           )}
           {record.refund ? (
             <RefundPanel
-              title="การคืนเงินค่าสินค้าที่คืน"
+              title={
+                custom
+                  ? "การคืนเงินงานสั่งผลิตที่รับคืน"
+                  : "การคืนเงินค่าสินค้าที่คืน"
+              }
               refund={record.refund}
               account={null}
               canEdit={canEdit}
               onChanged={onChanged}
+              customOrder={!!custom}
             />
           ) : (
             <p className="ka-sf-sub">
@@ -176,9 +217,29 @@ export default function ReturnCard({
             </p>
           )}
         </div>
-      ))}
+        );
+      })}
 
-      {canEdit && orderStatus === "paid" && returnable.length > 0 && (
+      {custom && canEdit && orderStatus === "paid" && custom.canReturn && (
+        <CustomReturnForm
+          storeOrderId={storeOrderId}
+          refundAmount={custom.refundAmount}
+          onChanged={onChanged}
+        />
+      )}
+
+      {/* The API takes a Custom return only once every piece has shipped. */}
+      {custom &&
+        !custom.canReturn &&
+        !custom.returned &&
+        returns.returns.length === 0 &&
+        received.length > 0 && (
+          <p className="ka-sf-sub">
+            รับคืนงานสั่งผลิตได้เมื่อจัดส่งครบทุกชิ้นแล้ว
+          </p>
+        )}
+
+      {!custom && canEdit && orderStatus === "paid" && returnable.length > 0 && (
         <div className="ka-sf-divider ka-sf-form">
           <h3>บันทึกรับคืนสินค้า</h3>
           <p className="ka-sf-sub">
@@ -292,5 +353,224 @@ export default function ReturnCard({
         onCancel={() => setConfirming(false)}
       />
     </section>
+  );
+}
+
+const ACCOUNT_FIELDS = [
+  ["name", "ชื่อบัญชี", 120],
+  ["bank", "ธนาคาร / พร้อมเพย์", 120],
+  ["number", "เลขที่บัญชี", 40],
+] as const;
+
+/**
+ * TASK-0217: a Custom order returned after delivery. The whole order comes
+ * back, once; the API works out the refund (everything received) and the shop
+ * transfers it, so the form asks only why, whether the goods are back, and
+ * where the money goes if staff already know.
+ */
+function CustomReturnForm({
+  storeOrderId,
+  refundAmount,
+  onChanged,
+}: {
+  storeOrderId: string;
+  refundAmount: number;
+  onChanged: () => void;
+}) {
+  const [reason, setReason] = useState<CustomReturnReason | "">("");
+  const [goodsReturned, setGoodsReturned] = useState(false);
+  const [note, setNote] = useState("");
+  const [account, setAccount] = useState({ name: "", bank: "", number: "" });
+  // One reference per submission, so a repeat finds the same return.
+  const [reference, setReference] = useState(() => crypto.randomUUID());
+  // Judged only after a real attempt to save.
+  const [tried, setTried] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState("");
+  // A second click lands before the disabled button is drawn.
+  const sendingNow = useRef(false);
+  const uid = useId();
+
+  const stated = ACCOUNT_FIELDS.filter(([key]) => account[key].trim()).length;
+  const reasonError = tried && !reason ? "กรุณาเลือกกรณีที่รับคืน" : "";
+  // All three or none, as the API takes it.
+  const accountError =
+    tried && stated > 0 && stated < ACCOUNT_FIELDS.length
+      ? "กรอกบัญชีรับเงินคืนให้ครบทั้งสามช่อง หรือเว้นว่างทั้งหมด"
+      : "";
+
+  function review() {
+    setTried(true);
+    if (!reason) {
+      document.getElementById(`${uid}-defective`)?.focus();
+      return;
+    }
+    if (stated > 0 && stated < ACCOUNT_FIELDS.length) {
+      const [missing] =
+        ACCOUNT_FIELDS.find(([key]) => !account[key].trim()) ?? [];
+      document.getElementById(`${uid}-${missing}`)?.focus();
+      return;
+    }
+    setConfirming(true);
+  }
+
+  async function submit() {
+    if (!reason || sendingNow.current) return;
+    sendingNow.current = true;
+    setPending(true);
+    setError("");
+    try {
+      await storeFulfillmentModel.createCustomReturn(storeOrderId, {
+        return_reference: reference,
+        reason,
+        note: note.trim() || undefined,
+        goods_returned: goodsReturned,
+        ...(stated === ACCOUNT_FIELDS.length && {
+          refund_account_name: account.name.trim(),
+          refund_account_bank: account.bank.trim(),
+          refund_account_number: account.number.trim(),
+        }),
+      });
+      setReason("");
+      setGoodsReturned(false);
+      setNote("");
+      setAccount({ name: "", bank: "", number: "" });
+      setTried(false);
+      setReference(crypto.randomUUID());
+      onChanged();
+    } catch (err) {
+      // What was entered stays, so staff can correct it and try again.
+      setError(getApiErrorMessage(err));
+    } finally {
+      sendingNow.current = false;
+      setPending(false);
+    }
+  }
+
+  return (
+    <div className="ka-sf-divider ka-sf-form">
+      <h3>บันทึกรับคืนงานสั่งผลิต</h3>
+      <fieldset
+        className="ka-field m-0 min-w-0 border-0 p-0"
+        aria-describedby={reasonError ? `${uid}-reason-error` : undefined}
+      >
+        <legend className="ka-label mb-1.5 p-0">
+          กรณีที่รับคืน
+          <span className="ka-req" aria-hidden="true">
+            *
+          </span>
+        </legend>
+        {(Object.keys(customReasonLabels) as CustomReturnReason[]).map(
+          (value) => (
+            <label key={value} className="ka-sf-check">
+              <input
+                id={`${uid}-${value}`}
+                type="radio"
+                name={`${uid}-reason`}
+                required
+                checked={reason === value}
+                disabled={pending}
+                onChange={() => setReason(value)}
+              />
+              <span>{customReasonLabels[value]}</span>
+            </label>
+          ),
+        )}
+        {reasonError && (
+          <p id={`${uid}-reason-error`} className="ka-error m-0">
+            {reasonError}
+          </p>
+        )}
+      </fieldset>
+      <label className="ka-sf-check">
+        <input
+          type="checkbox"
+          checked={goodsReturned}
+          disabled={pending}
+          onChange={(e) => setGoodsReturned(e.target.checked)}
+        />
+        <span>ได้รับของกลับมาแล้ว (บันทึกไว้เท่านั้น ระบบไม่เพิ่มสต็อก)</span>
+      </label>
+      <label className="ka-field">
+        <span className="ka-label">หมายเหตุ (ไม่บังคับ)</span>
+        <textarea
+          value={note}
+          disabled={pending}
+          onChange={(e) => setNote(e.target.value)}
+          rows={2}
+          maxLength={500}
+          className="ka-textarea"
+        />
+      </label>
+      <p id={`${uid}-account-hint`} className="ka-sf-sub">
+        บัญชีรับเงินคืนของลูกค้า (ไม่บังคับ:
+        เว้นว่างได้ถ้าจะให้ลูกค้าแจ้งเองที่หน้าติดตามคำสั่งซื้อ)
+      </p>
+      <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(200px,1fr))]">
+        {ACCOUNT_FIELDS.map(([key, label, max]) => {
+          const missing = !!accountError && !account[key].trim();
+          return (
+            <div key={key} className="ka-field">
+              <label className="ka-label" htmlFor={`${uid}-${key}`}>
+                {label}
+              </label>
+              <input
+                id={`${uid}-${key}`}
+                className="ka-input"
+                maxLength={max}
+                autoComplete="off"
+                value={account[key]}
+                disabled={pending}
+                aria-invalid={missing || undefined}
+                aria-describedby={
+                  accountError ? `${uid}-account-error` : `${uid}-account-hint`
+                }
+                onChange={(e) =>
+                  setAccount({ ...account, [key]: e.target.value })
+                }
+              />
+            </div>
+          );
+        })}
+      </div>
+      {accountError && (
+        <p id={`${uid}-account-error`} className="ka-error m-0">
+          {accountError}
+        </p>
+      )}
+      <div className="ka-sf-panel">
+        <p className="text-xl font-semibold tabular-nums">
+          คืนเงิน {baht(refundAmount)} บาท
+        </p>
+        <p className="ka-sf-sub">
+          เต็มยอดที่รับชำระ รวมค่าส่ง ร้านโอนคืนเอง ระบบคำนวณให้ แก้ยอดไม่ได้
+          รับคืนได้ครั้งเดียวต่อคำสั่งซื้อ
+        </p>
+      </div>
+      <button
+        type="button"
+        disabled={pending}
+        aria-busy={pending || undefined}
+        onClick={review}
+        className="ka-btn ka-btn--primary self-start max-sm:min-h-11"
+      >
+        บันทึกรับคืน
+      </button>
+      {error && (
+        <p role="alert" className="ka-sf-error">
+          {error}
+        </p>
+      )}
+      <ConfirmDialog
+        isOpen={confirming}
+        title="ยืนยันรับคืนงานสั่งผลิต"
+        message={`คืนเงิน ${baht(refundAmount)} บาท ร้านเป็นผู้โอนคืนเองแล้วบันทึกหลักฐานการโอน รายการนี้ย้อนกลับไม่ได้ และรับคืนได้ครั้งเดียวต่อคำสั่งซื้อ`}
+        confirmLabel="บันทึกรับคืน"
+        cancelLabel="กลับไปตรวจ"
+        onConfirm={() => void submit()}
+        onCancel={() => setConfirming(false)}
+      />
+    </div>
   );
 }

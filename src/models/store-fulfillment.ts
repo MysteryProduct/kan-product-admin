@@ -3,6 +3,7 @@ import { pickDefined } from '@/lib/pick-defined';
 import { storeOrderListParams } from '@/lib/store-order-list';
 import {
   ConvertToDeliveryDto,
+  CreateCustomReturnDto,
   CreateParcelDto,
   CreateStoreReturnDto,
   DecideCancellationDto,
@@ -39,6 +40,15 @@ const PARCEL_RETURN_FIELDS = ['reason', 'contact_outcome', 'contact_note'] as co
 const DECISION_FIELDS = ['decision', 'note'] as const;
 const MANUAL_REFUND_FIELDS = ['reference', 'amount', 'transferred_at'] as const;
 const RETURN_FIELDS = ['return_reference', 'reason', 'note'] as const;
+const CUSTOM_RETURN_FIELDS = [
+  'return_reference',
+  'reason',
+  'note',
+  'goods_returned',
+  'refund_account_name',
+  'refund_account_bank',
+  'refund_account_number',
+] as const;
 const APPOINTMENT_FIELDS = ['scheduled_at', 'note'] as const;
 const CONTACT_LOG_FIELDS = ['channel', 'outcome', 'note'] as const;
 const HANDOVER_FIELDS = ['phone', 'recipient_name'] as const;
@@ -213,6 +223,19 @@ class StoreFulfillmentModel {
           ),
         }),
       },
+    );
+  }
+
+  // TASK-0217: a Custom order returned after delivery. The API returns the
+  // whole order and opens a transfer refund for everything received; the
+  // transfer is then recorded through recordManualRefund().
+  async createCustomReturn(
+    storeOrderId: string,
+    dto: CreateCustomReturnDto,
+  ): Promise<void> {
+    await axiosInstance.post(
+      `/fulfillment/returns/orders/${storeOrderId}/custom`,
+      pickDefined(dto, CUSTOM_RETURN_FIELDS),
     );
   }
 

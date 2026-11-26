@@ -19,6 +19,7 @@ import LoadErrorBanner, { loadErrorText } from '@/components/LoadErrorBanner';
 import Pagination from '@/components/Pagination';
 import RowMenu, { RowMenuItem } from '@/components/RowMenu';
 import StatusBadge from '@/components/StatusBadge';
+import CustomCancellationStrip from './components/custom-cancellation-strip';
 import { useOrderActions } from './hooks/useOrderActions';
 import {
   allows,
@@ -460,6 +461,8 @@ function SaleOrdersList() {
         </div>
         {createButton && <div className="ka-so-ph__acts ka-so-ph__acts--top">{createButton}</div>}
       </div>
+
+      <CustomCancellationStrip refreshKey={refreshKey} />
 
       {summaryError && <p role="status" className="ka-so-cap">โหลดตัวเลขสรุปไม่สำเร็จ รายการด้านล่างยังใช้งานได้</p>}
 

@@ -205,12 +205,15 @@ export function RefundPanel({
   account,
   canEdit,
   onChanged,
+  customOrder = false,
 }: {
   title: string;
   refund: StoreRefund;
   account: StoreRefundAccount | null;
   canEdit: boolean;
   onChanged: () => void;
+  /** A Custom order's return: the shop always transfers the refund itself (TASK-0217). */
+  customOrder?: boolean;
 }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
@@ -284,8 +287,9 @@ export function RefundPanel({
         <div className="ka-sf-form" style={{ gap: 8 }}>
           {refund.manualRefundRequired && (
             <p className="ka-sf-warn">
-              ยอดนี้ชำระด้วยพร้อมเพย์ ผู้ให้บริการคืนเงินให้ไม่ได้
-              ต้องโอนคืนเข้าบัญชีลูกค้าแล้วบันทึกหลักฐานการโอนที่นี่
+              {customOrder
+                ? 'งานสั่งผลิตคืนเงินด้วยการโอนจากร้าน โอนแล้วบันทึกหลักฐานที่นี่'
+                : 'ยอดนี้ชำระด้วยพร้อมเพย์ ผู้ให้บริการคืนเงินให้ไม่ได้ ต้องโอนคืนเข้าบัญชีลูกค้าแล้วบันทึกหลักฐานการโอนที่นี่'}
             </p>
           )}
           {refund.accountRequired && (

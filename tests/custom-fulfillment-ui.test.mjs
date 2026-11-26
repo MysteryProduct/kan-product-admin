@@ -396,7 +396,7 @@ test('recording a returned parcel of a Custom order says no shipping is charged 
 
 // --- The parcel page: what the order view itself decides for a Custom order ---
 
-const BANNER = /งานสั่งผลิต \(Custom\) · คำขอ CU202611260001 — สร้าง พัก และส่งพัสดุได้ตามปกติ การยกเลิก\s+คืนเงิน และรับคืนสินค้าไม่ทำในหน้านี้/;
+const BANNER = /งานสั่งผลิต \(Custom\) · คำขอ CU202611260001 — สร้าง พัก และส่งพัสดุได้ตามปกติ ผลิตเสร็จแล้วจึงยกเลิกไม่ได้\s+รับคืนได้เฉพาะสินค้าชำรุดหรือผลิตไม่ตรงแบบ/;
 const NOTHING_LEFT = 'ลงพัสดุครบทั้ง 3 ชิ้นแล้ว ไม่มีสินค้าคงเหลือให้บันทึก';
 
 function orderView({ custom = null, remainingUnshipped = 0, permissions } = {}) {
@@ -479,7 +479,7 @@ function orderView({ custom = null, remainingUnshipped = 0, permissions } = {}) 
 }
 const CUSTOM = { requestCode: 'CU202611260001', saleOrderId: 'so/1' };
 
-test('the order view of a Custom order shows the badge, the request code and the banner, hides the return card and tells the parcel card', () => {
+test('the order view of a Custom order shows the badge, the request code and the banner, keeps the return card (TASK-0217) and tells the parcel card', () => {
   const seen = orderView({ custom: CUSTOM });
   assert.ok(seen.badges.includes('Custom'));
   assert.ok(
@@ -490,7 +490,9 @@ test('the order view of a Custom order shows the badge, the request code and the
   assert.equal(seen.links.length, 1);
   assert.equal(text(seen.links[0]), 'เปิดใบสั่งขาย');
   assert.equal(seen.links[0].props.href, '/admin/sale-orders/so%2F1');
-  assert.equal(seen.returnCards.length, 0);
+  // TASK-0217: the card records a Custom order coming back, so it is drawn.
+  assert.equal(seen.returnCards.length, 1);
+  assert.equal(seen.returnCards[0].props.storeOrderId, 'order-1');
   assert.equal(seen.parcelCards.length, 1);
   assert.equal(seen.parcelCards[0].props.isCustom, true);
 });
